@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="VarSim">
+    <meta name="author" content="Marghoob Mohiyuddin">
+
+    <title>SomaticSeq</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+        margin-right: auto;
+        margin-left: auto;
+        max-width: 760px;
+        }
+    </style>
+
+    <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+ (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+ })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-58409498-5', 'auto');
+gq('require', 'linkid', 'linkid.js');
+ga('send', 'pageview');
+  
+  
+  /**
+* Function that tracks a click on an outbound link in Google Analytics.
+* This function takes a valid URL string as an argument, and uses that URL string
+* as the event label.
+*/
+var trackOutboundLink = function(url) {
+   ga('send', 'event', 'outbound', 'click', url, {'hitCallback':
+     function () {
+     document.location = url;
+     }
+   });
+}
+
+
+function _gaLt(event){
+    var el = event.srcElement || event.target;
+
+    /* Loop up the DOM tree through parent elements if clicked element is not a link (eg: an image inside a link) */
+    while(el && (typeof el.tagName == 'undefined' || el.tagName.toLowerCase() != 'a' || !el.href)){
+        el = el.parentNode;
+    }
+
+    if(el && el.href){
+        if(el.href.indexOf(location.host) == -1){ /* external link */
+            /* HitCallback function to either open link in either same or new window */
+            var hitBack = function(link, target){
+                target ? window.open(link, target) : window.location.href = link;
+            };
+            /* link */
+            var link = el.href;
+            /* Is target set and not _(self|parent|top)? */
+            var target = (el.target && !el.target.match(/^_(self|parent|top)$/i)) ? el.target : false;
+            /* send event with callback */
+            ga(
+                "send", "event", "Outgoing Links", link,
+                document.location.pathname + document.location.search,
+                {"hitCallback": hitBack(link, target)}
+            );
+
+            /* Prevent standard click */
+            event.preventDefault ? event.preventDefault() : event.returnValue = !1;
+        }
+
+    }
+}
+
+/* Attach the event to all clicks in the document after page has loaded */
+var w = window;
+w.addEventListener ? w.addEventListener("load",function(){document.body.addEventListener("click",_gaLt,!1)},!1)
+ : w.attachEvent && w.attachEvent("onload",function(){document.body.attachEvent("onclick",_gaLt)});
+
+
+    </script>
+
+</head>
+
+<body>
+
+
+<div class="container" style="padding-bottom: 400px;">
+    <div class="page-header">
+        <h1>SomaticSeq</h1>
+
+        <h2>An ensemble approach to accurately detect somatic mutations</h2>
+    </div>
+
+    <h2>Publication [Open access]</h2>
+
+    <div class="panel panel-default" style="font-family:monospace;">
+        <div class="panel-body">
+            Manuscript in preparation.
+        </div>
+    </div>
+
+    <h2>Download SomaticSeq</h2>
+
+    <p>The source code is hosted at <a href="https://github.com/bioinform/somaticseq/" onclick="trackOutboundLink('https://github.com/bioinform/somaticseq'); return false'">https://github.com/bioinform/somaticseq</a>
+
+    <p>The packaged releases can be found at <a href="https://github.com/bioinform/somaticseq/releases"
+                                           onclick="trackOutboundLink('https://github.com/bioinform/somaticseq/releases'); return false;">https://github.com/bioinform/somaticseq/releases</a>
+    </p>
+
+
+    <h2>Running SomaticSeq</h2>
+
+    <h2>References/Tools</h2>
+
+</div>
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+</body>
