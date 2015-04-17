@@ -50,13 +50,12 @@ then
 fi
 
 
-sniper_dir=${out_dir}/somaticsniper
-varscan_dir=${out_dir}/varscan2
-snvmix_dir=${out_dir}/jointsnvmix2
-mutect_dir=${out_dir}/mutect
-mutect_snp_dir=${mutect_dir}/snp
-mutect_indel_dir=${mutect_dir}/indel
-vardict_dir=${out_dir}/vardict
+sniper_dir=${out_dir}/SomaticSniper
+varscan_dir=${out_dir}/Varscan
+snvmix_dir=${out_dir}/JointSNVMix
+mutect_snp_dir=${out_dir}/MuTect
+mutect_indel_dir=${out_dir}/SomaticIndelDetector
+vardict_dir=${out_dir}/Vardict
 
 # Make sure those directories are there.
 if ! [[ -d ${sniper_dir} || -d ${varscan_dir} || -d ${snvmix_dir} || -d ${mutect_snp_dir} || -d ${mutect_indel_dir} || -d ${vardict_dir} ]]
@@ -71,8 +70,9 @@ fi
 export PATH=/net/kodiak/volumes/lake/shared/opt/python3/bin:$PATH
 
 py_merge_mutect='/home/ltfang/apps/Bina_SomaticMerge/modify_MuTect.py'
-py_merge_vcfs='/home/ltfang/programming/NGS/merge.modify_vcfs_for_gatk_vardict_custom_r20140829.py'
-py_scoring='/home/ltfang/programming/NGS/post_EFF.COSMIC.dbSNP.CombineVariants_v2_r20140822.py'
+py_merge_vcfs='/home/ltfang/apps/Bina_SomaticMerge/modify_VJSD.py'
+py_vardict_mod='/home/ltfang/programming/NGS/merge.modify_vcfs_for_gatk_vardict_custom_r20140829.py'
+py_scoring='/home/ltfang/apps/Bina_SomaticMerge/score_Somatic.Variants.py'
 
 snpEff_b37='java -jar /home/ltfang/apps/SnpEff_20140522/snpEff.jar GRCh37.75'
 snpSift_dbsnp='java -jar /net/kodiak/volumes/lake/shared/opt/SnpEff_20140522/SnpSift.jar annotate /net/kodiak/volumes/lake/shared/resources/dnaseq/gatk_bundle/2.8/b37/dbsnp_138.b37.vcf'
@@ -83,57 +83,56 @@ gatkmerge='java -jar /net/kodiak/volumes/lake/shared/opt/CancerAnalysisPackage-2
 
 
 
-
 #####     #####     #####     #####     #####     #####     #####     #####
 # Merge the chromosome-by-chromosome vcf's into one vcf for each tool, and modify them as needed.
 
 # 1) MuTect merge script is different from everything else because MuTect output "randomly" orders normal and tumor sample columns, I need to grab the "SM" in a bam file, and then figure out which one is normal and which one is tumor in the mutect vcf file. 
 cd ${mutect_snp_dir}
-if [ -e variants.vcf ]
+if [ -e variants.vcf.gz ]
 then
-	python3 ${py_merge_mutect} -type snp -nbam ${out_dir}/../normal.bam -tbam ${out_dir}/../tumor.bam -infile variants.vcf -outfile ${merged_dir}/mutect.snp.vcf
+	python3 ${py_merge_mutect} -type snp -nbam ${out_dir}/../../normal.bam -tbam ${out_dir}/../../tumor.bam -infile variants.vcf.gz -outfile ${merged_dir}/mutect.snp.vcf
 else
-	python3 ${py_merge_mutect} -type snp -nbam ${out_dir}/../normal.bam -tbam ${out_dir}/../tumor.bam                      -outfile ${merged_dir}/mutect.snp.vcf
+	python3 ${py_merge_mutect} -type snp -nbam ${out_dir}/../../normal.bam -tbam ${out_dir}/../../tumor.bam                         -outfile ${merged_dir}/mutect.snp.vcf
 fi
 
 
 cd ${mutect_indel_dir}
-if [ -e variants.vcf ]
+if [ -e variants.vcf.gz ]
 then
-	python3 ${py_merge_mutect} -type indel -nbam ${out_dir}/../normal.bam -tbam ${out_dir}/../tumor.bam -infile variants.vcf -outfile ${merged_dir}/mutect.indel.vcf
+	python3 ${py_merge_mutect} -type indel -nbam ${out_dir}/../../normal.bam -tbam ${out_dir}/../../tumor.bam -infile variants.vcf.gz -outfile ${merged_dir}/mutect.indel.vcf
 else
-	python3 ${py_merge_mutect} -type indel -nbam ${out_dir}/../normal.bam -tbam ${out_dir}/../tumor.bam                      -outfile ${merged_dir}/mutect.indel.vcf
+	python3 ${py_merge_mutect} -type indel -nbam ${out_dir}/../../normal.bam -tbam ${out_dir}/../../tumor.bam                         -outfile ${merged_dir}/mutect.indel.vcf
 fi
 
 
 # I set up my python program to look for either 1.vcf, 2.vcf, ..., or chr1.vcf, chr2.vcf, if no files are specified in the command.
 # 2) Somatic Sniper:
 cd ${sniper_dir}
-if [ -e variants.vcf ]
+if [ -e variants.vcf.gz ]
 then
-	python3 ${py_merge_vcfs} -method SomaticSniper -infile variants.vcf -outfile ${merged_dir}/somaticsniper.vcf
+	python3 ${py_merge_vcfs} -method SomaticSniper -infile variants.vcf.gz -outfile ${merged_dir}/somaticsniper.vcf
 else
-	python3 ${py_merge_vcfs} -method SomaticSniper                      -outfile ${merged_dir}/somaticsniper.vcf
+	python3 ${py_merge_vcfs} -method SomaticSniper                         -outfile ${merged_dir}/somaticsniper.vcf
 fi
 
 
 # 3) JointSNVMix2:
 cd ${snvmix_dir}
-if [ -e variants.vcf ]
+if [ -e variants.vcf.gz ]
 then
-	python3 ${py_merge_vcfs} -method JointSNVMix2 -infile variants.vcf -outfile ${merged_dir}/jointsnvmix2.vcf
+	python3 ${py_merge_vcfs} -method JointSNVMix2 -infile variants.vcf.gz -outfile ${merged_dir}/jointsnvmix2.vcf
 else
-	python3 ${py_merge_vcfs} -method JointSNVMix2                      -outfile ${merged_dir}/jointsnvmix2.vcf
+	python3 ${py_merge_vcfs} -method JointSNVMix2                         -outfile ${merged_dir}/jointsnvmix2.vcf
 fi
 
 
 # 4) VarScan2:
 # Because VarScan2 has 1.snp.vcf and 1.indel.vcf instead of 1.vcf, I need to specify the file names, in the correct order as desired.
 cd ${varscan_dir}
-if [ -e variants.snp.vcf ]
+if [ -e SNP/variants.snp.vcf.gz ]
 then
-	python3 ${py_merge_vcfs} -method VarScan2 -infile variants.snp.vcf   -outfile ${merged_dir}/varscan2.snp.vcf
-	python3 ${py_merge_vcfs} -method VarScan2 -infile variants.indel.vcf -outfile ${merged_dir}/varscan2.indel.vcf
+	python3 ${py_merge_vcfs} -method VarScan2 -infile SNP/variants.snp.vcf.gz   -outfile ${merged_dir}/varscan2.snp.vcf
+	python3 ${py_merge_vcfs} -method VarScan2 -infile InDel/variants.indel.vcf.gz -outfile ${merged_dir}/varscan2.indel.vcf
 else
 	python3 ${py_merge_vcfs} -method VarScan2 -infile 1.snp.vcf 2.snp.vcf 3.snp.vcf 4.snp.vcf 5.snp.vcf 6.snp.vcf 7.snp.vcf 8.snp.vcf 9.snp.vcf 10.snp.vcf 11.snp.vcf 12.snp.vcf 13.snp.vcf 14.snp.vcf 15.snp.vcf 16.snp.vcf 17.snp.vcf 18.snp.vcf 19.snp.vcf 20.snp.vcf 21.snp.vcf 22.snp.vcf X.snp.vcf Y.snp.vcf MT.snp.vcf -outfile ${merged_dir}/varscan2.snp.vcf
 	python3 ${py_merge_vcfs} -method VarScan2 -infile 1.indel.vcf 2.indel.vcf 3.indel.vcf 4.indel.vcf 5.indel.vcf 6.indel.vcf 7.indel.vcf 8.indel.vcf 9.indel.vcf 10.indel.vcf 11.indel.vcf 12.indel.vcf 13.indel.vcf 14.indel.vcf 15.indel.vcf 16.indel.vcf 17.indel.vcf 18.indel.vcf 19.indel.vcf 20.indel.vcf 21.indel.vcf 22.indel.vcf X.indel.vcf Y.indel.vcf MT.indel.vcf -outfile ${merged_dir}/varscan2.indel.vcf
@@ -143,11 +142,11 @@ fi
 # 5) VarDict:
 # VarDict puts SNP, INDEL, and other stuff in the same file. Here I'm going to separate them out. "snp." and "indel." will be added to the specified file name from the command line.
 cd ${vardict_dir}
-if [ -e variants.vcf ]
+if [ -e variants.vcf.gz ]
 then
-	python3 ${py_merge_vcfs} -method VarDict -infile variants.vcf -filter v3 -outfile ${merged_dir}/vardict.vcf
+	python3 ${py_vardict_mod} -method VarDict -infile variants.vcf.gz -filter v3 -outfile ${merged_dir}/vardict.vcf
 else
-	python3 ${py_merge_vcfs} -method VarDict -infile $(ls *.vcf)  -filter v3 -outfile ${merged_dir}/vardict.vcf
+	python3 ${py_vardict_mod} -method VarDict -infile $(ls *.vcf)     -filter v3 -outfile ${merged_dir}/vardict.vcf
 fi
 
 cd ${merged_dir}
