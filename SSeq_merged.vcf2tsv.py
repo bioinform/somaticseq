@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 # python3 SSeq_merged.vcf2tsv.py -myvcf BINA.snp.vcf -samN snp_positions.normal.noindel.vcf.gz -samT snp_positions.tumor.noindel.5bpflank.vcf.gz -haploN haplo_N/merged.noindel.vcf.gz -haploT haplo_T/merged.noindel.vcf.gz -sniper somaticsniper/variants.vcf -varscan varscan2/variants.snp.vcf -jsm jointsnvmix2/variants.vcf -vardict vardict/variants.snp.vcf.gz -fai human_g1k_v37_decoy.fasta.fai -outfile SSeq2.snp.tsv
+
 # Nothing from MuTect VCF is extracted because nothing from that file is useful here. 
+
 # Input VCF can either be .vcf or .vcf.gz. 
 
 import sys, argparse, math, gzip
@@ -19,7 +21,7 @@ parser.add_argument('-samT',    '--samtools-tumor-vcf-file', type=str, help='Tum
 parser.add_argument('-haploN',  '--haplo-normal-vcf-file', type=str, help='Normal VCF File', required=True, default=None)
 parser.add_argument('-haploT',  '--haplo-tumor-vcf-file', type=str, help='Tumor VCF File', required=True, default=None)
 
-parser.add_argument('-mutect',  '--mutect-vcf', type=str, help='MuTect VCF. Just a place holder for now because none is used.', required=False, default=None)
+parser.add_argument('-mutect',  '--mutect-vcf', type=str, help='MuTect VCF. Just a place holder for now because no information from MuTect\'s VCF is used.', required=False, default=None)
 parser.add_argument('-sniper',  '--somaticsniper-vcf', type=str, help='SomaticSniper VCF', required=False, default=None)
 parser.add_argument('-varscan', '--varscan-vcf', type=str, help='VarScan2 VCF', required=False, default=None)
 parser.add_argument('-jsm',     '--jsm-vcf', type=str, help='JointSNVMix2 VCF', required=False, default=None)
@@ -64,41 +66,16 @@ else:
 
 
 
-# Reading thru the headers of the samtools vcf files
-contig_sequence = []
-
-# If a .dict file is provided, use it to extract contig files:
-if dict_file:
-    with open(dict_file) as dict_file:
-        dict_i = dict_file.readline().rstrip('\n')
-        while dict_i:
-            
-            if dict_i.startswith('@SQ'):
-                contig_match=re.match(r'@SQ\tSN:([^\t]+)\tLN:', dict_i)
-                
-                if contig_match:
-                    contig_i = contig_match.groups()[0]
-                    contig_sequence.append( contig_i )
-            dict_i = dict_file.readline().rstrip('\n')
-
-
-# If a .fai file is provided, use it to extract contig files:
-if fai_file:
-    with open(fai_file) as fai_file:
-        fai_i = fai_file.readline().rstrip('\n')
-        while fai_i:
-            contig_match=re.match(r'([^\t]+)\t', fai_i)
-            
-            if contig_match:
-                contig_i = contig_match.groups()[0]
-                contig_sequence.append( contig_i )    
-            fai_i = fai_file.readline().rstrip('\n')
-
-
 # Convert contig_sequence to chrom_seq dict:
-chrom_seq = {}
-for n,contig_i in enumerate(contig_sequence):
-    chrom_seq[contig_i] = n
+
+if dict_file:
+    chrom_seq = genome.faiordict2contigorder(dict_file, 'dict')
+elif fai_file:
+    chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
+else:
+    raise Exception('I need a fai or dict file, or else I do not know the contig order.')
+
+
 
 
 nan = float('nan')
@@ -170,7 +147,6 @@ def sam_info_PV4(vcf_object):
     
     return pv4
     
-
 
 
 ##### From Haplotype caller vcf:
@@ -533,7 +509,6 @@ open(outfile, 'w') as outhandle:
             print(my_line, file=sys.stderr)
             raise Exception('Coordinate does not match pattern.')
         
-        #print(my_coordinate)
         ###################################################################################
         ############################ See what's in MY VCF line ############################
         my_vcfcall = genome.Vcf_line( my_line )
@@ -600,7 +575,7 @@ open(outfile, 'w') as outhandle:
                     assert my_vcfcall.position == latest_vardict.position
                     
                     # Somatic Score:
-                    if vardict_positive and ('Somatic' in latest_vardict.info):
+                    if vardict_positive or ('Somatic' in latest_vardict.info):
                         score_vardict = latest_vardict.get_info_value('SSF')
                         score_vardict = float(score_vardict)
                         score_vardict = genome.p2phred(score_vardict, max_phred=100)
@@ -818,8 +793,6 @@ open(outfile, 'w') as outhandle:
                 score_varscan2 = nan
             
             
-            
-            
             ############################################################################################
             ########################## Find the same coordinate in JSM's VCF# ##########################
             if args.jsm_vcf:
@@ -849,9 +822,6 @@ open(outfile, 'w') as outhandle:
                 
                 score_jointsnvmix2 = nan
             
-            
-            
-                        
             
             
             ############################################################################################

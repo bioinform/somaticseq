@@ -1,4 +1,4 @@
-### To start, set the input filenames in "Main (entry point)" section.
+#!/usr/bin/env R
 
 require("ada")
 

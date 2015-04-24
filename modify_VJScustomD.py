@@ -372,7 +372,7 @@ for chr_i_vcf in right_files:
                     elif args.filter_version == 'v2':
                         second_vardict_filter = vcfcall.filters == 'P0.05' and float(vcfcall.get_info_value('SSF') ) < 0.1 
                         
-                    elif args.filter_version == 'v3':
+                    elif args.filter_version == 'somatic':
                         
                         vardict_filters = vcfcall.filters.split(';')
                         
