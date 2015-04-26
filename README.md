@@ -8,7 +8,7 @@ Dependencies:
 * R: and ada package
 
 
-To use a trained model to predict an existing data set, after running the 5 somatic callers. The shell command:
+To use a trained model to predict an existing data set, after running the 5 somatic callers. This whole thing takes about ~ 3 hours. The shell command:
 * SomaticSeq.sh -M $PATH/TO/MuTect/variants.vcf -V $PATH/TO/Varscan/variants.snp.vcf -J $PATH/TO/JointSNVMix/variants.vcf -S $PATH/TO/SomaticSniper/variants.vcf -D $PATH/TO/Vardict/variants.vcf -N $PATH/TO/normal.bam -T $PATH/TO/tumor.bam -R $PATH/TO/ada_model_predictor.R -C $PATH/TO/trained.classifier.RData -o $OUTPUT_DIR
 
 The flags are:
