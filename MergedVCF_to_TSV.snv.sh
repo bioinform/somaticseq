@@ -6,7 +6,7 @@
 hgref='/home/ltfang/references/human_g1k_v37_decoy.fasta'
 fai='/home/ltfang/references/human_g1k_v37_decoy.fasta.fai'
 hc='/home/ltfang/apps/GenomeAnalysisTK-2014.4-2-g9ad6aa8/GenomeAnalysisTK.jar'
-makeTSV='/home/ltfang/programming/NGS/SSeq_merged.vcf2tsv_r20150406.py'
+makeTSV='/home/ltfang/shared_delta/data/published/SomaticSeq/somaticseq/SSeq_merged.vcf2tsv.py'
 
 while getopts "v:V:J:S:D:M:m:g:t:n:o:" opt
 do
