@@ -4,13 +4,13 @@ set -e
 
 export PATH=/home/ltfang/shared_delta/data/published/SomaticSeq/somaticseq:/net/kodiak/volumes/lake/shared/opt/python3/bin:$PATH
 
-hg_ref='/net/kodiak/volumes/lake/shared/references/human/human_g1k_v37_decoy/human_g1k_v37_decoy.fasta'
+hg_ref='/home/ltfang/references/human_g1k_v37_decoy.fasta'
 cosmic='/home/ltfang/references/cosmic.b37.vcf'
 dbsnp='/home/ltfang/references/dbsnp_138.b37.vcf'
-gatk='/net/kodiak/volumes/lake/shared/opt/CancerAnalysisPackage-2014.1-13-g6b71cb4/GenomeAnalysisTK.jar'
+gatk='/home/ltfang/apps/GenomeAnalysisTK-2014.4-2-g9ad6aa8/GenomeAnalysisTK.jar'
 snpeff_dir='/home/ltfang/apps/SnpEff_20140522'
 
-while getopts "o:M:V:J:S:D:g:c:d:s:G:T:N:" opt
+while getopts "o:M:V:J:S:D:g:c:d:s:G:T:N:C:R:" opt
 do
     case $opt in
         o)
@@ -39,8 +39,10 @@ do
 	    tbam=$OPTARG;;
 	N)
 	    nbam=$OPTARG;;
-	R)
+	C)
 	    classifier=$OPTARG;;
+	R)
+	    predictor=$OPTARG;;
     esac
 done
 
@@ -68,12 +70,10 @@ then
 fi
 
 
-
 #--- LOCATION OF PROGRAMS ------
 snpEff_b37="    java -jar ${snpeff_dir}/snpEff.jar  GRCh37.75"
 snpSift_dbsnp=" java -jar ${snpeff_dir}/SnpSift.jar annotate ${dbsnp}"
 snpSift_cosmic="java -jar ${snpeff_dir}/SnpSift.jar annotate ${cosmic}"
-gatkmerge="     java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 12 --setKey null"
 
 #####     #####     #####     #####     #####     #####     #####     #####
 # Merge the chromosome-by-chromosome vcf's into one vcf for each tool, and modify them as needed.
@@ -95,14 +95,18 @@ modify_VJSD.py -method VarScan2      -infile ${varscan_vcf} -outfile ${merged_di
 modify_VJScustomD.py -method VarDict -infile ${vardict_vcf} -outfile ${merged_dir}/vardict.vcf -filter somatic
 
 
+echo "java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 12 --setKey null --variant ${merged_dir}/snp.vardict.vcf --variant ${merged_dir}/varscan2.snp.vcf --variant ${merged_dir}/somaticsniper.vcf --variant ${merged_dir}/mutect.snp.vcf --variant ${merged_dir}/jsm.vcf --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf" > cmds
+
 #####     #####     #####     #####     #####     #####     #####     #####
 # Merge with GATK CombineVariants, and then annotate with dbsnp, cosmic, and functional
-${gatkmerge} --variant ${merged_dir}/snp.vardict.vcf \
+java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 12 --setKey null --genotypemergeoption UNSORTED \
+--variant ${merged_dir}/snp.vardict.vcf \
 --variant ${merged_dir}/varscan2.snp.vcf \
 --variant ${merged_dir}/somaticsniper.vcf \
 --variant ${merged_dir}/mutect.snp.vcf \
 --variant ${merged_dir}/jsm.vcf \
 --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
+
 
 ${snpSift_dbsnp} ${merged_dir}/CombineVariants_MVJSD.snp.vcf > ${merged_dir}/dbsnp.CombineVariants_MVJSD.snp.vcf
 ${snpSift_cosmic} ${merged_dir}/dbsnp.CombineVariants_MVJSD.snp.vcf > ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf
@@ -123,8 +127,11 @@ samtools mpileup -B -uf ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.snp.vcf 
 samtools mpileup -B -uf ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.snp.vcf | bcftools view -cg - | egrep -wv 'INDEL' > ${merged_dir}/samT.vcf.fifo &
 
 # SNV Only
-java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --dbsnp ${dbsnp} --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.snp.vcf --emitRefConfidence BP_RESOLUTION -I ${nbam} --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || ( $4 ~ /^[GCTA]$/ && $5 !~ /[GCTA][GCTA]/ )' > ${merged_dir}/haploN.vcf.fifo &
-java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --dbsnp ${dbsnp} --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.snp.vcf --emitRefConfidence BP_RESOLUTION -I ${tbam} --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || ( $4 ~ /^[GCTA]$/ && $5 !~ /[GCTA][GCTA]/ )' > ${merged_dir}/haploT.vcf.fifo &
+java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.snp.vcf --emitRefConfidence BP_RESOLUTION -I ${nbam} --out /dev/stdout \
+| awk -F "\t" '$0 ~ /^#/ || ( $4 ~ /^[GCTA]$/ && $5 !~ /[GCTA][GCTA]/ )' > ${merged_dir}/haploN.vcf.fifo &
+
+java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.snp.vcf --emitRefConfidence BP_RESOLUTION -I ${tbam} --out /dev/stdout \
+| awk -F "\t" '$0 ~ /^#/ || ( $4 ~ /^[GCTA]$/ && $5 !~ /[GCTA][GCTA]/ )' > ${merged_dir}/haploT.vcf.fifo &
 
 
 SSeq_merged.vcf2tsv.py \
@@ -141,3 +148,13 @@ SSeq_merged.vcf2tsv.py \
 -outfile ${merged_dir}/Ensemble.sSNV.tsv
 
 rm ${merged_dir}/samN.vcf.fifo ${merged_dir}/samT.vcf.fifo ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
+
+
+
+# If a classifier is used, use it:
+if [[ -e ${classifier} ]]
+then
+    echo "Use $classifier to classify ${merged_dir}/Ensemble.sSNV.tsv into ${merged_dir}/Trained.sSNV.tsv" >> cmds
+    R --no-save "--args $classifier ${merged_dir}/Ensemble.sSNV.tsv ${merged_dir}/Trained.sSNV.tsv" < $predictor
+    SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred
+fi
