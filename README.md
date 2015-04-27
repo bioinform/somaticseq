@@ -4,7 +4,6 @@ See http://bioinform.github.io/somaticseq/ for help and downloads.
 
 Dependencies:
 * Python3: and regex package
-
 * R: and ada package
 
 
