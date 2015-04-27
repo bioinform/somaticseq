@@ -13,7 +13,6 @@ do
             out_dir=$OPTARG
             normal_stuff=${out_dir}/normal_stuff
             tumor_stuff=${out_dir}/tumor_stuff;;
-
         q)
             whattodo=qsub;;
         N)
