@@ -137,8 +137,9 @@ rm ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_
 # If a classifier is used, use it:
 if [[ -e ${classifier} ]]
 then
-    R --no-save "--args $classifier ${merged_dir}/Ensemble.sSNV.tsv ${merged_dir}/Trained.sSNV.tsv" < $predictor
+    R --no-save "--args $classifier ${merged_dir}/Ensemble.sINDEL.tsv ${merged_dir}/Trained.sINDEL.tsv" < $predictor
     SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred
 fi
 
-rm ${merged_dir}/CombineVariants_MVJSD.indel.vcf ${merged_dir}/dbsnp.CombineVariants_MVJSD.indel.vcf ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf
+rm ${merged_dir}/CombineVariants_MVJSD.indel.vcf* ${merged_dir}/dbsnp.CombineVariants_MVJSD.indel.vcf ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf
+rm ${merged_dir}/indelocator.vcf* ${merged_dir}/varscan2.indel.vcf* ${merged_dir}/indel.vardict.vcf* ${merged_dir}/snp.vardict.vcf*

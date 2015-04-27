@@ -153,5 +153,6 @@ then
     SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred
 fi
 
-#
-rm ${merged_dir}/CombineVariants_MVJSD.snp.vcf ${merged_dir}/dbsnp.CombineVariants_MVJSD.snp.vcf ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf
+# Clean up intermediate files
+rm ${merged_dir}/CombineVariants_MVJSD.snp.vcf* ${merged_dir}/dbsnp.CombineVariants_MVJSD.snp.vcf* ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf*
+rm ${merged_dir}/mutect.snp.vcf* ${merged_dir}/somaticsniper.vcf* ${merged_dir}/jsm.vcf* ${merged_dir}/varscan2.snp.vcf* ${merged_dir}/snp.vardict.vcf* ${merged_dir}/indel.vardict.vcf*
