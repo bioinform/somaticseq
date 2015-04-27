@@ -140,3 +140,5 @@ then
     R --no-save "--args $classifier ${merged_dir}/Ensemble.sSNV.tsv ${merged_dir}/Trained.sSNV.tsv" < $predictor
     SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred
 fi
+
+rm ${merged_dir}/CombineVariants_MVJSD.indel.vcf ${merged_dir}/dbsnp.CombineVariants_MVJSD.indel.vcf ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf

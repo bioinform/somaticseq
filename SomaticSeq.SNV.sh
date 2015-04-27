@@ -94,9 +94,6 @@ modify_VJSD.py -method VarScan2      -infile ${varscan_vcf} -outfile ${merged_di
 # VarDict puts SNP, INDEL, and other stuff in the same file. Here I'm going to separate them out. "snp." and "indel." will be added to the specified file name from the command line
 modify_VJScustomD.py -method VarDict -infile ${vardict_vcf} -outfile ${merged_dir}/vardict.vcf -filter somatic
 
-
-echo "java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 12 --setKey null --variant ${merged_dir}/snp.vardict.vcf --variant ${merged_dir}/varscan2.snp.vcf --variant ${merged_dir}/somaticsniper.vcf --variant ${merged_dir}/mutect.snp.vcf --variant ${merged_dir}/jsm.vcf --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf" > cmds
-
 #####     #####     #####     #####     #####     #####     #####     #####
 # Merge with GATK CombineVariants, and then annotate with dbsnp, cosmic, and functional
 java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 12 --setKey null --genotypemergeoption UNSORTED \
@@ -118,7 +115,6 @@ ${snpEff_b37} ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf > ${merge
 score_Somatic.Variants.py -tools CGA VarScan2 JointSNVMix2 SomaticSniper VarDict -infile ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf -mincaller 1 -outfile ${merged_dir}/BINA_somatic.snp.vcf
 
 
-##
 ## Convert the sSNV file into TSV file, for machine learning data:
 mkfifo ${merged_dir}/samN.vcf.fifo ${merged_dir}/samT.vcf.fifo ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
 
@@ -150,11 +146,12 @@ SSeq_merged.vcf2tsv.py \
 rm ${merged_dir}/samN.vcf.fifo ${merged_dir}/samT.vcf.fifo ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
 
 
-
 # If a classifier is used, use it:
 if [[ -e ${classifier} ]]
 then
-    echo "Use $classifier to classify ${merged_dir}/Ensemble.sSNV.tsv into ${merged_dir}/Trained.sSNV.tsv" >> cmds
     R --no-save "--args $classifier ${merged_dir}/Ensemble.sSNV.tsv ${merged_dir}/Trained.sSNV.tsv" < $predictor
     SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred
 fi
+
+#
+rm ${merged_dir}/CombineVariants_MVJSD.snp.vcf ${merged_dir}/dbsnp.CombineVariants_MVJSD.snp.vcf ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf

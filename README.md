@@ -5,10 +5,17 @@ See http://bioinform.github.io/somaticseq/ for help and downloads.
 Dependencies:
 * Python3: and regex package
 * R: and ada package
+* GATK
+* snpEFF and snpSift
+* dbSNP and COSMIC file
 
 
-To use a trained model to predict an existing data set, after running the 5 somatic callers. This whole thing takes about ~ 3 hours. The shell command:
-* SomaticSeq.sh -M $PATH/TO/MuTect/variants.vcf -V $PATH/TO/Varscan/variants.snp.vcf -J $PATH/TO/JointSNVMix/variants.vcf -S $PATH/TO/SomaticSniper/variants.vcf -D $PATH/TO/Vardict/variants.vcf -N $PATH/TO/normal.bam -T $PATH/TO/tumor.bam -R $PATH/TO/ada_model_predictor.R -C $PATH/TO/trained.classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
+To use a trained model to predict an existing data set, after running the 5 somatic callers. 
+This SomaticSeq workflow takes about 3 hours for an ensmeble call set of 50K calls, and about 6 hours for a call set of half million calls. 
+
+The shell command:
+* SomaticSeq.SNV.sh -M $PATH/TO/MuTect/variants.vcf -V $PATH/TO/Varscan/variants.snp.vcf -J $PATH/TO/JointSNVMix/variants.vcf -S $PATH/TO/SomaticSniper/variants.vcf -D $PATH/TO/Vardict/variants.vcf -N $PATH/TO/normal.bam -T $PATH/TO/tumor.bam -R $PATH/TO/ada_model_predictor.R -C $PATH/TO/trained.classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
+* SomaticSeq.INDEL.sh -M $PATH/TO/SomaticIndelDetector/variants.vcf -V $PATH/TO/Varscan/variants.indel.vcf -D $PATH/TO/Vardict/variants.vcf -N $PATH/TO/normal.bam -T $PATH/TO/tumor.bam -R $PATH/TO/ada_model_predictor.R -C $PATH/TO/trained.classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
 
 The flags are:
 * -M: VCF file by MuTect
