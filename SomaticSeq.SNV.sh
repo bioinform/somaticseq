@@ -57,11 +57,9 @@ fi
 
 
 # Make sure those directories are there.
-if ! [[ -e ${mutect_vcf} || -e ${varscan_vcf} || -e ${jsm_vcf} || -e ${sniper_vcf} || -e ${vardict_vcf} ]]
-then
-    echo "Missing some VCFs."
-    exit 2
-fi
+for vcf in ${mutect_vcf} ${varscan_vcf} ${jsm_vcf} ${sniper_vcf} ${vardict_vcf}; do
+    [ ! -e $vcf ] && echo "Missing $vcf" >&2 && exit 2
+done
 
 
 #--- LOCATION OF PROGRAMS ------
