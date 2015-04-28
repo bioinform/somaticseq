@@ -23,6 +23,7 @@ SomaticSeq.INDEL.sh -M $PATH/TO/SomaticIndelDetector/variants.vcf -V $PATH/TO/Va
 ```
 
 ###The flags are:
+
 - `-M variants.vcf`
    VCF file by MuTect. Can also be .vcf.gz.
 - `-V variants.vcf`
