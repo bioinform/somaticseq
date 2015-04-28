@@ -14,22 +14,39 @@ To use a trained model to predict an existing data set, after running the 5 soma
 This SomaticSeq workflow takes about 3 hours for an ensmeble call set of 50K calls, and about 6 hours for a call set of half million calls. 
 
 The shell command (VCF file can also be bgzipped, but make sure it has the right .gz extention):
+```
 * SomaticSeq.SNV.sh -M $PATH/TO/MuTect/variants.vcf -V $PATH/TO/Varscan/variants.snp.vcf -J $PATH/TO/JointSNVMix/variants.vcf -S $PATH/TO/SomaticSniper/variants.vcf -D $PATH/TO/Vardict/variants.vcf -N $PATH/TO/normal.bam -T $PATH/TO/tumor.bam -R $PATH/TO/ada_model_predictor.R -C $PATH/TO/trained.classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
 * SomaticSeq.INDEL.sh -M $PATH/TO/SomaticIndelDetector/variants.vcf -V $PATH/TO/Varscan/variants.indel.vcf -D $PATH/TO/Vardict/variants.vcf -N $PATH/TO/normal.bam -T $PATH/TO/tumor.bam -R $PATH/TO/ada_model_predictor.R -C $PATH/TO/trained.classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
+```
 
-The flags are:
-* -M: VCF file by MuTect
-* -V: SNV VCF file by VarScan2
-* -J: VCF file by JointSNVMix2
-* -S: VCF file by SomaticSniper
-* -D: VCF file by VarDict
-* -N: Normal BAM file
-* -T: Tumor BAM file
-* -R: Predictor script in R (ada_model_predictor.R)
-* -C: Trained model/classifer (e.g., from DREAM Challenge)
-* -g: genome reference fasta file
-* -c: COSMIC VCF file
-* -d: dbSNP VCF file
-* -s: snpEFF/snpSift's directory containing the executable .jar files
-* -G: GATK's .jar file
-* -o: Output directory (make sure it exists)
+###The flags are:
+* `-M variants.vcf`
+   VCF file by MuTect. Can also be .vcf.gz.
+* `-V variants.vcf`
+   SNV VCF file by VarScan2. Can also be .vcf.gz.
+* `-J variants.vcf`
+   JointSNVMix's variant output converted to VCF. Can also be .vcf.gz.
+* `-S varaints.vcf` 
+   VCF file by SomaticSniper
+* `-D [snp|indel].variants.vcf` 
+   VarDict's VCF file with only SNV or INDEL extracted.
+* `-N normal.bam` 
+   Normal BAM file
+* `-T tumor.bam` 
+   Tumor BAM file
+* `-R ada_model_predictor.R` 
+   Predictor script in R
+* `-C Trained_Classifier.RData` 
+   Trained model/classifer (e.g., from DREAM Challenge)
+* `-g human_b37_decoy.fasta` 
+   genome reference fasta file
+* `-c COSMIC.b37.vcf`
+   COSMIC VCF file
+* `-d dbSNP.v141.b37.vcf`
+   dbSNP VCF file
+* `-s $PATH/TO/SnpEff`
+   snpEFF/snpSift's installation directory containing the executable .jar files
+* `-G $PATH/TO/GenomeAnalysisTK.jar`
+   GATK's java executable file
+* `-o $PATH/TO/OUTPUT` 
+   Output directory (make sure it exists)
