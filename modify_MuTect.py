@@ -10,7 +10,6 @@ import argparse
 import gzip
 import regex as re
 
-sys.path.append('/home/ltfang/apps/Bina_SomaticMerge')
 import genomic_file_handlers as genome
 
 # argparse Stuff
