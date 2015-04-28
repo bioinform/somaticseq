@@ -9,8 +9,6 @@ import argparse
 import gzip
 import regex as re
 
-sys.path.append('/home/ltfang/programming/NGS')
-sys.path.append('/home/lethalfang/programming/NGS')
 import genomic_file_handlers as genome
 
 
