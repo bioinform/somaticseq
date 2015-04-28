@@ -25,32 +25,32 @@ SomaticSeq.INDEL.sh -M $PATH/TO/SomaticIndelDetector/variants.vcf -V $PATH/TO/Va
 ###The flags are:
 
 - `-M variants.vcf`
-   VCF file by MuTect. Can also be .vcf.gz.
+    VCF file by MuTect. Can also be .vcf.gz.
 - `-V variants.vcf`
-   SNV VCF file by VarScan2. Can also be .vcf.gz.
+    SNV VCF file by VarScan2. Can also be .vcf.gz.
 - `-J variants.vcf`
-   JointSNVMix's variant output converted to VCF. Can also be .vcf.gz.
+    JointSNVMix's variant output converted to VCF. Can also be .vcf.gz.
 - `-S varaints.vcf` 
-   VCF file by SomaticSniper
+    VCF file by SomaticSniper
 - `-D [snp|indel].variants.vcf` 
-   VarDict's VCF file with only SNV or INDEL extracted.
+    VarDict's VCF file with only SNV or INDEL extracted.
 - `-N normal.bam` 
-   Normal BAM file
+    Normal BAM file
 - `-T tumor.bam` 
-   Tumor BAM file
+    Tumor BAM file
 - `-R ada_model_predictor.R` 
-   Predictor script in R
+    Predictor script in R
 - `-C Trained_Classifier.RData` 
-   Trained model/classifer (e.g., from DREAM Challenge)
+    Trained model/classifer (e.g., from DREAM Challenge)
 - `-g human_b37_decoy.fasta` 
-   genome reference fasta file
+    genome reference fasta file
 - `-c COSMIC.b37.vcf`
-   COSMIC VCF file
+    COSMIC VCF file
 - `-d dbSNP.v141.b37.vcf`
-   dbSNP VCF file
+    dbSNP VCF file
 - `-s $PATH/TO/SnpEff`
-   snpEFF/snpSift's installation directory containing the executable .jar files
+    snpEFF/snpSift's installation directory containing the executable .jar files
 - `-G $PATH/TO/GenomeAnalysisTK.jar`
-   GATK's java executable file
+    GATK's java executable file
 - `-o $PATH/TO/OUTPUT` 
-   Output directory (make sure it exists)
+    Output directory (make sure it exists)
