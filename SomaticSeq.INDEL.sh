@@ -109,15 +109,15 @@ score_Somatic.Variants.py -tools CGA VarScan2 VarDict -infile ${merged_dir}/EFF.
 mkfifo ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo
 
 # Filter out INDEL
-samtools mpileup -B -uf ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.snp.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samN.indel.vcf.fifo &
-samtools mpileup -B -uf ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.snp.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samT.indel.vcf.fifo &
+samtools mpileup -B -uf ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.indel.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samN.indel.vcf.fifo &
+samtools mpileup -B -uf ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.indel.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samT.indel.vcf.fifo &
 
 # SNV Only
-java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.snp.vcf --emitRefConfidence BP_RESOLUTION -I ${nbam} --out /dev/stdout \
-| awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > ${merged_dir}/haploN.indel.vcf.fifo &
+java -Xms4g -Xmx4g -jar ${gatk} -T HaplotypeCaller --dbsnp $dbsnp --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.indel.vcf --emitRefConfidence BP_RESOLUTION -I ${nbam} --out /dev/stdout \
+| awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/ '  > ${merged_dir}/haploN.indel.vcf.fifo &
 
-java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.snp.vcf --emitRefConfidence BP_RESOLUTION -I ${tbam} --out /dev/stdout \
-| awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > ${merged_dir}/haploT.indel.vcf.fifo &
+java -Xms4g -Xmx4g -jar ${gatk} -T HaplotypeCaller --dbsnp $dbsnp --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.indel.vcf --emitRefConfidence BP_RESOLUTION -I ${tbam} --out /dev/stdout \
+| awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/ '  > ${merged_dir}/haploT.indel.vcf.fifo &
 
 
 SSeq_merged.vcf2tsv.py \
@@ -125,10 +125,10 @@ SSeq_merged.vcf2tsv.py \
 -myvcf ${merged_dir}/BINA_somatic.indel.vcf \
 -varscan ${varscan_vcf} \
 -vardict ${merged_dir}/indel.vardict.vcf \
--samT ${merged_dir}/samT.indel.vcf.fifo \
 -samN ${merged_dir}/samN.indel.vcf.fifo \
--haploT ${merged_dir}/haploT.indel.vcf.fifo \
+-samT ${merged_dir}/samT.indel.vcf.fifo \
 -haploN ${merged_dir}/haploN.indel.vcf.fifo \
+-haploT ${merged_dir}/haploT.indel.vcf.fifo \
 -outfile ${merged_dir}/Ensemble.sINDEL.tsv
 
 rm ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo
