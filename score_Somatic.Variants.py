@@ -10,7 +10,6 @@
 import sys, os, argparse, gzip, math, itertools
 import regex as re
 
-sys.path.append('/net/kodiak/volumes/lake/shared/opt/Bina_SomaticMerge')
 import genomic_file_handlers as genome
 
 # argparse Stuff
