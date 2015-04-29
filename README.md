@@ -16,10 +16,38 @@ This SomaticSeq workflow takes about 3 hours for an ensmeble call set of 50K cal
 The shell command (VCF file can also be bgzipped, but make sure it has the right .gz extention):
 ```
 # Somatic SNV
-SomaticSeq.SNV.sh -M $PATH/TO/MuTect/variants.vcf -V $PATH/TO/Varscan/variants.snp.vcf -J $PATH/TO/JointSNVMix/variants.vcf -S $PATH/TO/SomaticSniper/variants.vcf -D $PATH/TO/Vardict/variants.vcf -N $PATH/TO/normal.bam -T $PATH/TO/tumor.bam -R $PATH/TO/ada_model_predictor.R -C $PATH/TO/trained.classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
+SomaticSeq.SNV.sh \
+-M $PATH/TO/MuTect/variants.vcf \
+-V $PATH/TO/Varscan/variants.snp.vcf \
+-J $PATH/TO/JointSNVMix/variants.vcf \
+-S $PATH/TO/SomaticSniper/variants.vcf \
+-D $PATH/TO/Vardict/variants.vcf \
+-N $PATH/TO/normal.bam \
+-T $PATH/TO/tumor.bam \
+-R $PATH/TO/ada_model_predictor.R \
+-C $PATH/TO/trained.classifier.RData \
+-g human_b37.fasta \
+-c cosmic.b37.v71.vcf \
+-d dbSNP.b37.v141.vcf \
+-s $PATH/TO/snpSift \
+-G $PATH/TO/GenomeAnalysisTK.jar \
+-o $OUTPUT_DIR
 
 # Somatic INDEL
-SomaticSeq.INDEL.sh -M $PATH/TO/SomaticIndelDetector/variants.vcf -V $PATH/TO/Varscan/variants.indel.vcf -D $PATH/TO/Vardict/variants.vcf -N $PATH/TO/normal.bam -T $PATH/TO/tumor.bam -R $PATH/TO/ada_model_predictor.R -C $PATH/TO/trained.classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
+SomaticSeq.INDEL.sh \
+-M $PATH/TO/SomaticIndelDetector/variants.vcf \
+-V $PATH/TO/Varscan/variants.indel.vcf \
+-D $PATH/TO/Vardict/variants.vcf \
+-N $PATH/TO/normal.bam \
+-T $PATH/TO/tumor.bam \
+-R $PATH/TO/ada_model_predictor.R \
+-C $PATH/TO/trained.classifier.RData \
+-g human_b37.fasta \
+-c cosmic.b37.v71.vcf \
+-d dbSNP.b37.v141.vcf \
+-s $PATH/TO/snpSift \
+-G $PATH/TO/GenomeAnalysisTK.jar \
+-o $OUTPUT_DIR
 ```
 
 ###The flags are:
