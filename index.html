@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="VarSim">
-    <meta name="author" content="Marghoob Mohiyuddin">
+    <meta name="author" content="Marghoob Mohiyuddin" >
 
     <title>SomaticSeq</title>
 
@@ -115,6 +115,24 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
 
 
     <h2>Running SomaticSeq</h2>
+    The command-line options for the SomaticSeq scripts are:
+    <ul>
+    <li><code>-M variants.vcf</code>: VCF file from MuTect</li>
+    <li><code>-V variants.vcf</code>: VCF file from VarScan2</li>
+    <li><code>-J variants.vcf</code>: JointSNVMix's variant output converted to VCF</li>
+    <li><code>-S variants.vcf</code>: VCF file from SomaticSniper</li>
+    <li><code>-D [snp|indel].variants.vcf</code>: VarDict's VCF file with only SNVs or INDELs extracted</li>
+    <li><code>-N normal.bam</code>: Normal BAM files</li>
+    <li><code>-T tumor.bam</code>: Tumor BAM files</li>
+    <li><code>-R ada_model_predictor.R</code>: Predictor script in R</li>
+    <li><code>-C Trained_Classifier.RData</code>: Trained model/classifier, e.g., from DRAM Challenge</li>
+    <li><code>-g human_b37_decoy.fasta</code>: Genome reference FASTA file</li>
+    <li><code>-c COSMIC.b37.vcf</code>: COSMIC VCF file</li>
+    <li><code>-d dbSNP.v141.b37.vcf</code>: dbSNP VCF file</li>
+    <li><code>-s path/to/SnpEFF</code>: snpEFF/snpSift's installation directory containing the executable .jar files</li>
+    <li><code>-G path/to/GATK.jar</code>: GATK's java executable file</li>
+    <li><code>-o output</code>: Output directory (make sure it exists)</li>
+    </ul>
 
     <h2>References/Tools</h2>
 
