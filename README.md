@@ -69,7 +69,7 @@ SomaticSeq.INDEL.sh \
 - `-R ada_model_predictor.R` 
     Predictor script in R
 - `-C Trained_Classifier.RData` 
-    Trained model/classifer (e.g., from DREAM Challenge)
+    Trained model/classifer (e.g., the classifier for [sSNV](https://drive.google.com/open?id=0B9pfRlnkG-Z7QWdPVzZOWm5zbUU) and [sINDEL](https://drive.google.com/open?id=0B9pfRlnkG-Z7THRzcFZoaDBpdUE) trained from DREAM Challenge Stage 3)
 - `-g human_b37_decoy.fasta` 
     genome reference fasta file
 - `-c COSMIC.b37.vcf`
