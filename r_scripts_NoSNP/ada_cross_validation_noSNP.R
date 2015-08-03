@@ -67,11 +67,30 @@ train_data <- update_features(train_data, 0.3)
 test_data <- update_features(test_data, 0.3)
 }
 
+
+
 train_data[,'REF'] <- NULL
 train_data[,'ALT'] <- NULL
 
 test_data[,'REF'] <- NULL
 test_data[,'ALT'] <- NULL
+
+# Do not use dbsnp information
+train_data[,'if_dbsnp'] <- NULL
+train_data[,'BAF'] <- NULL
+train_data[,'COMMON'] <- NULL
+train_data[,'G5'] <- NULL
+train_data[,'G5A'] <- NULL
+
+test_data[,'if_dbsnp'] <- NULL
+test_data[,'BAF'] <- NULL
+test_data[,'COMMON'] <- NULL
+test_data[,'G5'] <- NULL
+test_data[,'G5A'] <- NULL
+
+
+
+
 
 
 if (FALSE) {
@@ -149,7 +168,7 @@ for (threshold in seq(0,1, .01)) {
 
 
 # Write predicted values to output file
-if(TRUE){
+if(FALSE){
     test_data_output <- cbind(test_data_, SCORE = ada.pred$prob[,2])
     write.table(test_data_output, row.names = FALSE, sep="\t", na = "nan", file = paste( "ADA", filename, sep = "."), quote=FALSE)
 }

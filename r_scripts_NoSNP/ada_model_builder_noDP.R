@@ -35,9 +35,13 @@ train_data <- train_data[,-c(1, 2, 3, 4, 5)]
 
 train_data[,'REF'] <- NULL
 train_data[,'ALT'] <- NULL
-train_data[,'T_DP'] <- NULL
-train_data[,'N_DP'] <- NULL
 
+# Do not use dbsnp information
+train_data[,'if_dbsnp'] <- NULL
+train_data[,'BAF'] <- NULL
+train_data[,'COMMON'] <- NULL
+train_data[,'G5'] <- NULL
+train_data[,'G5A'] <- NULL
 
 
 if (FALSE) {
@@ -65,7 +69,7 @@ model_formula <- as.formula(TrueVariant_or_False ~ .)
 print("Fitting model...")
 ada.model <- ada(model_formula, data = train_data, iter = 1000)
 
-save(ada.model, file = paste(training_data_filename, ".NoDP-model.RData", sep="") )
+save(ada.model, file = paste(training_data_filename, ".model.RData", sep="") )
 
 
 print(ada.model)

@@ -34,13 +34,13 @@ parser.add_argument('-ALF',           '--alternative-allele-freq',           typ
 parser.add_argument('-NAF',           '--normal-alternative-freq',           type=float, help='Normal Alternative Frequency (Upper Bound)', default=0.05)
 
 
-parser.add_argument('-normal',        '--normal-sample-name',                type=str,   help='Normal Sample Name', required=False, default='NORMAL')
-parser.add_argument('-tumor',         '--tumor-sample-name',                 type=str,   help='Tumor Sample Name', required=False, default='TUMOR')
+parser.add_argument('-N',             '--normal-sample-name',                type=str,   help='Normal Sample Name', required=False, default='NORMAL')
+parser.add_argument('-T',             '--tumor-sample-name',                 type=str,   help='Tumor Sample Name', required=False, default='TUMOR')
 
 parser.add_argument('-pass_score',    '--oncoscore-threshold-pass',          type=int,   help='Minimum OncoScore that generates a PASS filter', default=5)
 parser.add_argument('-lowconf_score', '--oncoscore-threshold-lowconfidence', type=int,   help='Minimum OncoScore that generates a PASS filter', default=3)
 
-parser.add_argument('-tools',         '--individual-mutation-tools',         type=str,   help='A list of all tools: have to match the annotated tool name in the input vcf files', nargs='*', required=False, default=('CGA', 'VarScan2', 'JointSNVMix2', 'SomaticSniper', 'VarDict'))
+parser.add_argument('-tools',         '--individual-mutation-tools',         type=str,   help='A list of all tools: have to match the annotated tool name in the input vcf files', nargs='*', required=False, default=('CGA', 'VarScan2', 'JointSNVMix2', 'SomaticSniper', 'VarDict', 'MuSE'))
 
 args = parser.parse_args()
 
@@ -487,7 +487,7 @@ with genome.open_textfile(args.input_vcf) as vcf, open(args.output_vcf, 'w') as 
                         caf_match = re.sub(r'\.([^0-9])', r'0\g<1>', caf )
                         
                         try:
-                            caf = eval(caf_match)
+                            caf = list( eval(caf_match) )
                             caf.sort()
                             maf = sum(caf[0:-1])  # Minor Allele Frequency
                             
