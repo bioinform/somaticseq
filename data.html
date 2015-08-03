@@ -93,84 +93,9 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <div class="page-header">
         <h1>SomaticSeq</h1>
 
-        <h2>An ensemble approach to accurately detect somatic mutations</h2>
+        <h2>Data used in the manuscript</h2>
     </div>
 
-    <h2>Publication [Open access]</h2>
-
-    <div class="panel panel-default" style="font-family:monospace;">
-        <div class="panel-body">
-            <p>Manuscript in preparation.</p>
-            <p>Data used in the manuscript are described <a href="data.html">here</a></p>
-        </div>
-    </div>
-
-    <h2>Download SomaticSeq</h2>
-
-    <p>The source code is hosted at <a href="https://github.com/bioinform/somaticseq/" onclick="trackOutboundLink('https://github.com/bioinform/somaticseq'); return false'">https://github.com/bioinform/somaticseq</a>
-
-    <p>The packaged releases can be found at <a href="https://github.com/bioinform/somaticseq/releases"
-                                           onclick="trackOutboundLink('https://github.com/bioinform/somaticseq/releases'); return false;">https://github.com/bioinform/somaticseq/releases</a>
-    </p>
-
-    <h2>Software Dependencies</h2>
-    <ul>
-    <li>Python3 and regex package</li>
-    <li>R and ada package</li>
-    <li>GATK</li>
-    <li>snpEFF and snpSIFT</li>
-    <li>dbSNP and COSMIC file</li>
-    </ul>
-
-    <h2>Running SomaticSeq</h2>
-    To use a trained model to predict an existing data set, after running the 5 somatic callers.
-    This SomaticSeq workflow takes about 3 hours for an ensmeble call set of 50K calls, and about 6 hours for a call set of half million calls.
-
-    The shell command (VCF file can also be bgzipped, but make sure it has the right .gz extention):
-    
-    <ul> 
-    <li>Somatic SNVs:
-    <code>SomaticSeq.SNV.sh -M $PATH/TO/MuTect/variants.vcf -V $PATH/TO/Varscan/variants.snp.vcf -J $PATH/TO/JointSNVMix/variants.vcf -S $PATH/TO/SomaticSniper/variants.vcf -D $PATH/TO/Vardict/variants.vcf -N $PATH/TO/normal.bam -T $PATH/TO/tumor.bam -R $PATH/TO/ada_model_predictor.R -C $PATH/TO/trained.classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
-    </code>    
-    </li>
-    <li>Somatic INDELs:
-    <code>
-    SomaticSeq.INDEL.sh -M $PATH/TO/SomaticIndelDetector/variants.vcf -V $PATH/TO/Varscan/variants.indel.vcf -D $PATH/TO/Vardict/variants.vcf -N $PATH/TO/normal.bam -T $PATH/TO/tumor.bam -R $PATH/TO/ada_model_predictor.R -C $PATH/TO/trained.classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
-    </code>
-    </li>   
-    </ul>
-
-    The command-line options for the SomaticSeq scripts are:
-    <ul>
-    <li><code>-M variants.vcf</code>: VCF file from MuTect</li>
-    <li><code>-V variants.vcf</code>: VCF file from VarScan2</li>
-    <li><code>-J variants.vcf</code>: JointSNVMix's variant output converted to VCF</li>
-    <li><code>-S variants.vcf</code>: VCF file from SomaticSniper</li>
-    <li><code>-D [snp|indel].variants.vcf</code>: VarDict's VCF file with only SNVs or INDELs extracted</li>
-    <li><code>-N normal.bam</code>: Normal BAM files</li>
-    <li><code>-T tumor.bam</code>: Tumor BAM files</li>
-    <li><code>-R ada_model_predictor.R</code>: Predictor script in R</li>
-    <li><code>-C Trained_Classifier.RData</code>: Trained model/classifier, e.g., from DRAM Challenge</li>
-    <li><code>-g human_b37_decoy.fasta</code>: Genome reference FASTA file</li>
-    <li><code>-c COSMIC.b37.vcf</code>: COSMIC VCF file</li>
-    <li><code>-d dbSNP.v141.b37.vcf</code>: dbSNP VCF file</li>
-    <li><code>-s path/to/SnpEFF</code>: snpEFF/snpSift's installation directory containing the executable .jar files</li>
-    <li><code>-G path/to/GATK.jar</code>: GATK's java executable file</li>
-    <li><code>-o output</code>: Output directory (make sure it exists)</li>
-    </ul>
-
-    <h2>References/Tools</h2>
-    <ul>
-    <li>MuTect: Cibulskis K, Lawrence MS, Carter SL, et al. Sensitive detection of somatic point mutations in impure and heterogeneous cancer samples. Nat Biotechnol. 2013;31(3):213-9.</li>
-    <li>VarScan2: Koboldt DC, Zhang Q, Larson DE, et al. VarScan 2: somatic mutation and copy number alteration discovery in cancer by exome sequencing. Genome Res. 2012;22(3):568-76.</li>
-    <li>JointSNVMix2: Roth A, Ding J, Morin R, et al. JointSNVMix: a probabilistic model for accurate detection of somatic mutations in normal/tumour paired next-generation sequencing data. Bioinformatics. 2012;28(7):907-13.</li>
-    <li>SomaticSniper: Larson DE, Harris CC, Chen K, et al. SomaticSniper: identification of somatic point mutations in whole genome sequencing data. Bioinformatics. 2012;28(3):311-7.</li>
-    <li>VarDict: Lai, Z., Markovets, A., Ahdesmaki, M., Johnson, J.: VarDict: A Novel and Versatile Variant Caller for Next-generation Sequencing in Cancer Research. 2015 AACR Abstract</li>
-    <li>Indelocator: Banerji S, Cibulskis K, Rangel-escareno C, et al. Sequence analysis of mutations and translocations across breast cancer subtypes. Nature. 2012;486(7403):405-9.</li>
-    </ul>
-
-
-    <h2>Data used for Validation</h2>
     <ul>
     <li>DREAM Challenge (https://www.synapse.org/#!Synapse:syn312572/wiki/60702) requires GeneTorrent</li>
         <ul>
