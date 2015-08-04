@@ -2,6 +2,8 @@
 
 set -e
 
+PATH=/net/kodiak/volumes/lake/shared/opt/python3/bin:$PATH
+
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 while getopts "o:M:I:V:v:J:S:D:U:g:c:d:s:G:T:N:C:x:R:i:z:Z:" opt
@@ -186,7 +188,7 @@ then
 
         if [[ -e ${muse_vcf} ]]
         then
-                muse_input="-varscan ${muse_vcf}"
+                muse_input="-muse ${muse_vcf}"
         else
                 muse_input=''
         fi
@@ -316,7 +318,6 @@ then
 	fi
 
 fi
-
 
 # Clean up intermediate files
 rm ${merged_dir}/CombineVariants_MVJSD.*.vcf* ${merged_dir}/dbsnp.CombineVariants_MVJSD.*.vcf* ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.*.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.*.vcf*
