@@ -238,7 +238,7 @@ then
 	# If a classifier is used, use it:
 	if [[ -r ${snpclassifier} ]]
 	then
-	    R --no-save "--args $snpclassifier ${merged_dir}/Ensemble.sSNV.tsv ${merged_dir}/Trained.sSNV.tsv" < $predictor
+	    R --no-save --args "$snpclassifier" "${merged_dir}/Ensemble.sSNV.tsv" "${merged_dir}/Trained.sSNV.tsv" < "$predictor"
 	    $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred
 	fi
 
@@ -326,7 +326,7 @@ then
 	# If a classifier is used, use it:
 	if [[ -r ${indelclassifier} ]]
 	then
-	    R --no-save "--args $indelclassifier ${merged_dir}/Ensemble.sINDEL.tsv ${merged_dir}/Trained.sINDEL.tsv" < $predictor
+	    R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/Trained.sINDEL.tsv" < "$predictor"
 	    $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred
 	fi
 
