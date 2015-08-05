@@ -236,7 +236,7 @@ then
 	rm ${merged_dir}/samN.vcf.fifo ${merged_dir}/samT.vcf.fifo ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
 
 	# If a classifier is used, use it:
-	if [[ -r ${snpclassifier} ]]
+	if [[ -r ${snpclassifier} ]] && [[ -r ${predictor} ]]
 	then
 	    R --no-save --args "$snpclassifier" "${merged_dir}/Ensemble.sSNV.tsv" "${merged_dir}/Trained.sSNV.tsv" < "$predictor"
 	    $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred
@@ -324,7 +324,7 @@ then
 	rm ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo
 
 	# If a classifier is used, use it:
-	if [[ -r ${indelclassifier} ]]
+	if [[ -r ${indelclassifier} ]] && [[ -r ${predictor} ]]
 	then
 	    R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/Trained.sINDEL.tsv" < "$predictor"
 	    $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred
