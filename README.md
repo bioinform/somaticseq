@@ -5,9 +5,10 @@ See http://bioinform.github.io/somaticseq/ for help and downloads.
 Dependencies:
 * Python3: and regex package
 * R: and ada package
+* SAMtools
 * GATK
 * snpEFF and snpSift
-* dbSNP and COSMIC file
+* dbSNP and COSMIC VCF files
 
 
 To use a trained model to predict an existing data set, after running the 5 somatic callers. 
