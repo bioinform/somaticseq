@@ -80,7 +80,7 @@ SomaticSeq.Wrapper.sh                      \
 - `-G $PATH/TO/GenomeAnalysisTK.jar`
     GATK's java executable file
 - `-i IGNORE.bed`
-    Regions to ignore in evaluation (Optional)
+    Regions to ignore in evaluation (Optional, and requires BEDTools if provided)
 - `-Z SNP.Truth.vcf`
     Ground Truth for sSNV (Optional)
 - `-z INDEL.Truth.vcf`
