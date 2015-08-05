@@ -82,3 +82,6 @@ SomaticSeq.INDEL.sh \
     GATK's java executable file
 - `-o $PATH/TO/OUTPUT` 
     Output directory (make sure it exists)
+
+Known issues:
+* Some earlier versions of GATK seem to have problem with FIFO (e.g., we had problem with GATK version 2014.1-2.8.1-2). We suggest using at least version 2014.4-2 or later.
