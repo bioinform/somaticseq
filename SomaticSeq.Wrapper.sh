@@ -77,64 +77,75 @@ snpEff_b37="    java -jar ${snpeff_dir}/snpEff.jar  GRCh37.75"
 snpSift_dbsnp=" java -jar ${snpeff_dir}/SnpSift.jar annotate ${dbsnp}"
 snpSift_cosmic="java -jar ${snpeff_dir}/SnpSift.jar annotate ${cosmic}"
 
+
+files_to_delete=''
 #####     #####     #####     #####     #####     #####     #####     #####
 # Modify the output of each tools into something that can be merged with GATK CombineVariants, just to be able to combine all the variant calls.
 # MuTect
-if [ -e $mutect_vcf ]; then
+if [[ -r $mutect_vcf ]]; then
 	$MYDIR/modify_MuTect.py -type snp -infile ${mutect_vcf} -outfile ${merged_dir}/mutect.snp.vcf -nbam ${nbam} -tbam ${tbam}
+	files_to_delete="${merged_dir}/mutect.snp.vcf* $files_to_delete"
 fi
 
 
 # Somatic Sniper:
-if [ -e $sniper_vcf ]; then
+if [[ -r $sniper_vcf ]]; then
 	$MYDIR/modify_VJSD.py -method SomaticSniper -infile ${sniper_vcf} -outfile ${merged_dir}/somaticsniper.vcf
+	files_to_delete="${merged_dir}/somaticsniper.vcf* $files_to_delete"
 fi
 
 
 # JointSNVMix2:
-if [ -e $jsm_vcf ] ; then
+if [[ -r $jsm_vcf ]] ; then
+	echo "still got JSM vcf=${jsm_vcf}"
 	$MYDIR/modify_VJSD.py -method JointSNVMix2  -infile ${jsm_vcf} -outfile ${merged_dir}/jsm.vcf
+	files_to_delete="${merged_dir}/jsm.vcf* $files_to_delete"
 fi
 
 
 # VarScan2:
-if [ -e $varscan_vcf ]; then
+if [[ -r $varscan_vcf ]]; then
 	$MYDIR/modify_VJSD.py -method VarScan2 -infile ${varscan_vcf} -outfile ${merged_dir}/varscan2.snp.vcf
+	files_to_delete="${merged_dir}/varscan2.snp.vcf* $files_to_delete"
 fi
 
 # MuSE:
-if [ -e $muse_vcf ]; then
+if [[ -r $muse_vcf ]]; then
        	$MYDIR/modify_VJSD.py -method MuSE  -infile ${muse_vcf} -outfile ${merged_dir}/muse.vcf
+	files_to_delete="${merged_dir}/muse.vcf* $files_to_delete"
 fi
 
 
 # If INDEL:
 # Indelocator
-if [ -e $indelocator_vcf ]; then
+if [[ -r $indelocator_vcf ]]; then
        	$MYDIR/modify_MuTect.py -type indel -infile ${indelocator_vcf} -outfile ${merged_dir}/indelocator.vcf -nbam ${nbam} -tbam ${tbam}
+	files_to_delete="${merged_dir}/indelocator.vcf* $files_to_delete"
 fi
 
 
-if [ -e $varscan_indel_vcf ]; then
+if [[ -r $varscan_indel_vcf ]]; then
        	$MYDIR/modify_VJSD.py -method VarScan2 -infile ${varscan_indel_vcf} -outfile ${merged_dir}/varscan2.indel.vcf
+	files_to_delete="${merged_dir}/varscan2.indel.vcf* $files_to_delete"
 fi
 
 
 # VarDict:
 # Does both SNV and INDEL
-if [ -e $vardict_vcf ]; then
+if [[ -r $vardict_vcf ]]; then
 	$MYDIR/modify_VJSD.py -method VarDict -infile ${vardict_vcf} -outfile ${merged_dir}/vardict.vcf -filter paired
+	files_to_delete="${merged_dir}/snp.vardict.vcf* ${merged_dir}/indel.vardict.vcf* $files_to_delete"
 fi
 
 
 
-if [[ -e ${merged_dir}/mutect.snp.vcf || ${merged_dir}/somaticsniper.vcf || ${merged_dir}/jsm.vcf || ${merged_dir}/varscan2.snp.vcf || ${merged_dir}/muse.vcf || ${merged_dir}/snp.vardict.vcf ]]
+if [[ -r ${merged_dir}/mutect.snp.vcf || -r ${merged_dir}/somaticsniper.vcf || -r ${merged_dir}/jsm.vcf || -r ${merged_dir}/varscan2.snp.vcf || -r ${merged_dir}/muse.vcf || -r ${merged_dir}/snp.vardict.vcf ]]
 then
 
 	mergesnp=''
 	for vcf in ${merged_dir}/snp.vardict.vcf ${merged_dir}/varscan2.snp.vcf ${merged_dir}/somaticsniper.vcf ${merged_dir}/mutect.snp.vcf ${merged_dir}/jsm.vcf ${merged_dir}/muse.vcf
 	do
-        	if [ -e $vcf ]; then
+        	if [[ -r $vcf ]]; then
                 	mergesnp="$mergesnp --variant $vcf"
 	        fi
 	done
@@ -145,48 +156,50 @@ then
 	${snpSift_cosmic} ${merged_dir}/dbsnp.CombineVariants_MVJSD.snp.vcf > ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf
 	${snpEff_b37} ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf > ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf
 
+	files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* ${merged_dir}/dbsnp.CombineVariants_MVJSD.snp.vcf* ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf* $files_to_delete"
+
 	$MYDIR/score_Somatic.Variants.py -tools CGA VarScan2 JointSNVMix2 SomaticSniper VarDict MuSE -infile ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf   -mincaller 1 -outfile ${merged_dir}/BINA_somatic.snp.vcf
 
-	if [[ -e ${masked_region} ]]
+	if [[ -r ${masked_region} ]]
 	then
 	    intersectBed -header -a ${merged_dir}/BINA_somatic.snp.vcf -b ${masked_region} -v > ${merged_dir}/tmp.snp.vcf; mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/BINA_somatic.snp.vcf
 	fi
 
-	if [[ -e ${snpgroundtruth} ]]
+	if [[ -r ${snpgroundtruth} ]]
 	then
 	    tally_MyVCF_vs_Truth.py -truth $snpgroundtruth -myvcf ${merged_dir}/BINA_somatic.snp.vcf -outfile ${merged_dir}/tmp.snp.vcf; mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/BINA_somatic.snp.vcf
 	fi
 
 
-	if [[ -e ${varscan_vcf} ]]
+	if [[ -r ${varscan_vcf} ]]
 	then
 		varscan_input="-varscan ${varscan_vcf}"
 	else
 		varscan_input=''
 	fi
 
-	if [[ -e ${jsm_vcf} ]]
+	if [[ -r ${jsm_vcf} ]]
         then
                 jsm_input="-jsm ${jsm_vcf}"
         else
                 jsm_input=''
         fi
 
-        if [[ -e ${sniper_vcf} ]]
+        if [[ -r ${sniper_vcf} ]]
         then
                 sniper_input="-sniper ${sniper_vcf}"
         else
                 sniper_input=''
         fi
 
-        if [[ -e ${merged_dir}/snp.vardict.vcf ]]
+        if [[ -r ${merged_dir}/snp.vardict.vcf ]]
         then
                 vardict_input="-vardict ${merged_dir}/snp.vardict.vcf"
         else
                 vardict_input=''
         fi
 
-        if [[ -e ${muse_vcf} ]]
+        if [[ -r ${muse_vcf} ]]
         then
                 muse_input="-muse ${muse_vcf}"
         else
@@ -224,7 +237,7 @@ then
 	rm ${merged_dir}/samN.vcf.fifo ${merged_dir}/samT.vcf.fifo ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
 
 	# If a classifier is used, use it:
-	if [[ -e ${snpclassifier} ]]
+	if [[ -r ${snpclassifier} ]]
 	then
 	    R --no-save "--args $snpclassifier ${merged_dir}/Ensemble.sSNV.tsv ${merged_dir}/Trained.sSNV.tsv" < $predictor
 	    $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred
@@ -236,13 +249,13 @@ fi
 
 
 # INDEL:
-if [[ -e ${merged_dir}/mutect.indel.vcf || ${merged_dir}/varscan2.indel.vcf || ${merged_dir}/indel.vardict.vcf ]]
+if [[ -r ${merged_dir}/mutect.indel.vcf || -r ${merged_dir}/varscan2.indel.vcf || -r ${merged_dir}/indel.vardict.vcf ]]
 then
 
 	mergeindel=''
 	for vcf in ${merged_dir}/indel.vardict.vcf ${merged_dir}/varscan2.indel.vcf ${merged_dir}/mutect.indel.vcf
 	do
-        	if [ -e $vcf ]; then
+        	if [[ -r $vcf ]]; then
                 	mergeindel="$mergeindel --variant $vcf"
 	        fi
 	done
@@ -255,14 +268,15 @@ then
 
 	$MYDIR/score_Somatic.Variants.py -tools CGA VarScan2 VarDict -infile ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf -mincaller 1 -outfile ${merged_dir}/BINA_somatic.indel.vcf
 
+	files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* ${merged_dir}/dbsnp.CombineVariants_MVJSD.indel.vcf* ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf* $files_to_delete"
 
-        if [[ -e ${masked_region} ]]
+        if [[ -r ${masked_region} ]]
         then
             intersectBed -header -a ${merged_dir}/BINA_somatic.indel.vcf -b ${masked_region} -v > ${merged_dir}/tmp.indel.vcf; mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/BINA_somatic.indel.vcf
         fi
 
 
-	if [[ -e ${indelgroundtruth} ]]
+	if [[ -r ${indelgroundtruth} ]]
 	then
 	    tally_MyVCF_vs_Truth.py -truth $indelgroundtruth -myvcf ${merged_dir}/BINA_somatic.indel.vcf -outfile ${merged_dir}/tmp.indel.vcf; mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/BINA_somatic.indel.vcf
 	fi
@@ -283,14 +297,14 @@ then
 	| awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > ${merged_dir}/haploT.indel.vcf.fifo &
 
 
-        if [[ -e ${varscan_indel_vcf} ]]
+        if [[ -r ${varscan_indel_vcf} ]]
         then
                 varscan_input="-varscan ${varscan_indel_vcf}"
         else
                 varscan_input=''
         fi
 
-        if [[ -e ${merged_dir}/indel.vardict.vcf ]]
+        if [[ -r ${merged_dir}/indel.vardict.vcf ]]
         then
                 vardict_input="-vardict ${merged_dir}/indel.vardict.vcf"
         else
@@ -311,7 +325,7 @@ then
 	rm ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo
 
 	# If a classifier is used, use it:
-	if [[ -e ${indelclassifier} ]]
+	if [[ -r ${indelclassifier} ]]
 	then
 	    R --no-save "--args $indelclassifier ${merged_dir}/Ensemble.sINDEL.tsv ${merged_dir}/Trained.sINDEL.tsv" < $predictor
 	    $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred
@@ -320,5 +334,4 @@ then
 fi
 
 # Clean up intermediate files
-rm ${merged_dir}/CombineVariants_MVJSD.*.vcf* ${merged_dir}/dbsnp.CombineVariants_MVJSD.*.vcf* ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.*.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.*.vcf*
-rm ${merged_dir}/mutect.*.vcf* ${merged_dir}/somaticsniper.vcf* ${merged_dir}/jsm.vcf* ${merged_dir}/varscan2.*.vcf* ${merged_dir}/*.vardict.vcf* ${merged_dir}/indelocator.vcf* ${merged_dir}/muse.vcf*
+rm ${files_to_delete}
