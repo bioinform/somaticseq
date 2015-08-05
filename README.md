@@ -65,11 +65,11 @@ SomaticSeq.Wrapper.sh                      \
 - `-T tumor.bam` 
     Tumor BAM file
 - `-R ada_model_predictor.R` 
-    Predictor script in R
+    Predictor script in R (Optional. Will not make mutation prediction unless provided.)
 - `-C SNV_Classifier.RData` 
-    Trained model/classifer for [sSNV](https://drive.google.com/open?id=0B9pfRlnkG-Z7QWdPVzZOWm5zbUU) trained from DREAM Challenge Stage 3. (Optional)
+    Trained model/classifer for [sSNV](https://drive.google.com/open?id=0B9pfRlnkG-Z7QWdPVzZOWm5zbUU) trained from DREAM Challenge Stage 3. (Optional. Will not make mutation prediction unless provided.)
 - `-x INDEL_Classifier.RData`
-    Trained model/classifer for [sINDEL](https://drive.google.com/open?id=0B9pfRlnkG-Z7THRzcFZoaDBpdUE) trained from DREAM Challenge Stage 3. (Optional)
+    Trained model/classifer for [sINDEL](https://drive.google.com/open?id=0B9pfRlnkG-Z7THRzcFZoaDBpdUE) trained from DREAM Challenge Stage 3. (Optional. Will not make mutation prediction unless provided.)
 - `-g human_b37_decoy.fasta` 
     genome reference fasta file
 - `-c COSMIC.b37.vcf`
@@ -81,11 +81,11 @@ SomaticSeq.Wrapper.sh                      \
 - `-G $PATH/TO/GenomeAnalysisTK.jar`
     GATK's java executable file
 - `-i IGNORE.bed`
-    Regions to ignore in evaluation (Optional, and requires BEDTools if provided)
+    Regions to ignore in evaluation (Optional, but requires BEDTools if provided)
 - `-Z SNP.Truth.vcf`
-    Ground Truth for sSNV (Optional)
+    Ground Truth for sSNV (Optional. Useful for creating training set.)
 - `-z INDEL.Truth.vcf`
-    Ground Truth for INDEL (Optional)
+    Ground Truth for INDEL (Optional. Useful for creating training set.)
 - `-o $PATH/TO/OUTPUT` 
     Output directory (Make sure it exists)
 
