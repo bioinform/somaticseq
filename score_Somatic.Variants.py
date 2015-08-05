@@ -192,10 +192,13 @@ with genome.open_textfile(args.input_vcf) as vcf, open(args.output_vcf, 'w') as 
     
     
     # Main Header:
-    if paired_mode:
-        vcf_out.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\t{}\n'.format(args.normal_sample_name, args.tumor_sample_name) )
-    elif not paired_mode:
-        vcf_out.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\n'.format(args.tumor_sample_name) )
+    try:
+        if paired_mode:
+            vcf_out.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\t{}\n'.format(args.normal_sample_name, args.tumor_sample_name) )
+        elif not paired_mode:
+            vcf_out.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\n'.format(args.tumor_sample_name) )
+    except NameError:
+        vcf_out.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n' )
     
 
     # Start calculating scores:

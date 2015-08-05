@@ -2,7 +2,7 @@
 
 set -e
 
-PATH=/net/kodiak/volumes/lake/shared/opt/python3/bin:$PATH
+PATH=/net/kodiak/volumes/lake/shared/opt/python3/bin:/home/ltfang/apps/bedtools-2.23.0/bin/:$PATH
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
@@ -97,7 +97,6 @@ fi
 
 # JointSNVMix2:
 if [[ -r $jsm_vcf ]] ; then
-	echo "still got JSM vcf=${jsm_vcf}"
 	$MYDIR/modify_VJSD.py -method JointSNVMix2  -infile ${jsm_vcf} -outfile ${merged_dir}/jsm.vcf
 	files_to_delete="${merged_dir}/jsm.vcf* $files_to_delete"
 fi
