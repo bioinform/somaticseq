@@ -15,61 +15,60 @@ This SomaticSeq workflow takes about 3 hours for an ensmeble call set of 50K cal
 
 The shell command (VCF file can also be bgzipped, but make sure it has the right .gz extention):
 ```
-# Somatic SNV
-SomaticSeq.SNV.sh \
--M $PATH/TO/MuTect/variants.vcf \
--V $PATH/TO/Varscan/variants.snp.vcf \
--J $PATH/TO/JointSNVMix/variants.vcf \
--S $PATH/TO/SomaticSniper/variants.vcf \
--D $PATH/TO/Vardict/variants.vcf \
--N $PATH/TO/normal.bam \
--T $PATH/TO/tumor.bam \
--R $PATH/TO/ada_model_predictor.R \
--C $PATH/TO/trained.classifier.RData \
--g human_b37.fasta \
--c cosmic.b37.v71.vcf \
--d dbSNP.b37.v141.vcf \
--s $PATH/TO/snpSift \
--G $PATH/TO/GenomeAnalysisTK.jar \
--o $OUTPUT_DIR
-
-# Somatic INDEL
-SomaticSeq.INDEL.sh \
--M $PATH/TO/SomaticIndelDetector/variants.vcf \
--V $PATH/TO/Varscan/variants.indel.vcf \
--D $PATH/TO/Vardict/variants.vcf \
--N $PATH/TO/normal.bam \
--T $PATH/TO/tumor.bam \
--R $PATH/TO/ada_model_predictor.R \
--C $PATH/TO/trained.classifier.RData \
--g human_b37.fasta \
--c cosmic.b37.v71.vcf \
--d dbSNP.b37.v141.vcf \
--s $PATH/TO/snpSift \
--G $PATH/TO/GenomeAnalysisTK.jar \
+# SomaticSeq
+SomaticSeq.Wrapper.sh                      \
+-M $PATH/TO/MuTect/variants.snv.vcf        \
+-V $PATH/TO/VarScan/variants.snv.vcf       \
+-J $PATH/TO/JointSNVMix/variants.snv.vcf   \
+-S $PATH/TO/SomaticSniper/variants.snv.vcf \
+-D $PATH/TO/Vardict/variants.vcf           \
+-U $PATH/TO/MuSE/variants.snv.vcf          \
+-I $PATH/TO/Indelocator/variants.indel.vcf \
+-v $PATH/TO/Varscan/variants.indel.vcf     \
+-N $PATH/TO/normal.bam                     \
+-T $PATH/TO/tumor.bam                      \
+-R $PATH/TO/ada_model_predictor.R          \
+-C $PATH/TO/sSNV.Classifier.RData          \
+-x $PATH/TO/sINDEL.Classifier.RData        \
+-g $PATH/TO/human_b37.fasta                \
+-c $PATH/TO/cosmic.b37.v71.vcf             \
+-d $PATH/TO/dbSNP.b37.v141.vcf             \
+-s $PATH/TO/DIR/snpSift                    \
+-G $PATH/TO/GenomeAnalysisTK.jar           \
+-i Regions_to_Ignore.bed                   \
+-Z SNV_Ground_Truth.vcf                    \
+-z Indel_Ground_Truth.vcf                  \
 -o $OUTPUT_DIR
 ```
 
 ###The flags are:
 
 - `-M variants.vcf`
-    VCF file by MuTect. Can also be .vcf.gz.
+    MuTect's VCF or VCF.GZ file (Optional)
 - `-V variants.vcf`
-    SNV VCF file by VarScan2. Can also be .vcf.gz.
+    VarScan2's SNV VCF or VCF.GZ file (Optional)
 - `-J variants.vcf`
-    JointSNVMix's variant output converted to VCF. Can also be .vcf.gz.
+    JointSNVMix's VCF or VCF.GZ file (Optional)
 - `-S varaints.vcf` 
-    VCF file by SomaticSniper
-- `-D [snp|indel].variants.vcf` 
-    VarDict's VCF file with only SNV or INDEL extracted.
+    SomaticSniper's VCF or VCF.GZ file (Optional)
+- `-D variants.vcf` 
+    VarDict's VCF or VCF.GZ file (Optional)
+- `-U variants.vcf`
+    MuSE's VCF or VCF.GZ file (Optional)
+- `-I variants.vcf`
+    Indelocator's VCF or VCF.GZ file (Optional)
+- `-v variants.vcf`
+    VarScan2's INDEL VCF or VCF.GZ file (Optional)
 - `-N normal.bam` 
     Normal BAM file
 - `-T tumor.bam` 
     Tumor BAM file
 - `-R ada_model_predictor.R` 
     Predictor script in R
-- `-C Trained_Classifier.RData` 
-    Trained model/classifer (e.g., the classifier for [sSNV](https://drive.google.com/open?id=0B9pfRlnkG-Z7QWdPVzZOWm5zbUU) and [sINDEL](https://drive.google.com/open?id=0B9pfRlnkG-Z7THRzcFZoaDBpdUE) trained from DREAM Challenge Stage 3)
+- `-C SNV_Classifier.RData` 
+    Trained model/classifer for [sSNV](https://drive.google.com/open?id=0B9pfRlnkG-Z7QWdPVzZOWm5zbUU) trained from DREAM Challenge Stage 3. (Optional)
+- `-x INDEL_Classifier.RData`
+    Trained model/classifer for [sINDEL](https://drive.google.com/open?id=0B9pfRlnkG-Z7THRzcFZoaDBpdUE) trained from DREAM Challenge Stage 3. (Optional)
 - `-g human_b37_decoy.fasta` 
     genome reference fasta file
 - `-c COSMIC.b37.vcf`
@@ -80,8 +79,15 @@ SomaticSeq.INDEL.sh \
     snpEFF/snpSift's installation directory containing the executable .jar files
 - `-G $PATH/TO/GenomeAnalysisTK.jar`
     GATK's java executable file
+- `-i IGNORE.bed`
+    Regions to ignore in evaluation (Optional)
+- `-Z SNP.Truth.vcf`
+    Ground Truth for sSNV (Optional)
+- `-z INDEL.Truth.vcf`
+    Ground Truth for INDEL (Optional)
 - `-o $PATH/TO/OUTPUT` 
-    Output directory (make sure it exists)
+    Output directory (Make sure it exists)
+
 
 Known issues:
 * Some earlier versions of GATK seem to have problem with FIFO (e.g., we had problem with GATK version 2014.1-2.8.1-2). We suggest using at least version 2014.4-2 or later.
