@@ -46,7 +46,7 @@ do
 	x)
 	    indelclassifier=$OPTARG;;
 	R)
-	    predictor=$OPTARG;;
+	    ada_r_script=$OPTARG;;
 	i)
 	    masked_region=$OPTARG;;
 	z)
@@ -235,11 +235,16 @@ then
 
 	rm ${merged_dir}/samN.vcf.fifo ${merged_dir}/samT.vcf.fifo ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
 
-	# If a classifier is used, use it:
-	if [[ -r ${snpclassifier} ]] && [[ -r ${predictor} ]]
+	# If a classifier is used, assume predictor.R, and do the prediction routine:
+	if [[ -r ${snpclassifier} ]] && [[ -r ${ada_r_script} ]]
 	then
-	    R --no-save --args "$snpclassifier" "${merged_dir}/Ensemble.sSNV.tsv" "${merged_dir}/Trained.sSNV.tsv" < "$predictor"
-	    $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred
+		R --no-save --args "$snpclassifier" "${merged_dir}/Ensemble.sSNV.tsv" "${merged_dir}/Trained.sSNV.tsv" < "$ada_r_script"
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred
+
+	# If ground truth is here, assume builder.R, and build a classifier
+	elif [[ -r ${snpgroundtruth} ]] && [[ -r ${ada_r_script} ]]
+	then
+		R --no-save --args "${snpgroundtruth}" < ${ada_r_script}
 	fi
 
 fi
@@ -324,10 +329,15 @@ then
 	rm ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo
 
 	# If a classifier is used, use it:
-	if [[ -r ${indelclassifier} ]] && [[ -r ${predictor} ]]
+	if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]
 	then
-	    R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/Trained.sINDEL.tsv" < "$predictor"
-	    $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred
+		R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/Trained.sINDEL.tsv" < "$ada_r_script"
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred
+
+        # If ground truth is here, assume builder.R, and build a classifier
+        elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]
+        then
+                R --no-save --args "${indelgroundtruth}" < ${ada_r_script}
 	fi
 
 fi
