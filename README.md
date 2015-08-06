@@ -17,7 +17,7 @@ This SomaticSeq workflow takes about 3 hours for an ensmeble call set of 50K cal
 The shell command (VCF file can also be bgzipped, but make sure it has the right .gz extention):
 
 
-##The SomaticSeq command to predict somatic mutations from a trained model:
+<b>The SomaticSeq command to predict somatic mutations from a trained model:</b>
 
 ```
 SomaticSeq.Wrapper.sh                      \
@@ -43,7 +43,7 @@ SomaticSeq.Wrapper.sh                      \
 ```
 
 
-##The SomaticSeq command to train a classifier from a gold set:
+<b>The SomaticSeq command to train a classifier from a gold set:</b>
 
 ```
 SomaticSeq.Wrapper.sh                      \
@@ -120,5 +120,5 @@ SomaticSeq.Wrapper.sh                      \
     Output directory (Make sure it exists)
 
 
-Known issues:
+<b>Known issues:</b>
 * Some earlier versions of GATK seem to have problem with FIFO (e.g., we had problem with GATK version 2014.1-2.8.1-2). We suggest using at least version 2014.4-2 or later.
