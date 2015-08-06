@@ -123,17 +123,26 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     </ul>
 
     <h2>Running SomaticSeq</h2>
-    To use a trained model to predict an existing data set, after running at least 1 somatic caller.
-    This SomaticSeq workflow takes about 3 hours for an ensmeble call set of 50K calls, and about 6 hours for a call set of half million calls.
+    This SomaticSeq workflow takes about 3 hours for an ensmeble call set of 50K calls.
 
     The shell command (VCF file can also be bgzipped, but make sure it has .gz extention):
     
     <ul>
-    <li>Running SomaticSeq:
-    <code>SomaticSeq.Wrapper.sh -M $PATH/TO/MuTect/variants.snv.vcf -V $PATH/TO/VarScan/variants.snv.vcf -J $PATH/TO/JointSNVMix/variants.snv.vcf -S $PATH/TO/SomaticSniper/variants.snv.vcf -D $PATH/TO/Vardict/variants.vcf -U $PATH/TO/MuSE/variants.snv.vcf -I $PATH/TO/Indelocator/variants.indel.vcf -v $PATH/TO/Varscan/variants.indel.vcf -N normal.bam -T tumor.bam -R ada_model_predictor.R -C sSNV.Classifier.RData -x sINDEL.Classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/DIR/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -i Regions_to_Ignore.bed -Z SNV_Ground_Truth.vcf -z Indel_Ground_Truth.vcf -o $OUTPUT_DIR
+    <li>Running SomaticSeq's somatic mutation prediction mode:
+    <code>SomaticSeq.Wrapper.sh -M $PATH/TO/MuTect/variants.snv.vcf -V $PATH/TO/VarScan/variants.snv.vcf -J $PATH/TO/JointSNVMix/variants.snv.vcf -S $PATH/TO/SomaticSniper/variants.snv.vcf -D $PATH/TO/Vardict/variants.vcf -U $PATH/TO/MuSE/variants.snv.vcf -I $PATH/TO/Indelocator/variants.indel.vcf -v $PATH/TO/Varscan/variants.indel.vcf -N normal.bam -T tumor.bam -R ada_model_predictor.R -C sSNV.Classifier.RData -x sINDEL.Classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/DIR/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
     </code>
     </li>
     </ul>
+
+
+    <ul>
+    <li>Running SomaticSeq's model training mode:
+    <code>SomaticSeq.Wrapper.sh -M $PATH/TO/MuTect/variants.snv.vcf -V $PATH/TO/VarScan/variants.snv.vcf -J $PATH/TO/JointSNVMix/variants.snv.vcf -S $PATH/TO/SomaticSniper/variants.snv.vcf -D $PATH/TO/Vardict/variants.vcf -U $PATH/TO/MuSE/variants.snv.vcf -I $PATH/TO/Indelocator/variants.indel.vcf -v $PATH/TO/Varscan/variants.indel.vcf -N normal.bam -T tumor.bam -R ada_model_builder.R -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/DIR/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -i Regions_to_Ignore.bed -Z SNV_Ground_Truth.vcf -z Indel_Ground_Truth.vcf -o $OUTPUT_DIR
+    </code>
+    </li>
+    </ul>
+
+
 
     The command-line options for the SomaticSeq scripts are:
     <ul>
@@ -147,17 +156,17 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <li><code>-v variants.indel.vcf</code>: VarScan2's output INDEL VCF (Optional)</li>
     <li><code>-N normal.bam</code>: Normal BAM files</li>
     <li><code>-T tumor.bam</code>: Tumor BAM files</li>
-    <li><code>-R ada_model_predictor.R</code>: Predictor script in R</li>
-    <li><code>-C Trained_SNV_Classifier.RData</code>: Trained model/classifier for SNV, e.g., from DREAM Challenge</li>
-    <li><code>-x Trained_INDEL_Classifier.RData</code>: Trained model/classifier for INDEL, e.g., from DREAM Challenge</li>
+    <li><code>-R ada_model_[predictor|builder].R</code>: Ada script in R. (Optional. If not provided, SomaticSeq will not attempt to train or predict. If -C and -x are provided, this script is assumed to be predictor.R. If -Z and -z are provided, this script is assumed to be builder.R).</li>
+    <li><code>-C Trained_SNV_Classifier.RData</code>: Trained model/classifier for SNV, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
+    <li><code>-x Trained_INDEL_Classifier.RData</code>: Trained model/classifier for INDEL, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
     <li><code>-g human_b37_decoy.fasta</code>: Genome reference FASTA file</li>
     <li><code>-c COSMIC.b37.vcf</code>: COSMIC VCF file</li>
     <li><code>-d dbSNP.v141.b37.vcf</code>: dbSNP VCF file</li>
     <li><code>-s path/to/SnpEFF</code>: snpEFF/snpSift's installation directory containing the executable .jar files</li>
     <li><code>-G path/to/GATK.jar</code>: GATK's java executable file</li>
-    <li><code>-i IGNORE.bed</code>: Regions to toss out in the final VCF files</li>
-    <li><code>-Z SNV_Ground_Truth.vcf</code>: A VCF file containing true sSNVs, and everything else is true negative. (Optional, to be used in model training)</li>
-    <li><code>-z INDEL_Ground_Truth.vcf</code>: A VCF file containing true sINDELs, and everything else is true negative. (Optional, to be used in model training)</li>
+    <li><code>-i IGNORE.bed</code>: Regions to toss out in the final VCF files (Optional)</li>
+    <li><code>-Z SNV_Ground_Truth.vcf</code>: A VCF file containing true sSNVs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
+    <li><code>-z INDEL_Ground_Truth.vcf</code>: A VCF file containing true sINDELs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
     <li><code>-o output</code>: Output directory (make sure it exists)</li>
     </ul>
 
