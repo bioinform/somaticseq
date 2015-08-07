@@ -244,7 +244,7 @@ then
 	# If ground truth is here, assume builder.R, and build a classifier
 	elif [[ -r ${snpgroundtruth} ]] && [[ -r ${ada_r_script} ]]
 	then
-		R --no-save --args "${snpgroundtruth}" < ${ada_r_script}
+		R --no-save --args "${merged_dir}/Ensemble.sSNV.tsv" < ${ada_r_script}
 	fi
 
 fi
@@ -337,7 +337,7 @@ then
         # If ground truth is here, assume builder.R, and build a classifier
         elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]
         then
-                R --no-save --args "${indelgroundtruth}" < ${ada_r_script}
+                R --no-save --args "${merged_dir}/Ensemble.sINDEL.tsv" < ${ada_r_script}
 	fi
 
 fi
