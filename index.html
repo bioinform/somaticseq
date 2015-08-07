@@ -128,7 +128,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     The shell command (VCF file can also be bgzipped, but make sure it has .gz extention):
     
     <ul>
-    <li>Running SomaticSeq's somatic mutation prediction mode:
+    <li><b>Running SomaticSeq's somatic mutation prediction mode:</b>
     <code>SomaticSeq.Wrapper.sh -M $PATH/TO/MuTect/variants.snv.vcf -V $PATH/TO/VarScan/variants.snv.vcf -J $PATH/TO/JointSNVMix/variants.snv.vcf -S $PATH/TO/SomaticSniper/variants.snv.vcf -D $PATH/TO/Vardict/variants.vcf -U $PATH/TO/MuSE/variants.snv.vcf -I $PATH/TO/Indelocator/variants.indel.vcf -v $PATH/TO/Varscan/variants.indel.vcf -N normal.bam -T tumor.bam -R ada_model_predictor.R -C sSNV.Classifier.RData -x sINDEL.Classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/DIR/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
     </code>
     </li>
@@ -136,7 +136,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
 
 
     <ul>
-    <li>Running SomaticSeq's model training mode:
+    <li><b>Running SomaticSeq's model training mode:</b>
     <code>SomaticSeq.Wrapper.sh -M $PATH/TO/MuTect/variants.snv.vcf -V $PATH/TO/VarScan/variants.snv.vcf -J $PATH/TO/JointSNVMix/variants.snv.vcf -S $PATH/TO/SomaticSniper/variants.snv.vcf -D $PATH/TO/Vardict/variants.vcf -U $PATH/TO/MuSE/variants.snv.vcf -I $PATH/TO/Indelocator/variants.indel.vcf -v $PATH/TO/Varscan/variants.indel.vcf -N normal.bam -T tumor.bam -R ada_model_builder.R -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/DIR/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -i Regions_to_Ignore.bed -Z SNV_Ground_Truth.vcf -z Indel_Ground_Truth.vcf -o $OUTPUT_DIR
     </code>
     </li>
@@ -144,7 +144,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
 
 
 
-    The command-line options for the SomaticSeq scripts are:
+    <h2>The command-line options for the SomaticSeq scripts are:</h2>
     <ul>
     <li><code>-M variants.vcf</code>: MuTect's output VCF (Optional)</li>
     <li><code>-V variants.snp.vcf</code>: VarScan2's output SNV VCF (Optional)</li>
@@ -169,6 +169,13 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <li><code>-z INDEL_Ground_Truth.vcf</code>: A VCF file containing true sINDELs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
     <li><code>-o output</code>: Output directory (make sure it exists)</li>
     </ul>
+
+
+
+    <h2>Known Issues:</h2>
+    GATK version
+
+
 
     <h2>References/Tools</h2>
     <ul>
