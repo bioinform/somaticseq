@@ -1,0 +1,102 @@
+\documentclass[10pt,letterpaper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{listings}
+
+\usepackage{color}
+
+\definecolor{mygreen}{rgb}{0,0.5,0}
+\definecolor{mygray}{rgb}{0.9,0.9,0.9}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\lstset{ %
+  backgroundcolor=\color{mygray},  % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{mygreen},    % comment style
+  deletekeywords={...},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=single,	                   % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=bash,                 % the language of the code
+  otherkeywords={*,...},            % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=5pt,                   % how far the line-numbers are from the code
+  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{mymauve},     % string literal style
+  tabsize=2,	                   % sets default tabsize to 2 spaces
+  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+
+
+\author{Li Tai Fang}
+
+\title{SomaticSeq Manual}
+
+\begin{document}
+
+\maketitle
+
+
+
+\section*{SomaticSeq}
+
+SomaticSeq is a flexible workflow that uses multiple somatic mutation callers to obtain a combined call set, and then use machine learning to distinguish true mutations from false positives from the call set. The manuscript is in preparation. The source code is deposited at \textit{https://github.com/bioinform/somaticseq/}. 
+
+SomaticSeq.Wrapper.sh is a bash script that calls a series of scripts to combine the output of the somatic mutation caller(s), after the somatic mutation callers are run. Then, depending on what files are fed to SomaticSeq.Wrapper.sh, it will either train the call set into a classifier, predict high-confidence somatic mutations from the call set, or do nothing. 
+
+
+
+\section*{SomaticSeq.Wrapper.sh Commands}
+
+\subsection*{To train data set into a classifier}
+
+To create a trained classifier, ground truth files are required for the data sets. There is also an option to include a list of regions to ignore, where the ground truth is not known in those regions. 
+
+\begin{lstlisting}
+
+# -M/-I/-V/-v/-J/-S/-D/-U are output VCF files from individual callers.
+# -i is also optional.
+SomaticSeq.Wrapper.sh -M MuTect/variants.snp.vcf -I Indelocator/variants.indel.vcf -V VarScan2/variants.snp.vcf -v VarScan2/variants.indel.vcf -J JointSNVMix2/variants.snp.vcf -S SomaticSniper/variants.snp.vcf -D VarDict/variants.vcf -U MuSE/variants.snp.vcf -N matched_normal.bam -T tumor.bam -R ada_model_builder.R -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/DIR/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -i ignore.bed -Z truth.snp.vcf -z truth.indel.vcf -o $OUTPUT_DIR
+
+\end{lstlisting}
+
+SomaticSeq.Wrapper.sh supports any combination of the somatic mutation callers we have incorporated into the workflow, so -M/-I/-V/-v/-J/-S/-D/-U are all optional parameters. SomaticSeq will run based on the output VCFs you have provided. It will train SNV and/or INDEL if you provide the truth.snp.vcf and/or truth.indel.vcf file(s).
+
+
+
+
+\subsection*{To predict somatic mutation based on trained classifiers}
+
+\begin{lstlisting}
+
+# The *RData files are trained classifier from the training mode.
+SomaticSeq.Wrapper.sh -M MuTect/variants.snp.vcf -I Indelocator/variants.indel.vcf -V VarScan2/variants.snp.vcf -v VarScan2/variants.indel.vcf -J JointSNVMix2/variants.snp.vcf -S SomaticSniper/variants.snp.vcf -D VarDict/variants.vcf -U MuSE/variants.snp.vcf -N matched_normal.bam -T tumor.bam -R ada_model_predictor.R -C sSNV.Classifier.RData -x sINDEL.Classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/DIR/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
+
+
+\end{lstlisting}
+
+
+
+\section*{The Workflow}
+
+The SomaticSeq.Wrapper.sh calls a series of programs and procedures. 
+
+
+
+
+\end{document}
