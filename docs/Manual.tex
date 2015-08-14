@@ -8,6 +8,7 @@
 \usepackage{verbatim}
 \usepackage{listings}
 \usepackage{color}
+\usepackage{hyperref}
 
 \usepackage{geometry}
 \geometry{letterpaper, margin=1.3in}
@@ -70,7 +71,7 @@ SomaticSeq.Wrapper.sh is a bash script that calls a series of scripts to combine
 
 
 
-\section{SomaticSeq.Wrapper.sh Commands}
+\section{SomaticSeq.Wrapper.sh Workflow}
 
 \subsection{To train data set into a classifier}
 
@@ -344,5 +345,11 @@ The SomaticSeq.Wrapper.sh calls a series of programs and procedures. We'll descr
 	SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred
 	\end{lstlisting}
 
+
+
+
+
+\section{Contact Us}
+For suggestions and bug reports, please email \href{mailto:li_tai.fang@bina.roche.com}{ li\_tai.fang@bina.roche.com}.
 
 \end{document}
