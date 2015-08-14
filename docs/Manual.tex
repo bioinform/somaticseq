@@ -268,7 +268,7 @@ The SomaticSeq.Wrapper.sh calls a series of programs and procedures. We'll descr
 	
 	
 	\begin{lstlisting}
-	# -sniper / -varscan / -jsm / -vardict / -muse are optional. MuTect is not included because it contained little extra information other than its own classification.
+	# -sniper / -varscan / -jsm / -vardict / -muse are optional. We do not extract any additional information from MuTect's output VCF file, so -mutect is not used. 
 	SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.snp.processed.vcf -varscan VarScan2/variants.snp.vcf -jsm JSM2/variants.vcf -sniper SomaticSniper/variants.vcf -vardict VarDict/snp.variants.vcf -samT samT.vcf -samN samN.vcf -haploT haploT.vcf -haploN haploN.vcf -outfile Ensemble.sSNV.tsv
 	\end{lstlisting}
 	
