@@ -73,6 +73,27 @@ SomaticSeq is a flexible workflow that uses multiple somatic mutation callers to
 
 SomaticSeq.Wrapper.sh is a bash script that calls a series of scripts to combine the output of the somatic mutation caller(s), after the somatic mutation callers are run. Then, depending on what files are fed to SomaticSeq.Wrapper.sh, it will either train the call set into a classifier, predict high-confidence somatic mutations from the call set, or do nothing. 
 
+\subsection{Dependencies}
+
+\begin{itemize}
+
+\item
+All the .py scripts are written in Python 3 (Yes, Python 3. I deserve brownie points from Python developers). Regex in Python 3 package is also required. 
+
+\item
+R, plus the ada package in R.
+
+\item
+GATK, SAMtools, SnpEff/SnpSift, and BEDTools
+
+\item
+dbSNP in VCF format. COSMIC may be needed in the future.
+
+\item
+At least one of MuTect/Indelocator, VarScan2, JointSNVMix, SomaticSniper, VarDict, and MuSE. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
+
+\end{itemize}
+
 
 
 \section{To use SomaticSeq.Wrapper.sh}
