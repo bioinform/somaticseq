@@ -62,10 +62,14 @@
 
 
 
+\begin{sloppypar}
+
+
+
 
 \section{SomaticSeq}
 
-SomaticSeq is a flexible workflow that uses multiple somatic mutation callers to obtain a combined call set, and then use machine learning to distinguish true mutations from false positives from the call set. The manuscript is in preparation. The source code is deposited at \textit{https://github.com/bioinform/somaticseq/}. 
+SomaticSeq is a flexible workflow that uses multiple somatic mutation callers to obtain a combined call set, and then use machine learning to distinguish true mutations from false positives from the call set. The manuscript is in preparation. The project page is \href{http://bioinform.github.io/somaticseq/}{http://bioinform.github.io/somaticseq/}. 
 
 SomaticSeq.Wrapper.sh is a bash script that calls a series of scripts to combine the output of the somatic mutation caller(s), after the somatic mutation callers are run. Then, depending on what files are fed to SomaticSeq.Wrapper.sh, it will either train the call set into a classifier, predict high-confidence somatic mutations from the call set, or do nothing. 
 
@@ -352,4 +356,6 @@ The SomaticSeq.Wrapper.sh calls a series of programs and procedures. We'll descr
 \section{Contact Us}
 For suggestions and bug reports, please email \href{mailto:li_tai.fang@bina.roche.com}{ li\_tai.fang@bina.roche.com}.
 
+
+\end{sloppypar}
 \end{document}
