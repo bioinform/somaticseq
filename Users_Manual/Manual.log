@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.4.12)  14 AUG 2015 11:17
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.4.12)  14 AUG 2015 11:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -563,12 +563,17 @@ File: omlcmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <8> not available
 (Font)              Font shape `OML/cmm/m/it' tried instead on input line 145.
  [3] [4] [5] [6]
+Overfull \hbox (34.55273pt too wide) in paragraph at lines 337--338
+[]\OT1/cmr/m/n/10 After mu-ta-tion pre-dic-tion, if you feel like it, you may c
+on-vert Trained.sSNV.tsv and Trained.sINDEL.tsv
+ []
+
 [7] (./Manual.aux) ) 
 Here is how much of TeX's memory you used:
- 5449 strings out of 493304
- 71091 string characters out of 6139871
+ 5459 strings out of 493304
+ 71192 string characters out of 6139871
  549594 words of memory out of 5000000
- 8814 multiletter control sequences out of 15000+600000
+ 8824 multiletter control sequences out of 15000+600000
  10487 words of font info for 40 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
  38i,6n,45p,636b,1686s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -581,7 +586,7 @@ xlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texlive/te
 xmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist
 /fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/
 type1/public/amsfonts/cm/cmti10.pfb>
-Output written on Manual.pdf (7 pages, 150459 bytes).
+Output written on Manual.pdf (7 pages, 154017 bytes).
 PDF statistics:
  64 PDF objects out of 1000 (max. 8388607)
  45 compressed objects within 1 object stream
