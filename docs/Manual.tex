@@ -69,7 +69,7 @@
 
 \section{Introduction}
 
-SomaticSeq is a flexible workflow that uses multiple somatic mutation callers to obtain a combined call set, and then use machine learning to distinguish true mutations from false positives from the call set. The manuscript is in preparation. The project page is \href{http://bioinform.github.io/somaticseq/}{http://bioinform.github.io/somaticseq/}. 
+SomaticSeq is a flexible workflow that uses multiple somatic mutation callers to obtain a combined call set, and then use machine learning to distinguish true mutations from false positives from the call set. The manuscript is in preparation. The project page is \href{http://bioinform.github.io/somaticseq/}{\textit{http://bioinform.github.io/somaticseq/}}. 
 
 SomaticSeq.Wrapper.sh is a bash script that calls a series of scripts to combine the output of the somatic mutation caller(s), after the somatic mutation callers are run. Then, depending on what files are fed to SomaticSeq.Wrapper.sh, it will either train the call set into a classifier, predict high-confidence somatic mutations from the call set, or do nothing. 
 
@@ -78,7 +78,7 @@ SomaticSeq.Wrapper.sh is a bash script that calls a series of scripts to combine
 \begin{itemize}
 
 \item
-All the .py scripts are written in Python 3 (Yes, Python 3. I deserve brownie points from Python developers). Regex in Python 3 package is also required. 
+All the .py scripts are written in Python 3 (Yes, Python 3. I deserve brownie points from Python developers). The regex package in Python 3 is also required. 
 
 \item
 R, plus the ada package in R.
@@ -124,7 +124,7 @@ SomaticSeq.Wrapper.sh -M MuTect/variants.snp.vcf -I Indelocator/variants.indel.v
 
 \section{The step-by-step SomaticSeq Workflow}
 
-The SomaticSeq.Wrapper.sh calls a series of programs and procedures. We'll describe the workflow here, so you may modify it for your own needs. 
+The SomaticSeq.Wrapper.sh calls a series of programs and procedures. We'll describe the workflow here, so you may modify things and create your own workflow instead of using the wrapper script. 
 
 
 \subsection{Combine the call sets}
@@ -191,10 +191,10 @@ modify_VJSD.py -method SomaticSniper -infile input.vcf -outfile output.vcf
 	
 % VarDict
 \item	
-VarDict has both SNV and INDEL, plus some other variants in the same VCF file. Our script will create two files, one for SNV and one for INDEL, while everything else is ignored for now. By default, LikelySomatic and StrongSomatic PASS calls will be labeled VarDict. However, in our SomaticSeq paper, based on our experience in DREAM Challenge, we implemented two custom filters to relax the VarDict tagging criteria. 
+VarDict has both SNV and INDEL, plus some other variants in the same VCF file. Our script will create two files, one for SNV and one for INDEL, while everything else is ignored for now. By default, LikelySomatic/StrongSomatic and PASS calls will be labeled VarDict. However, in our SomaticSeq paper, based on our experience in DREAM Challenge, we implemented two custom filters to relax the VarDict tagging criteria. 
 	
 \begin{lstlisting}
-# Default VarDict tagging criteria:
+# Default VarDict tagging criteria, only PASS (and Likely or Strong Somatic):
 modify_VJSD.py -method VarDict -infile intput.vcf -outfile output.vcf
 	
 # When running VarDict, if var2vcf_paired.pl is used to generate the VCF file, you may relax the tagging criteria with -filter paired
@@ -204,6 +204,9 @@ modify_VJSD.py -method VarDict -infile intput.vcf -outfile output.vcf -filter pa
 modify_VJSD.py -method VarDict -infile intput.vcf -outfile output.vcf -filter somatic
 \end{lstlisting}
 	
+
+In the SomaticSeq paper, -filter somatic was used because var2vcf\_somatic.pl was used to generate VarDict's VCF files. In the SomaticSeq.Wrapper.sh script, however, -filter paired is used because VarDict authors have since recommended var2vcf\_paired.pl script to create the VCF files. While there are some differences (different stringencies in some filters) in what VarDict labels as PASS between the somatic.pl and paired.pl scripts, the difference is miniscule after applying our custom filter (which relaxes the filter, resulting in a difference about 5 calls out of 15,000). 
+
 The output files will be snp.output.vcf and indel.output.vcf. 
 
 
