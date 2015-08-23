@@ -332,7 +332,7 @@ SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.snp.processed.vc
 \end{lstlisting}
 
 
-That was for SNV, INDEL is almost the same thing:
+That was for SNV, INDEL is almost the same thing. Since 2.0, DP4 (i.e., 4 numbers related to read depth: forward reference read counts, reverse reference read counts, forward alternate read counts, and reverse alternate read counts) for INDEL are extracted from SAMtools mpileup instead of SAMtools VCF.
 
 \begin{lstlisting}
 # Make fifo for SAMtools and HaplotypeCaller outputs:
@@ -342,12 +342,16 @@ mkfifo samN.indel.vcf.fifo samT.indel.vcf.fifo haploN.indel.vcf.fifo haploT.inde
 samtools mpileup -B -uf genome.GRCh37.fa normal.bam -l somatic.indel.processed.vcf | bcftools view -cg - | egrep '^#|INDEL' > samN.indel.vcf.fifo &
 samtools mpileup -B -uf genome.GRCh37.fa tumor.bam -l somatic.indel.processed.vcf | bcftools view -cg - | egrep '^#|INDEL' > samT.indel.vcf.fifo &
 
+# DP4 comes from pileup files:
+samtools mpileup -B -f genome.GRCh37.fa normal.bam -l somatic.indel.processed.vcf > plN.indel.pileup.fifo &
+samtools mpileup -B -f genome.GRCh37.fa tumor.bam -l somatic.indel.processed.vcf > plT.indel.pileup.fifo &
+
 # Same concept for HaplotypeCaller. Keep only INDELs.
 java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.indel.processed.vcf --emitRefConfidence BP_RESOLUTION -I normal.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > haploN.indel.vcf.fifo &
 java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.indel.processed.vcf --emitRefConfidence BP_RESOLUTION -I tumor.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > haploT.indel.vcf.fifo &
 
 # Stream those .fifo into my script		
-SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.indel.processed.vcf -varscan VarScan2/variants.snp.vcf -vardict VarDict/indel.variants.vcf -samT samT.indel.vcf.fifo -samN samN.indel.vcf.fifo -haploT haploT.indel.vcf.fifo -haploN haploN.indel.vcf.fifo -outfile Ensemble.sINDEL.tsv
+SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.indel.processed.vcf -varscan VarScan2/variants.snp.vcf -vardict VarDict/indel.variants.vcf -samT samT.indel.vcf.fifo -samN samN.indel.vcf.fifo -plT plT.indel.pileup.fifo -plN plN.indel.pileup.fifo -haploT haploT.indel.vcf.fifo -haploN haploN.indel.vcf.fifo -outfile Ensemble.sINDEL.tsv
 \end{lstlisting}
 
 

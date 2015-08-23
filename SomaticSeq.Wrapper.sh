@@ -287,11 +287,14 @@ then
 
 
 	## Convert the sSNV file into TSV file, for machine learning data:
-	mkfifo ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo
+	mkfifo ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo ${merged_dir}/plN.indel.pileup.fifo ${merged_dir}/plT.indel.pileup.fifo
 
 	# Only INDEL
 	samtools mpileup -B -uf ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.indel.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samN.indel.vcf.fifo &
 	samtools mpileup -B -uf ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.indel.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samT.indel.vcf.fifo &
+
+	samtools mpileup -B -f  ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.indel.vcf > ${merged_dir}/plN.indel.pileup.fifo &
+	samtools mpileup -B -f  ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.indel.vcf > ${merged_dir}/plT.indel.pileup.fifo &
 
 	# Only INDEL
 	java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --dbsnp $dbsnp --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.indel.vcf --emitRefConfidence BP_RESOLUTION -I ${nbam} --out /dev/stdout \
@@ -322,11 +325,13 @@ then
 	$vardict_input \
 	-samT ${merged_dir}/samT.indel.vcf.fifo \
 	-samN ${merged_dir}/samN.indel.vcf.fifo \
+        -plT ${merged_dir}/plT.indel.pileup.fifo \
+	-plN ${merged_dir}/plN.indel.pileup.fifo \
 	-haploT ${merged_dir}/haploT.indel.vcf.fifo \
 	-haploN ${merged_dir}/haploN.indel.vcf.fifo \
 	-outfile ${merged_dir}/Ensemble.sINDEL.tsv
 
-	rm ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo
+	rm ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo ${merged_dir}/plN.indel.pileup.fifo ${merged_dir}/plT.indel.pileup.fifo
 
 	# If a classifier is used, use it:
 	if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]

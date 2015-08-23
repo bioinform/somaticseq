@@ -5,29 +5,34 @@
 # Input VCF can either be .vcf or .vcf.gz. 
 
 # Now supports MuSE
+# Now supports pileup (for INDEL)
+# Indel Lenght now can be +/- for insertions/deletions
 
 import sys, argparse, math, gzip, os
 import regex as re
 import genomic_file_handlers as genome
+import pileup_reader as pileup
 
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-myvcf',   '--vcf-file', type=str, help='My VCF', required=True, default=None)
 
-parser.add_argument('-samN',    '--samtools-normal-vcf-file', type=str, help='Normal VCF File', required=True, default=None)
-parser.add_argument('-samT',    '--samtools-tumor-vcf-file', type=str, help='Tumor VCF File', required=True, default=None)
-parser.add_argument('-haploN',  '--haplo-normal-vcf-file', type=str, help='Normal VCF File', required=True, default=None)
-parser.add_argument('-haploT',  '--haplo-tumor-vcf-file', type=str, help='Tumor VCF File', required=True, default=None)
+parser.add_argument('-samN',    '--samtools-normal-vcf-file', type=str, help='Normal VCF File',    required=False, default=True)
+parser.add_argument('-samT',    '--samtools-tumor-vcf-file',  type=str, help='Tumor VCF File',     required=False, default=True)
+parser.add_argument('-haploN',  '--haplo-normal-vcf-file',    type=str, help='Normal VCF File',    required=False, default=True)
+parser.add_argument('-haploT',  '--haplo-tumor-vcf-file',     type=str, help='Tumor VCF File',     required=False, default=True)
+parser.add_argument('-plN',     '--samtools-normal-pileup',   type=str, help='Normal pileup File', required=False, default=None)
+parser.add_argument('-plT',     '--samtools-tumor-pileup',    type=str, help='Tumor pileup File',  required=False, default=None)
 
-parser.add_argument('-mutect',  '--mutect-vcf', type=str, help='MuTect VCF. Just a place holder for now because no information from MuTect\'s VCF is used.', required=False, default=None)
+parser.add_argument('-mutect',  '--mutect-vcf',        type=str, help='MuTect VCF.',       required=False, default=None)
 parser.add_argument('-sniper',  '--somaticsniper-vcf', type=str, help='SomaticSniper VCF', required=False, default=None)
-parser.add_argument('-varscan', '--varscan-vcf', type=str, help='VarScan2 VCF', required=False, default=None)
-parser.add_argument('-jsm',     '--jsm-vcf', type=str, help='JointSNVMix2 VCF', required=False, default=None)
-parser.add_argument('-vardict', '--vardict-vcf', type=str, help='VarDict VCF', required=False, default=None)
-parser.add_argument('-muse',    '--muse-vcf', type=str, help='MuSE VCF', required=False, default=None)
+parser.add_argument('-varscan', '--varscan-vcf',       type=str, help='VarScan2 VCF',      required=False, default=None)
+parser.add_argument('-jsm',     '--jsm-vcf',           type=str, help='JointSNVMix2 VCF',  required=False, default=None)
+parser.add_argument('-vardict', '--vardict-vcf',       type=str, help='VarDict VCF',       required=False, default=None)
+parser.add_argument('-muse',    '--muse-vcf',          type=str, help='MuSE VCF',          required=False, default=None)
 
-parser.add_argument('-fai',     '--reference-fasta-fai', type=str, help='Use the fasta.fai file to get the valid contigs', required=False, default=None)
-parser.add_argument('-dict',    '--reference-fasta-dict', type=str, help='Use the reference dict file to get the valid contigs', required=False, default=None)
+parser.add_argument('-fai',     '--reference-fasta-fai',  type=str, help='Use the fasta.fai file to get the contigs',      required=False, default=None)
+parser.add_argument('-dict',    '--reference-fasta-dict', type=str, help='Use the reference dict file to get the contigs', required=False, default=None)
 
 parser.add_argument('-scale',   '--p-scale', type=str, help='phred, fraction, or none', required=False, default=None)
 
@@ -39,16 +44,18 @@ args = parser.parse_args()
 # Rename input:
 myvcf     = args.vcf_file
 
-samN      = args.samtools_normal_vcf_file
-samT      = args.samtools_tumor_vcf_file
-haploN    = args.haplo_normal_vcf_file
-haploT    = args.haplo_tumor_vcf_file
-mutectv   = args.mutect_vcf if args.mutect_vcf else os.devnull
-sniperv   = args.somaticsniper_vcf if args.somaticsniper_vcf else os.devnull
-varscanv  = args.varscan_vcf if args.varscan_vcf else os.devnull
-jsmv      = args.jsm_vcf if args.jsm_vcf else os.devnull
-vardictv  = args.vardict_vcf if args.vardict_vcf else os.devnull
-musev     = args.muse_vcf if args.muse_vcf else os.devnull
+samN      = args.samtools_normal_vcf_file if args.samtools_normal_vcf_file else os.devnull
+samT      = args.samtools_tumor_vcf_file  if args.samtools_tumor_vcf_file  else os.devnull
+haploN    = args.haplo_normal_vcf_file    if args.haplo_normal_vcf_file    else os.devnull
+haploT    = args.haplo_tumor_vcf_file     if args.haplo_tumor_vcf_file     else os.devnull
+plN       = args.samtools_normal_pileup   if args.samtools_normal_pileup   else os.devnull
+plT       = args.samtools_tumor_pileup    if args.samtools_tumor_pileup    else os.devnull
+mutectv   = args.mutect_vcf               if args.mutect_vcf               else os.devnull
+sniperv   = args.somaticsniper_vcf        if args.somaticsniper_vcf        else os.devnull
+varscanv  = args.varscan_vcf              if args.varscan_vcf              else os.devnull
+jsmv      = args.jsm_vcf                  if args.jsm_vcf                  else os.devnull
+vardictv  = args.vardict_vcf              if args.vardict_vcf              else os.devnull
+musev     = args.muse_vcf                 if args.muse_vcf                 else os.devnull
 
 fai_file  = args.reference_fasta_fai
 dict_file = args.reference_fasta_dict
@@ -69,7 +76,6 @@ else:
 
 
 # Convert contig_sequence to chrom_seq dict:
-
 if dict_file:
     chrom_seq = genome.faiordict2contigorder(dict_file, 'dict')
 elif fai_file:
@@ -102,6 +108,22 @@ def rescale(x, original=None, rescale_to=p_scale, max_phred=1001):
         y = '%.2f' % y
     return y
     
+
+
+##### Extract Indel DP4 info from pileup files:
+def pileup_indel_DP4(pileup_object, indel_pattern):
+    if pileup_object.reads:
+        ref_for = pileup_object.reads.count('.')
+        ref_rev = pileup_object.reads.count(',')
+        alt_for = pileup_object.reads.count( indel_pattern.upper() )
+        alt_rev = pileup_object.reads.count( indel_pattern.lower() )
+        
+        dp4     = ref_for, ref_rev, alt_for, alt_rev
+        
+    else:
+        dp4 = nan,nan,nan,nan
+
+    return dp4
 
 
 ##### Extract information from external vcf files:
@@ -448,6 +470,8 @@ out_header = \
 with genome.open_textfile(myvcf) as my_vcf, \
 genome.open_textfile(samN)       as samN, \
 genome.open_textfile(samT)       as samT, \
+genome.open_textfile(plN)         as plN, \
+genome.open_textfile(plT)         as plT, \
 genome.open_textfile(haploN)     as haploN, \
 genome.open_textfile(haploT)     as haploT, \
 genome.open_textfile(mutectv)    as mutect, \
@@ -462,6 +486,8 @@ open(outfile, 'w')               as outhandle:
     my_line      = my_vcf.readline().rstrip()
     nsam_line    = samN.readline().rstrip()
     tsam_line    = samT.readline().rstrip()
+    npileup_line = plN.readline().rstrip()
+    tpileup_line = plT.readline().rstrip()
     nhaplo_line  = haploN.readline().rstrip()
     thaplo_line  = haploT.readline().rstrip()
     mutect_line  = mutect.readline().rstrip()
@@ -528,7 +554,8 @@ open(outfile, 'w')               as outhandle:
             
             # If it's a "complex" variant (very rare), get me the first entry. 
             first_alt = my_vcfcall.altbase.split(',')[0]
-        
+            indel_length = len(first_alt) - len(my_vcfcall.refbase)
+            
             ### Somatic Callers:
             caller_positives = my_vcfcall.get_info_value('SOURCES')
             
@@ -642,9 +669,8 @@ open(outfile, 'w')               as outhandle:
                         site_homopolymer_length = nan
             
                     
-                    # Indel length:
-                    indel_length = abs( len(first_alt) - len(latest_vardict.refbase) )
-                    
+                    # Indel length. Yes, indel_length was extracted before, so this could potentially override that because this takes VarDict's assessment. 
+                    indel_length = len(first_alt) - len(latest_vardict.refbase)
                     
                     ## VarDict's sample info:
                     # Mean mismatch:
@@ -719,12 +745,12 @@ open(outfile, 'w')               as outhandle:
             
                 # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                 else:
-                    sor = msi = msilen = shift3 = homopolymer_length = site_homopolymer_length = indel_length = n_nm = t_nm = n_pmean = t_pmean = n_pstd = t_pstd = n_qstd = t_qstd = n_vqual = t_vqual = score_vardict = nan
+                    sor = msi = msilen = shift3 = homopolymer_length = site_homopolymer_length = n_nm = t_nm = n_pmean = t_pmean = n_pstd = t_pstd = n_qstd = t_qstd = n_vqual = t_vqual = score_vardict = nan
                     vardict_line = latest_vardict.vcf_line
                     
             else:
                 
-                sor = msi = msilen = shift3 = homopolymer_length = site_homopolymer_length = indel_length = n_nm = t_nm = n_pmean = t_pmean = n_pstd = t_pstd = n_qstd = t_qstd = n_vqual = t_vqual = score_vardict = nan
+                sor = msi = msilen = shift3 = homopolymer_length = site_homopolymer_length = n_nm = t_nm = n_pmean = t_pmean = n_pstd = t_pstd = n_qstd = t_qstd = n_vqual = t_vqual = score_vardict = nan
             
             
             
@@ -971,6 +997,8 @@ open(outfile, 'w')               as outhandle:
                 
             
             
+
+
             #################### Find the same coordinate in TUMOR vcf by GATK Haplotype ####################
             # Things to extract (if available): 
             # DP, MQ, MQ0, MLEAC, MLEAF, BaseQRankSum, ClippingRankSum, LikelihoodRankSum, ReadPosRankSum, MQRankSum
@@ -1002,6 +1030,74 @@ open(outfile, 'w')               as outhandle:
                 
                 T_mq0 = T_mleac = T_mleaf = T_baseQrank = T_cliprank = T_likelirank = T_readposrank = T_mqrank = T_Hdp = T_Hmq = nan
 
+            
+            
+            ############################ Find the same coordinate in NORMAL pileup ############################
+            ## This is written after the SAMtools VCF because it could potentially replace them
+            if plN:
+                latest_npileup_run   = genome.catchup(my_coordinate, npileup_line, plN, chrom_seq)
+                latest_pileupnormal  = pileup.Pileup_line(latest_npileup_run[1])
+                
+                # If the position exists in the pileup file (as it should, but just in case shit happens):
+                if latest_npileup_run[0]:
+                    
+                    assert int(my_vcfcall.position) == latest_pileupnormal.position
+                    
+                    if indel_length > 0:
+                        inserted = first_alt[ len(my_vcfcall.refbase):: ]
+                        alt_pattern = r'\+{}{}'.format( len(inserted), inserted )
+                        
+                    elif indel_length < 0:
+                        deleted = my_vcfcall.refbase[ len(first_alt) :: ]
+                        alt_pattern = r'-{}{}'.format( len(deleted), deleted )
+                    
+                    if indel_length != 0:
+                        # Normal pileup info extraction:
+                        N_ref_for,N_ref_rev,N_alt_for,N_alt_rev = pileup_indel_DP4(latest_pileupnormal, alt_pattern)
+                                    
+                    # Reset the current line:
+                    npileup_line = latest_pileupnormal.pileup_line
+                    
+                # If the position does not exist in this vcf file, in which case the sam_vcf should have gone past the my_coordinate:
+                else:
+                    npileup_line = latest_pileupnormal.pileup_line
+
+
+
+            ############################ Find the same coordinate in TUMOR pileup ############################
+            if plT:
+                latest_tpileup_run   = genome.catchup(my_coordinate, tpileup_line, plT, chrom_seq)
+                latest_pileuptumor   = pileup.Pileup_line(latest_tpileup_run[1])
+                
+                # If the position exists in the pileup file (as it should, but just in case shit happens):
+                if latest_tpileup_run[0]:
+                    
+                    assert int(my_vcfcall.position) == latest_pileuptumor.position
+                    
+                    if indel_length > 0:
+                        inserted = first_alt[ len(my_vcfcall.refbase):: ]
+                        alt_pattern = r'\+{}{}'.format( len(inserted), inserted )
+                        
+                    elif indel_length < 0:
+                        deleted = my_vcfcall.refbase[ len(first_alt) :: ]
+                        alt_pattern = r'-{}{}'.format( len(deleted), deleted )
+                    
+                    if indel_length != 0:
+                        # Tumor pileup info extraction:
+                        T_ref_for,T_ref_rev,T_alt_for,T_alt_rev = pileup_indel_DP4(latest_pileuptumor, alt_pattern)
+                                    
+                    # Reset the current line:
+                    tpileup_line = latest_pileuptumor.pileup_line
+                    
+                # If the position does not exist in this vcf file, in which case the sam_vcf should have gone past the my_coordinate:
+                else:
+                    tpileup_line = latest_pileuptumor.pileup_line
+
+
+
+            
+            
+            
             
             
             ###
