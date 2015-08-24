@@ -8,6 +8,8 @@
 # Now supports pileup (for INDEL)
 # Now uses VarDict's MQ (mapping quality score) if MQ is not found in SAMtools or HaplotypeCaller (mostly for INDELs).
 
+# -- 8/24/2015
+
 import sys, argparse, math, gzip, os
 import regex as re
 import genomic_file_handlers as genome
@@ -1076,7 +1078,7 @@ open(outfile, 'w')               as outhandle:
                     # Reset the current line:
                     npileup_line = latest_pileupnormal.pileup_line
                     
-                # If the position does not exist in this vcf file, in which case the sam_vcf should have gone past the my_coordinate:
+                # If the position does not exist in this pileup:
                 else:
                     npileup_line = latest_pileupnormal.pileup_line
                     N_pdp = nan
@@ -1112,7 +1114,7 @@ open(outfile, 'w')               as outhandle:
                     # Reset the current line:
                     tpileup_line = latest_pileuptumor.pileup_line
                     
-                # If the position does not exist in this vcf file, in which case the sam_vcf should have gone past the my_coordinate:
+                # If the position does not exist in this pileup:
                 else:
                     tpileup_line = latest_pileuptumor.pileup_line
                     T_pdp = nan
@@ -1120,7 +1122,7 @@ open(outfile, 'w')               as outhandle:
                 T_pdp = nan
 
             
-            # SAMtools gave no MQ, uses HaplotypeCaller's MQ:
+            # If SAMtools gave no MQ (i.e., nan), uses HaplotypeCaller's MQ:
             if math.isnan(N_mq): N_mq = N_Hmq
             
             # If HaplotypeCaller does not give MQ either, uses VarDict's.
