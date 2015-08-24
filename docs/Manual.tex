@@ -343,8 +343,8 @@ samtools mpileup -B -uf genome.GRCh37.fa normal.bam -l somatic.indel.processed.v
 samtools mpileup -B -uf genome.GRCh37.fa tumor.bam -l somatic.indel.processed.vcf | bcftools view -cg - | egrep '^#|INDEL' > samT.indel.vcf.fifo &
 
 # DP4 comes from pileup files for INDELS:
-samtools mpileup -B -f genome.GRCh37.fa normal.bam -l somatic.indel.processed.vcf > plN.indel.pileup.fifo &
-samtools mpileup -B -f genome.GRCh37.fa tumor.bam -l somatic.indel.processed.vcf > plT.indel.pileup.fifo &
+samtools mpileup -B -q 1 -f genome.GRCh37.fa normal.bam -l somatic.indel.processed.vcf > plN.indel.pileup.fifo &
+samtools mpileup -B -q 1 -f genome.GRCh37.fa tumor.bam -l somatic.indel.processed.vcf > plT.indel.pileup.fifo &
 
 # Same concept for HaplotypeCaller. Keep only INDELs.
 java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.indel.processed.vcf --emitRefConfidence BP_RESOLUTION -I normal.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > haploN.indel.vcf.fifo &
