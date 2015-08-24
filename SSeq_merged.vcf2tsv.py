@@ -1059,6 +1059,8 @@ open(outfile, 'w')               as outhandle:
                     
                     assert int(my_vcfcall.position) == latest_pileupnormal.position
                     
+                    N_pdp = latest_pileupnormal.dp
+                    
                     if indel_length > 0:
                         inserted = first_alt[ len(my_vcfcall.refbase):: ]
                         alt_pattern = '+{}{}'.format( len(inserted), inserted )
@@ -1077,6 +1079,9 @@ open(outfile, 'w')               as outhandle:
                 # If the position does not exist in this vcf file, in which case the sam_vcf should have gone past the my_coordinate:
                 else:
                     npileup_line = latest_pileupnormal.pileup_line
+                    N_pdp = nan
+            else:
+                N_pdp = nan
 
 
 
@@ -1089,6 +1094,8 @@ open(outfile, 'w')               as outhandle:
                 if latest_tpileup_run[0]:
                     
                     assert int(my_vcfcall.position) == latest_pileuptumor.position
+                    
+                    T_pdp = latest_pileuptumor.dp
                     
                     if indel_length > 0:
                         inserted = first_alt[ len(my_vcfcall.refbase):: ]
@@ -1108,7 +1115,9 @@ open(outfile, 'w')               as outhandle:
                 # If the position does not exist in this vcf file, in which case the sam_vcf should have gone past the my_coordinate:
                 else:
                     tpileup_line = latest_pileuptumor.pileup_line
-
+                    T_pdp = nan
+            else:
+                T_pdp = nan
 
             
             # SAMtools gave no MQ, uses HaplotypeCaller's MQ:
@@ -1117,21 +1126,25 @@ open(outfile, 'w')               as outhandle:
             # If HaplotypeCaller does not give MQ either, uses VarDict's.
             if math.isnan(N_mq): N_mq = N_mq_vd
             
-            
+            # Same for Tumor:
             if math.isnan(T_mq): T_mq = T_Hmq
             if math.isnan(T_mq): T_mq = T_mq_vd
             
             
+            # HaplotypeCaller depth takes precedence, followed by SAMtools, followed by pileup
             if not math.isnan(N_Hdp):
                 N_dp = N_Hdp
-            else:
+            elif not math.isnan(N_Sdp):
                 N_dp = N_Sdp
-            
+            else:
+                N_dp = N_pdp
             
             if not math.isnan(T_Hdp):
                 T_dp = T_Hdp
+            elif not math.isnan(T_Sdp):
+                T_dp = T_Sdp
             else:
-                T_dp = T_Hdp
+                T_dp = T_pdp
             
             
             ###
