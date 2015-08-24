@@ -940,7 +940,12 @@ open(outfile, 'w')               as outhandle:
                 # Normal samtools info extraction:
                 N_ref_for,N_ref_rev,N_alt_for,N_alt_rev = sam_info_DP4(latest_samnormal)
                 N_p_strandbias,N_p_baseQbias,N_p_mapQbias,N_p_taildisbias = sam_info_PV4(latest_samnormal)
-                N_Sdp = latest_samnormal.get_info_value('DP')
+                
+                try:
+                    N_Sdp = eval( latest_samnormal.get_info_value('DP') )
+                except TypeError:
+                    N_Sdp = nan
+                
                 N_mq  = sam_info_MQ(latest_samnormal)
                                 
                 # Reset the current line:
@@ -1000,7 +1005,12 @@ open(outfile, 'w')               as outhandle:
                 
                 T_ref_for,T_ref_rev,T_alt_for,T_alt_rev = sam_info_DP4(latest_samtumor)
                 T_p_strandbias,T_p_baseQbias,T_p_mapQbias,T_p_taildisbias = sam_info_PV4(latest_samtumor)
-                T_Sdp  = latest_samtumor.get_info_value('DP')
+                
+                try:
+                    T_Sdp  = eval( latest_samtumor.get_info_value('DP') )
+                except TypeError:
+                    T_Sdp = nan
+                
                 T_mq  = sam_info_MQ(latest_samtumor)
                 
                 # Reset the current line:
