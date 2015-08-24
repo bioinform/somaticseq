@@ -332,7 +332,7 @@ SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.snp.processed.vc
 \end{lstlisting}
 
 
-That was for SNV, INDEL is almost the same thing. Since 2.0, DP4 (i.e., 4 numbers related to read depth: forward reference read counts, reverse reference read counts, forward alternate read counts, and reverse alternate read counts) for INDEL are extracted from SAMtools mpileup instead of SAMtools VCF.
+That was for SNV, INDEL is almost the same thing. After version 1.1, DP4 (i.e., 4 numbers related to read depth: forward reference read counts, reverse reference read counts, forward alternate read counts, and reverse alternate read counts) for INDEL are extracted from SAMtools mpileup instead of SAMtools VCF. SAMtools VCF has these information for INDELs only if it calls an INDEL variant at the site, so it's more appropriate to grab that information directly from pileup. In addition, if depth is not found in SAMtools or HaplotypeCaller (simply because they do not call INDEL variants in those sites), that's directly extracted from pileup as well. 
 
 \begin{lstlisting}
 # Make fifo for SAMtools and HaplotypeCaller outputs:
@@ -342,7 +342,7 @@ mkfifo samN.indel.vcf.fifo samT.indel.vcf.fifo haploN.indel.vcf.fifo haploT.inde
 samtools mpileup -B -uf genome.GRCh37.fa normal.bam -l somatic.indel.processed.vcf | bcftools view -cg - | egrep '^#|INDEL' > samN.indel.vcf.fifo &
 samtools mpileup -B -uf genome.GRCh37.fa tumor.bam -l somatic.indel.processed.vcf | bcftools view -cg - | egrep '^#|INDEL' > samT.indel.vcf.fifo &
 
-# DP4 comes from pileup files:
+# DP4 comes from pileup files for INDELS:
 samtools mpileup -B -f genome.GRCh37.fa normal.bam -l somatic.indel.processed.vcf > plN.indel.pileup.fifo &
 samtools mpileup -B -f genome.GRCh37.fa tumor.bam -l somatic.indel.processed.vcf > plT.indel.pileup.fifo &
 
