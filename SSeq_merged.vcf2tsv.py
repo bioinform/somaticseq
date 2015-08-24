@@ -6,6 +6,7 @@
 
 # Now supports MuSE
 # Now supports pileup (for INDEL)
+# Now uses VarDict's MQ (mapping quality score) if MQ is not found in SAMtools or HaplotypeCaller (mostly for INDELs).
 
 import sys, argparse, math, gzip, os
 import regex as re
@@ -724,6 +725,7 @@ open(outfile, 'w')               as outhandle:
                     except TypeError:
                         t_qstd = nan
                     
+                    # Quality Score
                     n_vqual = latest_vardict.get_sample_value('QUAL', vdN)
                     try:
                         n_vqual = eval( n_vqual )
@@ -737,6 +739,21 @@ open(outfile, 'w')               as outhandle:
                         t_vqual = nan
         
         
+                    # Mapping Score
+                    N_mq_vd = latest_vardict.get_sample_value('MQ', vdN)
+                    try:
+                        N_mq_vd = eval( N_mq_vd )
+                    except TypeError:
+                        N_mq_vd = nan
+                        
+                    T_mq_vd = latest_vardict.get_sample_value('MQ', vdT)
+                    try:
+                        T_mq_vd = eval( T_mq_vd )
+                    except TypeError:
+                        T_mq_vd = nan
+        
+
+        
                     # Reset the current line:
                     vardict_line = latest_vardict.vcf_line
 
@@ -744,12 +761,12 @@ open(outfile, 'w')               as outhandle:
             
                 # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                 else:
-                    sor = msi = msilen = shift3 = homopolymer_length = site_homopolymer_length = n_nm = t_nm = n_pmean = t_pmean = n_pstd = t_pstd = n_qstd = t_qstd = n_vqual = t_vqual = score_vardict = nan
+                    sor = msi = msilen = shift3 = homopolymer_length = site_homopolymer_length = n_nm = t_nm = n_pmean = t_pmean = n_pstd = t_pstd = n_qstd = t_qstd = n_vqual = t_vqual = N_mq_vd = T_mq_vd = score_vardict = nan
                     vardict_line = latest_vardict.vcf_line
                     
             else:
                 
-                sor = msi = msilen = shift3 = homopolymer_length = site_homopolymer_length = n_nm = t_nm = n_pmean = t_pmean = n_pstd = t_pstd = n_qstd = t_qstd = n_vqual = t_vqual = score_vardict = nan
+                sor = msi = msilen = shift3 = homopolymer_length = site_homopolymer_length = n_nm = t_nm = n_pmean = t_pmean = n_pstd = t_pstd = n_qstd = t_qstd = n_vqual = t_vqual = N_mq_vd = T_mq_vd = score_vardict = nan
             
             
             
@@ -1093,15 +1110,16 @@ open(outfile, 'w')               as outhandle:
                     tpileup_line = latest_pileuptumor.pileup_line
 
 
-
             
-            
-            
-            
-            
-            ###
+            # SAMtools gave no MQ, uses HaplotypeCaller's MQ:
             if math.isnan(N_mq): N_mq = N_Hmq
+            
+            # If HaplotypeCaller does not give MQ either, uses VarDict's.
+            if math.isnan(N_mq): N_mq = N_mq_vd
+            
+            
             if math.isnan(T_mq): T_mq = T_Hmq
+            if math.isnan(T_mq): T_mq = T_mq_vd
             
             
             if not math.isnan(N_Hdp):
