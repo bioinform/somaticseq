@@ -6,7 +6,6 @@
 
 # Now supports MuSE
 # Now supports pileup (for INDEL)
-# Indel Lenght now can be +/- for insertions/deletions
 
 import sys, argparse, math, gzip, os
 import regex as re
@@ -17,10 +16,10 @@ import pileup_reader as pileup
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-myvcf',   '--vcf-file', type=str, help='My VCF', required=True, default=None)
 
-parser.add_argument('-samN',    '--samtools-normal-vcf-file', type=str, help='Normal VCF File',    required=False, default=True)
-parser.add_argument('-samT',    '--samtools-tumor-vcf-file',  type=str, help='Tumor VCF File',     required=False, default=True)
-parser.add_argument('-haploN',  '--haplo-normal-vcf-file',    type=str, help='Normal VCF File',    required=False, default=True)
-parser.add_argument('-haploT',  '--haplo-tumor-vcf-file',     type=str, help='Tumor VCF File',     required=False, default=True)
+parser.add_argument('-samN',    '--samtools-normal-vcf-file', type=str, help='Normal VCF File',    required=True, default=None)
+parser.add_argument('-samT',    '--samtools-tumor-vcf-file',  type=str, help='Tumor VCF File',     required=True, default=None)
+parser.add_argument('-haploN',  '--haplo-normal-vcf-file',    type=str, help='Normal VCF File',    required=True, default=None)
+parser.add_argument('-haploT',  '--haplo-tumor-vcf-file',     type=str, help='Tumor VCF File',     required=True, default=None)
 parser.add_argument('-plN',     '--samtools-normal-pileup',   type=str, help='Normal pileup File', required=False, default=None)
 parser.add_argument('-plT',     '--samtools-tumor-pileup',    type=str, help='Tumor pileup File',  required=False, default=None)
 
