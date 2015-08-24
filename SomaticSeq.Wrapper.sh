@@ -294,7 +294,7 @@ then
 	samtools mpileup -B -uf ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.indel.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samT.indel.vcf.fifo &
 
 	samtools mpileup -B -f  ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.indel.vcf > ${merged_dir}/plN.indel.pileup.fifo &
-	samtools mpileup -B -f  ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.indel.vcf > ${merged_dir}/plT.indel.pileup.fifo &
+	samtools mpileup -B -f  ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.indel.vcf > ${merged_dir}/plT.indel.pileup.fifo &
 
 	# Only INDEL
 	java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --dbsnp $dbsnp --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.indel.vcf --emitRefConfidence BP_RESOLUTION -I ${nbam} --out /dev/stdout \
