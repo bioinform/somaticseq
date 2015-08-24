@@ -469,8 +469,8 @@ out_header = \
 with genome.open_textfile(myvcf) as my_vcf, \
 genome.open_textfile(samN)       as samN, \
 genome.open_textfile(samT)       as samT, \
-genome.open_textfile(plN)         as plN, \
-genome.open_textfile(plT)         as plT, \
+genome.open_textfile(plN)        as plN, \
+genome.open_textfile(plT)        as plT, \
 genome.open_textfile(haploN)     as haploN, \
 genome.open_textfile(haploT)     as haploT, \
 genome.open_textfile(mutectv)    as mutect, \
@@ -1044,11 +1044,11 @@ open(outfile, 'w')               as outhandle:
                     
                     if indel_length > 0:
                         inserted = first_alt[ len(my_vcfcall.refbase):: ]
-                        alt_pattern = r'\+{}{}'.format( len(inserted), inserted )
+                        alt_pattern = '+{}{}'.format( len(inserted), inserted )
                         
                     elif indel_length < 0:
                         deleted = my_vcfcall.refbase[ len(first_alt) :: ]
-                        alt_pattern = r'-{}{}'.format( len(deleted), deleted )
+                        alt_pattern = '-{}{}'.format( len(deleted), deleted )
                     
                     if indel_length != 0:
                         # Normal pileup info extraction:
@@ -1075,11 +1075,11 @@ open(outfile, 'w')               as outhandle:
                     
                     if indel_length > 0:
                         inserted = first_alt[ len(my_vcfcall.refbase):: ]
-                        alt_pattern = r'\+{}{}'.format( len(inserted), inserted )
+                        alt_pattern = '+{}{}'.format( len(inserted), inserted )
                         
                     elif indel_length < 0:
                         deleted = my_vcfcall.refbase[ len(first_alt) :: ]
-                        alt_pattern = r'-{}{}'.format( len(deleted), deleted )
+                        alt_pattern = '-{}{}'.format( len(deleted), deleted )
                     
                     if indel_length != 0:
                         # Tumor pileup info extraction:
