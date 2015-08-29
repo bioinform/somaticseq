@@ -395,33 +395,6 @@ SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0
 
 
 
-\section{Release Notes}
-
-\subsection{version 1.0}
-Version used to generate data in the manuscript
-
-\subsection{version 1.1}
-Improved the SomaticSeq.Wrapper.sh script to automate either training or prediction procedure.
-
-\subsection{Current}
-Have implemented the following improvement:
-
-\begin{itemize}
- 
- \item 
- SSeq\_merged.vcf2tsv.py now accepts pileup files, so it can extract read depth and DP4 (reference forward, reference reverse, alternate forward, and alternate reverse) information (mainly for INDELs), since the SAMtools or HaplotypeCaller generated VCFs hardly contain any INDEL information. The SomaticSeq.Wrapper.sh script is modified accordingly. 
- 
- \item
- Extract mapping quality (MQ) from VarDict output if this information cannot be found in SAMtools VCF (also mostly for INDELs). 
- 
- \item
- INDEL length now positive for insertions and negative for deletions.
- 
- 
-\end{itemize}
-
-
-
 
 \section{Contact Us}
 For suggestions and bug reports, please email \href{mailto:li_tai.fang@bina.roche.com}{li\_tai.fang@bina.roche.com}.
