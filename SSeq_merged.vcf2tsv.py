@@ -1280,7 +1280,7 @@ open(outfile, 'w')               as outhandle:
             T_LikelihoodRankSum     = T_likelirank,                                           \
             T_ReadPosRankSum        = T_readposrank,                                          \
             T_MQRankSum             = T_mqrank,                                               \
-            InDel_Length            = abs(indel_length),                                      \
+            InDel_Length            = indel_length,                                           \
             TrueVariant_or_False    = judgement )
             
             # Print it out to stdout:
