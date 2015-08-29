@@ -9,6 +9,7 @@
 # Now supports MuSE
 # Now supports pileup (Now supports both INDEL and SNV)
 # Now uses VarDict's MQ (mapping quality score) if MQ is not found in SAMtools or HaplotypeCaller (mostly for INDELs).
+# Allow +/- INDEL lengh for insertion and deletion
 
 # -- 8/28/2015
 
@@ -138,10 +139,16 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
     if base_calls:
         # SNV
         if len(variant_call) == len(ref_base):
+            
+            deleted_sequence = ref_base.lstrip(variant_call)
+            
             ref_for,ref_rev,alt_for,alt_rev = base_calls[0], base_calls[1], base_calls[2].count(variant_call.upper()), base_calls[3].count(variant_call.lower())
         
         # Insertion:
         elif len(variant_call) > len(ref_base):
+            
+            inserted_sequence = variant_call.lstrip(ref_base)
+            
             ref_for,ref_rev,alt_for,alt_rev = base_calls[0], base_calls[1], base_calls[6].count(variant_call.upper()), base_calls[7].count(variant_call.lower())
         
         # Deletion:
