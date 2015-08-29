@@ -137,6 +137,7 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
     base_calls = pileup_object.base_reads()
     
     if base_calls:
+        
         # SNV
         if len(variant_call) == len(ref_base):
             
@@ -145,16 +146,16 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
         # Insertion:
         elif len(variant_call) > len(ref_base):
             
-            inserted_sequence = variant_call.lstrip(ref_base)
+            inserted_sequence = variant_call[ len(ref_base):: ]
             
-            ref_for,ref_rev,alt_for,alt_rev = base_calls[0], base_calls[1], base_calls[6].count(variant_call.upper()), base_calls[7].count(variant_call.lower())
+            ref_for,ref_rev,alt_for,alt_rev = base_calls[0], base_calls[1], base_calls[6].count(inserted_sequence.upper()), base_calls[7].count(inserted_sequence.lower())
         
         # Deletion:
         elif len(variant_call) < len(ref_base):
             
-            deleted_sequence = ref_base.lstrip(variant_call)
+            deleted_sequence = ref_base[ len(variant_call):: ]
             
-            ref_for,ref_rev,alt_for,alt_rev = base_calls[0], base_calls[1], base_calls[4].count(variant_call.upper()), base_calls[5].count(variant_call.lower())
+            ref_for,ref_rev,alt_for,alt_rev = base_calls[0], base_calls[1], base_calls[4].count(deleted_sequence.upper()), base_calls[5].count(deleted_sequence.lower())
     
     else:
         ref_for = ref_rev = alt_for = alt_rev = 0
