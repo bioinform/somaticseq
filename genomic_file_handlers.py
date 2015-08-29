@@ -37,6 +37,7 @@ AA_3to1 = {"Ala": "A", "Arg": "R", "Asn": "N", "Asp": "D", "Cys": "C", "Glu": "E
 AA_1to3 = {"A": "Ala", "R": "Arg", "N": "Asn", "D": "Asp", "C": "Cys", "E": "Glu", "Q": "Gln", "G": "Gly", "H": "His", "I": "Ile", "L": "Leu", "K": "Lys", "M": "Met", "F": "Phe", "P": "Pro", "S": "Ser", "T": "Thr", "W": "Trp", "Y": "Tyr", "V": "Val"}
 
 
+### ### ### ### ### MAJOR CLASSES ### ### ### ### ###
 class Vcf_line:
     '''Each instance of this object is a line from the vcf file (no header).'''
     
@@ -90,14 +91,14 @@ class Vcf_line:
     
     def get_sample_value(self, variable, idx=0):
         
-        var2value = dict( zip(self.get_sample_variable(), self.samples[idx].split(':') ) )
+        var2value = dict( zip( self.field.split(':'), self.samples[idx].split(':') ))
         
         try:
             return var2value[variable]
         except KeyError:
             return None
-            
-        
+
+
 
 
 
@@ -139,6 +140,16 @@ class Bam_header:
         return values_i
 
 
+### ### ### ### ### MAJOR CLASSES OVER ### ### ### ### ###
+
+
+
+
+
+
+
+
+### ### ### ### ### FUNCTIONS OF CONVENIENCE ### ### ### ### ###
 
 def faiordict2contigorder(file_name, file_format):
     '''Takes either a .fai or .dict file, and return a contig order dictionary, i.e., chrom_seq['chr1'] == 0'''
@@ -159,7 +170,7 @@ def faiordict2contigorder(file_name, file_format):
                     contig_match = re.match(r'@SQ\tSN:([^\t]+)\tLN:', line_i)
                     
             if contig_match:
-                contig_i = contig_match.groups()[0]
+                contig_i = contig_match.groups()[0].split(' ')[0]  # some .fai files have space after the contig for descriptions. 
                 contig_sequence.append( contig_i )
                 
             line_i = gfile.readline().rstrip('\n')
@@ -216,8 +227,6 @@ def phred2p(phred):
     return 10**(-phred/10)
     
 
-
-
 def findall_index(mylist, tolookfor):
     '''Find all instances in a list that matches exactly thestring.'''
     all_indices = [i for i,mylist in enumerate(mylist) if mylist == tolookfor]
@@ -228,8 +237,6 @@ def findall_index_regex(mylist, pattern):
     '''Find all instances in a list that matches a regex pattern.'''
     all_indices = [i for i,mylist in enumerate(mylist) if re.search(pattern, mylist)]
     return all_indices
-
-
 
 
 def count_repeating_bases(sequence):
@@ -255,6 +262,17 @@ def count_repeating_bases(sequence):
     return counters
 
 
+
+def numeric_id(chr_i, pos_i, contig_seq):
+    
+    chr_i = contig_seq[chr_i]
+    numeric_chr_i = float(chr_i) * 1000000000000
+    numeric_pos_i = float(pos_i)
+    
+    numeric_i = numeric_chr_i + numeric_pos_i
+    
+    return numeric_i
+    
 
 
 
@@ -425,7 +443,7 @@ def catchup(coordinate_i, line_j, filehandle_j, chrom_sequence):
 
 
 # Read the 2nd file (i.e., filehandle_j) one line down if it's behind the i_th coordinate:
-def catchup_one_line_at_a_time(coordinate_i, line_j, filehandle_j):
+def catchup_one_line_at_a_time(coordinate_i, line_j, filehandle_j, chrom_sequence):
     
     '''
     A sister program of catch_up, the difference is that the j_th file will be read only once if the coordinate is behind i, so that it allows the programmer a chance to do something for coordinates that only occurs in j, whereas the catch_up function will keep reading until it gets to to gets past i, so the programmer has no chance to do anything for coordinates that occur only in j. 
