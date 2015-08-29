@@ -257,6 +257,10 @@ with open_my_vcf(args.my_vcf) as myvcf, \
         truth_line  = truthvcf.readline()
         
     
+    double_palm_collector.append('##FILTER=<ID=PASS,Description="Confident calls">\n')
+    double_palm_collector.append('##FILTER=<ID=LowQual,Description="Less confident calls">\n')
+    double_palm_collector.append('##FILTER=<ID=PASS,Description="Least confident calls">\n')
+    
     double_palm_collector.sort()
     
     try:
