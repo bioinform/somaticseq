@@ -111,7 +111,7 @@ To create a trained classifier, ground truth files are required for the data set
 SomaticSeq.Wrapper.sh -M MuTect/variants.snp.vcf -I Indelocator/variants.indel.vcf -V VarScan2/variants.snp.vcf -v VarScan2/variants.indel.vcf -J JointSNVMix2/variants.snp.vcf -S SomaticSniper/variants.snp.vcf -D VarDict/variants.vcf -U MuSE/variants.snp.vcf -N matched_normal.bam -T tumor.bam -R ada_model_builder.R -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/DIR/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -i ignore.bed -Z truth.snp.vcf -z truth.indel.vcf -o $OUTPUT_DIR
 \end{lstlisting}
 
-SomaticSeq.Wrapper.sh supports any combination of the somatic mutation callers we have incorporated into the workflow, so -M/-I/-V/-v/-J/-S/-D/-U are all optional parameters. SomaticSeq will run based on the output VCFs you have provided. It will train SNV and/or INDEL if you provide the truth.snp.vcf and/or truth.indel.vcf file(s).
+SomaticSeq.Wrapper.sh supports any combination of the somatic mutation callers we have incorporated into the workflow, so -M/-I/-V/-v/-J/-S/-D/-U are all optional parameters. SomaticSeq will run based on the output VCFs you have provided. It will train SNV and/or indel if you provide the truth.snp.vcf and/or truth.indel.vcf file(s).
 
 
 
@@ -160,7 +160,7 @@ modify_MuTect.py -type snp -infile input.vcf -outfile output.vcf -nsm NormalSamp
 \item
 Modify VarScan's output VCF files to be rigorously concordant to VCF format standard, and to attach the tag 'VarScan2' to somatic calls. 
 \begin{lstlisting}
-# Do it for both the SNV and INDEL
+# Do it for both the SNV and indel
 modify_VJSD.py -method VarScan2 -infile input.vcf -outfile output.vcf
 \end{lstlisting}
 	
@@ -205,7 +205,7 @@ modify_VJSD.py -method SomaticSniper -infile input.vcf -outfile output.vcf
 	
 % VarDict
 \item	
-VarDict has both SNV and INDEL, plus some other variants in the same VCF file. Our script will create two files, one for SNV and one for INDEL, while everything else is ignored for now. By default, LikelySomatic/StrongSomatic and PASS calls will be labeled VarDict. However, in our SomaticSeq paper, based on our experience in DREAM Challenge, we implemented two custom filters to relax the VarDict tagging criteria. 
+VarDict has both SNV and indel, plus some other variants in the same VCF file. Our script will create two files, one for SNV and one for indel, while everything else is ignored for now. By default, LikelySomatic/StrongSomatic and PASS calls will be labeled VarDict. However, in our SomaticSeq paper, based on our experience in DREAM Challenge, we implemented two custom filters to relax the VarDict tagging criteria. 
 	
 \begin{lstlisting}
 # Default VarDict tagging criteria, only PASS (and Likely or Strong Somatic):
@@ -234,7 +234,7 @@ modify_VJSD.py -method MuSE -infile input.vcf -outfile output.vcf
 
 % GATK CombineVariants
 \item
-Finally, with the VCF files modified, you may combine them with GATK CombineVariants: one for SNV and one for INDEL separately. There is no particular reason to use GATK CombineVariants. Other combiners should also work. The only useful thing here is to combine the calls, and preserve the tags we have written into each individual VCF file's INFO. 
+Finally, with the VCF files modified, you may combine them with GATK CombineVariants: one for SNV and one for indel separately. There is no particular reason to use GATK CombineVariants. Other combiners should also work. The only useful thing here is to combine the calls, and preserve the tags we have written into each individual VCF file's INFO. 
 	
 \begin{lstlisting}
 # Combine the VCF files for SNV. Any or all of the VCF files may be present.
@@ -263,18 +263,18 @@ java -jar $PATH/TO/SnpSift.jar GRCh37.75 COSMIC.dbSNP.CombineVariants.vcf > EFF.
 	
 % Run the original OncoRank script
 \item
-This procedure annotates the caller consensus by putting the tool names into the SOURCES in the INFO. You should also use -mincaller 1 to only keep calls where at least one caller has called it somatic. Vast majority of the calls in the previous merged VCF files were REJECT or GERMLINE calls, and may run out of memory in model training if all are included. It also does some rudimentary variant scoring, but the scoring is not utilized in SomaticSeq. You need to run it once for SNV and once for INDEL. 
+This procedure annotates the caller consensus by putting the tool names into the SOURCES in the INFO. You should also use -mincaller 1 to only keep calls where at least one caller has called it somatic. Vast majority of the calls in the previous merged VCF files were REJECT or GERMLINE calls, and may run out of memory in model training if all are included. It also does some rudimentary variant scoring, but the scoring is not utilized in SomaticSeq. You need to run it once for SNV and once for indel. 
 	
 \begin{lstlisting}
 # Use -tools to indicate what call sets were combined. CGA=MuTect/Indelocator
 # In this one, 6 tools were used for SNV
 score_Somatic.Variants.py -tools CGA VarScan2 JointSNVMix2 SomaticSniper VarDict MuSE -infile EFF.COSMIC.dbSNP.CombineVariants.snp.vcf -mincaller 1 -outfile BINA_somatic.snp.vcf
 	
-# 3 tools for INDEL
+# 3 tools for indel
 score_Somatic.Variants.py -tools CGA VarScan2 VarDict -infile EFF.COSMIC.dbSNP.CombineVariants.indel.vcf -mincaller 1 -outfile BINA_somatic.indel.vcf
 \end{lstlisting}
 	
-And now, the call sets are combined into one VCF file for SNV and one VCF file for INDEL.
+And now, the call sets are combined into one VCF file for SNV and one VCF file for indel.
 
 
 \end{enumerate}
@@ -319,7 +319,7 @@ To speed things up a little bit, SomaticSeq.Wrapper.sh uses FIFO for the VCF fil
 # Make fifo for SAMtools and HaplotypeCaller outputs:
 mkfifo samN.vcf.fifo samT.vcf.fifo haploN.vcf.fifo haploT.vcf.fifo
 
-# For SNV, extract information only in the somatic.snp.processed.vcf, and exclude INDEL calls by SAMtools.
+# For SNV, extract information only in the somatic.snp.processed.vcf, and exclude indel calls by SAMtools.
 samtools mpileup -B -uf genome.GRCh37.fa normal.bam -l somatic.snp.processed.vcf | bcftools view -cg - | egrep -wv 'INDEL' > samN.vcf.fifo &
 samtools mpileup -B -uf genome.GRCh37.fa tumor.bam -l somatic.snp.processed.vcf | bcftools view -cg - | egrep -wv 'INDEL' > samT.vcf.fifo &
 
@@ -332,7 +332,7 @@ SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.snp.processed.vc
 \end{lstlisting}
 
 
-That was for SNV, INDEL is almost the same thing. After version 1.1, DP4 (i.e., 4 numbers related to read depth: forward reference read counts, reverse reference read counts, forward alternate read counts, and reverse alternate read counts) for INDEL are extracted from SAMtools mpileup instead of SAMtools VCF. SAMtools VCF has these information for INDELs only if it calls an INDEL variant at the site, so it's more appropriate to grab that information directly from pileup. In addition, if depth is not found in SAMtools or HaplotypeCaller (simply because they do not call INDEL variants in those sites), that's directly extracted from pileup as well. 
+That was for SNV, and indel is almost the same thing. After version 1.1, DP4 (i.e., 4 numbers related to read depth: forward reference read counts, reverse reference read counts, forward alternate read counts, and reverse alternate read counts) for indel are extracted from SAMtools mpileup instead of SAMtools VCF. SAMtools VCF has these information for indels only if it calls an indel variant at the site, so it's more appropriate to grab that information directly from pileup. In addition, if depth is not found in SAMtools or HaplotypeCaller (simply because they do not call indel variants in those sites), that's directly extracted from pileup as well. 
 
 If pileup files are supplied for SNV, they will take precedence over SAMtools and HaplotypeCaller VCF, but for SNV there is no advantage running extra processes because SAMtools gets all the DP4 stats for SNV.
 
@@ -340,15 +340,15 @@ If pileup files are supplied for SNV, they will take precedence over SAMtools an
 # Make fifo for SAMtools and HaplotypeCaller outputs:
 mkfifo samN.indel.vcf.fifo samT.indel.vcf.fifo haploN.indel.vcf.fifo haploT.indel.vcf.fifo
 
-# For INDEL, extract information only in the somatic.indel.processed.vcf, and only use INDEL calls.
+# For indel, extract information only in the somatic.indel.processed.vcf, and only use indel calls.
 samtools mpileup -B -uf genome.GRCh37.fa normal.bam -l somatic.indel.processed.vcf | bcftools view -cg - | egrep '^#|INDEL' > samN.indel.vcf.fifo &
 samtools mpileup -B -uf genome.GRCh37.fa tumor.bam -l somatic.indel.processed.vcf | bcftools view -cg - | egrep '^#|INDEL' > samT.indel.vcf.fifo &
 
-# DP4 comes from pileup files for INDELS (-Q 13 by default):
+# DP4 comes from pileup files for indels (-Q 13 by default):
 samtools mpileup -B -q 1 -f genome.GRCh37.fa normal.bam -l somatic.indel.processed.vcf > plN.indel.pileup.fifo &
 samtools mpileup -B -q 1 -f genome.GRCh37.fa tumor.bam -l somatic.indel.processed.vcf > plT.indel.pileup.fifo &
 
-# Same concept for HaplotypeCaller. Keep only INDELs.
+# Same concept for HaplotypeCaller. Keep only indels.
 java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.indel.processed.vcf --emitRefConfidence BP_RESOLUTION -I normal.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > haploN.indel.vcf.fifo &
 java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.indel.processed.vcf --emitRefConfidence BP_RESOLUTION -I tumor.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > haploT.indel.vcf.fifo &
 
@@ -398,24 +398,24 @@ SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0
 \section{Release Notes}
 
 \subsection{version 1.0}
-Version used to generate data in the manuscript
+Version used to generate data in the manuscript and \href{https://www.synapse.org/#!Synapse:syn312572/wiki/72943}{Stage 5 of the ICGC-TCGA DREAM Somatic Mutation Challenge}.
 
 \subsection{version 1.1}
-Improved the SomaticSeq.Wrapper.sh script to automate either training or prediction procedure.
+Automated the SomaticSeq.Wrapper.sh script for both training and prediction mode.
 
 \subsection{Current}
-Have implemented the following improvement:
+Have implemented the following improvement, mostly for indels:
 
 \begin{itemize}
  
  \item 
- SSeq\_merged.vcf2tsv.py now accepts pileup files, so it can extract read depth and DP4 (reference forward, reference reverse, alternate forward, and alternate reverse) information (mainly for INDELs), since the SAMtools or HaplotypeCaller generated VCFs hardly contain any INDEL information. The SomaticSeq.Wrapper.sh script is modified accordingly. 
+ SSeq\_merged.vcf2tsv.py can now accept pileup files to extract read depth and DP4 (reference forward, reference reverse, alternate forward, and alternate reverse) information (mainly for indels). Previously, that information can only be extracted from SAMtools VCF. Since the SAMtools or HaplotypeCaller generated VCFs hardly contain any indel information, this option improves the indel model. The SomaticSeq.Wrapper.sh script is modified accordingly.
  
  \item
- Extract mapping quality (MQ) from VarDict output if this information cannot be found in SAMtools VCF (also mostly for INDELs). 
+ Extract mapping quality (MQ) from VarDict output if this information cannot be found in SAMtools VCF (also mostly benefits the indel model). 
  
  \item
- INDEL length now positive for insertions and negative for deletions.
+ Indel length now positive for insertions and negative for deletions, instead of using the absolute value previously. 
  
  
 \end{itemize}
