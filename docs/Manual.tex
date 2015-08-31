@@ -400,10 +400,11 @@ SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0
 Make sure training and prediction use the same version.
 
 \subsection{Version 1.0}
-Version used to generate data in the manuscript and \href{https://www.synapse.org/#!Synapse:syn312572/wiki/72943}{Stage 5 of the ICGC-TCGA DREAM Somatic Mutation Challenge}.
+Version used to generate data in the manuscript and \href{https://www.synapse.org/#!Synapse:syn312572/wiki/72943}{Stage 5 of the ICGC-TCGA DREAM Somatic Mutation Challenge}. 
+In the original manuscript, VarDict's var2vcf\_somatic.pl script was used to generate VarDict VCFs, and subsequently ``-filter somatic'' was used for SSeq\_merged.vcf2tsv.py. Since then (including DREAM Challenge Stage 5), VarDict recommends var2vcf\_paired.pl over var2vcf\_somatic.pl, and subsequently ``-filter paired'' was used for SSeq\_merged.vcf2tsv.py. The difference in SomaticSeq results, however, is pretty much negligible. 
 
 \subsection{Version 1.1}
-Automated the SomaticSeq.Wrapper.sh script for both training and prediction mode.
+Automated the SomaticSeq.Wrapper.sh script for both training and prediction mode. No change to any algorithm. 
 
 \subsection{Version 1.2}
 Have implemented the following improvement, mostly for indels:
@@ -426,7 +427,7 @@ Have implemented the following improvement, mostly for indels:
 
 
 \section{Contact Us}
-For suggestions and bug reports, please email \href{mailto:li_tai.fang@bina.roche.com}{li\_tai.fang@bina.roche.com}.
+For suggestions, bug reports, or technical support, please email \href{mailto:li_tai.fang@bina.roche.com}{li\_tai.fang@bina.roche.com}.
 
 
 \end{sloppypar}
