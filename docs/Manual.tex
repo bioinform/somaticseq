@@ -403,6 +403,8 @@ SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0
 
 Some older versions of GATK seem to have problem with FIFO used in the SomaticSeq script (i.e., we had problem with GATK version 2014.1-2.8.1), so we recommend at least version version 2014.4-2 or later.
 
+Newest SAMtools versions has the command line API slightly modified, which breaks some of the commands in SomaticSeq.Wrapper.sh. I will make the appropriate modifications as soon as I get some time.
+
 
 
 
