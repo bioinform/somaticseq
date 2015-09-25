@@ -399,14 +399,6 @@ SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0
 
 
 
-\section{Known issues}
-
-Some older versions of GATK seem to have problem with FIFO used in the SomaticSeq script (i.e., we had problem with GATK version 2014.1-2.8.1), so we recommend at least version version 2014.4-2 or later.
-
-Newest SAMtools versions has the command line API slightly modified, which breaks some of the commands in SomaticSeq.Wrapper.sh. I will make the appropriate modifications as soon as I get some time.
-
-
-
 
 
 \section{Release Notes}
@@ -437,6 +429,43 @@ Have implemented the following improvement, mostly for indels:
  
  
 \end{itemize}
+
+
+
+
+
+
+\section{To do: planned improvement}
+
+\begin{itemize}
+
+  \item
+  Generate the number and distance of flanking indels around variant sites in sequencing reads.
+
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+\section{Known issues}
+
+\begin{itemize}
+
+  \item
+  Some older versions of GATK seem to have problem with FIFO used in the SomaticSeq script (i.e., we had problem with GATK version 2014.1-2.8.1), so we recommend at least version version 2014.4-2 or later.
+
+  \item
+  The newest SAMtools versions has the command line API slightly modified, which breaks some of the commands in SomaticSeq.Wrapper.sh. I will make the appropriate modifications as soon as I get some time.
+
+\end{itemize}
+
+
 
 
 
