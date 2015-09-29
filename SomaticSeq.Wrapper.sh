@@ -209,8 +209,8 @@ then
         mkfifo ${merged_dir}/samN.vcf.fifo ${merged_dir}/samT.vcf.fifo ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
 
         # Filter out INDEL
-        samtools mpileup -B -uf ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.snp.vcf | bcftools view -cg - | egrep -wv 'INDEL' > ${merged_dir}/samN.vcf.fifo &
-        samtools mpileup -B -uf ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.snp.vcf | bcftools view -cg - | egrep -wv 'INDEL' > ${merged_dir}/samT.vcf.fifo &
+        samtools mpileup -B -C 50 -uf ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.snp.vcf | bcftools view -cg - | egrep -wv 'INDEL' > ${merged_dir}/samN.vcf.fifo &
+        samtools mpileup -B -C 50 -uf ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.snp.vcf | bcftools view -cg - | egrep -wv 'INDEL' > ${merged_dir}/samT.vcf.fifo &
 
         # SNV Only
         java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --dbsnp $dbsnp --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.snp.vcf --emitRefConfidence BP_RESOLUTION -I ${nbam} --out /dev/stdout \
@@ -290,8 +290,8 @@ then
 	mkfifo ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo ${merged_dir}/plN.indel.pileup.fifo ${merged_dir}/plT.indel.pileup.fifo
 
 	# Only INDEL
-	samtools mpileup -B -uf ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.indel.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samN.indel.vcf.fifo &
-	samtools mpileup -B -uf ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.indel.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samT.indel.vcf.fifo &
+	samtools mpileup -B -C 50 -uf ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.indel.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samN.indel.vcf.fifo &
+	samtools mpileup -B -C 50 -uf ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.indel.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samT.indel.vcf.fifo &
 
 	samtools mpileup -B -q 1 -f  ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.indel.vcf > ${merged_dir}/plN.indel.pileup.fifo &
 	samtools mpileup -B -q 1 -f  ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.indel.vcf > ${merged_dir}/plT.indel.pileup.fifo &
