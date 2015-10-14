@@ -98,7 +98,7 @@ model_formula <- as.formula(TrueVariant_or_False ~ .)
 
 
 print("Fitting model...")
-ada.model <- ada(model_formula, data = train_data, iter = 500)
+ada.model <- ada(model_formula, data = train_data, iter = 1000)
 
 print(ada.model)
 
