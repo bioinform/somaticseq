@@ -3,7 +3,7 @@
 # Add support for single-sample mode
 # Extract more COSMIC features
 # AD field now assumes Broad's convention 
-# 4/12/2015
+# 8/30/2015
 # Li Tai Fang
 
 
@@ -63,7 +63,7 @@ pattern_CAF = re.compile(r'\[[0-9.,]+\]')
 # EFF= Effect ( Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_Change| Amino_Acid_Length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number [ | ERRORS | WARNINGS ] ),
 # An example:
 #EFF=NON_SYNONYMOUS_CODING(MODERATE|MISSENSE|cGt/cAt|R229H|246|SLC35E2||CODING|NM_001199787.1|6|1),NON_SYNONYMOUS_CODING(MODERATE|MISSENSE|cGt/cAt|R229H|266|SLC35E2||CODING|NM_182838.2|5|1)'
-pattern_EFF = re.compile(r'(EFF=)?(?<Effect>[^(]+)\((?<Effect_Impact>[^|]*)\|(?<Functional_Class>[^|]*)\|(?<Codon_Change>[^|]*)\|(?<Amino_Acid_Change>[^|]*)\|(?<Amino_Acid_Length>[^|]*)\|(?<Gene_Name>[^|]*)\|(?<Transcript_BioType>[^|]*)\|(?<Gene_Coding>[^|]*)\|(?<Transcript_ID>[^|]*)\|(?<Exon_Rank>[^|]*)\|(?<Genotype_Number>[^|]*)?.*\)' )
+pattern_EFF = re.compile(r'(EFF=|ANN=)?(?<Effect>[^(]+)\((?<Effect_Impact>[^|]*)\|(?<Functional_Class>[^|]*)\|(?<Codon_Change>[^|]*)\|(?<Amino_Acid_Change>[^|]*)\|(?<Amino_Acid_Length>[^|]*)\|(?<Gene_Name>[^|]*)\|(?<Transcript_BioType>[^|]*)\|(?<Gene_Coding>[^|]*)\|(?<Transcript_ID>[^|]*)\|(?<Exon_Rank>[^|]*)\|(?<Genotype_Number>[^|]*)?.*\)' )
 
 
 if not args.cancer_indications:
@@ -686,9 +686,9 @@ with genome.open_textfile(args.input_vcf) as vcf, open(args.output_vcf, 'w') as 
             
             ### Write:
             if paired_mode:
-                modified_line = '\t'.join((vcf_i.chromosome, vcf_i.position, vcf_i.identifier, vcf_i.refbase, vcf_i.altbase, vcf_i.qual, vcf_i.filters, new_info_column, new_format_string, new_normal_string, new_tumor_string )) + '\n'
+                modified_line = '\t'.join((vcf_i.chromosome, str(vcf_i.position), vcf_i.identifier, vcf_i.refbase, vcf_i.altbase, vcf_i.qual, vcf_i.filters, new_info_column, new_format_string, new_normal_string, new_tumor_string )) + '\n'
             else:
-                modified_line = '\t'.join((vcf_i.chromosome, vcf_i.position, vcf_i.identifier, vcf_i.refbase, vcf_i.altbase, vcf_i.qual, vcf_i.filters, new_info_column, new_format_string, new_tumor_string )) + '\n'
+                modified_line = '\t'.join((vcf_i.chromosome, str(vcf_i.position), vcf_i.identifier, vcf_i.refbase, vcf_i.altbase, vcf_i.qual, vcf_i.filters, new_info_column, new_format_string, new_tumor_string )) + '\n'
             
             
             vcf_out.write( modified_line )

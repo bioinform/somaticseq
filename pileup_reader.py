@@ -38,7 +38,7 @@ class Pileup_line:
             
             except ValueError:
                 self.chromosome = self.refbase = self.reads = self.qualities = ''
-                self.position = nan
+                self.position = None
                 self.dp = 0
     
         
