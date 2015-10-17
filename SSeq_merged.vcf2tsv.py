@@ -877,7 +877,11 @@ open(outfile, 'w')               as outhandle:
                         
                             n_ref_read_mq.append( read_i.mapping_quality )
                             n_ref_read_bq.append( read_i.query_qualities[ith_base] )
-                            n_ref_edit_distance.append( read_i.get_tag('NM') )
+                            
+                            try:
+                                n_ref_edit_distance.append( read_i.get_tag('NM') )
+                            except KeyError:
+                                pass
                             
                             # Concordance
                             if read_i.is_proper_pair:
@@ -1074,7 +1078,11 @@ open(outfile, 'w')               as outhandle:
                             
                             t_alt_read_mq.append( read_i.mapping_quality )
                             t_alt_read_bq.append( read_i.query_qualities[ith_base] )
-                            t_alt_edit_distance.append( read_i.get_tag('NM') )
+                            
+                            try:
+                                t_alt_edit_distance.append( read_i.get_tag('NM') )
+                            except KeyError:
+                                pass
                             
                             # Concordance
                             if read_i.is_proper_pair:
