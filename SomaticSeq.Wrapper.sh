@@ -261,7 +261,7 @@ then
 
 	java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 12 --setKey null --genotypemergeoption UNSORTED $mergeindel --out ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 
-	${snpSift_dbsnp} ${merged_dir}/CombineVariants_MVJSD.indel.vcf | ${snpSift_cosmic} - | ${snpEff_b37} - | ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf
+	${snpSift_dbsnp} ${merged_dir}/CombineVariants_MVJSD.indel.vcf | ${snpSift_cosmic} - | ${snpEff_b37} - > ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf
 
 	$MYDIR/score_Somatic.Variants.py -tools CGA VarScan2 VarDict -infile ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf -mincaller 1 -outfile ${merged_dir}/BINA_somatic.indel.vcf
 
