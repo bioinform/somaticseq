@@ -80,13 +80,13 @@ SomaticSeq.Wrapper.sh is a bash script that calls a series of scripts to combine
 \begin{itemize}
 
 \item
-All the .py scripts are written in Python 3 (Yes, Python 3. I deserve brownie points from Python developers). The regex package in Python 3 is also required. 
+All the .py scripts are written in Python 3 (Yes, Python 3. I deserve brownie points from Python developers). Also required are regex and pysam libraries for Python 3. 
 
 \item
 R, plus the ada package in R.
 
 \item
-GATK, SAMtools, SnpEff/SnpSift, and BEDTools
+GATK,, SnpEff/SnpSift, and BEDTools
 
 \item
 dbSNP in VCF format. COSMIC may be needed in the future.
@@ -121,7 +121,7 @@ SomaticSeq.Wrapper.sh supports any combination of the somatic mutation callers w
 \subsection{To predict somatic mutation based on trained classifiers}
 
 \begin{lstlisting}
-# The *RData files are trained classifier from the training mode.
+# The *.RData files are trained classifier from the training mode.
 SomaticSeq.Wrapper.sh -M MuTect/variants.snp.vcf -I Indelocator/variants.indel.vcf -V VarScan2/variants.snp.vcf -v VarScan2/variants.indel.vcf -J JointSNVMix2/variants.snp.vcf -S SomaticSniper/variants.snp.vcf -D VarDict/variants.vcf -U MuSE/variants.snp.vcf -N matched_normal.bam -T tumor.bam -R ada_model_predictor.R -C sSNV.Classifier.RData -x sINDEL.Classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/DIR/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
 \end{lstlisting}
 
@@ -248,20 +248,18 @@ java -jar $PATH/TO/GenomeAnalysisTK.jar -T CombineVariants -R genome.GRCh37.fa -
 	
 % SnpSift and SnpEff:
 \item
-Use SnpSift to add dbSNP information to the VCF file, since dbSNP information is part of training feature set.
+Use SnpSift to add dbSNP information to the VCF file, since dbSNP information is part of training feature set. Right now, we do not use COSMIC or functional annotation as a part of training feature, but we do have them in the workflow for "future-proofing." We may decide to use those features in the future when we have better data sets for training. 
 	
 \begin{lstlisting}
-java -jar $PATH/TO/SnpSift.jar annotate dbSNP141.vcf CombineVariants.snp.vcf > dbSNP.CombineVariants.snp.vcf
-java -jar $PATH/TO/SnpSift.jar annotate dbSNP141.vcf CombineVariants.indel.vcf > dbSNP.CombineVariants.indel.vcf
+# SNV
+java -jar $PATH/TO/SnpSift.jar annotate dbSNP141.vcf CombineVariants.snp.vcf | java -jar $PATH/TO/SnpSift.jar annotate - | java -jar $PATH/TO/SnpSift.jar GRCh37.75 - > EFF.COSMIC.dbSNP.CombineVariants.snp.vcf
+
+# INDEL
+java -jar $PATH/TO/SnpSift.jar annotate dbSNP141.vcf CombineVariants.indel.vcf | java -jar $PATH/TO/SnpSift.jar annotate - | java -jar $PATH/TO/SnpSift.jar GRCh37.75 - > EFF.COSMIC.dbSNP.CombineVariants.indel.vcf
 \end{lstlisting}
 	
-Right now, we do not use COSMIC or functional annotation as a part of training feature, but we do have them in the workflow for "future-proofing." We may decide to use those features in the future when we have better data sets for training. 
-	
-\begin{lstlisting}
-java -jar $PATH/TO/SnpSift.jar annotate cosmic71.vcf dbSNP.CombineVariants.vcf  > COSMIC.dbSNP.CombineVariants.vcf
-java -jar $PATH/TO/SnpSift.jar GRCh37.75 COSMIC.dbSNP.CombineVariants.vcf > EFF.COSMIC.dbSNP.CombineVariants.vcf
-\end{lstlisting}
-	
+
+		
 	
 % Run the original OncoRank script
 \item
@@ -307,30 +305,31 @@ tally_MyVCF_vs_Truth.py -truth truth.indel.vcf -myvcf somatic.indel.processed.vc
 \subsection{Convert the VCF file, annotated or otherwise, into a tab separated file}
 This script works for all VCF files. If the input VCF file is annotated with ground truth, the output TSV file will have 1 and 0 for true mutations and false positives, and can be used for model training (as well as mutation prediction, so you can evaluate the prediction accuracy). Otherwise, those values will be "nan" and cannot be used for training (but can still be used for mutation prediction). 
 	
-The script extracts information from VCF files by SAMTools, HaplotypeCallers, and/or individual VCF files created by the individual callers. 
+The script extracts information from VCF files by BAM files, HaplotypeCallers, and/or individual VCF files created by the individual callers. 
 	
 	
 \begin{lstlisting}
 # -sniper / -varscan / -jsm / -vardict / -muse are optional. We do not extract any additional information from MuTect's output VCF file, so -mutect is not used. 
-SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.snp.processed.vcf -varscan VarScan2/variants.snp.vcf -jsm JSM2/variants.vcf -sniper SomaticSniper/variants.vcf -vardict VarDict/snp.variants.vcf -samT samT.vcf -samN samN.vcf -haploT haploT.vcf -haploN haploN.vcf -outfile Ensemble.sSNV.tsv
+SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.snp.processed.vcf -varscan VarScan2/variants.snp.vcf -jsm JSM2/variants.vcf -sniper SomaticSniper/variants.vcf -vardict VarDict/snp.variants.vcf -tbam tumor.bam -nbam normal.bam -haploT haploT.vcf -haploN haploN.vcf -outfile Ensemble.sSNV.tsv
 \end{lstlisting}
-	
+
+
+
 To speed things up a little bit, SomaticSeq.Wrapper.sh uses FIFO for the VCF files generated by SAMtools and HaplotypeCaller:
 	
 \begin{lstlisting}
 # Make fifo for SAMtools and HaplotypeCaller outputs:
-mkfifo samN.vcf.fifo samT.vcf.fifo haploN.vcf.fifo haploT.vcf.fifo
-
-# For SNV, extract information only in the somatic.snp.processed.vcf, and exclude indel calls by SAMtools.
-samtools mpileup -B -uf genome.GRCh37.fa normal.bam -l somatic.snp.processed.vcf | bcftools view -cg - | egrep -wv 'INDEL' > samN.vcf.fifo &
-samtools mpileup -B -uf genome.GRCh37.fa tumor.bam -l somatic.snp.processed.vcf | bcftools view -cg - | egrep -wv 'INDEL' > samT.vcf.fifo &
+mkfifo haploN.vcf.fifo haploT.vcf.fifo
 
 # Same concept for HaplotypeCaller:
 java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.snp.processed.vcf --emitRefConfidence BP_RESOLUTION -I normal.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || ( $4 ~ /^[GCTA]$/ && $5 !~ /[GCTA][GCTA]/ )' > haploN.vcf.fifo &
 java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.snp.processed.vcf --emitRefConfidence BP_RESOLUTION -I tumor.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || ( $4 ~ /^[GCTA]$/ && $5 !~ /[GCTA][GCTA]/ )' > haploT.vcf.fifo &
 		
 # Stream those .fifo into my script		
-SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.snp.processed.vcf -varscan VarScan2/variants.snp.vcf -jsm JSM2/variants.vcf -sniper SomaticSniper/variants.vcf -vardict VarDict/snp.variants.vcf -samT samT.vcf.fifo -samN samN.vcf.fifo -haploT haploT.vcf.fifo -haploN haploN.vcf.fifo -outfile Ensemble.sSNV.tsv
+SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.snp.processed.vcf -varscan VarScan2/variants.snp.vcf -jsm JSM2/variants.vcf -sniper SomaticSniper/variants.vcf -vardict VarDict/snp.variants.vcf -haploT haploT.vcf.fifo -haploN haploN.vcf.fifo -tbam tumor.bam -nbam normal.bam -outfile Ensemble.sSNV.tsv
+
+# Remove the FIFO's
+rm haploN.vcf.fifo haploT.vcf.fifo
 \end{lstlisting}
 
 
@@ -340,22 +339,17 @@ If pileup files are supplied for SNV, they will take precedence over SAMtools an
 
 \begin{lstlisting}
 # Make fifo for SAMtools and HaplotypeCaller outputs:
-mkfifo samN.indel.vcf.fifo samT.indel.vcf.fifo haploN.indel.vcf.fifo haploT.indel.vcf.fifo
-
-# For indel, extract information only in the somatic.indel.processed.vcf, and only use indel calls.
-samtools mpileup -B -uf genome.GRCh37.fa normal.bam -l somatic.indel.processed.vcf | bcftools view -cg - | egrep '^#|INDEL' > samN.indel.vcf.fifo &
-samtools mpileup -B -uf genome.GRCh37.fa tumor.bam -l somatic.indel.processed.vcf | bcftools view -cg - | egrep '^#|INDEL' > samT.indel.vcf.fifo &
-
-# DP4 comes from pileup files for indels (-Q 13 by default):
-samtools mpileup -B -q 1 -f genome.GRCh37.fa normal.bam -l somatic.indel.processed.vcf > plN.indel.pileup.fifo &
-samtools mpileup -B -q 1 -f genome.GRCh37.fa tumor.bam -l somatic.indel.processed.vcf > plT.indel.pileup.fifo &
+mkfifo haploN.indel.vcf.fifo haploT.indel.vcf.fifo
 
 # Same concept for HaplotypeCaller. Keep only indels.
 java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.indel.processed.vcf --emitRefConfidence BP_RESOLUTION -I normal.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > haploN.indel.vcf.fifo &
 java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.indel.processed.vcf --emitRefConfidence BP_RESOLUTION -I tumor.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > haploT.indel.vcf.fifo &
 
 # Stream those .fifo into my script		
-SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.indel.processed.vcf -varscan VarScan2/variants.snp.vcf -vardict VarDict/indel.variants.vcf -samT samT.indel.vcf.fifo -samN samN.indel.vcf.fifo -plT plT.indel.pileup.fifo -plN plN.indel.pileup.fifo -haploT haploT.indel.vcf.fifo -haploN haploN.indel.vcf.fifo -outfile Ensemble.sINDEL.tsv
+SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.indel.processed.vcf -varscan VarScan2/variants.snp.vcf -vardict VarDict/indel.variants.vcf -haploT haploT.indel.vcf.fifo -haploN haploN.indel.vcf.fifo -tbam tumor.bam -nbam normal.bam -outfile Ensemble.sINDEL.tsv
+
+# Remove the FIFO's
+rm haploN.indel.vcf.fifo haploT.indel.vcf.fifo
 \end{lstlisting}
 
 
@@ -430,7 +424,8 @@ Have implemented the following improvement, mostly for indels:
  
 \end{itemize}
 
-
+\subsection{Version 2.0}
+Removed dependencies for SAMtools and pileup files. SSeq\_merged.vcf2tsv.py extracts those information (plus more) directly from BAM files. 
 
 
 
@@ -440,7 +435,7 @@ Have implemented the following improvement, mostly for indels:
 \begin{itemize}
 
   \item
-  Generate the number and distance of flanking indels around variant sites in sequencing reads.
+  Validate on deep sequencing and low VAF data. 
 
 \end{itemize}
 
@@ -459,9 +454,6 @@ Have implemented the following improvement, mostly for indels:
 
   \item
   Some older versions of GATK seem to have problem with FIFO used in the SomaticSeq script (i.e., we had problem with GATK version 2014.1-2.8.1), so we recommend at least version version 2014.4-2 or later.
-
-  \item
-  The newest SAMtools versions has the command line API slightly modified, which breaks some of the commands in SomaticSeq.Wrapper.sh. I will make the appropriate modifications as soon as I get some time.
 
 \end{itemize}
 

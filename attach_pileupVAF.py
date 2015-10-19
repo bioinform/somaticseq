@@ -157,7 +157,7 @@ while line_i:
         # If the position exists in this samtools generated vcf file:
         if latest_pileup_run[0]:
             
-            assert int(vcf_i.position) == latest_sample.position
+            assert vcf_i.position == latest_sample.position
             
             # Figure out alternate pattern:
             first_alt_call = vcf_i.altbase.split(',')[0]
@@ -246,14 +246,14 @@ while line_i:
             samples_collect.append( normal_out )
         
         # Write out:
-        out_i = '\t'.join(( vcf_i.chromosome, vcf_i.position, vcf_i.identifier, vcf_i.refbase, vcf_i.altbase, vcf_i.qual, vcf_i.filters, vcf_i.info, field_format_line, samples_collect[0], samples_collect[1] ))
+        out_i = '\t'.join(( vcf_i.chromosome, str(vcf_i.position), vcf_i.identifier, vcf_i.refbase, vcf_i.altbase, vcf_i.qual, vcf_i.filters, vcf_i.info, field_format_line, samples_collect[0], samples_collect[1] ))
         outhandle.write( out_i + '\n' )
     
     # Only TUMOR exists in the designated VCF file:
     if not vcf_idxN:
         
         # Write out:
-        out_i = '\t'.join(( vcf_i.chromosome, vcf_i.position, vcf_i.identifier, vcf_i.refbase, vcf_i.altbase, vcf_i.qual, vcf_i.filters, vcf_i.info, field_format_line, samples_collect[0] ))
+        out_i = '\t'.join(( vcf_i.chromosome, str(vcf_i.position), vcf_i.identifier, vcf_i.refbase, vcf_i.altbase, vcf_i.qual, vcf_i.filters, vcf_i.info, field_format_line, samples_collect[0] ))
         outhandle.write( out_i + '\n' )
 
 

@@ -25,7 +25,7 @@ parser.add_argument('-outfile', '--output-vcf',          type=str, help='Output 
 parser.add_argument('-N',       '--normal-sample-name',  type=str, help='NORMAL sample name in output VCF', required=False, default='NORMAL')
 parser.add_argument('-T',       '--tumor-sample-name',   type=str, help='TUMOR sample name in output VCF', required=False, default='TUMOR')
 parser.add_argument('-method',  '--call-method',         type=str, help='VarScan2, JointSNVMix2, SomaticSniper, or VarDict', required=True)
-parser.add_argument('-filter',  '--vardict-filter',      type=str, help='strict, medium, or lenient for VarDict', required=False, default=False)
+parser.add_argument('-filter',  '--vardict-filter',      type=str, help='strict, medium, or lenient for VarDict', required=False, default='default')
 
 parser.add_argument('-gz',      '--gz-compressed', action='store_true', help='If the input files are [chr]1.vcf.gz, [chr]2.vcf.gz, ...', required=False)
 
@@ -339,7 +339,7 @@ for chr_i_vcf in right_files:
 
                 
                 # Reform the line:
-                line_i = '\t'.join(( vcf_i.chromosome, vcf_i.position, vcf_i.identifier, vcf_i.refbase, vcf_i.altbase, vcf_i.qual, vcf_i.filters, vcf_i.info, vcf_i.field, '\t'.join((vcf_i.samples)) ))
+                line_i = '\t'.join(( vcf_i.chromosome, str(vcf_i.position), vcf_i.identifier, vcf_i.refbase, vcf_i.altbase, vcf_i.qual, vcf_i.filters, vcf_i.info, vcf_i.field, '\t'.join((vcf_i.samples)) ))
                 
                 # VarScan2 output a line with REF allele as "M". GATK CombineVariants complain about that.
                 if not re.search(r'[^GCTAU]', vcf_i.refbase, re.I):
@@ -547,9 +547,9 @@ for chr_i_vcf in right_files:
                     new_format_string = ':'.join(format_field)
     
                     if paired:
-                        line_i = '\t'.join(( vcfcall.chromosome, vcfcall.position, vcfcall.identifier, vcfcall.refbase, vcfcall.altbase, vcfcall.qual, vcfcall.filters, vcfcall.info, new_format_string, normal_sample, tumor_sample ))
+                        line_i = '\t'.join(( vcfcall.chromosome, str(vcfcall.position), vcfcall.identifier, vcfcall.refbase, vcfcall.altbase, vcfcall.qual, vcfcall.filters, vcfcall.info, new_format_string, normal_sample, tumor_sample ))
                     else:
-                        line_i = '\t'.join(( vcfcall.chromosome, vcfcall.position, vcfcall.identifier, vcfcall.refbase, vcfcall.altbase, vcfcall.qual, vcfcall.filters, vcfcall.info, new_format_string, tumor_sample ))
+                        line_i = '\t'.join(( vcfcall.chromosome, str(vcfcall.position), vcfcall.identifier, vcfcall.refbase, vcfcall.altbase, vcfcall.qual, vcfcall.filters, vcfcall.info, new_format_string, tumor_sample ))
                     
                     
                     # Write to snp and indel into different files:
@@ -569,7 +569,7 @@ for chr_i_vcf in right_files:
                     old_items.append( args.call_method )
                     vcf_i.info = ';'.join( old_items )
                 
-                line_i = '\t'.join(( vcf_i.chromosome, vcf_i.position, vcf_i.identifier, vcf_i.refbase, vcf_i.altbase, vcf_i.qual, vcf_i.filters, vcf_i.info, vcf_i.field, vcf_i.samples[1], vcf_i.samples[0] ))
+                line_i = '\t'.join(( vcf_i.chromosome, str(vcf_i.position), vcf_i.identifier, vcf_i.refbase, vcf_i.altbase, vcf_i.qual, vcf_i.filters, vcf_i.info, vcf_i.field, vcf_i.samples[1], vcf_i.samples[0] ))
                 
                 vcfout.write(line_i+'\n')
                 

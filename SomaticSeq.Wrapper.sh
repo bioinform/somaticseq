@@ -1,4 +1,5 @@
 #!/bin/bash
+# Version 2
 
 set -e
 
@@ -64,7 +65,7 @@ then
 fi
 
 
-merged_dir=${out_dir}/Merge_MVJSD
+merged_dir=${out_dir}/SomaticSeq_v2
 
 if ! [[ -d ${merged_dir} ]];
 then
@@ -151,11 +152,9 @@ then
 
 	java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 12 --setKey null --genotypemergeoption UNSORTED $mergesnp --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
 
-	${snpSift_dbsnp} ${merged_dir}/CombineVariants_MVJSD.snp.vcf > ${merged_dir}/dbsnp.CombineVariants_MVJSD.snp.vcf
-	${snpSift_cosmic} ${merged_dir}/dbsnp.CombineVariants_MVJSD.snp.vcf > ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf
-	${snpEff_b37} ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf > ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf
+	${snpSift_dbsnp} ${merged_dir}/CombineVariants_MVJSD.snp.vcf | ${snpSift_cosmic} - | ${snpEff_b37} - > ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf
 
-	files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* ${merged_dir}/dbsnp.CombineVariants_MVJSD.snp.vcf* ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf* $files_to_delete"
+	files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf* $files_to_delete"
 
 	$MYDIR/score_Somatic.Variants.py -tools CGA VarScan2 JointSNVMix2 SomaticSniper VarDict MuSE -infile ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf   -mincaller 1 -outfile ${merged_dir}/BINA_somatic.snp.vcf
 
@@ -206,11 +205,7 @@ then
         fi
 
         ## Convert the sSNV file into TSV file, for machine learning data:
-        mkfifo ${merged_dir}/samN.vcf.fifo ${merged_dir}/samT.vcf.fifo ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
-
-        # Filter out INDEL
-        samtools mpileup -B -C 50 -uf ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.snp.vcf | bcftools view -cg - | egrep -wv 'INDEL' > ${merged_dir}/samN.vcf.fifo &
-        samtools mpileup -B -C 50 -uf ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.snp.vcf | bcftools view -cg - | egrep -wv 'INDEL' > ${merged_dir}/samT.vcf.fifo &
+        mkfifo ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
 
         # SNV Only
         java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --dbsnp $dbsnp --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.snp.vcf --emitRefConfidence BP_RESOLUTION -I ${nbam} --out /dev/stdout \
@@ -227,13 +222,13 @@ then
 	$sniper_input \
 	$vardict_input \
 	$muse_input \
-	-samT ${merged_dir}/samT.vcf.fifo \
-	-samN ${merged_dir}/samN.vcf.fifo \
+	-tbam ${tbam} \
+	-nbam ${nbam} \
 	-haploT ${merged_dir}/haploT.vcf.fifo \
 	-haploN ${merged_dir}/haploN.vcf.fifo \
 	-outfile ${merged_dir}/Ensemble.sSNV.tsv
 
-	rm ${merged_dir}/samN.vcf.fifo ${merged_dir}/samT.vcf.fifo ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
+	rm ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
 
 	# If a classifier is used, assume predictor.R, and do the prediction routine:
 	if [[ -r ${snpclassifier} ]] && [[ -r ${ada_r_script} ]]
@@ -266,13 +261,11 @@ then
 
 	java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 12 --setKey null --genotypemergeoption UNSORTED $mergeindel --out ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 
-	${snpSift_dbsnp} ${merged_dir}/CombineVariants_MVJSD.indel.vcf > ${merged_dir}/dbsnp.CombineVariants_MVJSD.indel.vcf
-	${snpSift_cosmic} ${merged_dir}/dbsnp.CombineVariants_MVJSD.indel.vcf > ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf
-	${snpEff_b37} ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf > ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf
+	${snpSift_dbsnp} ${merged_dir}/CombineVariants_MVJSD.indel.vcf | ${snpSift_cosmic} - | ${snpEff_b37} - > ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf
 
 	$MYDIR/score_Somatic.Variants.py -tools CGA VarScan2 VarDict -infile ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf -mincaller 1 -outfile ${merged_dir}/BINA_somatic.indel.vcf
 
-	files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* ${merged_dir}/dbsnp.CombineVariants_MVJSD.indel.vcf* ${merged_dir}/cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf* $files_to_delete"
+	files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf* $files_to_delete"
 
         if [[ -r ${masked_region} ]]
         then
@@ -287,14 +280,7 @@ then
 
 
 	## Convert the sSNV file into TSV file, for machine learning data:
-	mkfifo ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo ${merged_dir}/plN.indel.pileup.fifo ${merged_dir}/plT.indel.pileup.fifo
-
-	# Only INDEL
-	samtools mpileup -B -C 50 -uf ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.indel.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samN.indel.vcf.fifo &
-	samtools mpileup -B -C 50 -uf ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.indel.vcf | bcftools view -cg - | egrep '^#|INDEL' > ${merged_dir}/samT.indel.vcf.fifo &
-
-	samtools mpileup -B -q 1 -f  ${hg_ref} ${nbam} -l ${merged_dir}/BINA_somatic.indel.vcf > ${merged_dir}/plN.indel.pileup.fifo &
-	samtools mpileup -B -q 1 -f  ${hg_ref} ${tbam} -l ${merged_dir}/BINA_somatic.indel.vcf > ${merged_dir}/plT.indel.pileup.fifo &
+	mkfifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo
 
 	# Only INDEL
 	java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --dbsnp $dbsnp --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.indel.vcf --emitRefConfidence BP_RESOLUTION -I ${nbam} --out /dev/stdout \
@@ -323,15 +309,13 @@ then
 	-myvcf ${merged_dir}/BINA_somatic.indel.vcf \
 	$varscan_input \
 	$vardict_input \
-	-samT ${merged_dir}/samT.indel.vcf.fifo \
-	-samN ${merged_dir}/samN.indel.vcf.fifo \
-        -plT ${merged_dir}/plT.indel.pileup.fifo \
-	-plN ${merged_dir}/plN.indel.pileup.fifo \
+	-tbam ${tbam} \
+	-nbam ${nbam} \
 	-haploT ${merged_dir}/haploT.indel.vcf.fifo \
 	-haploN ${merged_dir}/haploN.indel.vcf.fifo \
 	-outfile ${merged_dir}/Ensemble.sINDEL.tsv
 
-	rm ${merged_dir}/samN.indel.vcf.fifo ${merged_dir}/samT.indel.vcf.fifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo ${merged_dir}/plN.indel.pileup.fifo ${merged_dir}/plT.indel.pileup.fifo
+	rm ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo
 
 	# If a classifier is used, use it:
 	if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]

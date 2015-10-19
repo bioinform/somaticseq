@@ -48,6 +48,7 @@ class Vcf_line:
         
         try:
             self.chromosome, self.position, self.identifier, self.refbase, self.altbase, self.qual, self.filters, self.info, *self.has_samples = vcf_line.rstrip('\n').split('\t')
+            self.position = int(self.position)
             
             try:
                 self.field, *self.samples = self.has_samples
@@ -55,7 +56,8 @@ class Vcf_line:
                 self.field = self.samples = ''
             
         except ValueError:
-            self.chromosome= self.position= self.identifier= self.refbase= self.altbase= self.qual= self.filters= self.info= self.field= self.samples = ''
+            self.chromosome = self.identifier = self.refbase = self.altbase = self.qual = self.filters = self.info = self.field = self.samples = ''
+            self.position = None
             
     
     def get_info_items(self):
@@ -194,6 +196,17 @@ def open_textfile(file_name):
 
 
 
+def open_bam_file(file_name):
+    
+    from pysam import AlignmentFile
+    
+    try:
+        return AlignmentFile(file_name, 'rb')
+    except ValueError:
+        return open(file_name)
+
+
+
 
 def ascii2phred33(x):
     '''Put in an ASCII string, return a Phred+33 score.'''
@@ -207,15 +220,18 @@ def p2phred(p, max_phred=inf):
     if p == 0:
         Q = max_phred
         
+    elif p == 1:
+        Q = 0
+        
+    elif p<0 or p>1:
+        Q = nan
+    
     elif p > 0:    
         Q = -10 * math.log10(p)
         if Q > max_phred:
             Q = max_phred
             
-    elif p == 1:
-        Q = 0
-        
-    elif math.isnan(p) or p<0:
+    elif math.isnan(p):
         Q = nan
                 
     return Q
