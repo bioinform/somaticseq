@@ -11,7 +11,7 @@ while getopts "o:M:I:V:v:J:S:D:U:g:c:d:s:G:T:N:C:x:R:i:z:Z:" opt
 do
     case $opt in
         o)
-            out_dir=$OPTARG;;
+            merged_dir=$OPTARG;;
 	M)
 	    mutect_vcf=$OPTARG;;
 	I)
@@ -57,15 +57,6 @@ do
     esac
 done
 
-
-if ! [[ -d ${out_dir} ]];
-then
-    echo "Missing ${out_dir}."
-    exit 1
-fi
-
-
-merged_dir=${out_dir}/SomaticSeq_v2
 
 if ! [[ -d ${merged_dir} ]];
 then

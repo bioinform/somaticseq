@@ -19,8 +19,9 @@
 # 3) Uses VarDict's MQ (mapping quality score) if MQ is not found in SAMtools or HaplotypeCaller (mostly for INDELs).
 # 4) Allow +/- INDEL lengh for insertion and deletion
 # 5) Uses pysam to extract information directly from BAM files, e.g., flanking indel, edit distance, discordance, etc.
+# 6) Implement minimal mapping quality (MQ) and base call quality (BQ) for which pysam considers the reads in BAM files. 
 
-# -- 10/10/2015
+# -- 10/20/2015
 
 import sys, argparse, math, gzip, os
 import regex as re
@@ -29,30 +30,33 @@ import pileup_reader as pileup
 
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-myvcf',   '--vcf-file', type=str, help='My VCF', required=True, default=None)
+parser.add_argument('-myvcf',   '--vcf-file',                 type=str, help='My VCF', required=True, default=None)
 
-parser.add_argument('-samN',    '--samtools-normal-vcf-file', type=str, help='Normal VCF File',    required=False, default=None)
-parser.add_argument('-samT',    '--samtools-tumor-vcf-file',  type=str, help='Tumor VCF File',     required=False, default=None)
-parser.add_argument('-haploN',  '--haplo-normal-vcf-file',    type=str, help='Normal VCF File',    required=False, default=None)
-parser.add_argument('-haploT',  '--haplo-tumor-vcf-file',     type=str, help='Tumor VCF File',     required=False, default=None)
-parser.add_argument('-plN',     '--samtools-normal-pileup',   type=str, help='Normal pileup File', required=False, default=None)
-parser.add_argument('-plT',     '--samtools-tumor-pileup',    type=str, help='Tumor pileup File',  required=False, default=None)
-parser.add_argument('-nbam',    '--normal-bam-file',          type=str, help='Normal BAM File',    required=False, default=None)
-parser.add_argument('-tbam',    '--tumor-bam-file',           type=str, help='Tumor BAM File',     required=False, default=None)
+parser.add_argument('-samN',    '--samtools-normal-vcf-file', type=str,   help='Normal VCF File',    required=False, default=None)
+parser.add_argument('-samT',    '--samtools-tumor-vcf-file',  type=str,   help='Tumor VCF File',     required=False, default=None)
+parser.add_argument('-haploN',  '--haplo-normal-vcf-file',    type=str,   help='Normal VCF File',    required=False, default=None)
+parser.add_argument('-haploT',  '--haplo-tumor-vcf-file',     type=str,   help='Tumor VCF File',     required=False, default=None)
+parser.add_argument('-plN',     '--samtools-normal-pileup',   type=str,   help='Normal pileup File', required=False, default=None)
+parser.add_argument('-plT',     '--samtools-tumor-pileup',    type=str,   help='Tumor pileup File',  required=False, default=None)
+parser.add_argument('-nbam',    '--normal-bam-file',          type=str,   help='Normal BAM File',    required=False, default=None)
+parser.add_argument('-tbam',    '--tumor-bam-file',           type=str,   help='Tumor BAM File',     required=False, default=None)
 
-parser.add_argument('-mutect',  '--mutect-vcf',        type=str, help='MuTect VCF.',       required=False, default=None)
-parser.add_argument('-sniper',  '--somaticsniper-vcf', type=str, help='SomaticSniper VCF', required=False, default=None)
-parser.add_argument('-varscan', '--varscan-vcf',       type=str, help='VarScan2 VCF',      required=False, default=None)
-parser.add_argument('-jsm',     '--jsm-vcf',           type=str, help='JointSNVMix2 VCF',  required=False, default=None)
-parser.add_argument('-vardict', '--vardict-vcf',       type=str, help='VarDict VCF',       required=False, default=None)
-parser.add_argument('-muse',    '--muse-vcf',          type=str, help='MuSE VCF',          required=False, default=None)
+parser.add_argument('-mutect',  '--mutect-vcf',               type=str,   help='MuTect VCF.',       required=False, default=None)
+parser.add_argument('-sniper',  '--somaticsniper-vcf',        type=str,   help='SomaticSniper VCF', required=False, default=None)
+parser.add_argument('-varscan', '--varscan-vcf',              type=str,   help='VarScan2 VCF',      required=False, default=None)
+parser.add_argument('-jsm',     '--jsm-vcf',                  type=str,   help='JointSNVMix2 VCF',  required=False, default=None)
+parser.add_argument('-vardict', '--vardict-vcf',              type=str,   help='VarDict VCF',       required=False, default=None)
+parser.add_argument('-muse',    '--muse-vcf',                 type=str,   help='MuSE VCF',          required=False, default=None)
 
-parser.add_argument('-fai',     '--reference-fasta-fai',  type=str, help='Use the fasta.fai file to get the contigs',      required=False, default=None)
-parser.add_argument('-dict',    '--reference-fasta-dict', type=str, help='Use the reference dict file to get the contigs', required=False, default=None)
+parser.add_argument('-fai',     '--reference-fasta-fai',      type=str,   help='.fasta.fai file to get the contigs',      required=False, default=None)
+parser.add_argument('-dict',    '--reference-fasta-dict',     type=str,   help='.dict file to get the contigs', required=False, default=None)
 
-parser.add_argument('-scale',   '--p-scale', type=str, help='phred, fraction, or none', required=False, default=None)
+parser.add_argument('-minMQ',   '--minimum-mapping-quality',  type=float, help='Minimum mapping quality below which is considered poor', required=False, default=10)
+parser.add_argument('-minBQ',   '--minimum-base-quality',     type=float, help='Minimum base quality below which is considered poor', required=False, default=13)
 
-parser.add_argument('-outfile', '--output-tsv-file', type=str, help='Output TSV Name', required=False, default=os.sys.stdout)
+parser.add_argument('-scale',   '--p-scale',                  type=str,   help='phred, fraction, or none', required=False, default=None)
+
+parser.add_argument('-outfile', '--output-tsv-file',          type=str,   help='Output TSV Name', required=False, default=os.sys.stdout)
 
 args = parser.parse_args()
 
@@ -76,6 +80,9 @@ musev     = args.muse_vcf                 if args.muse_vcf                 else 
 nbam_fn   = args.normal_bam_file          if args.normal_bam_file          else os.devnull
 tbam_fn   = args.tumor_bam_file           if args.tumor_bam_file           else os.devnull
 
+min_mq    = args.minimum_mapping_quality
+min_bq    = args.minimum_base_quality
+
 fai_file  = args.reference_fasta_fai
 dict_file = args.reference_fasta_dict
 outfile   = args.output_tsv_file
@@ -85,7 +92,7 @@ nan = float('nan')
 inf = float('inf')
 
 if args.normal_bam_file or args.tumor_bam_file:
-	
+
     import pysam
     import scipy.stats as stats
     
@@ -620,6 +627,7 @@ out_header = \
 {nBAM_REF_MQ0}\t\
 {nBAM_ALT_MQ0}\t\
 {nBAM_Other_Reads}\t\
+{nBAM_Poor_Reads}\t\
 {nBAM_REF_InDel_3bp}\t\
 {nBAM_REF_InDel_2bp}\t\
 {nBAM_REF_InDel_1bp}\t\
@@ -670,6 +678,7 @@ out_header = \
 {tBAM_REF_MQ0}\t\
 {tBAM_ALT_MQ0}\t\
 {tBAM_Other_Reads}\t\
+{tBAM_Poor_Reads}\t\
 {tBAM_REF_InDel_3bp}\t\
 {tBAM_REF_InDel_2bp}\t\
 {tBAM_REF_InDel_1bp}\t\
@@ -864,6 +873,7 @@ open(outfile, 'w')               as outhandle:
                 n_alt_flanking_indel = []
                 
                 n_noise_read_count = 0
+                n_poor_read_count  = 0
                 
                 for read_i in n_reads:
                     if not read_i.is_unmapped:
@@ -871,6 +881,9 @@ open(outfile, 'w')               as outhandle:
                         N_dp += 1
                         
                         code_i, ith_base, base_call_i, indel_length_i, flanking_indel_i = position_of_aligned_read(read_i, my_vcfcall.position-1 )
+                        
+                        if read_i.mapping_quality < min_mq and mean(read_i.query_qualities) < min_bq:
+                            n_poor_read_count += 1
                         
                         # Reference calls:
                         if code_i == 1 and base_call_i == my_vcfcall.refbase[0]:
@@ -884,15 +897,15 @@ open(outfile, 'w')               as outhandle:
                                 pass
                             
                             # Concordance
-                            if read_i.is_proper_pair:
+                            if        read_i.is_proper_pair  and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 n_ref_concordant_reads += 1
-                            else:
+                            elif (not read_i.is_proper_pair) and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 n_ref_discordant_reads += 1
                             
                             # Orientation
-                            if (not read_i.is_reverse) and read_i.mapping_quality >= 1:
+                            if (not read_i.is_reverse) and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 n_ref_for += 1
-                            elif read_i.is_reverse and read_i.mapping_quality >= 1:
+                            elif    read_i.is_reverse  and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 n_ref_rev += 1
                             
                             # Soft-clipped reads?
@@ -923,15 +936,15 @@ open(outfile, 'w')               as outhandle:
                             n_alt_edit_distance.append( read_i.get_tag('NM') )
                             
                             # Concordance
-                            if read_i.is_proper_pair:
+                            if        read_i.is_proper_pair  and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 n_alt_concordant_reads += 1
-                            else:
+                            elif (not read_i.is_proper_pair) and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 n_alt_discordant_reads += 1
                             
                             # Orientation
-                            if (not read_i.is_reverse) and read_i.mapping_quality >= 1:
+                            if (not read_i.is_reverse) and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 n_alt_for += 1
-                            elif read_i.is_reverse and read_i.mapping_quality >= 1:
+                            elif    read_i.is_reverse  and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 n_alt_rev += 1
                             
                             # Soft-clipped reads?
@@ -955,7 +968,7 @@ open(outfile, 'w')               as outhandle:
                         else:
                             n_noise_read_count += 1
                                 
-                        
+                            
                 # Done extracting info from tumor BAM. Now tally them:
                 n_ref_mq        = mean(n_ref_read_mq)
                 n_alt_mq        = mean(n_alt_read_mq)
@@ -1026,14 +1039,18 @@ open(outfile, 'w')               as outhandle:
                 t_alt_flanking_indel = []
                 
                 t_noise_read_count = 0
+                t_poor_read_count  = 0
                 
                 for read_i in t_reads:
-                    if not read_i.is_unmapped:
+                    if (not read_i.is_unmapped) and read_i.mapping_quality >= min_mq and mean(read_i.query_qualities) >= min_bq:
                         
                         T_dp += 1
                         
                         code_i, ith_base, base_call_i, indel_length_i, flanking_indel_i = position_of_aligned_read(read_i, my_vcfcall.position-1 )
                         
+                        if read_i.mapping_quality < min_mq and mean(read_i.query_qualities) < min_bq:
+                            t_poor_read_count += 1
+
                         # Reference calls:
                         if code_i == 1 and base_call_i == my_vcfcall.refbase[0]:
                         
@@ -1042,15 +1059,15 @@ open(outfile, 'w')               as outhandle:
                             t_ref_edit_distance.append( read_i.get_tag('NM') )
                             
                             # Concordance
-                            if read_i.is_proper_pair:
+                            if        read_i.is_proper_pair  and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 t_ref_concordant_reads += 1
-                            else:
+                            elif (not read_i.is_proper_pair) and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 t_ref_discordant_reads += 1
                             
                             # Orientation
-                            if (not read_i.is_reverse) and read_i.mapping_quality >= 1:
+                            if (not read_i.is_reverse) and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 t_ref_for += 1
-                            elif read_i.is_reverse and read_i.mapping_quality >= 1:
+                            elif    read_i.is_reverse  and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 t_ref_rev += 1
                             
                             # Soft-clipped reads?
@@ -1085,15 +1102,15 @@ open(outfile, 'w')               as outhandle:
                                 pass
                             
                             # Concordance
-                            if read_i.is_proper_pair:
+                            if        read_i.is_proper_pair  and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 t_alt_concordant_reads += 1
-                            else:
+                            elif (not read_i.is_proper_pair) and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 t_alt_discordant_reads += 1
                             
                             # Orientation
-                            if (not read_i.is_reverse) and read_i.mapping_quality >= 1:
+                            if (not read_i.is_reverse) and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 t_alt_for += 1
-                            elif read_i.is_reverse and read_i.mapping_quality >= 1:
+                            elif    read_i.is_reverse  and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
                                 t_alt_rev += 1
                             
                             # Soft-clipped reads?
@@ -1117,7 +1134,7 @@ open(outfile, 'w')               as outhandle:
                         else:
                             t_noise_read_count += 1
                                 
-                        
+                
                 # Done extracting info from tumor BAM. Now tally them:
                 t_ref_mq        = mean(t_ref_read_mq)
                 t_alt_mq        = mean(t_alt_read_mq)
@@ -1774,6 +1791,7 @@ open(outfile, 'w')               as outhandle:
             nBAM_REF_MQ0            = n_ref_MQ0,                                              \
             nBAM_ALT_MQ0            = n_alt_MQ0,                                              \
             nBAM_Other_Reads        = n_noise_read_count,                                     \
+            nBAM_Poor_Reads         = n_poor_read_count,                                      \
             nBAM_REF_InDel_3bp      = n_ref_indel_3bp,                                        \
             nBAM_REF_InDel_2bp      = n_ref_indel_2bp,                                        \
             nBAM_REF_InDel_1bp      = n_ref_indel_1bp,                                        \
@@ -1828,6 +1846,7 @@ open(outfile, 'w')               as outhandle:
             tBAM_REF_MQ0            = t_ref_MQ0,                                              \
             tBAM_ALT_MQ0            = t_alt_MQ0,                                              \
             tBAM_Other_Reads        = t_noise_read_count,                                     \
+            tBAM_Poor_Reads         = t_poor_read_count,                                      \
             tBAM_REF_InDel_3bp      = t_ref_indel_3bp,                                        \
             tBAM_REF_InDel_2bp      = t_ref_indel_2bp,                                        \
             tBAM_REF_InDel_1bp      = t_ref_indel_1bp,                                        \
