@@ -52,7 +52,7 @@ parser.add_argument('-fai',     '--reference-fasta-fai',      type=str,   help='
 parser.add_argument('-dict',    '--reference-fasta-dict',     type=str,   help='.dict file to get the contigs', required=False, default=None)
 
 parser.add_argument('-minMQ',   '--minimum-mapping-quality',  type=float, help='Minimum mapping quality below which is considered poor', required=False, default=1)
-parser.add_argument('-minBQ',   '--minimum-base-quality',     type=float, help='Minimum base quality below which is considered poor', required=False, default=10)
+parser.add_argument('-minBQ',   '--minimum-base-quality',     type=float, help='Minimum base quality below which is considered poor', required=False, default=5)
 
 parser.add_argument('-scale',   '--p-scale',                  type=str,   help='phred, fraction, or none', required=False, default=None)
 
@@ -610,6 +610,7 @@ out_header = \
 {nBAM_Z_Ranksums_BQ}\t\
 {nBAM_REF_NM}\t\
 {nBAM_ALT_NM}\t\
+{nBAM_NM_Diff}\t\
 {nBAM_REF_Concordant}\t\
 {nBAM_REF_Discordant}\t\
 {nBAM_ALT_Concordant}\t\
@@ -661,6 +662,7 @@ out_header = \
 {tBAM_Z_Ranksums_BQ}\t\
 {tBAM_REF_NM}\t\
 {tBAM_ALT_NM}\t\
+{tBAM_NM_Diff}\t\
 {tBAM_REF_Concordant}\t\
 {tBAM_REF_Discordant}\t\
 {tBAM_ALT_Concordant}\t\
@@ -933,7 +935,11 @@ open(outfile, 'w')               as outhandle:
                             
                             n_alt_read_mq.append( read_i.mapping_quality )
                             n_alt_read_bq.append( read_i.query_qualities[ith_base] )
-                            n_alt_edit_distance.append( read_i.get_tag('NM') )
+                            
+                            try:
+                                n_alt_edit_distance.append( read_i.get_tag('NM') )
+                            except KeyError:
+                                pass
                             
                             # Concordance
                             if        read_i.is_proper_pair  and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
@@ -981,6 +987,7 @@ open(outfile, 'w')               as outhandle:
                 n_ref_NM        = mean(n_ref_edit_distance)
                 n_alt_NM        = mean(n_alt_edit_distance)
                 n_z_ranksums_NM = stats.ranksums(n_alt_edit_distance, n_ref_edit_distance)[0]
+                n_NM_Diff       = n_alt_NM - n_ref_NM - abs(indel_length)
                 
                 n_concordance_fet = stats.fisher_exact(( (n_ref_concordant_reads, n_alt_concordant_reads), (n_ref_discordant_reads, n_alt_discordant_reads) ))[1]
                 n_strandbias_fet  = stats.fisher_exact(( (n_ref_for, n_alt_for), (n_ref_rev, n_alt_rev) ))[1]
@@ -1056,7 +1063,11 @@ open(outfile, 'w')               as outhandle:
                         
                             t_ref_read_mq.append( read_i.mapping_quality )
                             t_ref_read_bq.append( read_i.query_qualities[ith_base] )
-                            t_ref_edit_distance.append( read_i.get_tag('NM') )
+                            
+                            try:
+                                t_ref_edit_distance.append( read_i.get_tag('NM') )
+                            except KeyError:
+                                pass
                             
                             # Concordance
                             if        read_i.is_proper_pair  and read_i.mapping_quality >= min_mq and read_i.query_qualities[ith_base] >= min_bq:
@@ -1147,6 +1158,7 @@ open(outfile, 'w')               as outhandle:
                 t_ref_NM        = mean(t_ref_edit_distance)
                 t_alt_NM        = mean(t_alt_edit_distance)
                 t_z_ranksums_NM = stats.ranksums(t_alt_edit_distance, t_ref_edit_distance)[0]
+                t_NM_Diff       = t_alt_NM - t_ref_NM - abs(indel_length)
                 
                 t_concordance_fet = stats.fisher_exact(( (t_ref_concordant_reads, t_alt_concordant_reads), (t_ref_discordant_reads, t_alt_discordant_reads) ))[1]
                 t_strandbias_fet  = stats.fisher_exact(( (t_ref_for, t_alt_for), (t_ref_rev, t_alt_rev) ))[1]
@@ -1774,6 +1786,7 @@ open(outfile, 'w')               as outhandle:
             nBAM_Z_Ranksums_BQ      = '%g' % n_z_ranksums_bq,                                 \
             nBAM_REF_NM             = '%g' % n_ref_NM,                                        \
             nBAM_ALT_NM             = '%g' % n_alt_NM,                                        \
+            nBAM_NM_Diff            = '%g' % n_NM_Diff,                                       \
             nBAM_REF_Concordant     = n_ref_concordant_reads,                                 \
             nBAM_REF_Discordant     = n_ref_discordant_reads,                                 \
             nBAM_ALT_Concordant     = n_alt_concordant_reads,                                 \
@@ -1829,6 +1842,7 @@ open(outfile, 'w')               as outhandle:
             tBAM_Z_Ranksums_BQ      = '%g' % t_z_ranksums_bq,                                 \
             tBAM_REF_NM             = '%g' % t_ref_NM,                                        \
             tBAM_ALT_NM             = '%g' % t_alt_NM,                                        \
+            tBAM_NM_Diff            = '%g' % t_NM_Diff,                                       \
             tBAM_REF_Concordant     = t_ref_concordant_reads,                                 \
             tBAM_REF_Discordant     = t_ref_discordant_reads,                                 \
             tBAM_ALT_Concordant     = t_alt_concordant_reads,                                 \
