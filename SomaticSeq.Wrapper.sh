@@ -60,7 +60,7 @@ done
 
 if ! [[ -d ${merged_dir} ]];
 then
-    mkdir ${merged_dir}
+    mkdir -p ${merged_dir}
 fi
 
 
