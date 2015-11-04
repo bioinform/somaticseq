@@ -20,8 +20,9 @@
 # 4) Allow +/- INDEL lengh for insertion and deletion
 # 5) Uses pysam to extract information directly from BAM files, e.g., flanking indel, edit distance, discordance, etc.
 # 6) Implement minimal mapping quality (MQ) and base call quality (BQ) for which pysam considers the reads in BAM files. 
+# 7) Allow user to count only non-duplicate reads if -dedup option is invoked. 
 
-# -- 10/20/2015
+# -- 11/3/2015
 
 import sys, argparse, math, gzip, os
 import regex as re
@@ -53,6 +54,7 @@ parser.add_argument('-dict',    '--reference-fasta-dict',     type=str,   help='
 
 parser.add_argument('-minMQ',   '--minimum-mapping-quality',  type=float, help='Minimum mapping quality below which is considered poor', required=False, default=1)
 parser.add_argument('-minBQ',   '--minimum-base-quality',     type=float, help='Minimum base quality below which is considered poor', required=False, default=5)
+parser.add_argument('-dedup',   '--deduplicate',              action='store_true', help='Do not consider duplicate reads from BAM files. Default is to count everything', required=False, default=False)
 
 parser.add_argument('-scale',   '--p-scale',                  type=str,   help='phred, fraction, or none', required=False, default=None)
 
@@ -267,6 +269,19 @@ def mean(stuff):
         
     except ZeroDivisionError:
         return float('nan')
+
+
+
+## Dedup test for BAM file
+def dedup_test(read_i, remove_dup_or_not=args.deduplicate):
+    '''
+    Return False (i.e., remove the read) if the read is a duplicate and if the user specify that duplicates should be removed.
+    Else return True (i.e, keep the read)
+    '''
+    if read_i.is_duplicate and remove_dup_or_not:
+        return False
+    else:
+        return True
 
 
 ##### Extract Indel DP4 info from pileup files:
@@ -878,7 +893,7 @@ open(outfile, 'w')               as outhandle:
                 n_poor_read_count  = 0
                 
                 for read_i in n_reads:
-                    if not read_i.is_unmapped:
+                    if not read_i.is_unmapped and dedup_test(read_i):
                         
                         N_dp += 1
                         
@@ -1049,7 +1064,7 @@ open(outfile, 'w')               as outhandle:
                 t_poor_read_count  = 0
                 
                 for read_i in t_reads:
-                    if (not read_i.is_unmapped) and read_i.mapping_quality >= min_mq and mean(read_i.query_qualities) >= min_bq:
+                    if not read_i.is_unmapped and dedup_test(read_i):
                         
                         T_dp += 1
                         
