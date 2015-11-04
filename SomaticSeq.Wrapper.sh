@@ -217,6 +217,7 @@ then
 	-nbam ${nbam} \
 	-haploT ${merged_dir}/haploT.vcf.fifo \
 	-haploN ${merged_dir}/haploN.vcf.fifo \
+	-dedup \
 	-outfile ${merged_dir}/Ensemble.sSNV.tsv
 
 	rm ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
@@ -304,6 +305,7 @@ then
 	-nbam ${nbam} \
 	-haploT ${merged_dir}/haploT.indel.vcf.fifo \
 	-haploN ${merged_dir}/haploN.indel.vcf.fifo \
+	-dedup \
 	-outfile ${merged_dir}/Ensemble.sINDEL.tsv
 
 	rm ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo
