@@ -499,6 +499,10 @@ with genome.open_textfile(args.input_vcf) as vcf, open(args.output_vcf, 'w') as 
                         
                         except SyntaxError:
                             pass
+                            
+                        # Ignore this metric when ambiguity arises from different rsID being assigned to the same position.
+                        except TypeError:
+                            pass
             
             
             # Calculate a "BINA_ONCOSCORE" only if at least one of the callers called it a somatic event:
