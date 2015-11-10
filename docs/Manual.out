@@ -1,0 +1,18 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Dependencies}{section.1}% 2
+\BOOKMARK [1][-]{section.2}{To use SomaticSeq.Wrapper.sh}{}% 3
+\BOOKMARK [2][-]{subsection.2.1}{To train data set into a classifier}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.2}{To predict somatic mutation based on trained classifiers}{section.2}% 5
+\BOOKMARK [1][-]{section.3}{The step-by-step SomaticSeq Workflow}{}% 6
+\BOOKMARK [2][-]{subsection.3.1}{Combine the call sets}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.2}{For model training: process and annotate the VCF files \(union of call sets\)}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.3}{Convert the VCF file, annotated or otherwise, into a tab separated file}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.4}{Model Training or Mutation Prediction}{section.3}% 10
+\BOOKMARK [1][-]{section.4}{Release Notes}{}% 11
+\BOOKMARK [2][-]{subsection.4.1}{Version 1.0}{section.4}% 12
+\BOOKMARK [2][-]{subsection.4.2}{Version 1.1}{section.4}% 13
+\BOOKMARK [2][-]{subsection.4.3}{Version 1.2}{section.4}% 14
+\BOOKMARK [2][-]{subsection.4.4}{Version 2.0-rc1}{section.4}% 15
+\BOOKMARK [1][-]{section.5}{To do: planned improvement}{}% 16
+\BOOKMARK [1][-]{section.6}{Known issues}{}% 17
+\BOOKMARK [1][-]{section.7}{Contact Us}{}% 18

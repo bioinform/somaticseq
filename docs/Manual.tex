@@ -143,12 +143,11 @@ Modify MuTect and/or Indelocator output VCF files. Somatic calls will be attache
 Since MuTect's output VCF do not always put the tumor and normal samples in the same columns, the script uses samtools extract sample name information from the BAM files, and then determine which column belongs to the normal, and which column belongs to the tumor. 
 	
 \begin{lstlisting}
-# Modify MuTect's output VCF
-# -type snp for MuTect, and -type indel for Indelocator.
-modify_MuTect.py -type snp -infile input.vcf -outfile output.vcf -nbam normal.bam -tbam tumor.bam
+# Modify MuTect and Indelocator's output VCF
+modify_MuTect.py -infile input.vcf -outfile output.vcf -nbam normal.bam -tbam tumor.bam
 	
 # If samtools is not in the PATH:
-modify_MuTect.py -type snp -infile input.vcf -outfile output.vcf -nbam normal.bam -tbam tumor.bam -samtools $PATH/TO/samtools
+modify_MuTect.py -infile input.vcf -outfile output.vcf -nbam normal.bam -tbam tumor.bam -samtools $PATH/TO/samtools
 \end{lstlisting}
 	
 Alternatively, you can supply the normal and tumor sample names, instead of supplying the BAM files:
@@ -252,10 +251,10 @@ Use SnpSift to add dbSNP information to the VCF file, since dbSNP information is
 	
 \begin{lstlisting}
 # SNV
-java -jar $PATH/TO/SnpSift.jar annotate dbSNP141.vcf CombineVariants.snp.vcf | java -jar $PATH/TO/SnpSift.jar annotate - | java -jar $PATH/TO/SnpSift.jar GRCh37.75 - > EFF.COSMIC.dbSNP.CombineVariants.snp.vcf
+java -jar $PATH/TO/SnpSift.jar annotate dbSNP141.vcf CombineVariants.snp.vcf | java -jar $PATH/TO/SnpSift.jar annotate COSMIC.vcf - | java -jar $PATH/TO/snpEff.jar GRCh37.75 - > EFF.COSMIC.dbSNP.CombineVariants.snp.vcf
 
 # INDEL
-java -jar $PATH/TO/SnpSift.jar annotate dbSNP141.vcf CombineVariants.indel.vcf | java -jar $PATH/TO/SnpSift.jar annotate - | java -jar $PATH/TO/SnpSift.jar GRCh37.75 - > EFF.COSMIC.dbSNP.CombineVariants.indel.vcf
+java -jar $PATH/TO/SnpSift.jar annotate dbSNP141.vcf CombineVariants.indel.vcf | java -jar $PATH/TO/SnpSift.jar annotate COSMIC.vcf - | java -jar $PATH/TO/snpEff.jar GRCh37.75 - > EFF.COSMIC.dbSNP.CombineVariants.indel.vcf
 \end{lstlisting}
 	
 
@@ -424,7 +423,7 @@ Have implemented the following improvement, mostly for indels:
  
 \end{itemize}
 
-\subsection{Version 2.0}
+\subsection{Version 2.0-rc1}
 Removed dependencies for SAMtools and pileup files. SSeq\_merged.vcf2tsv.py extracts those information (plus more) directly from BAM files. 
 
 
@@ -436,6 +435,9 @@ Removed dependencies for SAMtools and pileup files. SSeq\_merged.vcf2tsv.py extr
 
   \item
   Validate on deep sequencing and low VAF data. 
+  
+  \item
+  Dockerize SomaticSeq
 
 \end{itemize}
 
