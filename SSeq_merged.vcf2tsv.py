@@ -166,6 +166,16 @@ def mean(stuff):
         return float('nan')
 
 
+## Dedup test for BAM file
+def dedup_test(read_i, remove_dup_or_not=args.deduplicate):
+    '''
+    Return False (i.e., remove the read) if the read is a duplicate and if the user specify that duplicates should be removed.
+    Else return True (i.e, keep the read)
+    '''
+    if read_i.is_duplicate and remove_dup_or_not:
+        return False
+    else:
+        return True
 
 
 # Header for the output data, created here so I won't have to indent this line:
