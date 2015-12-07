@@ -100,17 +100,6 @@ if args.normal_bam_file or args.tumor_bam_file:
     
     #nbam = pysam.AlignmentFile(nbam_fn, 'rb')  if args.normal_bam_file else os.devnull
     #tbam = pysam.AlignmentFile(tbam_fn,  'rb')  if args.tumor_bam_file else os.devnull
-
-    # CIGAR string meaning:
-    cigar_aln_match    = 0
-    cigar_insertion    = 1
-    cigar_deletion     = 2
-    cigar_skip         = 3
-    cigar_soft_clip    = 4
-    cigar_hard_clip    = 5
-    cigar_padding      = 6
-    cigar_seq_match    = 7
-    cigar_seq_mismatch = 8
     
 
 
