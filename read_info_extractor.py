@@ -11,6 +11,7 @@ cigar_seq_match    = 7
 cigar_seq_mismatch = 8
 
 nan = float('nan')
+inf = float('inf')
 
 ## Define functions:
 def position_of_aligned_read(read_i, target_position):
