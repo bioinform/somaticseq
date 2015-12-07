@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import regex as re
+
 cigar_aln_match    = 0
 cigar_insertion    = 1
 cigar_deletion     = 2
