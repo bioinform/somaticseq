@@ -156,7 +156,7 @@ then
 
 	if [[ -r ${snpgroundtruth} ]]
 	then
-	    $MYDIR/tally_MyVCF_vs_Truth.py -truth $snpgroundtruth -myvcf ${merged_dir}/BINA_somatic.snp.vcf -outfile ${merged_dir}/tmp.snp.vcf; mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/BINA_somatic.snp.vcf
+	    $MYDIR/tally_MyVCF_vs_Truth.py -truth $snpgroundtruth -myvcf ${merged_dir}/BINA_somatic.snp.vcf -fai ${hg_ref}.fai -outfile ${merged_dir}/tmp.snp.vcf; mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/BINA_somatic.snp.vcf
 	fi
 
 
@@ -267,7 +267,7 @@ then
 
 	if [[ -r ${indelgroundtruth} ]]
 	then
-	    $MYDIR/tally_MyVCF_vs_Truth.py -truth $indelgroundtruth -myvcf ${merged_dir}/BINA_somatic.indel.vcf -outfile ${merged_dir}/tmp.indel.vcf; mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/BINA_somatic.indel.vcf
+	    $MYDIR/tally_MyVCF_vs_Truth.py -truth $indelgroundtruth -myvcf ${merged_dir}/BINA_somatic.indel.vcf -fai ${hg_ref}.fai -outfile ${merged_dir}/tmp.indel.vcf; mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/BINA_somatic.indel.vcf
 	fi
 
 

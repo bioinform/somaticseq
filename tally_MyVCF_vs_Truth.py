@@ -10,6 +10,7 @@ import sys, argparse
 import regex as re
 import gzip
 from os import sep
+import genomic_file_handlers as genome
 
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -19,61 +20,58 @@ parser.add_argument('-outfile', '--output-file', type=str, help='Out File Label'
 
 parser.add_argument('-myid', '--my-id', type=str, help='FILE1 only tag', required=False, default='FalsePositive')
 parser.add_argument('-truthid', '--truth-id', type=str, help='FILE2 only tag', required=False, default='FalseNegative')
+
+parser.add_argument('-fai',     '--reference-fasta-fai',      type=str,   help='.fasta.fai file to get the contigs',      required=False, default=None)
+parser.add_argument('-dict',    '--reference-fasta-dict',     type=str,   help='.dict file to get the contigs', required=False, default=None)
+
 parser.add_argument('-bothid', '--both-id', type=str, help='BOTH ID tag', required=False, default='Correct')
 
 
 args = parser.parse_args()
+fai_file  = args.reference_fasta_fai
+dict_file = args.reference_fasta_dict
 
 # VCF File's index locations
 idx_chrom,idx_pos,idx_id,idx_ref,idx_alt,idx_qual,idx_filter,idx_info,idx_format,idxN,idxT = 0,1,2,3,4,5,6,7,8,9,10
 
 
-# The regular expression pattern for "chrXX 1234567" in both VarScan2 Output and VCF files:
-pattern_chr_position = re.compile(r'^(?:chr)?(?:[0-9]+|[XYM]T?)\t[0-9]+\b')
+# Convert contig_sequence to chrom_seq dict:
+if dict_file:
+    chrom_sequence = genome.faiordict2contigorder(dict_file, 'dict')
+elif fai_file:
+    chrom_sequence = genome.faiordict2contigorder(fai_file, 'fai')
+else:
+    raise Exception('I need a fai or dict file, or else I do not know the contig order.')
 
-###
-# Define which chromosome coordinate is ahead:
-chrom_sequence = [str(i) for i in range(1,23)]
-chrom_sequence.append('X')
-chrom_sequence.append('Y')
-chrom_sequence.append('M')
+
 
 def whoisbehind(coord_0, coord_1):
     '''coord_0 and coord_1 are two strings, specifying the chromosome, a (typically) tab, and then the location.'''
     
-    if coord_0=='' and coord_1=='':
+    if coord_0[0] == coord_1[0] == '':
         return 10
         
-    elif coord_1 == '':
+    elif coord_1[0] == '':
         return 0
         
-    elif coord_0 == '':
+    elif coord_0[0] == '':
         return 1
     
     else:
     
-        if isinstance(coord_0, str):
-            chrom0, position0 = coord_0.split()
-            chrom1, position1 = coord_1.split()
-        elif isinstance(coord_0, list):
-            chrom0, position0 = coord_0[0], coord_0[1]
-            chrom1, position1 = coord_1[0], coord_1[1]
+        chrom0, position0 = coord_0[0], coord_0[1]
+        chrom1, position1 = coord_1[0], coord_1[1]
         
-        chrom0 = chrom0.lstrip('chr').rstrip('T')
-        chrom1 = chrom1.lstrip('chr').rstrip('T')
         
-        if chrom_sequence.index(chrom0) < chrom_sequence.index(chrom1):
-            return 0   # 1st coordinate is ahead
+        if chrom_sequence[chrom0] < chrom_sequence[chrom1]:
+            return 0   # 1st coordinate is behind
             
-        elif chrom_sequence.index(chrom0) > chrom_sequence.index(chrom1):
-            return 1   # 1st coordinate is ahead
+        elif chrom_sequence[chrom0] > chrom_sequence[chrom1]:
+            return 1   # 2nd coordinate is behind
         
         # Must be in the same chromosome
         else:
-            
-            position0 = int(position0)
-            position1 = int(position1)
-            
+                        
             if position0 < position1:
                 return 0
             
@@ -103,22 +101,14 @@ def only_care(nth_col, itsays, string_input):
 def catch_up(line_1, line_2, file_1, file_2, output_vcf, id_1, id_2, id_12 ):
     
     id_1, id_2, id_12 = id_1, id_2, id_12
-    
-    # Read the first file until it hits data
-    coord_1 = re.search( pattern_chr_position, line_1 )
         
-    if coord_1:
-        coord_1 = coord_1.group()
-    else:
-        coord_1 = ''
-
-    # Read the second file until it hits data
-    coord_2 = re.search( pattern_chr_position, line_2 )
+    vcf_1 = genome.Vcf_line(line_1)
+    vcf_2 = genome.Vcf_line(line_2)
     
-    if coord_2:
-        coord_2 = coord_2.group()
-    else:
-        coord_2 = ''
+    coord_1 = [vcf_1.chromosome, vcf_1.position]
+    coord_2 = [vcf_2.chromosome, vcf_2.position]
+    
+    print(coord_1, coord_2)
     
     is_behind = whoisbehind( coord_1, coord_2 )
     
@@ -144,13 +134,9 @@ def catch_up(line_1, line_2, file_1, file_2, output_vcf, id_1, id_2, id_12 ):
                 output_vcf.write( line_1  + '\n')
             
             line_1 = file_1.readline()
-            next_coord = re.search( pattern_chr_position, line_1 )
-            
-            if next_coord:
-                coord_1 = next_coord.group()
-            else:
-                coord_1 = ''
-        
+            vcf_1  = genome.Vcf_line(line_1)
+            coord_1 = [vcf_1.chromosome, vcf_1.position]
+                    
         # If 2nd VCF is behind:    
         elif is_behind == 1:
             
@@ -173,18 +159,14 @@ def catch_up(line_1, line_2, file_1, file_2, output_vcf, id_1, id_2, id_12 ):
             ## FI
             
             line_2 = file_2.readline()
-            next_coord = re.search( pattern_chr_position, line_2 )
-            
-            if next_coord:
-                coord_2 = next_coord.group()
-            else:
-                coord_2 = ''
+            vcf_2  = genome.Vcf_line(line_2)
+            coord_2 = [vcf_2.chromosome, vcf_2.position]
         
         is_behind = whoisbehind( coord_1, coord_2 )
     
     
     # Returns the value of the function:
-    if (coord_1=='') and (coord_2==''):
+    if coord_1[0] == coord_2[0] =='':
         result = 42
     else:
         
