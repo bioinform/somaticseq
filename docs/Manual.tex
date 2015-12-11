@@ -295,8 +295,8 @@ intersectBed -header -a BINA_somatic.indel.vcf -b ignore -v > somatic.indel.proc
 	
 # This script will annotate the processed VCF files against the ground truth.
 # DREAM Challenge Stage 3 ground truth VCF files are included in the DREAM_Stage_3 directory.
-tally_MyVCF_vs_Truth.py -truth truth.snp.vcf -myvcf somatic.snp.processed.vcf -outfile annotated.snp.vcf
-tally_MyVCF_vs_Truth.py -truth truth.indel.vcf -myvcf somatic.indel.processed.vcf -outfile annotated.indel.vcf
+tally_MyVCF_vs_Truth.py -truth truth.snp.vcf -myvcf somatic.snp.processed.vcf -fai genome.GRCh37.fa.fai -outfile annotated.snp.vcf
+tally_MyVCF_vs_Truth.py -truth truth.indel.vcf -myvcf somatic.indel.processed.vcf -fai genome.GRCh37.fa.fai -outfile annotated.indel.vcf
 \end{lstlisting}
 
 
