@@ -85,8 +85,6 @@ ref_fa    = args.reference_fasta
 outfile   = args.output_tsv_file
 p_scale   = args.p_scale
 
-nan = float('nan')
-inf = float('inf')
 
 
 if p_scale == None:
@@ -136,17 +134,6 @@ def mean(stuff):
     except ZeroDivisionError:
         return float('nan')
 
-
-## Dedup test for BAM file
-def dedup_test(read_i, remove_dup_or_not=args.deduplicate):
-    '''
-    Return False (i.e., remove the read) if the read is a duplicate and if the user specify that duplicates should be removed.
-    Else return True (i.e, keep the read)
-    '''
-    if read_i.is_duplicate and remove_dup_or_not:
-        return False
-    else:
-        return True
 
 
 # Header for the output data, created here so I won't have to indent this line:
@@ -286,7 +273,6 @@ genome.open_bam_file(nbam_fn)    as nbam, \
 genome.open_bam_file(tbam_fn)    as tbam, \
 open(outfile, 'w')               as outhandle:
     
-    
     my_line      = mysites.readline().rstrip()
     
     npileup_line = plN.readline().rstrip()
@@ -300,7 +286,7 @@ open(outfile, 'w')               as outhandle:
     
     
     # Get through all the headers:
-    while my_line.startswith('#'):
+    while my_line.startswith('#') or my_line.startswith('track='):
         my_line = my_vcf.readline().rstrip()
     
     while mutect_line.startswith('#'):
@@ -327,18 +313,18 @@ open(outfile, 'w')               as outhandle:
     
     while my_line:
         
-        
         ###################################################################################
         ############################ See what's in MY VCF line ############################
         if is_vcf:
             my_vcfcall = genome.Vcf_line( my_line )
-            my_coordiante = my_vcfcall.chromosome, my_vcfcall.position
+            my_coordiante = genomic_coordiantes(my_vcfcall.chromosome, my_vcfcall.position, my_vcfcall.position)
         elif is_bed:
-            
+            bed_item = my_line.split('\t')
+            my_coordiante = genomic_coordiantes( bed_item, int(bed_item[1]), int(bed_item[2])+1 )
         
         
         # False Negatives are not a part of my original call:
-        if 'FalseNegative' not in my_vcfcall.identifier:
+        if is_bed or ('FalseNegative' not in my_vcfcall.identifier):
             
             # If it's a "complex" variant (very rare), get me the first entry. 
             first_alt = my_vcfcall.altbase.split(',')[0]
@@ -1058,10 +1044,6 @@ open(outfile, 'w')               as outhandle:
                 muse_tier = 0
             
             
-
-            
-            
-            
             ############################ Find the same coordinate in NORMAL pileup ############################
             ## This is written after the SAMtools VCF because it could potentially replace them (i.e., DP4)
             if plN:
@@ -1118,35 +1100,7 @@ open(outfile, 'w')               as outhandle:
             else:
                 T_pdp = nan
 
-            
-            ## If SAMtools gave no MQ (i.e., nan), uses HaplotypeCaller's MQ:
-            #if math.isnan(N_mq): N_mq = N_Hmq
-            
-            ## If HaplotypeCaller does not give MQ either, uses VarDict's.
-            #if math.isnan(N_mq): N_mq = N_mq_vd
-            ## And if VarDict is also nan, then let it be.
-            ## Beware that SAMtool is processed first with N/T_mq, so if it's a real number it'll take precedence. 
-            
-            ## Same for Tumor:
-            #if math.isnan(T_mq): T_mq = T_Hmq
-            #if math.isnan(T_mq): T_mq = T_mq_vd
-            
-            
-            ## Pileup depth takes precedence, followed by SAMtools, followed by pileup
-            #if not math.isnan(N_pdp):
-                #N_dp = N_pdp
-            #elif not math.isnan(N_Hdp):
-                #N_dp = N_Hdp
-            #else:
-                #N_dp = nan
-            
-            #if not math.isnan(T_pdp):
-                #T_dp = T_pdp
-            #elif not math.isnan(T_Hdp):
-                #T_dp = T_Hdp
-            #else:
-                #T_dp = nan
-            
+                        
             
             ###
             out_line = out_header.format( \
@@ -1173,10 +1127,6 @@ open(outfile, 'w')               as outhandle:
             N_QSTD                  = n_qstd,                                                 \
             N_PSTD                  = n_pstd,                                                 \
             N_VQUAL                 = n_vqual,                                                \
-#           N_StrandBias            = rescale(N_p_strandbias,  'fraction', p_scale, 1001),    \
-#           N_BaseQBias             = rescale(N_p_baseQbias,   'fraction', p_scale, 1001),    \
-#           N_MapQBias              = rescale(N_p_mapQbias,    'fraction', p_scale, 1001),    \
-#           N_TailDistBias          = rescale(N_p_taildisbias, 'fraction', p_scale, 1001),    \
             N_MLEAC                 = N_mleac,                                                \
             N_MLEAF                 = N_mleaf,                                                \
             N_BaseQRankSum          = N_baseQrank,                                            \
@@ -1229,10 +1179,6 @@ open(outfile, 'w')               as outhandle:
             T_QSTD                  = t_qstd,                                                 \
             T_PSTD                  = t_pstd,                                                 \
             T_VQUAL                 = t_vqual,                                                \
-#           T_StrandBias            = rescale(T_p_strandbias,  'fraction', p_scale, 1001),    \
-#           T_BaseQBias             = rescale(T_p_baseQbias,   'fraction', p_scale, 1001),    \
-#           T_MapQBias              = rescale(T_p_mapQbias,    'fraction', p_scale, 1001),    \
-#           T_TailDistBias          = rescale(T_p_taildisbias, 'fraction', p_scale, 1001),    \
             T_MLEAC                 = T_mleac,                                                \
             T_MLEAF                 = T_mleaf,                                                \
             T_BaseQRankSum          = T_baseQrank,                                            \
