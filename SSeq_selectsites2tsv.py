@@ -478,9 +478,6 @@ open(outfile, 'w')               as outhandle:
                             # Inconsistent read or 2nd alternate calls:
                             else:
                                 t_noise_read_count += 1
-                                    
-                    # Here, we have BQ's for each read. See if it has gotten over the binomial expectation:
-                    expected_alt_calls = 
                     
                     
                     # Done extracting info from tumor BAM. Now tally them:
@@ -515,7 +512,7 @@ open(outfile, 'w')               as outhandle:
                 
                     # Normal BAM file:
                     if args.normal_bam_file:
-                        n_reads = nbam.fetch( my_vcfcall.chromosome, my_vcfcall.position-1, my_vcfcall.position )
+                        n_reads = nbam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1], multiple_iterators=False )
         
                         n_ref_read_mq = n_alt_read_mq = []
                         n_ref_read_bq = n_alt_read_bq = []
