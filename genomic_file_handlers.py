@@ -322,7 +322,7 @@ def whoisbehind(coord_0, coord_1, chrom_sequence):
         if isinstance(coord_0, str):
             chrom0, position0 = coord_0.split()
             chrom1, position1 = coord_1.split()
-        elif isinstance(coord_0, list):
+        elif isinstance(coord_0, list) or isinstance(coord_0, tuple):
             chrom0, position0 = coord_0[0], coord_0[1]
             chrom1, position1 = coord_1[0], coord_1[1]
        

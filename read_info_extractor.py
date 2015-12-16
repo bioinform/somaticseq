@@ -16,6 +16,8 @@ nan = float('nan')
 inf = float('inf')
 
 ## Define functions:
+
+### PYSAM ###
 def position_of_aligned_read(read_i, target_position):
     '''
     Return the base call of the target position, or if it's a start of insertion/deletion.
@@ -122,6 +124,32 @@ def position_of_aligned_read(read_i, target_position):
 
 
 
+## Dedup test for BAM file
+def dedup_test(read_i, remove_dup_or_not=True):
+    '''
+    Return False (i.e., remove the read) if the read is a duplicate and if the user specify that duplicates should be removed.
+    Else return True (i.e, keep the read)
+    '''
+    if read_i.is_duplicate and remove_dup_or_not:
+        return False
+    else:
+        return True
+
+
+
+pysambase = {0: 'A', 1: 'C', 2: 'G', 3: 'T', \
+            'A': 0, 'C': 1, 'G': 2, 'T': 3,}
+
+
+### END OF PYSAM ###
+
+
+
+
+# Useful to make BED region into an iterator of coordinates
+def genomic_coordiantes(contig_i, start, end):
+    for pos_i in range(start, end+1):
+        yield contig_i, pos_i
 
 
 
