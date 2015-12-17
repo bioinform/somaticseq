@@ -147,7 +147,7 @@ pysambase = {0: 'A', 1: 'C', 2: 'G', 3: 'T', \
 
 
 # Useful to make BED region into an iterator of coordinates
-def genomic_coordiantes(contig_i, start, end):
+def genomic_coordinates(contig_i, start, end):
     for pos_i in range(start, end+1):
         yield contig_i, pos_i
 

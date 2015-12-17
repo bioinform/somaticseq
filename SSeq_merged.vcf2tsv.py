@@ -601,7 +601,7 @@ open(outfile, 'w')               as outhandle:
 
             # If no normal BAM
             else:
-                n_ref_mq = n_alt_mq = n_z_ranksums_mq = n_ref_bq = n_alt_bq = n_z_ranksums_bq = n_ref_NM = n_alt_NM = n_z_ranksums_NM = n_concordance_fet = n_strandbias_fet = n_z_ranksums_endpos = n_ref_indel_3bp = n_ref_indel_2bp = n_ref_indel_1bp = n_alt_indel_3bp = n_alt_indel_2bp = n_alt_indel_1bp = n_ref_SC_reads = n_alt_SC_reads = n_ref_notSC_reads = n_alt_notSC_reads = n_clipping_fet = n_noise_read_count = N_dp = nan
+                n_ref_mq = n_alt_mq = n_z_ranksums_mq = n_ref_bq = n_alt_bq = n_z_ranksums_bq = n_ref_NM = n_alt_NM = n_NM_Diff = n_z_ranksums_NM = n_concordance_fet = n_strandbias_fet = n_z_ranksums_endpos = n_ref_indel_3bp = n_ref_indel_2bp = n_ref_indel_1bp = n_alt_indel_3bp = n_alt_indel_2bp = n_alt_indel_1bp = n_ref_SC_reads = n_alt_SC_reads = n_ref_notSC_reads = n_alt_notSC_reads = n_clipping_fet = n_noise_read_count = N_dp = n_ref_concordant_reads = n_ref_discordant_reads = n_alt_concordant_reads = n_alt_discordant_reads = n_ref_MQ0 = n_alt_MQ0 = n_poor_read_count = nan
             
             
             # Tumor BAM file:
@@ -772,7 +772,7 @@ open(outfile, 'w')               as outhandle:
 
             # If no tumor BAM
             else:
-                t_ref_mq = t_alt_mq = t_z_ranksums_mq = t_ref_bq = t_alt_bq = t_z_ranksums_bq = t_ref_NM = t_alt_NM = t_z_ranksums_NM = t_concordance_fet = t_strandbias_fet = t_z_ranksums_endpos = t_ref_indel_3bp = t_ref_indel_2bp = t_ref_indel_1bp = t_alt_indel_3bp = t_alt_indel_2bp = t_alt_indel_1bp = t_ref_SC_reads = t_alt_SC_reads = t_ref_notSC_reads = t_alt_notSC_reads = t_clipping_fet = t_noise_read_count = T_dp = nan
+                t_ref_mq = t_alt_mq = t_z_ranksums_mq = t_ref_bq = t_alt_bq = t_z_ranksums_bq = t_ref_NM = t_alt_NM = t_NM_Diff = t_z_ranksums_NM = t_concordance_fet = t_strandbias_fet = t_z_ranksums_endpos = t_ref_indel_3bp = t_ref_indel_2bp = t_ref_indel_1bp = t_alt_indel_3bp = t_alt_indel_2bp = t_alt_indel_1bp = t_ref_SC_reads = t_alt_SC_reads = t_ref_notSC_reads = t_alt_notSC_reads = t_clipping_fet = t_noise_read_count = T_dp = t_ref_concordant_reads = t_ref_discordant_reads = t_alt_concordant_reads = t_alt_discordant_reads = nan
 
             ############################################################################################
             ############################################################################################
