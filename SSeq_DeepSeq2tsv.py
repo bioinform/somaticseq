@@ -652,6 +652,9 @@ open(outfile, 'w')                 as outhandle:
     
     
                 if args.ground_truth_vcf:
+                
+                    print(truth_line)
+                        
                     latest_truth_run = genome.catchup(my_coordinate, truth_line, truth, chrom_seq)
                     latest_truth = genome.Vcf_line(latest_truth_run[1])
                     
@@ -1085,7 +1088,7 @@ open(outfile, 'w')                 as outhandle:
                 tBAM_ALT_InDel_2bp      = t_alt_indel_2bp,                                        \
                 tBAM_ALT_InDel_1bp      = t_alt_indel_1bp,                                        \
                 InDel_Length            = indel_length,                                           \
-                TrueVariant_or_False    = '.' )
+                TrueVariant_or_False    = judgement )
                 
                 # Print it out to stdout:
                 outhandle.write(out_line + '\n')

@@ -308,22 +308,34 @@ def whoisbehind(coord_0, coord_1, chrom_sequence):
     coord_0 and coord_1 are two strings or two lists, specifying the chromosome, a (typically) tab, and then the location.
     Return the index where the coordinate is behind. Return 10 if they are the same position. 
     '''
-    if (coord_0=='' and coord_1=='') or (coord_0==['',''] and coord_1==['','']):
+    
+    end_of_0 = end_of_1 = False
+    
+    if coord_0 == '' or coord_0==['',''] or coord_0==('','') or not coord_0:
+        end_of_0 = True
+        
+    if coord_1 == '' or coord_1==['',''] or coord_1==('','') or not coord_1:
+        end_of_1 = True
+    
+    if end_of_0 and end_of_1:
         return 10
         
-    elif coord_1 == '' or coord_1 == ['','']:
+    elif end_of_1:
         return 0
         
-    elif coord_0 == '' or coord_0 == ['','']:
+    elif end_of_0:
         return 1
     
     else:
     
         if isinstance(coord_0, str):
             chrom0, position0 = coord_0.split()
-            chrom1, position1 = coord_1.split()
         elif isinstance(coord_0, list) or isinstance(coord_0, tuple):
             chrom0, position0 = coord_0[0], coord_0[1]
+            
+        if isinstance(coord_1, str):
+            chrom1, position1 = coord_1.split()
+        elif isinstance(coord_1, list) or isinstance(coord_1, tuple):
             chrom1, position1 = coord_1[0], coord_1[1]
        
         if isinstance(chrom_sequence, dict):
