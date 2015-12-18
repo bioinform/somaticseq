@@ -839,7 +839,7 @@ open(outfile, 'w')               as outhandle:
                         
                         site_homopolymer_length = max( max(site_count_ref), max(site_count_alt) )
                         
-                            
+                        
                     else:
                         homopolymer_length      = nan
                         site_homopolymer_length = nan

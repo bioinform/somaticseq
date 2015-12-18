@@ -27,21 +27,17 @@ from read_info_extractor import *
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-
 input_sites = parser.add_mutually_exclusive_group()
 input_sites.add_argument('-vcf',   '--vcf-format',            action="store_true", help='Input file is VCF formatted. Train mode.')
 input_sites.add_argument('-bed',   '--bed-format',            action="store_true", help='Input file is BED formatted. Call mode.')
 
 parser.add_argument('-sites',   '--candidate-site-file',      type=str,   help='Either VCF or BED file', required=True, default=None)
 
-parser.add_argument('-nbam',    '--normal-bam-file',          type=str,   help='Normal BAM File',    required=False, default=None)
 parser.add_argument('-tbam',    '--tumor-bam-file',           type=str,   help='Tumor BAM File',     required=True,  default=None)
-
 parser.add_argument('-truth',   '--ground-truth-vcf',         type=str,   help='VCF of true hits',  required=False, default=None)
 parser.add_argument('-mutect',  '--mutect-vcf',               type=str,   help='MuTect VCF.',       required=False, default=None)
 parser.add_argument('-varscan', '--varscan-vcf',              type=str,   help='VarScan2 VCF',      required=False, default=None)
 parser.add_argument('-vardict', '--vardict-vcf',              type=str,   help='VarDict VCF',       required=False, default=None)
-parser.add_argument('-muse',    '--muse-vcf',                 type=str,   help='MuSE VCF',          required=False, default=None)
 parser.add_argument('-lofreq',  '--lofreq-vcf',               type=str,   help='LoFreq VCF',        required=False, default=None)
 
 parser.add_argument('-ref',     '--reference-fasta',          type=str,   help='.fasta/.fa file',      required=True, default=None)
@@ -49,7 +45,7 @@ parser.add_argument('-dict',    '--reference-fasta-dict',     type=str,   help='
 
 parser.add_argument('-minVAF',  '--minimum-variant-allele-frequency', type=float,  help='Minimum VAF below which is thrown out', required=False, default=0.001)
 parser.add_argument('-maxVAF',  '--maximum-variant-allele-frequency', type=float,  help='Maximum VAF above which is thrown out', required=False, default=0.2)
-parser.add_argument('-minDP',   '--minimum-depth',                    type=float,  help='Minimum Coverage below which is thrown out', required=False, default=1)
+parser.add_argument('-minDP',   '--minimum-depth',                    type=float,  help='Minimum Coverage below which is thrown out', required=False, default=100)
 parser.add_argument('-maxDP',   '--maximum-depth',                    type=float,  help='Maximum Coverage above which is downsampled', required=False, default=50000)
 parser.add_argument('-minMQ',   '--minimum-mapping-quality',          type=float,  help='Minimum mapping quality below which is considered poor', required=False, default=1)
 parser.add_argument('-minBQ',   '--minimum-base-quality',             type=float,  help='Minimum base quality below which is considered poor', required=False, default=13)
@@ -71,14 +67,10 @@ is_vcf    = args.vcf_format
 is_bed    = args.bed_format
 
 tbam_fn   = args.tumor_bam_file
-nbam_fn   = args.normal_bam_file          if args.normal_bam_file          else os.devnull
-
 truehits  = args.ground_truth_vcf         if args.ground_truth_vcf         else os.devnull
-
 mutectv   = args.mutect_vcf               if args.mutect_vcf               else os.devnull
 varscanv  = args.varscan_vcf              if args.varscan_vcf              else os.devnull
 vardictv  = args.vardict_vcf              if args.vardict_vcf              else os.devnull
-musev     = args.muse_vcf                 if args.muse_vcf                 else os.devnull
 lofreqv   = args.lofreq_vcf               if args.lofreq_vcf               else os.devnull
 
 min_mq    = args.minimum_mapping_quality
@@ -155,9 +147,7 @@ out_header = \
 {if_MuTect}\t\
 {if_VarScan2}\t\
 {if_VarDict}\t\
-{MuSE_Tier}\t\
 {VarScan2_Score}\t\
-{VarDict_Score}\t\
 {if_dbsnp}\t\
 {COMMON}\t\
 {SOR}\t\
@@ -209,15 +199,12 @@ out_header = \
 {TrueVariant_or_False}'
 
 
-
-
 ## Running
 with genome.open_textfile(mysites) as mysites, \
 genome.open_textfile(truehits)     as truth, \
 genome.open_textfile(mutectv)      as mutect, \
 genome.open_textfile(varscanv)     as varscan, \
 genome.open_textfile(vardictv)     as vardict, \
-genome.open_textfile(musev)        as muse, \
 genome.open_textfile(lofreqv)      as lofreq, \
 genome.open_bam_file(nbam_fn)      as nbam, \
 genome.open_bam_file(tbam_fn)      as tbam, \
@@ -231,7 +218,6 @@ open(outfile, 'w')                 as outhandle:
     mutect_line  = mutect.readline().rstrip()
     varscan_line = varscan.readline().rstrip()
     vardict_line = vardict.readline().rstrip()
-    muse_line    = muse.readline().rstrip()
     lofreq_line  = lofreq.readline().rstrip()
     
     # Get through all the headers:
@@ -249,9 +235,6 @@ open(outfile, 'w')                 as outhandle:
 
     while vardict_line.startswith('#'):
         vardict_line = vardict.readline().rstrip()
-        
-    while muse_line.startswith('#'):
-        muse_line = muse.readline().rstrip()
 
     while lofreq_line.startswith('#'):
         lofreq_line = lofreq.readline().rstrip()
@@ -285,13 +268,9 @@ open(outfile, 'w')                 as outhandle:
             bed_item = my_line.split('\t')
             my_coordinates = genomic_coordinates( bed_item[0], int(bed_item[1])+1, int(bed_item[2]) )
         
-        
-        
         ## 
         for my_coordinate in my_coordinates:
-            
-            print(my_coordinate)
-            
+                        
             latest_tpileup_run   = genome.catchup(my_coordinate, tpileup_line, pileup_out, chrom_seq)
             latest_pileuptumor   = pileup_reader.Pileup_line(latest_tpileup_run[1])
             
@@ -460,24 +439,50 @@ open(outfile, 'w')                 as outhandle:
                     t_alt_indel_1bp = t_alt_flanking_indel.count(1)
     
                     # Homopolymer eval (Make sure to modify for INDEL):
-                    bases_to_the_left  = ref_fa.fetch(my_coordinate[0], my_coordinate[1]-20, my_coordinate[1])
-                    bases_to_the_right = ref_fa.fetch(my_coordinate[0], my_coordinate[1]+1,  my_coordinate[1]+21)
+                    lseq  = ref_fa.fetch(my_coordinate[0], my_coordinate[1]-20, my_coordinate[1])
+                    rseq  = ref_fa.fetch(my_coordinate[0], my_coordinate[1]+1,  my_coordinate[1]+21)
                     
-                    homopolymer_ref = bases_to_the_left + ref_base + bases_to_the_right
-                    homopolymer_alt = bases_to_the_left + first_alt + bases_to_the_right
-        
-                    count_ref = genome.count_repeating_bases(homopolymer_ref)
-                    count_alt = genome.count_repeating_bases(homopolymer_alt)
-                        
-                    homopolymer_length = max( max(count_ref), max(count_alt) )
+                    seq41_ref = lseq + ref_base  + rseq
+                    seq41_alt = lseq + first_alt + rseq
                     
+                    ref_counts = genome.count_repeating_bases(seq41_ref)
+                    alt_counts = genome.count_repeating_bases(seq41_alt)
                     
+                    homopolymer_length = max( max(ref_counts), max(alt_counts) )
                     
-                    
-                    if args.ground_truth_vcf:
-                        
-                        print(truth_line)
+                    # Homopolymer spanning the variant site:
+                    ref_c = 0
+                    alt_c = 0
+                    for i in rseq:
+                        if i == ref_base:
+                            ref_c += 1
+                        else:
+                            break
                             
+                    for i in lseq[::-1]:
+                        if i == ref_base:
+                            ref_c += 1
+                        else:
+                            break
+                    
+                    for i in rseq:
+                        if i == first_alt:
+                            alt_c += 1
+                        else:
+                            break
+                            
+                    for i in lseq[::-1]:
+                        if i == first_alt:
+                            alt_c += 1
+                        else:
+                            break
+
+                    site_homopolymer_length = max( alt_c+1, ref_c+1 )
+                    
+                    
+                    # Ground truth file
+                    if args.ground_truth_vcf:
+                                                    
                         latest_truth_run = genome.catchup(my_coordinate, truth_line, truth, chrom_seq)
                         latest_truth = genome.Vcf_line(latest_truth_run[1])
                         
@@ -503,17 +508,10 @@ open(outfile, 'w')                 as outhandle:
                         latest_vardict = genome.Vcf_line(latest_vardict_run[1])
                         
                         if latest_vardict_run[0]:
-                            assert my_vcfcall.position == latest_vardict.position
+                            assert my_coordinate[1] == latest_vardict.position
                             
-                            # Somatic Score:
-                            if vardict_positive or ('Somatic' in latest_vardict.info):
-                                score_vardict = latest_vardict.get_info_value('SSF')
-                                score_vardict = float(score_vardict)
-                                score_vardict = genome.p2phred(score_vardict, max_phred=100)
-                            else:
-                                score_vardict = nan
-        
-        
+                            vardict_classification = 1 if latest_vardict.filter == 'PASS' else 0
+                                    
                             # SOR, MSI, MSILEN, and SHIFT3:
                             sor    = find_SOR(latest_vardict)
                             msi    = find_MSI(latest_vardict)
@@ -524,26 +522,14 @@ open(outfile, 'w')                 as outhandle:
                             indel_length = len(first_alt) - len(latest_vardict.refbase)
                             
                             ## VarDict's sample info:
-                            # Mean mismatch:
-                            n_nm = latest_vardict.get_sample_value('NM', vdN)
-                            try:
-                                n_nm = eval(n_nm)
-                            except TypeError:
-                                n_nm = nan
-                                
+                            # Mean mismatch:                                
                             t_nm = latest_vardict.get_sample_value('NM', vdT)
                             try:
                                 t_nm = eval(t_nm)
                             except TypeError:
                                 t_nm = nan
                                 
-                            # Mean position in reads:
-                            n_pmean = latest_vardict.get_sample_value('PMEAN', vdN)
-                            try:
-                                n_pmean = eval( n_pmean )
-                            except TypeError:
-                                n_pmean = nan
-                                
+                            # Mean position in reads:                                
                             t_pmean = latest_vardict.get_sample_value('PMEAN', vdT)
                             try:
                                 t_pmean = eval( t_pmean )
@@ -551,12 +537,6 @@ open(outfile, 'w')                 as outhandle:
                                 t_pmean = nan
                                 
                             # Read Position STD
-                            n_pstd = latest_vardict.get_sample_value('PSTD', vdN)
-                            try:
-                                n_pstd = eval(n_pstd)
-                            except TypeError:
-                                n_pstd = nan
-                                
                             t_pstd = latest_vardict.get_sample_value('PSTD', vdT)
                             try:
                                 t_pstd = eval( t_pstd )
@@ -564,12 +544,6 @@ open(outfile, 'w')                 as outhandle:
                                 t_pstd = nan
                                 
                             # Quality score STD in reads:
-                            n_qstd = latest_vardict.get_sample_value('QSTD', vdN)
-                            try:
-                                n_qstd = eval( n_qstd )
-                            except TypeError:
-                                n_qstd = nan
-                                
                             t_qstd = latest_vardict.get_sample_value('QSTD', vdT)
                             try:
                                 t_qstd = eval( t_qstd )
@@ -577,47 +551,25 @@ open(outfile, 'w')                 as outhandle:
                                 t_qstd = nan
                             
                             # Quality Score
-                            n_vqual = latest_vardict.get_sample_value('QUAL', vdN)
-                            try:
-                                n_vqual = eval( n_vqual )
-                            except TypeError:
-                                n_vqual = nan
-                                
                             t_vqual = latest_vardict.get_sample_value('QUAL', vdT)
                             try:
                                 t_vqual = eval( t_vqual )
                             except TypeError:
                                 t_vqual = nan
-                
-                
-                            # Mapping Score
-                            N_mq_vd = latest_vardict.get_sample_value('MQ', vdN)
-                            try:
-                                N_mq_vd = eval( N_mq_vd )
-                            except TypeError:
-                                N_mq_vd = nan
                                 
-                            T_mq_vd = latest_vardict.get_sample_value('MQ', vdT)
-                            try:
-                                T_mq_vd = eval( T_mq_vd )
-                            except TypeError:
-                                T_mq_vd = nan
-                
-        
-                
                             # Reset the current line:
                             vardict_line = latest_vardict.vcf_line
         
                     
-                    
                         # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                         else:
-                            sor = msi = msilen = shift3 = n_nm = t_nm = n_pmean = t_pmean = n_pstd = t_pstd = n_qstd = t_qstd = n_vqual = t_vqual = N_mq_vd = T_mq_vd = score_vardict = nan
+                            vardict_classification = 0
+                            sor = msi = msilen = shift3 = t_nm = t_pmean = t_pstd = t_qstd = t_vqual = nan
                             vardict_line = latest_vardict.vcf_line
                             
                     else:
                         
-                        sor = msi = msilen = shift3 = n_nm = t_nm = n_pmean = t_pmean = n_pstd = t_pstd = n_qstd = t_qstd = n_vqual = t_vqual = N_mq_vd = T_mq_vd = score_vardict = nan
+                        sor = msi = msilen = shift3 = t_nm = t_pmean = t_pstd = t_qstd = t_vqual = nan
                     
                     
                     
@@ -630,67 +582,51 @@ open(outfile, 'w')                 as outhandle:
                         
                         if latest_varscan_run[0]:
                             
-                            assert my_vcfcall.position == latest_varscan.position
+                            assert my_coordinate[1] == latest_varscan.position
                             
                             # Somatic Score:
-                            score_varscan2 = int(latest_varscan.get_info_value('SSC'))
+                            varscan_classification = 1 if latest_varscan.filter == 'PASS' else 0
+                            score_varscan2 = eval(latest_varscan.get_sample_value_value('PVAL'))
                             
                             # Reset the current line:
                             varscan_line = latest_varscan.vcf_line
         
-                        
                         # The VarScan.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                         else:
                             score_varscan2 = nan
+                            varscan_classification = 0
                             varscan_line = latest_varscan.vcf_line
                             
                     else:
                         
                         score_varscan2 = nan
-                    
-                    
-                    
-                    
-                    ############################################################################################
-                    ########################## Find the same coordinate in MuSE's VCF# #########################
-                    if args.muse_vcf:
-                        
-                        latest_muse_run = genome.catchup(my_coordinate, muse_line, muse, chrom_seq)
-                        latest_muse = genome.Vcf_line(latest_muse_run[1])
-                        
-                        if latest_muse_run[0]:
-                            
-                            assert my_vcfcall.position == latest_muse.position
-                            
-                            # PASS and Tiers:
-                            if latest_muse.filters   == 'PASS':
-                                muse_tier = 6
-                            elif latest_muse.filters == 'Tier1':
-                                muse_tier = 5                        
-                            elif latest_muse.filters == 'Tier2':
-                                muse_tier = 4
-                            elif latest_muse.filters == 'Tier3':
-                                muse_tier = 3
-                            elif latest_muse.filters == 'Tier4':
-                                muse_tier = 2
-                            elif latest_muse.filters == 'Tier5':
-                                muse_tier = 1
-                            else:
-                                muse_tier = 0
-                            
-                            # Reset the current line:
-                            muse_line = latest_muse.vcf_line
-        
-                        # The VarScan.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
-                        else:
-                            muse_tier = 0
-                            muse_line = latest_muse.vcf_line
-                            
-                    else:
-                        
-                        muse_tier = 0
                 
                             
+
+                    ############################################################################################
+                    ######################## Find the same coordinate in MuTect's VCF #########################
+                    if args.mutect_vcf:
+                        
+                        latest_mutect_run = genome.catchup(my_coordinate, mutect_line, mutect, chrom_seq)
+                        latest_mutect = genome.Vcf_line(latest_mutect_run[1])
+                        
+                        if latest_mutect_run[0]:
+                            
+                            assert my_coordinate[1] == latest_mutect.position
+                            
+                            # Somatic Score:
+                            mutect_classification = 1 if latest_mutect.get_info_value('SOMATIC') else 0
+                            
+                            # Reset the current line:
+                            mutect_line = latest_mutect.vcf_line
+        
+                        else:
+                            mutect_classification = 0
+                            mutect_line = latest_mutect.vcf_line
+                            
+                    else:
+                        mutect_classification = nan
+                
                 
                 ###
                     out_line = out_header.format( \
@@ -699,14 +635,12 @@ open(outfile, 'w')                 as outhandle:
                     ID                      = '.',                                                    \
                     REF                     = ref_base,                                               \
                     ALT                     = first_alt,                                              \
-                    if_MuTect               = 0,                                           \
-                    if_VarScan2             = 0,                                      \
-                    if_VarDict              = 0,                                       \
-                    MuSE_Tier               = 0,                                              \
-                    VarScan2_Score          = rescale(6,      'phred', p_scale, 1001),   \
-                    VarDict_Score           = rescale(6,       'phred', p_scale, 1001),   \
-                    if_dbsnp                = 0,                                               \
-                    COMMON                  = 0,                                       \
+                    if_MuTect               = mutect_classification,                                  \
+                    if_VarScan2             = varscan_classification,                                 \
+                    if_VarDict              = vardict_classification,                                 \
+                    VarScan2_Score          = rescale(score_varscan2,   'fraction', 'phred', 1001),   \
+                    if_dbsnp                = nan,                                                    \
+                    COMMON                  = nan,                                                    \
                     SOR                     = sor,                                                    \
                     MSI                     = msi,                                                    \
                     MSILEN                  = msilen,                                                 \
