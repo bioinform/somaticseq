@@ -554,7 +554,7 @@ open(outfile, 'w')                 as outhandle:
                             
                             # Somatic Score:
                             varscan_classification = 1 if latest_varscan.filters == 'PASS' else 0
-                            score_varscan2 = eval(latest_varscan.get_sample_value_value('PVAL'))
+                            score_varscan2 = eval(latest_varscan.get_sample_value('PVAL'))
                             
                             # Reset the current line:
                             varscan_line = latest_varscan.vcf_line
