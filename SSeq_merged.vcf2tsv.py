@@ -24,11 +24,12 @@
 
 # -- 11/3/2015
 
-import sys, argparse, math, gzip, os
+import sys, argparse, math, gzip, os, pysam
 import regex as re
 import genomic_file_handlers as genome
 import pileup_reader as pileup
-from read_info_extractor import *
+from read_info_extractor import * 
+import scipy.stats as stats
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-myvcf',   '--vcf-file',                 type=str, help='My VCF', required=True, default=None)
@@ -92,16 +93,6 @@ p_scale   = args.p_scale
 
 nan = float('nan')
 inf = float('inf')
-
-if args.normal_bam_file or args.tumor_bam_file:
-
-    import pysam
-    import scipy.stats as stats
-    
-    #nbam = pysam.AlignmentFile(nbam_fn, 'rb')  if args.normal_bam_file else os.devnull
-    #tbam = pysam.AlignmentFile(tbam_fn,  'rb')  if args.tumor_bam_file else os.devnull
-    
-
 
 if p_scale == None:
     print('NO RE-SCALING', file=sys.stderr)

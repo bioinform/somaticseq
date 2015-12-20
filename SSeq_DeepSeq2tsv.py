@@ -147,21 +147,19 @@ out_header = \
 {if_MuTect}\t\
 {if_VarScan2}\t\
 {if_VarDict}\t\
+{if_LoFreq}\t\
 {VarScan2_Score}\t\
 {if_dbsnp}\t\
 {COMMON}\t\
-{SOR}\t\
 {MSI}\t\
 {MSILEN}\t\
 {SHIFT3}\t\
 {MaxHomopolymer_Length}\t\
 {SiteHomopolymer_Length}\t\
 {T_DP}\t\
-{T_NM}\t\
 {T_PMEAN}\t\
 {T_QSTD}\t\
 {T_PSTD}\t\
-{T_VQUAL}\t\
 {tBAM_REF_MQ}\t\
 {tBAM_ALT_MQ}\t\
 {tBAM_Z_Ranksums_MQ}\t\
@@ -405,7 +403,6 @@ open(outfile, 'w')                 as outhandle:
                                 # Flanking indels:
                                 t_alt_flanking_indel.append( flanking_indel_i )
                             
-                            
                             # Inconsistent read or 2nd alternate calls:
                             else:
                                 t_noise_read_count += 1
@@ -513,63 +510,35 @@ open(outfile, 'w')                 as outhandle:
                             vardict_classification = 1 if latest_vardict.filter == 'PASS' else 0
                                     
                             # SOR, MSI, MSILEN, and SHIFT3:
-                            sor    = find_SOR(latest_vardict)
-                            msi    = find_MSI(latest_vardict)
-                            msilen = find_MSILEN(latest_vardict)
-                            shift3 = find_SHIFT3(latest_vardict)
-                                    
-                            # Indel length. Yes, indel_length was extracted before, so this could potentially override that because this takes VarDict's assessment. 
-                            indel_length = len(first_alt) - len(latest_vardict.refbase)
+                            msi = latest_vardict.get_info_value('MSI') 
+                            msi = msi if msi else nan
                             
-                            ## VarDict's sample info:
-                            # Mean mismatch:                                
-                            t_nm = latest_vardict.get_sample_value('NM', vdT)
-                            try:
-                                t_nm = eval(t_nm)
-                            except TypeError:
-                                t_nm = nan
-                                
-                            # Mean position in reads:                                
-                            t_pmean = latest_vardict.get_sample_value('PMEAN', vdT)
-                            try:
-                                t_pmean = eval( t_pmean )
-                            except TypeError:
-                                t_pmean = nan
-                                
-                            # Read Position STD
-                            t_pstd = latest_vardict.get_sample_value('PSTD', vdT)
-                            try:
-                                t_pstd = eval( t_pstd )
-                            except TypeError:
-                                t_pstd = nan
-                                
-                            # Quality score STD in reads:
-                            t_qstd = latest_vardict.get_sample_value('QSTD', vdT)
-                            try:
-                                t_qstd = eval( t_qstd )
-                            except TypeError:
-                                t_qstd = nan
+                            msilen = latest_vardict.get_info_value('MSILEN')
+                            msilen = msilen if msilen else nan
                             
-                            # Quality Score
-                            t_vqual = latest_vardict.get_sample_value('QUAL', vdT)
-                            try:
-                                t_vqual = eval( t_vqual )
-                            except TypeError:
-                                t_vqual = nan
+                            shift3 = latest_vardict.get_info_value('SHIFT3')
+                            shift3 = shift3 if shift3 else nan
+                            
+                            t_pmean = latest_vardict.get_info_value('PMEAN')
+                            t_pmean = t_pmean if t_pmean else nan
                                 
-                            # Reset the current line:
+                            t_pstd = latest_vardict.get_info_value('PSTD')
+                            t_pstd = t_pstd if t_pstd else nan
+                                
+                            t_qstd = latest_vardict.get_info_value('QSTD')
+                            t_qstd = t_qstd if t_qstd else nan
+                            
                             vardict_line = latest_vardict.vcf_line
         
                     
                         # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                         else:
                             vardict_classification = 0
-                            sor = msi = msilen = shift3 = t_nm = t_pmean = t_pstd = t_qstd = t_vqual = nan
+                            msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
                             vardict_line = latest_vardict.vcf_line
                             
                     else:
-                        
-                        sor = msi = msilen = shift3 = t_nm = t_pmean = t_pstd = t_qstd = t_vqual = nan
+                        msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
                     
                     
                     
@@ -601,8 +570,7 @@ open(outfile, 'w')                 as outhandle:
                         
                         score_varscan2 = nan
                 
-                            
-
+                
                     ############################################################################################
                     ######################## Find the same coordinate in MuTect's VCF #########################
                     if args.mutect_vcf:
@@ -626,6 +594,31 @@ open(outfile, 'w')                 as outhandle:
                             
                     else:
                         mutect_classification = nan
+
+
+                    ############################################################################################
+                    ######################## Find the same coordinate in LoFreq's VCF #########################
+                    if args.lofreq:
+                        
+                        latest_lofreq_run = genome.catchup(my_coordinate, lofreq_line, lofreq, chrom_seq)
+                        latest_lofreq = genome.Vcf_line(latest_lofreq_run[1])
+                        
+                        if latest_lofreq_run[0]:
+                            
+                            assert my_coordinate[1] == latest_lofreq.position
+                            
+                            # Somatic Score:
+                            lofreq_classification = 1 if latest_lofreq.filter == 'PASS' else 0
+                            
+                            # Reset the current line:
+                            lofreq_line = latest_lofreq.vcf_line
+        
+                        else:
+                            lofreq_classification = 0
+                            lofreq_line = latest_lofreq.vcf_line
+                            
+                    else:
+                        lofreq_classification = nan
                 
                 
                 ###
@@ -638,21 +631,19 @@ open(outfile, 'w')                 as outhandle:
                     if_MuTect               = mutect_classification,                                  \
                     if_VarScan2             = varscan_classification,                                 \
                     if_VarDict              = vardict_classification,                                 \
-                    VarScan2_Score          = rescale(score_varscan2,   'fraction', 'phred', 1001),   \
+                    if_LoFreq               = lofreq_classification,                                  \
+                    VarScan2_Score          = rescale(score_varscan2, 'fraction', 'phred', 1001),     \
                     if_dbsnp                = nan,                                                    \
                     COMMON                  = nan,                                                    \
-                    SOR                     = sor,                                                    \
                     MSI                     = msi,                                                    \
                     MSILEN                  = msilen,                                                 \
                     SHIFT3                  = shift3,                                                 \
                     MaxHomopolymer_Length   = homopolymer_length,                                     \
                     SiteHomopolymer_Length  = site_homopolymer_length,                                \
                     T_DP                    = T_dp,                                                   \
-                    T_NM                    = t_nm,                                                   \
                     T_PMEAN                 = t_pmean,                                                \
                     T_QSTD                  = t_qstd,                                                 \
                     T_PSTD                  = t_pstd,                                                 \
-                    T_VQUAL                 = t_vqual,                                                \
                     tBAM_REF_MQ             = '%g' % t_ref_mq,                                        \
                     tBAM_ALT_MQ             = '%g' % t_alt_mq,                                        \
                     tBAM_Z_Ranksums_MQ      = '%g' % t_z_ranksums_mq,                                 \
