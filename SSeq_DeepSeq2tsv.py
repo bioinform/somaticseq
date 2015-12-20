@@ -204,7 +204,6 @@ genome.open_textfile(mutectv)      as mutect, \
 genome.open_textfile(varscanv)     as varscan, \
 genome.open_textfile(vardictv)     as vardict, \
 genome.open_textfile(lofreqv)      as lofreq, \
-genome.open_bam_file(nbam_fn)      as nbam, \
 genome.open_bam_file(tbam_fn)      as tbam, \
 pysam.FastaFile(ref_fa)            as ref_fa, \
 os.popen(mpileup)                  as pileup_out, \
