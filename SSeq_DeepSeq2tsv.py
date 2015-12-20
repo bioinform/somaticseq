@@ -597,7 +597,7 @@ open(outfile, 'w')                 as outhandle:
 
                     ############################################################################################
                     ######################## Find the same coordinate in LoFreq's VCF #########################
-                    if args.lofreq:
+                    if args.lofreq_vcf:
                         
                         latest_lofreq_run = genome.catchup(my_coordinate, lofreq_line, lofreq, chrom_seq)
                         latest_lofreq = genome.Vcf_line(latest_lofreq_run[1])
