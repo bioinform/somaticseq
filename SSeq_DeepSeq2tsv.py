@@ -506,7 +506,7 @@ open(outfile, 'w')                 as outhandle:
                         if latest_vardict_run[0]:
                             assert my_coordinate[1] == latest_vardict.position
                             
-                            vardict_classification = 1 if latest_vardict.filter == 'PASS' else 0
+                            vardict_classification = 1 if latest_vardict.filters == 'PASS' else 0
                                     
                             # SOR, MSI, MSILEN, and SHIFT3:
                             msi = latest_vardict.get_info_value('MSI') 
@@ -553,7 +553,7 @@ open(outfile, 'w')                 as outhandle:
                             assert my_coordinate[1] == latest_varscan.position
                             
                             # Somatic Score:
-                            varscan_classification = 1 if latest_varscan.filter == 'PASS' else 0
+                            varscan_classification = 1 if latest_varscan.filters == 'PASS' else 0
                             score_varscan2 = eval(latest_varscan.get_sample_value_value('PVAL'))
                             
                             # Reset the current line:
@@ -607,7 +607,7 @@ open(outfile, 'w')                 as outhandle:
                             assert my_coordinate[1] == latest_lofreq.position
                             
                             # Somatic Score:
-                            lofreq_classification = 1 if latest_lofreq.filter == 'PASS' else 0
+                            lofreq_classification = 1 if latest_lofreq.filters == 'PASS' else 0
                             
                             # Reset the current line:
                             lofreq_line = latest_lofreq.vcf_line
