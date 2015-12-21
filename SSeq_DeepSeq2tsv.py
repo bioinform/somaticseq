@@ -486,10 +486,10 @@ open(outfile, 'w')                 as outhandle:
                             
                             assert my_coordinate[1] == latest_truth.position
                             judgement = 1
+                            truth_line = latest_truth.vcf_line
                         
                         else:
                             judgement = 0
-                        
                             # Reset the current line:
                             truth_line = latest_truth.vcf_line
                         
@@ -581,10 +581,7 @@ open(outfile, 'w')                 as outhandle:
                             
                             assert my_coordinate[1] == latest_mutect.position
                             
-                            # Somatic Score:
-                            mutect_classification = 1 if latest_mutect.get_info_value('SOMATIC') else 0
-                            
-                            # Reset the current line:
+                            mutect_classification = 1
                             mutect_line = latest_mutect.vcf_line
         
                         else:
