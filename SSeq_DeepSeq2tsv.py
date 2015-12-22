@@ -6,15 +6,7 @@
 # 1-based index in this program.
 
 # Sample command:
-# python3 SSeq_merged.vcf2tsv.py -bed interested_regions.bed -samN snp_positions.normal.noindel.vcf.gz -samT snp_positions.tumor.noindel.5bpflank.vcf.gz -haploN haplo_N/merged.noindel.vcf.gz -haploT haplo_T/merged.noindel.vcf.gz -sniper somaticsniper/variants.vcf -varscan varscan2/variants.snp.vcf -jsm jointsnvmix2/variants.vcf -vardict vardict/variants.snp.vcf.gz -muse muse/variants.vcf -nbam normal.indelrealigned.bam -tbam tumor.indelrealigned.bam -fai human_g1k_v37_decoy.fasta.fai -outfile SSeq2.snp.tsv
-
-# 1) Supports MuSE
-# 2) Supports pileup file input
-# 3) Uses VarDict's MQ (mapping quality score) if MQ is not found in SAMtools or HaplotypeCaller (mostly for INDELs).
-# 4) Allow +/- INDEL lengh for insertion and deletion
-# 5) Uses pysam to extract information directly from BAM files, e.g., flanking indel, edit distance, discordance, etc.
-# 6) Implement minimal mapping quality (MQ) and base call quality (BQ) for which pysam considers the reads in BAM files. 
-# 7) Allow user to count only non-duplicate reads if -dedup option is invoked. 
+# python3 SSeq_merged.vcf2tsv.py -sites actionable_region.bed -bed -tbam recalibrated.bam -varscan varscan.snp.vcf -mutect mutect.snp.vcf -vardict vardict.snp.vcf -lofreq lofreq.snp.vcf  -ref human_g1k_v37_decoy.fasta -truth ground_truth.snp.vcf -outfile SomaticSeq.DeepSeq.tsv
 
 # -- 1/1/2016
 
@@ -28,20 +20,22 @@ from read_info_extractor import *
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 input_sites = parser.add_mutually_exclusive_group()
-input_sites.add_argument('-vcf',   '--vcf-format',            action="store_true", help='Input file is VCF formatted. Train mode.')
-input_sites.add_argument('-bed',   '--bed-format',            action="store_true", help='Input file is BED formatted. Call mode.')
+input_sites.add_argument('-vcf',   '--vcf-format',            action="store_true", help='Input file is VCF formatted.')
+input_sites.add_argument('-bed',   '--bed-format',            action="store_true", help='Input file is BED formatted.')
+input_sites.add_argument('-pos',   '--positions-list',        action="store_true", help='Input file is a list of positions, tab seperating contig and 1-based positions.')
 
-parser.add_argument('-sites',   '--candidate-site-file',      type=str,   help='Either VCF or BED file', required=True, default=None)
+parser.add_argument('-sites',      '--candidate-site-file',   type=str,   help='Either VCF or BED file', required=True, default=None)
+parser.add_argument('-tbam',    '--tumor-bam-file',           type=str,   help='Tumor BAM File',    required=True,  default=None)
 
-parser.add_argument('-tbam',    '--tumor-bam-file',           type=str,   help='Tumor BAM File',     required=True,  default=None)
 parser.add_argument('-truth',   '--ground-truth-vcf',         type=str,   help='VCF of true hits',  required=False, default=None)
+parser.add_argument('-dbsnp',   '--dbsnp-vcf',                type=str,   help='dbSNP VCF file',    required=False, default=None)
+parser.add_argument('-cosmic',  '--cosmic-vcf',               type=str,   help='COSMIC VCF file',   required=False, default=None)
 parser.add_argument('-mutect',  '--mutect-vcf',               type=str,   help='MuTect VCF.',       required=False, default=None)
 parser.add_argument('-varscan', '--varscan-vcf',              type=str,   help='VarScan2 VCF',      required=False, default=None)
 parser.add_argument('-vardict', '--vardict-vcf',              type=str,   help='VarDict VCF',       required=False, default=None)
 parser.add_argument('-lofreq',  '--lofreq-vcf',               type=str,   help='LoFreq VCF',        required=False, default=None)
 
 parser.add_argument('-ref',     '--reference-fasta',          type=str,   help='.fasta/.fa file',      required=True, default=None)
-parser.add_argument('-dict',    '--reference-fasta-dict',     type=str,   help='.dict file to get the contigs', required=False, default=None)
 
 parser.add_argument('-minVAF',  '--minimum-variant-allele-frequency', type=float,  help='Minimum VAF below which is thrown out', required=False, default=0.001)
 parser.add_argument('-maxVAF',  '--maximum-variant-allele-frequency', type=float,  help='Maximum VAF above which is thrown out', required=False, default=0.2)
@@ -51,12 +45,10 @@ parser.add_argument('-minMQ',   '--minimum-mapping-quality',          type=float
 parser.add_argument('-minBQ',   '--minimum-base-quality',             type=float,  help='Minimum base quality below which is considered poor', required=False, default=13)
 parser.add_argument('-dedup',   '--deduplicate',              action='store_true', help='Do not consider duplicate reads from BAM files. Default is to count everything', required=False, default=False)
 
+parser.add_argument('-samtools',   '--samtools-path',         type=str,   help='Path to samtools',required=False, default='samtools')
 parser.add_argument('-scale',   '--p-scale',                  type=str,   help='phred, fraction, or none', required=False, default=None)
 
 parser.add_argument('-outfile', '--output-tsv-file',          type=str,   help='Output TSV Name', required=False, default=os.sys.stdout)
-
-parser.add_argument('-samtools',   '--samtools-path',         type=str,   help='Path to samtools',required=False, default='samtools')
-
 
 args = parser.parse_args()
 
@@ -65,9 +57,13 @@ args = parser.parse_args()
 mysites   = args.candidate_site_file
 is_vcf    = args.vcf_format
 is_bed    = args.bed_format
+is_pos    = args.positions_list
 
 tbam_fn   = args.tumor_bam_file
+
 truehits  = args.ground_truth_vcf         if args.ground_truth_vcf         else os.devnull
+dbsnpv    = args.dbsnp_vcf                if args.dbsnp_vcf                else os.devnull
+cosmicv   = args.cosmic_vcf               if args.cosmic_vcf               else os.devnull
 mutectv   = args.mutect_vcf               if args.mutect_vcf               else os.devnull
 varscanv  = args.varscan_vcf              if args.varscan_vcf              else os.devnull
 vardictv  = args.vardict_vcf              if args.vardict_vcf              else os.devnull
@@ -104,15 +100,7 @@ else:
 fai_file = ref_fa + '.fai'
 chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
 
-
-# Normal/Tumor index in the Merged VCF file, or any other VCF file that puts NORMAL first. 
-idxN,idxT = 0,1
-
-# Normal/Tumor index in VarDict VCF, or any other VCF file that puts TUMOR first.
-vdT,vdN = 0,1
-
 pattern_chr_position = genome.pattern_chr_position
-
 
 
 # Define some functions:
@@ -136,7 +124,6 @@ def mean(stuff):
         return float('nan')
 
 
-
 # Header for the output data, created here so I won't have to indent this line:
 out_header = \
 '{CHROM}\t\
@@ -151,6 +138,8 @@ out_header = \
 {VarScan2_Score}\t\
 {if_dbsnp}\t\
 {COMMON}\t\
+{if_COSMIC}\t\
+{COSMIC_CNT}\t\
 {MSI}\t\
 {MSILEN}\t\
 {SHIFT3}\t\
@@ -200,6 +189,8 @@ out_header = \
 ## Running
 with genome.open_textfile(mysites) as mysites, \
 genome.open_textfile(truehits)     as truth, \
+genome.open_textfile(dbsnpv)       as dbsnp, \
+genome.open_textfile(cosmicv)      as cisnuc, \
 genome.open_textfile(mutectv)      as mutect, \
 genome.open_textfile(varscanv)     as varscan, \
 genome.open_textfile(vardictv)     as vardict, \
@@ -212,6 +203,8 @@ open(outfile, 'w')                 as outhandle:
     my_line      = mysites.readline().rstrip()
     
     truth_line   = truth.readline().rstrip()
+    dbsnp_line   = dbsnp.readline().rstrip()
+    cosmic_line  = cosmic.readline().rstrip()
     mutect_line  = mutect.readline().rstrip()
     varscan_line = varscan.readline().rstrip()
     vardict_line = vardict.readline().rstrip()
@@ -223,6 +216,12 @@ open(outfile, 'w')                 as outhandle:
 
     while truth_line.startswith('#'):
         truth_line = truth.readline().rstrip()
+    
+    while dbsnp_line.startswith('#'):
+        dbsnp_line = dbsnp.readline().rstrip()
+        
+    while cosmic_line.startswith('#'):
+        cosmic_line = cosmic.readline().rstrip()
     
     while mutect_line.startswith('#'):
         mutect_line = mutect.readline().rstrip()
@@ -242,13 +241,12 @@ open(outfile, 'w')                 as outhandle:
     # First line:
     outhandle.write( out_header.replace('{','').replace('}','')  + '\n' )
     
-    
     while my_line:
         
         ###################################################################################
         ############################ my_coordinates are 1-based ###########################
         
-        # SNV-only now:
+        # SNV-only now. Worry about INDELs later
         indel_length = 0
         
         if is_vcf:
@@ -264,8 +262,12 @@ open(outfile, 'w')                 as outhandle:
         elif is_bed:
             bed_item = my_line.split('\t')
             my_coordinates = genomic_coordinates( bed_item[0], int(bed_item[1])+1, int(bed_item[2]) )
+            
+        elif is_pos:
+            pos_item = my_line.split('\t')
+            my_coordinates = genomic_coordinates( pos_item[0], int(pos_item[1])+1, int(pos_item[1])+1 )
         
-        ## 
+        ##
         for my_coordinate in my_coordinates:
                         
             latest_tpileup_run   = genome.catchup(my_coordinate, tpileup_line, pileup_out, chrom_seq)
@@ -476,6 +478,9 @@ open(outfile, 'w')                 as outhandle:
                     site_homopolymer_length = max( alt_c+1, ref_c+1 )
                     
                     
+                    # ID FIELD:
+                    my_identifiers = []
+                    
                     # Ground truth file
                     if args.ground_truth_vcf:
                                                     
@@ -486,15 +491,76 @@ open(outfile, 'w')                 as outhandle:
                             
                             assert my_coordinate[1] == latest_truth.position
                             judgement = 1
-                            truth_line = latest_truth.vcf_line
+                            my_identifiers.append('TruePositive')
                         
                         else:
                             judgement = 0
-                            # Reset the current line:
-                            truth_line = latest_truth.vcf_line
+                            my_identifiers.append('FalsePositive')
+                        
+                        # Reset the current line:
+                        truth_line = latest_truth.vcf_line
                         
                     else:
                         judgement = nan
+
+
+                    # dbSNP
+                    if args.dbsnp_vcf:
+                                                    
+                        latest_dbsnp_run = genome.catchup(my_coordinate, dbsnp_line, dbsnp, chrom_seq)
+                        latest_dbsnp = genome.Vcf_line(latest_dbsnp_run[1])
+                        
+                        if latest_dbsnp_run[0]:
+                            
+                            assert my_coordinate[1] == latest_dbsnp.position
+                            
+                            if_dbsnp = 1
+                            if_common = 1 if latest_dbsnp.get_info_value('COMMON') == '1' else 0
+                            
+                            rsID = latest_dbsnp.identifier.split(',')
+                            for ID_i in rsID:
+                                my_identifiers.append( ID_i )
+                        
+                        else:
+                            if_dbsnp = if_common = 0
+                        
+                        # Reset the current line:
+                        dbsnp_line = latest_dbsnp.vcf_line
+                        
+                    else:
+                        if_dbsnp = if_common = nan
+                    
+                    
+                    # COSMIC
+                    if args.cosmic_vcf:
+                                                    
+                        latest_cosmic_run = genome.catchup(my_coordinate, cosmic_line, cosmic, chrom_seq)
+                        latest_cosmic = genome.Vcf_line(latest_cosmic_run[1])
+                        
+                        if latest_cosmic_run[0]:
+                            
+                            assert my_coordinate[1] == latest_cosmic.position
+                            
+                            if_cosmic = 1
+                            
+                            num_cases = latest_cosmic.get_info_value('CNT')
+                            if num_cases:
+                                num_cases = int(num_cases)
+                            else:
+                                num_cases = nan
+                                
+                            cosmicID = latest_cosmic.identifier.split(',')
+                            for ID_i in cosmicID:
+                                my_identifiers.append( ID_i )
+                        
+                        else:
+                            if_cosmic = num_cases = 0
+                        
+                        # Reset the current line:
+                        cosmic_line = latest_cosmic.vcf_line
+                        
+                    else:
+                        if_cosmic = num_cases = nan
                     
                     
                     ############################################################################################
@@ -508,7 +574,7 @@ open(outfile, 'w')                 as outhandle:
                             
                             vardict_classification = 1 if latest_vardict.filters == 'PASS' else 0
                                     
-                            # SOR, MSI, MSILEN, and SHIFT3:
+                            # VarDict reported metrics:
                             msi = latest_vardict.get_info_value('MSI') 
                             msi = msi if msi else nan
                             
@@ -526,15 +592,14 @@ open(outfile, 'w')                 as outhandle:
                                 
                             t_qstd = latest_vardict.get_info_value('QSTD')
                             t_qstd = t_qstd if t_qstd else nan
-                            
-                            vardict_line = latest_vardict.vcf_line
-        
                     
                         # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                         else:
                             vardict_classification = 0
                             msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
-                            vardict_line = latest_vardict.vcf_line
+                        
+                        # Reset the current line:    
+                        vardict_line = latest_vardict.vcf_line
                             
                     else:
                         msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
@@ -552,21 +617,18 @@ open(outfile, 'w')                 as outhandle:
                             
                             assert my_coordinate[1] == latest_varscan.position
                             
-                            # Somatic Score:
                             varscan_classification = 1 if latest_varscan.filters == 'PASS' else 0
                             score_varscan2 = eval(latest_varscan.get_sample_value('PVAL'))
-                            
-                            # Reset the current line:
-                            varscan_line = latest_varscan.vcf_line
-        
+                                    
                         # The VarScan.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                         else:
                             score_varscan2 = nan
                             varscan_classification = 0
-                            varscan_line = latest_varscan.vcf_line
+                        
+                        # Reset the current line:
+                        varscan_line = latest_varscan.vcf_line
                             
                     else:
-                        
                         score_varscan2 = nan
                 
                 
@@ -580,13 +642,13 @@ open(outfile, 'w')                 as outhandle:
                         if latest_mutect_run[0]:
                             
                             assert my_coordinate[1] == latest_mutect.position
-                            
                             mutect_classification = 1
-                            mutect_line = latest_mutect.vcf_line
         
                         else:
                             mutect_classification = 0
-                            mutect_line = latest_mutect.vcf_line
+                            
+                        # Reset the current line:    
+                        mutect_line = latest_mutect.vcf_line
                             
                     else:
                         mutect_classification = nan
@@ -602,26 +664,30 @@ open(outfile, 'w')                 as outhandle:
                         if latest_lofreq_run[0]:
                             
                             assert my_coordinate[1] == latest_lofreq.position
-                            
-                            # Somatic Score:
                             lofreq_classification = 1 if latest_lofreq.filters == 'PASS' else 0
-                            
-                            # Reset the current line:
-                            lofreq_line = latest_lofreq.vcf_line
-        
+                                    
                         else:
                             lofreq_classification = 0
-                            lofreq_line = latest_lofreq.vcf_line
+                            
+                        # Reset the current line:    
+                        lofreq_line = latest_lofreq.vcf_line
                             
                     else:
                         lofreq_classification = nan
                 
                 
-                ###
+                    ###
+                    # Regroup the identifiers:
+                    if my_identifiers:
+                        my_identifiers = ','.join(my_identifiers)
+                    else:
+                        my_identifiers = '.'
+                
+                    ## OUTPUT LINE ##
                     out_line = out_header.format( \
                     CHROM                   = my_coordinate[0],                                       \
                     POS                     = my_coordinate[1],                                       \
-                    ID                      = '.',                                                    \
+                    ID                      = my_identifiers,                                         \
                     REF                     = ref_base,                                               \
                     ALT                     = first_alt,                                              \
                     if_MuTect               = mutect_classification,                                  \
@@ -629,8 +695,10 @@ open(outfile, 'w')                 as outhandle:
                     if_VarDict              = vardict_classification,                                 \
                     if_LoFreq               = lofreq_classification,                                  \
                     VarScan2_Score          = rescale(score_varscan2, 'fraction', 'phred', 1001),     \
-                    if_dbsnp                = nan,                                                    \
-                    COMMON                  = nan,                                                    \
+                    if_dbsnp                = if_dbsnp,                                               \
+                    COMMON                  = if_common,                                              \
+                    if_COSMIC               = if_cosmic,                                              \
+                    COSMIC_CNT              = num_cases,                                              \
                     MSI                     = msi,                                                    \
                     MSILEN                  = msilen,                                                 \
                     SHIFT3                  = shift3,                                                 \
