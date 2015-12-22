@@ -278,7 +278,7 @@ open(outfile, 'w')                 as outhandle:
             if latest_tpileup_run[0]:
                 
                 num_callers = 0
-                
+                                
                 ############################################################################################
                 ##################### Find the same coordinate in VarDict's VCF Output #####################
                 if args.vardict_vcf:
@@ -399,14 +399,6 @@ open(outfile, 'w')                 as outhandle:
                 else:
                     lofreq_classification = nan
             
-            
-                ###
-                # Regroup the identifiers:
-                if my_identifiers:
-                    my_identifiers = ','.join(my_identifiers)
-                else:
-                    my_identifiers = '.'
-
 
                 ########## ######### ######### IF VAF passes threshold: INFO EXTRACTION FROM BAM FILES ########## ######### #########
                 # Tumor pileup info extraction:
@@ -429,10 +421,10 @@ open(outfile, 'w')                 as outhandle:
                     vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
                 
                 if vaf_check or num_callers >= mincaller:
-                
-                    # ID FIELD:
-                    my_identifiers = []
                     
+                    # OUTPUT ID FIELD:
+                    my_identifiers = []
+
                     # Ground truth file
                     if args.ground_truth_vcf:
                                                     
@@ -513,6 +505,13 @@ open(outfile, 'w')                 as outhandle:
                     else:
                         if_cosmic = num_cases = nan
                     
+
+                    ###
+                    # Regroup the identifiers:
+                    if my_identifiers:
+                        my_identifiers = ','.join(my_identifiers)
+                    else:
+                        my_identifiers = '.'
 
 
                     # Tumor BAM file, first check if we should bother doing more computation using binomial test.
