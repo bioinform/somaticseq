@@ -192,7 +192,7 @@ out_header = \
 with genome.open_textfile(mysites) as mysites, \
 genome.open_textfile(truehits)     as truth, \
 genome.open_textfile(dbsnpv)       as dbsnp, \
-genome.open_textfile(cosmicv)      as cisnuc, \
+genome.open_textfile(cosmicv)      as cosmic, \
 genome.open_textfile(mutectv)      as mutect, \
 genome.open_textfile(varscanv)     as varscan, \
 genome.open_textfile(vardictv)     as vardict, \
