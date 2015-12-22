@@ -24,18 +24,19 @@ input_sites.add_argument('-vcf',   '--vcf-format',            action="store_true
 input_sites.add_argument('-bed',   '--bed-format',            action="store_true", help='Input file is BED formatted.')
 input_sites.add_argument('-pos',   '--positions-list',        action="store_true", help='Input file is a list of positions, tab seperating contig and 1-based positions.')
 
-parser.add_argument('-sites',      '--candidate-site-file',   type=str,   help='Either VCF or BED file', required=True, default=None)
-parser.add_argument('-tbam',    '--tumor-bam-file',           type=str,   help='Tumor BAM File',    required=True,  default=None)
+parser.add_argument('-sites',   '--candidate-site-file',   type=str,   help='Either VCF or BED file', required=True, default=None)
+parser.add_argument('-tbam',    '--tumor-bam-file',        type=str,   help='Tumor BAM File',    required=True,  default=None)
 
-parser.add_argument('-truth',   '--ground-truth-vcf',         type=str,   help='VCF of true hits',  required=False, default=None)
-parser.add_argument('-dbsnp',   '--dbsnp-vcf',                type=str,   help='dbSNP VCF file',    required=False, default=None)
-parser.add_argument('-cosmic',  '--cosmic-vcf',               type=str,   help='COSMIC VCF file',   required=False, default=None)
-parser.add_argument('-mutect',  '--mutect-vcf',               type=str,   help='MuTect VCF.',       required=False, default=None)
-parser.add_argument('-varscan', '--varscan-vcf',              type=str,   help='VarScan2 VCF',      required=False, default=None)
-parser.add_argument('-vardict', '--vardict-vcf',              type=str,   help='VarDict VCF',       required=False, default=None)
-parser.add_argument('-lofreq',  '--lofreq-vcf',               type=str,   help='LoFreq VCF',        required=False, default=None)
+parser.add_argument('-truth',     '--ground-truth-vcf',         type=str,   help='VCF of true hits',  required=False, default=None)
+parser.add_argument('-dbsnp',     '--dbsnp-vcf',                type=str,   help='dbSNP VCF file',    required=False, default=None)
+parser.add_argument('-cosmic',    '--cosmic-vcf',               type=str,   help='COSMIC VCF file',   required=False, default=None)
+parser.add_argument('-mutect',    '--mutect-vcf',               type=str,   help='MuTect VCF.',       required=False, default=None)
+parser.add_argument('-varscan',   '--varscan-vcf',              type=str,   help='VarScan2 VCF',      required=False, default=None)
+parser.add_argument('-vardict',   '--vardict-vcf',              type=str,   help='VarDict VCF',       required=False, default=None)
+parser.add_argument('-lofreq',    '--lofreq-vcf',               type=str,   help='LoFreq VCF',        required=False, default=None)
+parser.add_argument('-mincaller', '--minimum-num-callers',      type=float, help='Minimum number of tools to be considered', required=False, default=0)
 
-parser.add_argument('-ref',     '--reference-fasta',          type=str,   help='.fasta/.fa file',      required=True, default=None)
+parser.add_argument('-ref',     '--reference-fasta',            type=str,   help='.fasta/.fa file',      required=True, default=None)
 
 parser.add_argument('-minVAF',  '--minimum-variant-allele-frequency', type=float,  help='Minimum VAF below which is thrown out', required=False, default=0.001)
 parser.add_argument('-maxVAF',  '--maximum-variant-allele-frequency', type=float,  help='Maximum VAF above which is thrown out', required=False, default=0.2)
@@ -68,6 +69,7 @@ mutectv   = args.mutect_vcf               if args.mutect_vcf               else 
 varscanv  = args.varscan_vcf              if args.varscan_vcf              else os.devnull
 vardictv  = args.vardict_vcf              if args.vardict_vcf              else os.devnull
 lofreqv   = args.lofreq_vcf               if args.lofreq_vcf               else os.devnull
+mincaller = args.minimum_num_callers
 
 min_mq    = args.minimum_mapping_quality
 min_bq    = args.minimum_base_quality
@@ -274,7 +276,139 @@ open(outfile, 'w')                 as outhandle:
             latest_pileuptumor   = pileup_reader.Pileup_line(latest_tpileup_run[1])
             
             if latest_tpileup_run[0]:
-                                                            
+                
+                num_callers = 0
+                
+                ############################################################################################
+                ##################### Find the same coordinate in VarDict's VCF Output #####################
+                if args.vardict_vcf:
+                    latest_vardict_run = genome.catchup(my_coordinate, vardict_line, vardict, chrom_seq)
+                    latest_vardict = genome.Vcf_line(latest_vardict_run[1])
+                    
+                    if latest_vardict_run[0]:
+                        assert my_coordinate[1] == latest_vardict.position
+                        
+                        vardict_classification = 1 if latest_vardict.filters == 'PASS' else 0
+                                
+                        # VarDict reported metrics:
+                        msi = latest_vardict.get_info_value('MSI') 
+                        msi = msi if msi else nan
+                        
+                        msilen = latest_vardict.get_info_value('MSILEN')
+                        msilen = msilen if msilen else nan
+                        
+                        shift3 = latest_vardict.get_info_value('SHIFT3')
+                        shift3 = shift3 if shift3 else nan
+                        
+                        t_pmean = latest_vardict.get_info_value('PMEAN')
+                        t_pmean = t_pmean if t_pmean else nan
+                            
+                        t_pstd = latest_vardict.get_info_value('PSTD')
+                        t_pstd = t_pstd if t_pstd else nan
+                            
+                        t_qstd = latest_vardict.get_info_value('QSTD')
+                        t_qstd = t_qstd if t_qstd else nan
+                
+                    # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
+                    else:
+                        vardict_classification = 0
+                        msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
+                    
+                    num_callers = num_callers + vardict_classification
+                    
+                    # Reset the current line:    
+                    vardict_line = latest_vardict.vcf_line
+                    
+                else:
+                    msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
+                
+                
+                
+                ############################################################################################
+                ######################## Find the same coordinate in VarScan's VCF #########################
+                if args.varscan_vcf:
+                    
+                    latest_varscan_run = genome.catchup(my_coordinate, varscan_line, varscan, chrom_seq)
+                    latest_varscan = genome.Vcf_line(latest_varscan_run[1])
+                    
+                    if latest_varscan_run[0]:
+                        
+                        assert my_coordinate[1] == latest_varscan.position
+                        
+                        varscan_classification = 1 if latest_varscan.filters == 'PASS' else 0
+                        score_varscan2 = eval(latest_varscan.get_sample_value('PVAL'))
+                                
+                    # The VarScan.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
+                    else:
+                        score_varscan2 = nan
+                        varscan_classification = 0
+                    
+                    num_callers = num_callers + varscan_classification
+                    
+                    # Reset the current line:
+                    varscan_line = latest_varscan.vcf_line
+                        
+                else:
+                    score_varscan2 = nan
+            
+            
+                ############################################################################################
+                ######################## Find the same coordinate in MuTect's VCF #########################
+                if args.mutect_vcf:
+                    
+                    latest_mutect_run = genome.catchup(my_coordinate, mutect_line, mutect, chrom_seq)
+                    latest_mutect = genome.Vcf_line(latest_mutect_run[1])
+                    
+                    if latest_mutect_run[0]:
+                        
+                        assert my_coordinate[1] == latest_mutect.position
+                        mutect_classification = 1
+    
+                    else:
+                        mutect_classification = 0
+                    
+                    num_callers = num_callers + mutect_classification
+                    
+                    # Reset the current line:    
+                    mutect_line = latest_mutect.vcf_line
+                        
+                else:
+                    mutect_classification = nan
+    
+    
+                ############################################################################################
+                ######################## Find the same coordinate in LoFreq's VCF #########################
+                if args.lofreq_vcf:
+                    
+                    latest_lofreq_run = genome.catchup(my_coordinate, lofreq_line, lofreq, chrom_seq)
+                    latest_lofreq = genome.Vcf_line(latest_lofreq_run[1])
+                    
+                    if latest_lofreq_run[0]:
+                        
+                        assert my_coordinate[1] == latest_lofreq.position
+                        lofreq_classification = 1 if latest_lofreq.filters == 'PASS' else 0
+                                
+                    else:
+                        lofreq_classification = 0
+                    
+                    num_callers = num_callers + lofreq_classification
+                        
+                    # Reset the current line:    
+                    lofreq_line = latest_lofreq.vcf_line
+                    
+                else:
+                    lofreq_classification = nan
+            
+            
+                ###
+                # Regroup the identifiers:
+                if my_identifiers:
+                    my_identifiers = ','.join(my_identifiers)
+                else:
+                    my_identifiers = '.'
+
+
+                ########## ######### ######### IF VAF passes threshold: INFO EXTRACTION FROM BAM FILES ########## ######### #########
                 # Tumor pileup info extraction:
                 ref_base = latest_pileuptumor.refbase
                 t_dp = latest_pileuptumor.dp
@@ -294,10 +428,93 @@ open(outfile, 'w')                 as outhandle:
                     first_alt_rc = t_ACGT[ af_rank_idx[-1] ]
                     vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
                 
-            
-                ########## ######### ######### IF VAF passes threshold: INFO EXTRACTION FROM BAM FILES ########## ######### #########
-                if vaf_check:
+                if vaf_check or num_callers >= mincaller:
+                
+                    # ID FIELD:
+                    my_identifiers = []
                     
+                    # Ground truth file
+                    if args.ground_truth_vcf:
+                                                    
+                        latest_truth_run = genome.catchup(my_coordinate, truth_line, truth, chrom_seq)
+                        latest_truth = genome.Vcf_line(latest_truth_run[1])
+                        
+                        if latest_truth_run[0]:
+                            
+                            assert my_coordinate[1] == latest_truth.position
+                            judgement = 1
+                            my_identifiers.append('TruePositive')
+                        
+                        else:
+                            judgement = 0
+                            my_identifiers.append('FalsePositive')
+                        
+                        # Reset the current line:
+                        truth_line = latest_truth.vcf_line
+                        
+                    else:
+                        judgement = nan
+        
+                    # dbSNP
+                    if args.dbsnp_vcf:
+                                                    
+                        latest_dbsnp_run = genome.catchup(my_coordinate, dbsnp_line, dbsnp, chrom_seq)
+                        latest_dbsnp = genome.Vcf_line(latest_dbsnp_run[1])
+                        
+                        if latest_dbsnp_run[0]:
+                            
+                            assert my_coordinate[1] == latest_dbsnp.position
+                            
+                            if_dbsnp = 1
+                            if_common = 1 if latest_dbsnp.get_info_value('COMMON') == '1' else 0
+                            
+                            rsID = latest_dbsnp.identifier.split(',')
+                            for ID_i in rsID:
+                                my_identifiers.append( ID_i )
+                        
+                        else:
+                            if_dbsnp = if_common = 0
+                        
+                        # Reset the current line:
+                        dbsnp_line = latest_dbsnp.vcf_line
+                        
+                    else:
+                        if_dbsnp = if_common = nan
+                    
+                    
+                    # COSMIC
+                    if args.cosmic_vcf:
+                                                    
+                        latest_cosmic_run = genome.catchup(my_coordinate, cosmic_line, cosmic, chrom_seq)
+                        latest_cosmic = genome.Vcf_line(latest_cosmic_run[1])
+                        
+                        if latest_cosmic_run[0]:
+                            
+                            assert my_coordinate[1] == latest_cosmic.position
+                            
+                            if_cosmic = 1
+                            
+                            num_cases = latest_cosmic.get_info_value('CNT')
+                            if num_cases:
+                                num_cases = int(num_cases)
+                            else:
+                                num_cases = nan
+                                
+                            cosmicID = latest_cosmic.identifier.split(',')
+                            for ID_i in cosmicID:
+                                my_identifiers.append( ID_i )
+                        
+                        else:
+                            if_cosmic = num_cases = 0
+                        
+                        # Reset the current line:
+                        cosmic_line = latest_cosmic.vcf_line
+                        
+                    else:
+                        if_cosmic = num_cases = nan
+                    
+
+
                     # Tumor BAM file, first check if we should bother doing more computation using binomial test.
                     t_reads = tbam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1], multiple_iterators=False )
                     
@@ -476,212 +693,7 @@ open(outfile, 'w')                 as outhandle:
                             break
 
                     site_homopolymer_length = max( alt_c+1, ref_c+1 )
-                    
-                    
-                    # ID FIELD:
-                    my_identifiers = []
-                    
-                    # Ground truth file
-                    if args.ground_truth_vcf:
-                                                    
-                        latest_truth_run = genome.catchup(my_coordinate, truth_line, truth, chrom_seq)
-                        latest_truth = genome.Vcf_line(latest_truth_run[1])
-                        
-                        if latest_truth_run[0]:
-                            
-                            assert my_coordinate[1] == latest_truth.position
-                            judgement = 1
-                            my_identifiers.append('TruePositive')
-                        
-                        else:
-                            judgement = 0
-                            my_identifiers.append('FalsePositive')
-                        
-                        # Reset the current line:
-                        truth_line = latest_truth.vcf_line
-                        
-                    else:
-                        judgement = nan
 
-
-                    # dbSNP
-                    if args.dbsnp_vcf:
-                                                    
-                        latest_dbsnp_run = genome.catchup(my_coordinate, dbsnp_line, dbsnp, chrom_seq)
-                        latest_dbsnp = genome.Vcf_line(latest_dbsnp_run[1])
-                        
-                        if latest_dbsnp_run[0]:
-                            
-                            assert my_coordinate[1] == latest_dbsnp.position
-                            
-                            if_dbsnp = 1
-                            if_common = 1 if latest_dbsnp.get_info_value('COMMON') == '1' else 0
-                            
-                            rsID = latest_dbsnp.identifier.split(',')
-                            for ID_i in rsID:
-                                my_identifiers.append( ID_i )
-                        
-                        else:
-                            if_dbsnp = if_common = 0
-                        
-                        # Reset the current line:
-                        dbsnp_line = latest_dbsnp.vcf_line
-                        
-                    else:
-                        if_dbsnp = if_common = nan
-                    
-                    
-                    # COSMIC
-                    if args.cosmic_vcf:
-                                                    
-                        latest_cosmic_run = genome.catchup(my_coordinate, cosmic_line, cosmic, chrom_seq)
-                        latest_cosmic = genome.Vcf_line(latest_cosmic_run[1])
-                        
-                        if latest_cosmic_run[0]:
-                            
-                            assert my_coordinate[1] == latest_cosmic.position
-                            
-                            if_cosmic = 1
-                            
-                            num_cases = latest_cosmic.get_info_value('CNT')
-                            if num_cases:
-                                num_cases = int(num_cases)
-                            else:
-                                num_cases = nan
-                                
-                            cosmicID = latest_cosmic.identifier.split(',')
-                            for ID_i in cosmicID:
-                                my_identifiers.append( ID_i )
-                        
-                        else:
-                            if_cosmic = num_cases = 0
-                        
-                        # Reset the current line:
-                        cosmic_line = latest_cosmic.vcf_line
-                        
-                    else:
-                        if_cosmic = num_cases = nan
-                    
-                    
-                    ############################################################################################
-                    ##################### Find the same coordinate in VarDict's VCF Output #####################
-                    if args.vardict_vcf:
-                        latest_vardict_run = genome.catchup(my_coordinate, vardict_line, vardict, chrom_seq)
-                        latest_vardict = genome.Vcf_line(latest_vardict_run[1])
-                        
-                        if latest_vardict_run[0]:
-                            assert my_coordinate[1] == latest_vardict.position
-                            
-                            vardict_classification = 1 if latest_vardict.filters == 'PASS' else 0
-                                    
-                            # VarDict reported metrics:
-                            msi = latest_vardict.get_info_value('MSI') 
-                            msi = msi if msi else nan
-                            
-                            msilen = latest_vardict.get_info_value('MSILEN')
-                            msilen = msilen if msilen else nan
-                            
-                            shift3 = latest_vardict.get_info_value('SHIFT3')
-                            shift3 = shift3 if shift3 else nan
-                            
-                            t_pmean = latest_vardict.get_info_value('PMEAN')
-                            t_pmean = t_pmean if t_pmean else nan
-                                
-                            t_pstd = latest_vardict.get_info_value('PSTD')
-                            t_pstd = t_pstd if t_pstd else nan
-                                
-                            t_qstd = latest_vardict.get_info_value('QSTD')
-                            t_qstd = t_qstd if t_qstd else nan
-                    
-                        # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
-                        else:
-                            vardict_classification = 0
-                            msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
-                        
-                        # Reset the current line:    
-                        vardict_line = latest_vardict.vcf_line
-                            
-                    else:
-                        msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
-                    
-                    
-                    
-                    ############################################################################################
-                    ######################## Find the same coordinate in VarScan's VCF #########################
-                    if args.varscan_vcf:
-                        
-                        latest_varscan_run = genome.catchup(my_coordinate, varscan_line, varscan, chrom_seq)
-                        latest_varscan = genome.Vcf_line(latest_varscan_run[1])
-                        
-                        if latest_varscan_run[0]:
-                            
-                            assert my_coordinate[1] == latest_varscan.position
-                            
-                            varscan_classification = 1 if latest_varscan.filters == 'PASS' else 0
-                            score_varscan2 = eval(latest_varscan.get_sample_value('PVAL'))
-                                    
-                        # The VarScan.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
-                        else:
-                            score_varscan2 = nan
-                            varscan_classification = 0
-                        
-                        # Reset the current line:
-                        varscan_line = latest_varscan.vcf_line
-                            
-                    else:
-                        score_varscan2 = nan
-                
-                
-                    ############################################################################################
-                    ######################## Find the same coordinate in MuTect's VCF #########################
-                    if args.mutect_vcf:
-                        
-                        latest_mutect_run = genome.catchup(my_coordinate, mutect_line, mutect, chrom_seq)
-                        latest_mutect = genome.Vcf_line(latest_mutect_run[1])
-                        
-                        if latest_mutect_run[0]:
-                            
-                            assert my_coordinate[1] == latest_mutect.position
-                            mutect_classification = 1
-        
-                        else:
-                            mutect_classification = 0
-                            
-                        # Reset the current line:    
-                        mutect_line = latest_mutect.vcf_line
-                            
-                    else:
-                        mutect_classification = nan
-
-
-                    ############################################################################################
-                    ######################## Find the same coordinate in LoFreq's VCF #########################
-                    if args.lofreq_vcf:
-                        
-                        latest_lofreq_run = genome.catchup(my_coordinate, lofreq_line, lofreq, chrom_seq)
-                        latest_lofreq = genome.Vcf_line(latest_lofreq_run[1])
-                        
-                        if latest_lofreq_run[0]:
-                            
-                            assert my_coordinate[1] == latest_lofreq.position
-                            lofreq_classification = 1 if latest_lofreq.filters == 'PASS' else 0
-                                    
-                        else:
-                            lofreq_classification = 0
-                            
-                        # Reset the current line:    
-                        lofreq_line = latest_lofreq.vcf_line
-                            
-                    else:
-                        lofreq_classification = nan
-                
-                
-                    ###
-                    # Regroup the identifiers:
-                    if my_identifiers:
-                        my_identifiers = ','.join(my_identifiers)
-                    else:
-                        my_identifiers = '.'
                 
                     ## OUTPUT LINE ##
                     out_line = out_header.format( \
