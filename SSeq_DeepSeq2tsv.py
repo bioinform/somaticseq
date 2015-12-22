@@ -5,8 +5,8 @@
 
 # 1-based index in this program.
 
-# Sample command:
-# python3 SSeq_merged.vcf2tsv.py -sites actionable_region.bed -bed -tbam recalibrated.bam -varscan varscan.snp.vcf -mutect mutect.snp.vcf -vardict vardict.snp.vcf -lofreq lofreq.snp.vcf  -ref human_g1k_v37_decoy.fasta -truth ground_truth.snp.vcf -outfile SomaticSeq.DeepSeq.tsv
+# Example command:
+# python3 SSeq_DeepSeq2tsv.py -sites actionable_region.bed -bed -tbam recalibrated.bam -varscan varscan.snp.vcf -mutect mutect.snp.vcf -vardict vardict.snp.vcf -lofreq lofreq.snp.vcf -ref human_g1k_v37_decoy.fasta -truth ground_truth.snp.vcf -minVAF 0.001 -maxVAF 0.1 -mincaller 1 --vaf-or-mincaller -outfile DeepSeq.tsv
 
 # -- 1/1/2016
 
@@ -40,7 +40,7 @@ parser.add_argument('-ref',     '--reference-fasta',            type=str,   help
 
 parser.add_argument('-minVAF',  '--minimum-variant-allele-frequency', type=float,  help='Minimum VAF below which is thrown out', required=False, default=0.001)
 parser.add_argument('-maxVAF',  '--maximum-variant-allele-frequency', type=float,  help='Maximum VAF above which is thrown out', required=False, default=0.1)
-parser.add_argument('-minDP',   '--minimum-depth',                    type=float,  help='Minimum Coverage below which is thrown out', required=False, default=100)
+parser.add_argument('-minDP',   '--minimum-depth',                    type=float,  help='Minimum Coverage below which is thrown out', required=False, default=500)
 parser.add_argument('-maxDP',   '--maximum-depth',                    type=float,  help='Maximum Coverage above which is downsampled', required=False, default=50000)
 parser.add_argument('-minMQ',   '--minimum-mapping-quality',          type=float,  help='Minimum mapping quality below which is considered poor', required=False, default=1)
 parser.add_argument('-minBQ',   '--minimum-base-quality',             type=float,  help='Minimum base quality below which is considered poor', required=False, default=13)
@@ -50,11 +50,10 @@ parser.add_argument('-samtools',   '--samtools-path',         type=str,   help='
 parser.add_argument('-scale',   '--p-scale',                  type=str,   help='phred, fraction, or none', required=False, default=None)
 
 variant_selection = parser.add_mutually_exclusive_group()
-variant_selection.add_argument('-vaf',   '--only-vaf',           action="store_true", help='VAF and Minimum Caller')
-variant_selection.add_argument('-call',  '--only-mincaller',     action="store_true", help='VAF and Minimum Caller')
-variant_selection.add_argument('-and',   '--vaf_and_mincaller',  action="store_true", help='VAF and Minimum Caller')
-variant_selection.add_argument('-or',    '--vaf_or_mincaller',   action="store_true", default=True, help='VAF or Minimum Caller')
-
+variant_selection.add_argument('-vaf',   '--only-vaf',           action="store_true", help='Only VAF needed')
+variant_selection.add_argument('-call',  '--only-mincaller',     action="store_true", help='Only minimum caller needs to be reached')
+variant_selection.add_argument('-and',   '--vaf_and_mincaller',  action="store_true", help='Both VAF and mincaller')
+variant_selection.add_argument('-or',    '--vaf_or_mincaller',   action="store_true", default=True, help='Either mincaller or VAF')
 
 parser.add_argument('-outfile', '--output-tsv-file',          type=str,   help='Output TSV Name', required=False, default=os.sys.stdout)
 
@@ -330,7 +329,6 @@ open(outfile, 'w')                 as outhandle:
                     msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
                 
                 
-                
                 ############################################################################################
                 ######################## Find the same coordinate in VarScan's VCF #########################
                 if args.varscan_vcf:
@@ -442,7 +440,7 @@ open(outfile, 'w')                 as outhandle:
                     # OUTPUT ID FIELD:
                     my_identifiers = []
 
-                    # Ground truth file
+                    ########## Ground truth file ##########
                     if args.ground_truth_vcf:
                                                     
                         latest_truth_run = genome.catchup(my_coordinate, truth_line, truth, chrom_seq)
@@ -464,7 +462,7 @@ open(outfile, 'w')                 as outhandle:
                     else:
                         judgement = nan
         
-                    # dbSNP
+                    ########## dbSNP ##########
                     if args.dbsnp_vcf:
                                                     
                         latest_dbsnp_run = genome.catchup(my_coordinate, dbsnp_line, dbsnp, chrom_seq)
@@ -491,7 +489,7 @@ open(outfile, 'w')                 as outhandle:
                         if_dbsnp = if_common = nan
                     
                     
-                    # COSMIC
+                    ########## COSMIC ##########
                     if args.cosmic_vcf:
                                                     
                         latest_cosmic_run = genome.catchup(my_coordinate, cosmic_line, cosmic, chrom_seq)
@@ -530,8 +528,8 @@ open(outfile, 'w')                 as outhandle:
                     else:
                         my_identifiers = '.'
 
-
-                    # Tumor BAM file, first check if we should bother doing more computation using binomial test.
+                    ############################################################################################
+                    ###################################### Tumor BAM file ######################################
                     t_reads = tbam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1], multiple_iterators=False )
                     
                     t_ref_read_mq = t_alt_read_mq = []
