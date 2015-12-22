@@ -39,7 +39,7 @@ parser.add_argument('-mincaller', '--minimum-num-callers',      type=float, help
 parser.add_argument('-ref',     '--reference-fasta',            type=str,   help='.fasta/.fa file',      required=True, default=None)
 
 parser.add_argument('-minVAF',  '--minimum-variant-allele-frequency', type=float,  help='Minimum VAF below which is thrown out', required=False, default=0.001)
-parser.add_argument('-maxVAF',  '--maximum-variant-allele-frequency', type=float,  help='Maximum VAF above which is thrown out', required=False, default=0.2)
+parser.add_argument('-maxVAF',  '--maximum-variant-allele-frequency', type=float,  help='Maximum VAF above which is thrown out', required=False, default=0.1)
 parser.add_argument('-minDP',   '--minimum-depth',                    type=float,  help='Minimum Coverage below which is thrown out', required=False, default=100)
 parser.add_argument('-maxDP',   '--maximum-depth',                    type=float,  help='Maximum Coverage above which is downsampled', required=False, default=50000)
 parser.add_argument('-minMQ',   '--minimum-mapping-quality',          type=float,  help='Minimum mapping quality below which is considered poor', required=False, default=1)
@@ -48,6 +48,13 @@ parser.add_argument('-dedup',   '--deduplicate',              action='store_true
 
 parser.add_argument('-samtools',   '--samtools-path',         type=str,   help='Path to samtools',required=False, default='samtools')
 parser.add_argument('-scale',   '--p-scale',                  type=str,   help='phred, fraction, or none', required=False, default=None)
+
+variant_selection = parser.add_mutually_exclusive_group()
+variant_selection.add_argument('-vaf',   '--only-vaf',           action="store_true", help='VAF and Minimum Caller')
+variant_selection.add_argument('-call',  '--only-mincaller',     action="store_true", help='VAF and Minimum Caller')
+variant_selection.add_argument('-and',   '--vaf_and_mincaller',  action="store_true", help='VAF and Minimum Caller')
+variant_selection.add_argument('-or',    '--vaf_or_mincaller',   action="store_true", default=True, help='VAF or Minimum Caller')
+
 
 parser.add_argument('-outfile', '--output-tsv-file',          type=str,   help='Output TSV Name', required=False, default=os.sys.stdout)
 
@@ -420,7 +427,17 @@ open(outfile, 'w')                 as outhandle:
                     first_alt_rc = t_ACGT[ af_rank_idx[-1] ]
                     vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
                 
-                if vaf_check or num_callers >= mincaller:
+                # Decide to move forward or not, based on user options:
+                if args.only_vaf:
+                    move_ahead = vaf_check
+                elif args.only_mincaller:
+                    move_ahead = num_callers >= mincaller
+                elif args.vaf_and_mincaller:
+                    move_ahead = vaf_check and num_callers >= mincaller
+                elif args.vaf_or_mincaller:
+                    move_ahead = vaf_check or num_callers >= mincaller
+                    
+                if move_ahead:
                     
                     # OUTPUT ID FIELD:
                     my_identifiers = []
