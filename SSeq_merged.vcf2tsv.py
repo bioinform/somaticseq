@@ -161,13 +161,6 @@ out_header = \
 {if_COSMIC}\t\
 {COSMIC_CNT}\t\
 {N_DP}\t\
-{N_MLEAC}\t\
-{N_MLEAF}\t\
-{N_BaseQRankSum}\t\
-{N_ClippingRankSum}\t\
-{N_LikelihoodRankSum}\t\
-{N_ReadPosRankSum}\t\
-{N_MQRankSum}\t\
 {nBAM_REF_MQ}\t\
 {nBAM_ALT_MQ}\t\
 {nBAM_Z_Ranksums_MQ}\t\
@@ -208,13 +201,6 @@ out_header = \
 {MaxHomopolymer_Length}\t\
 {SiteHomopolymer_Length}\t\
 {T_DP}\t\
-{T_MLEAC}\t\
-{T_MLEAF}\t\
-{T_BaseQRankSum}\t\
-{T_ClippingRankSum}\t\
-{T_LikelihoodRankSum}\t\
-{T_ReadPosRankSum}\t\
-{T_MQRankSum}\t\
 {tBAM_REF_MQ}\t\
 {tBAM_ALT_MQ}\t\
 {tBAM_Z_Ranksums_MQ}\t\
