@@ -279,7 +279,7 @@ open(outfile, 'w')                 as outhandle:
     
     # Get through all the headers:
     while my_line.startswith('#') or my_line.startswith('track='):
-        my_line = my_vcf.readline().rstrip()
+        my_line = my_sites.readline().rstrip()
 
     while truth_line.startswith('#'):
         truth_line = truth.readline().rstrip()
