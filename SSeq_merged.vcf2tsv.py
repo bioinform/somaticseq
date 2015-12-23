@@ -953,7 +953,7 @@ open(outfile, 'w')                 as outhandle:
                 Sniper_Score            = rescale(score_somaticsniper, 'phred', p_scale, 1001),   \
                 VarDict_Score           = rescale(score_vardict,       'phred', p_scale, 1001),   \
                 if_dbsnp                = if_dbsnp,                                               \
-                COMMON                  = score_common_snp,                                       \
+                COMMON                  = if_common,                                              \
                 if_COSMIC               = if_cosmic,                                              \
                 COSMIC_CNT              = num_cases,                                              \
                 N_DP                    = N_dp,                                                   \
