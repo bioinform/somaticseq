@@ -36,7 +36,7 @@ parser.add_argument('-vardict',   '--vardict-vcf',              type=str,   help
 parser.add_argument('-lofreq',    '--lofreq-vcf',               type=str,   help='LoFreq VCF',        required=False, default=None)
 parser.add_argument('-mincaller', '--minimum-num-callers',      type=float, help='Minimum number of tools to be considered', required=False, default=0)
 
-parser.add_argument('-ref',     '--reference-fasta',            type=str,   help='.fasta/.fa file',      required=True, default=None)
+parser.add_argument('-ref',     '--genome-reference',            type=str,   help='.fasta/.fa file',      required=True, default=None)
 
 parser.add_argument('-minVAF',  '--minimum-variant-allele-frequency', type=float,  help='Minimum VAF below which is thrown out', required=False, default=0.001)
 parser.add_argument('-maxVAF',  '--maximum-variant-allele-frequency', type=float,  help='Maximum VAF above which is thrown out', required=False, default=0.1)
@@ -84,7 +84,7 @@ max_dp    = args.maximum_depth
 min_vaf   = args.minimum_variant_allele_frequency
 max_vaf   = args.maximum_variant_allele_frequency
 
-ref_fa    = args.reference_fasta
+ref_fa    = args.genome_reference
 outfile   = args.output_tsv_file
 p_scale   = args.p_scale
 
@@ -103,15 +103,6 @@ else:
     p_scale = None
 
 
-
-# Convert contig_sequence to chrom_seq dict:
-fai_file = ref_fa + '.fai'
-chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
-
-pattern_chr_position = genome.pattern_chr_position
-
-
-# Define some functions:
 def rescale(x, original=None, rescale_to=p_scale, max_phred=1001):
     if ( rescale_to == None ) or ( original.lower() == rescale_to.lower() ):
         y = x if isinstance(x, int) else '%.2f' % x
@@ -124,12 +115,11 @@ def rescale(x, original=None, rescale_to=p_scale, max_phred=1001):
     return y
     
 
-def mean(stuff):
-    try:
-        return sum(stuff)/len(stuff)
-        
-    except ZeroDivisionError:
-        return float('nan')
+# Convert contig_sequence to chrom_seq dict:
+fai_file = ref_fa + '.fai'
+chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
+
+pattern_chr_position = genome.pattern_chr_position
 
 
 # Header for the output data, created here so I won't have to indent this line:
