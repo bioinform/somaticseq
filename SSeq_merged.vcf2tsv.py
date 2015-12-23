@@ -253,7 +253,7 @@ out_header = \
 
 
 ## Running
-with genome.open_textfile(mysites) as my_vcf, \
+with genome.open_textfile(mysites) as my_sites, \
 genome.open_textfile(truehits)     as truth, \
 genome.open_textfile(mutectv)      as mutect, \
 genome.open_textfile(sniperv)      as sniper, \
@@ -267,7 +267,7 @@ genome.open_bam_file(tbam_fn)      as tbam, \
 pysam.FastaFile(ref_fa)            as ref_fa, \
 open(outfile, 'w')                 as outhandle:
     
-    my_line      = my_vcf.mysites().rstrip()
+    my_line      = my_sites.readline().rstrip()
     truth_line   = truth.readline().rstrip()
     mutect_line  = mutect.readline().rstrip()
     sniper_line  = sniper.readline().rstrip()
@@ -1043,4 +1043,4 @@ open(outfile, 'w')                 as outhandle:
                 outhandle.write(out_line + '\n')
             
         # Read on:
-        my_line = my_vcf.readline().rstrip()
+        my_line = my_sites.readline().rstrip()
