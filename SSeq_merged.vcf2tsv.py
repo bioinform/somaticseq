@@ -942,7 +942,7 @@ open(outfile, 'w')                 as outhandle:
                 REF                     = my_vcfcall.refbase,                                     \
                 ALT                     = my_vcfcall.altbase,                                     \
                 if_MuTect               = mutect_classification,                                  \
-                if_VarScan2             = varscan2_classification,                                \
+                if_VarScan2             = varscan_classification,                                 \
                 if_JointSNVMix2         = jointsnvmix2_classification,                            \
                 if_SomaticSniper        = sniper_classification,                                  \
                 if_VarDict              = vardict_classification,                                 \
