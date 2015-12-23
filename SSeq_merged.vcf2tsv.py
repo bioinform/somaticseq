@@ -350,7 +350,7 @@ open(outfile, 'w')                 as outhandle:
                     my_identifiers.append(ID_i)
                 
                 if_dbsnp  = 1 if re.search(r'rs[0-9]+', my_vcfcall.identifier) else 0
-                if_comic  = 1 if re.search(r'COS[MN][0-9]+', my_vcfcall.identifier) else 0
+                if_cosmic = 1 if re.search(r'COS[MN][0-9]+', my_vcfcall.identifier) else 0
                 if_common = 1 if my_vcfcall.get_info_value('COMMON') == '1' else 0
                 num_cases = my_vcfcall.get_info_value('CNT') if my_vcfcall.get_info_value('CNT') else nan
 
