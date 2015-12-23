@@ -283,13 +283,7 @@ open(outfile, 'w')                 as outhandle:
 
     while truth_line.startswith('#'):
         truth_line = truth.readline().rstrip()
-    
-    while dbsnp_line.startswith('#'):
-        dbsnp_line = dbsnp.readline().rstrip()
-        
-    while cosmic_line.startswith('#'):
-        cosmic_line = cosmic.readline().rstrip()
-        
+            
     while mutect_line.startswith('#'):
         mutect_line = mutect.readline().rstrip()
 
