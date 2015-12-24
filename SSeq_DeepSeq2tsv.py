@@ -86,6 +86,14 @@ ref_fa    = args.genome_reference
 outfile   = args.output_tsv_file
 p_scale   = args.p_scale
 
+# Determine input format:
+assert if_vcf or is_bed or is_pos
+if is_vcf:
+    mysites = is_vcf
+elif is_bed:
+    mysites = is_bed
+elif is_pos:
+    mysites = is_pos
 
 mpileup   = '{SAMTOOLS} mpileup -B -d {MAX_DEPTH} -q {minMQ} -Q {minBQ} -l {REGION} -f {REF} {TUMOR_BAM}'.format(SAMTOOLS=args.samtools_path, MAX_DEPTH=max_dp, minMQ=min_mq, minBQ=min_bq, REGION=mysites, REF=ref_fa, TUMOR_BAM=tbam_fn) 
 
@@ -116,16 +124,6 @@ def rescale(x, original=None, rescale_to=p_scale, max_phred=1001):
 # Convert contig_sequence to chrom_seq dict:
 fai_file = ref_fa + '.fai'
 chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
-
-# Determine input format:
-assert if_vcf or is_bed or is_pos
-if is_vcf:
-    mysites = is_vcf
-elif is_bed:
-    mysites = is_bed
-elif is_pos:
-    mysites = is_pos
-
 pattern_chr_position = genome.pattern_chr_position
 
 # Header for the output data, created here so I won't have to indent this line:
