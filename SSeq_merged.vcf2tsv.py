@@ -387,8 +387,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     mutect_classification = 1 if latest_mutect.get_info_value('SOMATIC') else 0
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    if not ref_base: ref_base = latest_mutect.refbase
-                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if not ref_base:         ref_base = latest_mutect.refbase
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
 
                 else:
@@ -427,8 +427,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     shift3 = find_SHIFT3(latest_vardict)                        
                     
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    if not ref_base: ref_base = latest_mutect.refbase
-                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if not ref_base:         ref_base = latest_mutect.refbase
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                                                                         
                 # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
@@ -465,8 +465,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         score_somaticsniper = nan
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    if not ref_base: ref_base = latest_mutect.refbase
-                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if not ref_base:         ref_base = latest_mutect.refbase
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                 
                 # The SomaticSniper.vcf doesn't have this record: 
@@ -497,8 +497,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     score_varscan2 = int(latest_varscan.get_info_value('SSC'))
                 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    if not ref_base: ref_base = latest_mutect.refbase
-                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if not ref_base:         ref_base = latest_mutect.refbase
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
 
                 # The VarScan.vcf doesn't have this record. 
@@ -534,8 +534,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     score_jointsnvmix2 = genome.p2phred(jointsnvmix2_p, max_phred=50)
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    if not ref_base: ref_base = latest_mutect.refbase
-                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if not ref_base:         ref_base = latest_mutect.refbase
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                     
                 # Does't have this record. 
@@ -579,8 +579,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         muse_classification = 0
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    if not ref_base: ref_base = latest_mutect.refbase
-                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if not ref_base:         ref_base = latest_mutect.refbase
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                 
                 # Does't have this record
@@ -607,8 +607,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     lofreq_classification = 1 if latest_lofreq.filters == 'PASS' else 0
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    if not ref_base: ref_base = latest_mutect.refbase
-                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if not ref_base:         ref_base = latest_mutect.refbase
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                             
                 else:
@@ -1138,4 +1138,5 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         my_line = my_sites.readline().rstrip()
         
     ##########  Close all open files if they were opened  ##########
-    [opened_file.close() for opened_file in (ref_fa,nbam,tbam,mutect,sniper,varscan,jsm,vardict,muse,lofreq) if opened_file]
+    opened_files = (ref_fa, nbam, tbam, truth, cosmic, dbsnp, mutect, sniper, varscan, jsm, vardict, muse, lofreq)
+    [opened_file.close() for opened_file in opened_files if opened_file]
