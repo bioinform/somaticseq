@@ -24,7 +24,6 @@ input_sites.add_argument('-myvcf',  '--vcf-format',           type=str,   help='
 input_sites.add_argument('-mybed',  '--bed-format',           type=str,   help='Input file is BED formatted.', required=False, default=None)
 input_sites.add_argument('-mypos',  '--positions-list',       type=str,   help='A list of positions: tab seperating contig and positions.', required=False, default=None)
 
-parser.add_argument('-sites',   '--candidate-site-file',   type=str,   help='Either VCF or BED file', required=True, default=None)
 parser.add_argument('-tbam',    '--tumor-bam-file',        type=str,   help='Tumor BAM File',    required=True,  default=None)
 
 parser.add_argument('-truth',     '--ground-truth-vcf',    type=str,   help='VCF of true hits',  required=False, default=None)
