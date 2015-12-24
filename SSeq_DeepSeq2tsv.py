@@ -87,7 +87,7 @@ outfile   = args.output_tsv_file
 p_scale   = args.p_scale
 
 # Determine input format:
-assert if_vcf or is_bed or is_pos
+assert is_vcf or is_bed or is_pos
 if is_vcf:
     mysites = is_vcf
 elif is_bed:
