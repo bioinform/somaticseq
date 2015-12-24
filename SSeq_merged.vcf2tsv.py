@@ -3,7 +3,7 @@
 # 1-based index in this program.
 
 # This is meant to be a major improvement in features over the version described in the SomaticSeq paper published in Genome Biology. 
-# Version 2
+# Version 2.1
 
 # Sample command:
 # python3 SSeq_merged.vcf2tsv.py -myvcf BINA.snp.vcf -samN snp_positions.normal.noindel.vcf.gz -samT snp_positions.tumor.noindel.5bpflank.vcf.gz -haploN haplo_N/merged.noindel.vcf.gz -haploT haplo_T/merged.noindel.vcf.gz -sniper somaticsniper/variants.vcf -varscan varscan2/variants.snp.vcf -jsm jointsnvmix2/variants.vcf -vardict vardict/variants.snp.vcf.gz -muse muse/variants.vcf -nbam normal.indelrealigned.bam -tbam tumor.indelrealigned.bam -fai human_g1k_v37_decoy.fasta.fai -outfile SSeq2.snp.tsv
@@ -37,8 +37,10 @@ parser.add_argument('-nbam', '--normal-bam-file',             type=str,   help='
 parser.add_argument('-tbam', '--tumor-bam-file',              type=str,   help='Tumor BAM File',     required=True, default=None)
 
 parser.add_argument('-truth',     '--ground-truth-vcf',       type=str,   help='VCF of true hits',  required=False, default=None)
+parser.add_argument('-dbsnp',     '--dbsnp-vcf',              type=str,   help='dbSNP VCF: do not use if input VCF is annotated', required=False, default=None)
+parser.add_argument('-cosmic',    '--cosmic-vcf',             type=str,   help='COSMIC VCF: do not use if input VCF is annotated',   required=False, default=None)
 
-parser.add_argument('-mutect',  '--mutect-vcf',               type=str,   help='MuTect VCF.',       required=False, default=None)
+parser.add_argument('-mutect',  '--mutect-vcf',               type=str,   help='MuTect VCF',        required=False, default=None)
 parser.add_argument('-sniper',  '--somaticsniper-vcf',        type=str,   help='SomaticSniper VCF', required=False, default=None)
 parser.add_argument('-varscan', '--varscan-vcf',              type=str,   help='VarScan2 VCF',      required=False, default=None)
 parser.add_argument('-jsm',     '--jsm-vcf',                  type=str,   help='JointSNVMix2 VCF',  required=False, default=None)
@@ -46,9 +48,9 @@ parser.add_argument('-vardict', '--vardict-vcf',              type=str,   help='
 parser.add_argument('-muse',    '--muse-vcf',                 type=str,   help='MuSE VCF',          required=False, default=None)
 parser.add_argument('-lofreq',  '--lofreq-vcf',               type=str,   help='LoFreq VCF',        required=False, default=None)
 
-parser.add_argument('-mincaller', '--minimum-num-callers',    type=float, help='Minimum number of tools to be considered', required=False, default=1)
+parser.add_argument('-mincaller', '--minimum-num-callers',    type=float, help='Minimum number of tools to be considered', required=False, default=0)
 
-parser.add_argument('-ref',     '--genome-reference',         type=str,   help='.fasta.fai file to get the contigs',      required=False, default=None)
+parser.add_argument('-ref',     '--genome-reference',         type=str,   help='.fasta.fai file to get the contigs',      required=True, default=None)
 
 parser.add_argument('-minMQ',   '--minimum-mapping-quality',  type=float, help='Minimum mapping quality below which is considered poor', required=False, default=1)
 parser.add_argument('-minBQ',   '--minimum-base-quality',     type=float, help='Minimum base quality below which is considered poor', required=False, default=5)
@@ -70,14 +72,16 @@ is_pos    = args.positions_list
 nbam_fn   = args.normal_bam_file
 tbam_fn   = args.tumor_bam_file
 
-truehits  = args.ground_truth_vcf         if args.ground_truth_vcf         else os.devnull
-mutectv   = args.mutect_vcf               if args.mutect_vcf               else os.devnull
-sniperv   = args.somaticsniper_vcf        if args.somaticsniper_vcf        else os.devnull
-varscanv  = args.varscan_vcf              if args.varscan_vcf              else os.devnull
-jsmv      = args.jsm_vcf                  if args.jsm_vcf                  else os.devnull
-vardictv  = args.vardict_vcf              if args.vardict_vcf              else os.devnull
-musev     = args.muse_vcf                 if args.muse_vcf                 else os.devnull
-lofreqv   = args.lofreq_vcf               if args.lofreq_vcf               else os.devnull
+truehits  = args.ground_truth_vcf
+cosmic    = args.cosmic_vcf
+dbsnp     = args.dbsnp_vcf
+mutect    = args.mutect_vcf
+sniper    = args.somaticsniper_vcf
+varscan   = args.varscan_vcf
+jsm       = args.jsm_vcf
+vardict   = args.vardict_vcf
+muse      = args.muse_vcf
+lofreq    = args.lofreq_vcf
 
 min_mq    = args.minimum_mapping_quality
 min_bq    = args.minimum_base_quality
@@ -88,7 +92,7 @@ p_scale   = args.p_scale
 outfile   = args.output_tsv_file
 
 # Convert contig_sequence to chrom_seq dict:
-fai_file = ref_fa + '.fai'
+fai_file  = ref_fa + '.fai'
 chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
 
 # Determine input format:
@@ -100,7 +104,7 @@ elif is_pos:
     mysites = is_pos
 else:
     mysites = fai_file
-    print('No position supplied. Will evaluate the whole genome', file=sys.stderr)
+    print('No position supplied. Will evaluate the whole genome.', file=sys.stderr)
 
 # Re-scale output or not:
 if p_scale == None:
@@ -240,57 +244,78 @@ out_header = \
 
 ## Running
 with genome.open_textfile(mysites) as my_sites, \
-genome.open_textfile(truehits)     as truth, \
-genome.open_textfile(mutectv)      as mutect, \
-genome.open_textfile(sniperv)      as sniper, \
-genome.open_textfile(varscanv)     as varscan, \
-genome.open_textfile(jsmv)         as jsm, \
-genome.open_textfile(vardictv)     as vardict, \
-genome.open_textfile(musev)        as muse, \
-genome.open_textfile(lofreqv)      as lofreq, \
 genome.open_bam_file(nbam_fn)      as nbam, \
 genome.open_bam_file(tbam_fn)      as tbam, \
 pysam.FastaFile(ref_fa)            as ref_fa, \
 open(outfile, 'w')                 as outhandle:
     
     my_line      = my_sites.readline().rstrip()
-    truth_line   = truth.readline().rstrip()
-    mutect_line  = mutect.readline().rstrip()
-    sniper_line  = sniper.readline().rstrip()
-    varscan_line = varscan.readline().rstrip()
-    jsm_line     = jsm.readline().rstrip()
-    vardict_line = vardict.readline().rstrip()
-    muse_line    = muse.readline().rstrip()
-    lofreq_line  = lofreq.readline().rstrip()
+    
+    if truehits:
+        truth = genome.open_textfile(truehits)
+        truth_line = truth.readline().rstrip()
+        while truth_line.startswith('#'):
+            truth_line = truth.readline().rstrip()
+    
+    if cosmic:
+        cosmic = genome.open_textfile(cosmic)
+        cosmic_line = cosmic.readline().rstrip()
+        while cosmic_line.startswith('#'):
+            cosmic_line = cosmic.readline().rstrip()
+
+    if dbsnp:
+        dbsnp = genome.open_textfile(dbsnp)
+        dbsnp_line = dbsnp.readline().rstrip()
+        while dbsnp_line.startswith('#'):
+            dbsnp_line = dbsnp.readline().rstrip()
+        
+    if mutect:
+        mutect = genome.open_textfile(mutect)
+        mutect_line = mutect.readline().rstrip()
+        while mutect_line.startswith('#'):
+            mutect_line = mutect.readline().rstrip()
+    
+    if sniper:
+        sniper = genome.open_textfile(sniper)
+        sniper_line = sniper.readline().rstrip()
+        while sniper_line.startswith('#'):
+            sniper_line = sniper.readline().rstrip()
+    
+    if varscan:
+        varscan = genome.open_textfile(varscan)
+        varscan_line = varscan.readline().rstrip()
+        while varscan_line.startswith('#'):
+            varscan_line = varscan.readline().rstrip()
+    
+    if jsm:
+        jsm = genome.open_textfile(jsm)
+        jsm_line = jsm.readline().rstrip()
+        while jsm_line.startswith('#'):
+            jsm_line = jsm.readline().rstrip()
+    
+    if vardict:
+        vardict = genome.open_textfile(vardict)
+        vardict_line = vardict.readline().rstrip()
+        while vardict_line.startswith('#'):
+            vardict_line = vardict.readline().rstrip()
+    
+    if muse:
+        muse = genome.open_textfile(muse)
+        muse_line = muse.readline().rstrip()
+        while muse_line.startswith('#'):
+            muse_line = muse.readline().rstrip()
+    
+    if lofreq:
+        lofreq = genome.open_textfile(lofreq)
+        lofreq_line = lofreq.readline().rstrip()
+        while lofreq_line.startswith('#'):
+            lofreq_line = lofreq.readline().rstrip()
+    
     
     # Get through all the headers:
     while my_line.startswith('#') or my_line.startswith('track='):
         my_line = my_sites.readline().rstrip()
-
-    while truth_line.startswith('#'):
-        truth_line = truth.readline().rstrip()
-            
-    while mutect_line.startswith('#'):
-        mutect_line = mutect.readline().rstrip()
-
-    while sniper_line.startswith('#'):
-        sniper_line = sniper.readline().rstrip()
-
-    while varscan_line.startswith('#'):
-        varscan_line = varscan.readline().rstrip()
-
-    while jsm_line.startswith('#'):
-        jsm_line = jsm.readline().rstrip()
-
-    while vardict_line.startswith('#'):
-        vardict_line = vardict.readline().rstrip()
-        
-    while muse_line.startswith('#'):
-        muse_line = muse.readline().rstrip()
     
-    while lofreq_line.startswith('#'):
-        lofreq_line = lofreq.readline().rstrip()
-                
     # First line:
     outhandle.write( out_header.replace('{','').replace('}','')  + '\n' )
     
@@ -323,14 +348,13 @@ open(outfile, 'w')                 as outhandle:
             
             my_identifiers = []
             
-            ###################################################################################
-            ############################ See what's in MY VCF line ############################
+            ######## If VCF, can get ref base, variant base, as well as other identifying information ######## 
             if is_vcf:
                 my_vcfcall = genome.Vcf_line( my_line )
                 
                 ref_base = my_vcfcall.refbase    
                 first_alt = my_vcfcall.altbase.split(',')[0]
-                indel_length = len(first_alt) - len(my_vcfcall.refbase)
+                indel_length = len(first_alt) - len(ref_base)
                 
                 for ID_i in my_vcfcall.identifier.split(','):
                     my_identifiers.append(ID_i)
@@ -339,6 +363,13 @@ open(outfile, 'w')                 as outhandle:
                 if_cosmic = 1 if re.search(r'COS[MN][0-9]+', my_vcfcall.identifier) else 0
                 if_common = 1 if my_vcfcall.get_info_value('COMMON') == '1' else 0
                 num_cases = my_vcfcall.get_info_value('CNT') if my_vcfcall.get_info_value('CNT') else nan
+                
+            ## If not, 1) get ref_base, first_alt from other VCF files. 
+            #          2) Create placeholders for dbSNP and COSMIC that can be overwritten with dbSNP/COSMIC VCF files (if provided)
+            else:
+                if_dbsnp = if_cosmic = if_common = num_cases = nan
+                ref_base = first_alt = indel_length = None
+
 
             # Keep track of NumCallers:
             num_callers = 0
@@ -355,14 +386,17 @@ open(outfile, 'w')                 as outhandle:
                     assert my_coordinate[1] == latest_mutect.position
                     mutect_classification = 1 if latest_mutect.get_info_value('SOMATIC') else 0
 
+                    # If ref_base, first_alt, and indel_length unknown, get it here:
+                    ref_base = latest_mutect.refbase if not ref_base
+                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
+                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
+
                 else:
                     mutect_classification = 0
                 
                 num_callers = num_callers + mutect_classification
-                
-                # Reset the current line:    
                 mutect_line = latest_mutect.vcf_line
-                    
+                
             else:
                 mutect_classification = nan
 
@@ -392,17 +426,17 @@ open(outfile, 'w')                 as outhandle:
                     msilen = find_MSILEN(latest_vardict)
                     shift3 = find_SHIFT3(latest_vardict)                        
                     
-                    # Indel length. Yes, indel_length was extracted before, so this could potentially override that because this takes VarDict's assessment. 
-                    indel_length = len(first_alt) - len(latest_vardict.refbase)
-                                
+                    # If ref_base, first_alt, and indel_length unknown, get it here:
+                    ref_base = latest_mutect.refbase if not ref_base
+                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
+                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
+                                                                        
                 # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                 else:
                     sor = msi = msilen = shift3 = score_vardict = nan
                     vardict_classification = 0
                 
                 num_callers = num_callers + vardict_classification
-                
-                # Reset the current line:
                 vardict_line = latest_vardict.vcf_line
                     
             else:
@@ -429,6 +463,11 @@ open(outfile, 'w')                 as outhandle:
                         score_somaticsniper = int(score_somaticsniper) if score_somaticsniper else nan
                     else:
                         score_somaticsniper = nan
+
+                    # If ref_base, first_alt, and indel_length unknown, get it here:
+                    ref_base = latest_mutect.refbase if not ref_base
+                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
+                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
                 
                 # The SomaticSniper.vcf doesn't have this record: 
                 else:
@@ -436,8 +475,6 @@ open(outfile, 'w')                 as outhandle:
                     sniper_classification = 0
                 
                 num_callers = num_callers + sniper_classification
-                
-                # Reset the current line:
                 sniper_line = latest_sniper.vcf_line
                     
             else:
@@ -459,14 +496,17 @@ open(outfile, 'w')                 as outhandle:
                     varscan_classification = 1 if latest_varscan.get_info_value('SOMATIC') else 0
                     score_varscan2 = int(latest_varscan.get_info_value('SSC'))
                 
+                    # If ref_base, first_alt, and indel_length unknown, get it here:
+                    ref_base = latest_mutect.refbase if not ref_base
+                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
+                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
+
                 # The VarScan.vcf doesn't have this record. 
                 else:
                     varscan_classification = 0
                     score_varscan2 = nan
                     
                 num_callers = num_callers + varscan_classification
-                
-                # Reset the current line:
                 varscan_line = latest_varscan.vcf_line
                     
             else:
@@ -492,6 +532,11 @@ open(outfile, 'w')                 as outhandle:
                     aabb = float( latest_jsm.get_info_value('AABB') )
                     jointsnvmix2_p = 1 - aaab - aabb
                     score_jointsnvmix2 = genome.p2phred(jointsnvmix2_p, max_phred=50)
+
+                    # If ref_base, first_alt, and indel_length unknown, get it here:
+                    ref_base = latest_mutect.refbase if not ref_base
+                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
+                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
                     
                 # Does't have this record. 
                 else:
@@ -499,8 +544,6 @@ open(outfile, 'w')                 as outhandle:
                     score_jointsnvmix2 = nan
                 
                 num_callers = num_callers + jointsnvmix2_classification
-                
-                # Reset the current line:
                 jsm_line = latest_jsm.vcf_line
                     
             else:
@@ -534,14 +577,17 @@ open(outfile, 'w')                 as outhandle:
                         muse_classification = 0.5
                     else:
                         muse_classification = 0
+
+                    # If ref_base, first_alt, and indel_length unknown, get it here:
+                    ref_base = latest_mutect.refbase if not ref_base
+                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
+                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
                 
                 # Does't have this record
                 else:
                     muse_classification = 0
                 
                 num_callers = num_callers + muse_classification
-                
-                # Reset the current line:
                 muse_line = latest_muse.vcf_line
                     
             else:
@@ -559,19 +605,23 @@ open(outfile, 'w')                 as outhandle:
                     
                     assert my_coordinate[1] == latest_lofreq.position
                     lofreq_classification = 1 if latest_lofreq.filters == 'PASS' else 0
+
+                    # If ref_base, first_alt, and indel_length unknown, get it here:
+                    ref_base = latest_mutect.refbase if not ref_base
+                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
+                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
                             
                 else:
                     lofreq_classification = 0
                 
                 num_callers = num_callers + lofreq_classification
-                
-                # Reset the current line:    
                 lofreq_line = latest_lofreq.vcf_line
                 
             else:
                 lofreq_classification = nan
 
             
+            # Potentially write the output only if it meets this threshold:
             if num_callers >= args.minimum_num_callers:
 
                 ########## Ground truth file ##########
@@ -596,6 +646,61 @@ open(outfile, 'w')                 as outhandle:
                 else:
                     judgement = nan
                 
+
+                ########## dbSNP ##########
+                if args.dbsnp_vcf:
+                                                
+                    latest_dbsnp_run = genome.catchup(my_coordinate, dbsnp_line, dbsnp, chrom_seq)
+                    latest_dbsnp = genome.Vcf_line(latest_dbsnp_run[1])
+                    
+                    if latest_dbsnp_run[0]:
+                        
+                        assert my_coordinate[1] == latest_dbsnp.position
+                        
+                        if_dbsnp = 1
+                        if_common = 1 if latest_dbsnp.get_info_value('COMMON') == '1' else 0
+                        
+                        rsID = latest_dbsnp.identifier.split(',')
+                        for ID_i in rsID:
+                            my_identifiers.append( ID_i )
+                    
+                    else:
+                        if_dbsnp = if_common = 0
+                    
+                    # Reset the current line:
+                    dbsnp_line = latest_dbsnp.vcf_line
+                                    
+                
+                ########## COSMIC ##########
+                if args.cosmic_vcf:
+                                                
+                    latest_cosmic_run = genome.catchup(my_coordinate, cosmic_line, cosmic, chrom_seq)
+                    latest_cosmic = genome.Vcf_line(latest_cosmic_run[1])
+                    
+                    if latest_cosmic_run[0]:
+                        
+                        assert my_coordinate[1] == latest_cosmic.position
+                        
+                        if_cosmic = 1
+                        
+                        num_cases = latest_cosmic.get_info_value('CNT')
+                        if num_cases:
+                            num_cases = num_cases
+                        else:
+                            num_cases = nan
+                            
+                        cosmicID = latest_cosmic.identifier.split(',')
+                        for ID_i in cosmicID:
+                            my_identifiers.append( ID_i )
+                    
+                    else:
+                        if_cosmic = 0
+                        num_cases = nan
+                    
+                    # Reset the current line:
+                    cosmic_line = latest_cosmic.vcf_line
+
+
 
                 ########## ######### ######### INFO EXTRACTION FROM BAM FILES ########## ######### #########
                 # Normal BAM file:
@@ -926,13 +1031,16 @@ open(outfile, 'w')                 as outhandle:
                 else:
                     my_identifiers = '.'
 
+                # If VCF file was output, take the ALT. Otherwise, use "first_alt"
+                my_alt = my_vcfcall.altbase if is_vcf else first_alt
+                
                 ###
                 out_line = out_header.format( \
                 CHROM                   = my_coordinate[0],                                       \
                 POS                     = my_coordinate[1],                                       \
                 ID                      = my_identifiers,                                         \
-                REF                     = my_vcfcall.refbase,                                     \
-                ALT                     = my_vcfcall.altbase,                                     \
+                REF                     = ref_base,                                               \
+                ALT                     = my_alt,                                                 \
                 if_MuTect               = mutect_classification,                                  \
                 if_VarScan2             = varscan_classification,                                 \
                 if_JointSNVMix2         = jointsnvmix2_classification,                            \
@@ -1030,3 +1138,6 @@ open(outfile, 'w')                 as outhandle:
             
         # Read on:
         my_line = my_sites.readline().rstrip()
+
+    # Close all open files if they were opened:
+    [opened_file.close() for opened_file in (mutect,sniper,varscan,jsm,vardict,muse,lofreq) if opened_file]
