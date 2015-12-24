@@ -387,9 +387,9 @@ open(outfile, 'w')                 as outhandle:
                     mutect_classification = 1 if latest_mutect.get_info_value('SOMATIC') else 0
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    ref_base = latest_mutect.refbase if not ref_base
-                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
-                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
+                    if not ref_base: ref_base = latest_mutect.refbase
+                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if indel_length == None: indel_length = len(first_alt) - len(ref_base)
 
                 else:
                     mutect_classification = 0
@@ -427,9 +427,9 @@ open(outfile, 'w')                 as outhandle:
                     shift3 = find_SHIFT3(latest_vardict)                        
                     
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    ref_base = latest_mutect.refbase if not ref_base
-                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
-                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
+                    if not ref_base: ref_base = latest_mutect.refbase
+                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                                                                         
                 # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                 else:
@@ -465,9 +465,9 @@ open(outfile, 'w')                 as outhandle:
                         score_somaticsniper = nan
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    ref_base = latest_mutect.refbase if not ref_base
-                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
-                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
+                    if not ref_base: ref_base = latest_mutect.refbase
+                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                 
                 # The SomaticSniper.vcf doesn't have this record: 
                 else:
@@ -497,9 +497,9 @@ open(outfile, 'w')                 as outhandle:
                     score_varscan2 = int(latest_varscan.get_info_value('SSC'))
                 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    ref_base = latest_mutect.refbase if not ref_base
-                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
-                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
+                    if not ref_base: ref_base = latest_mutect.refbase
+                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if indel_length == None: indel_length = len(first_alt) - len(ref_base)
 
                 # The VarScan.vcf doesn't have this record. 
                 else:
@@ -534,9 +534,9 @@ open(outfile, 'w')                 as outhandle:
                     score_jointsnvmix2 = genome.p2phred(jointsnvmix2_p, max_phred=50)
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    ref_base = latest_mutect.refbase if not ref_base
-                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
-                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
+                    if not ref_base: ref_base = latest_mutect.refbase
+                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                     
                 # Does't have this record. 
                 else:
@@ -579,9 +579,9 @@ open(outfile, 'w')                 as outhandle:
                         muse_classification = 0
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    ref_base = latest_mutect.refbase if not ref_base
-                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
-                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
+                    if not ref_base: ref_base = latest_mutect.refbase
+                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                 
                 # Does't have this record
                 else:
@@ -607,9 +607,9 @@ open(outfile, 'w')                 as outhandle:
                     lofreq_classification = 1 if latest_lofreq.filters == 'PASS' else 0
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
-                    ref_base = latest_mutect.refbase if not ref_base
-                    first_alt = latest_mutect.altbase.split('\t') if not first_alt
-                    indel_length = len(first_alt) - len(ref_base) if indel_length == None
+                    if not ref_base: ref_base = latest_mutect.refbase
+                    if not first_alt: first_alt = latest_mutect.altbase.split('\t')
+                    if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                             
                 else:
                     lofreq_classification = 0
