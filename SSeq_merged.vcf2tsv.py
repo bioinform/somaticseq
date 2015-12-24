@@ -245,6 +245,8 @@ out_header = \
 ## Running
 with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         
+    my_line = my_sites.readline().rstrip()
+    
     nbam    = pysam.AlignmentFile(nbam_fn)
     tbam    = pysam.AlignmentFile(tbam_fn)
     ref_fa  = pysam.FastaFile(ref_fa)
@@ -317,10 +319,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
     # First line:
     outhandle.write( out_header.replace('{','').replace('}','')  + '\n' )
     
-    for my_line in my_sites:
-        
-        my_line = my_line.rstrip()
-        
+    while my_line:
+                
         if is_vcf:
             my_vcf = genome.Vcf_line( my_line )
             end_i = my_vcf.get_info_value('END')
@@ -1133,6 +1133,9 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 
                 # Print it out to stdout:
                 outhandle.write(out_line + '\n')
-
+        
+        # Read into the next line:
+        my_line = my_sites.readline().rstrip()
+        
     ##########  Close all open files if they were opened  ##########
     [opened_file.close() for opened_file in (ref_fa,nbam,tbam,mutect,sniper,varscan,jsm,vardict,muse,lofreq) if opened_file]
