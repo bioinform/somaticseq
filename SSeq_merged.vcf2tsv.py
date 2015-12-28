@@ -388,7 +388,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
                     if not ref_base:         ref_base = latest_mutect.refbase
-                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')[0]
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
 
                 else:
@@ -450,7 +450,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     
                     # If ref_base, first_alt, and indel_length unknown, get it here:
                     if not ref_base:         ref_base = latest_mutect.refbase
-                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')[0]
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                                                                         
                 # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
@@ -488,7 +488,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
                     if not ref_base:         ref_base = latest_mutect.refbase
-                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')[0]
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                 
                 # The SomaticSniper.vcf doesn't have this record: 
@@ -520,7 +520,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
                     if not ref_base:         ref_base = latest_mutect.refbase
-                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')[0]
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
 
                 # The VarScan.vcf doesn't have this record. 
@@ -557,7 +557,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
                     if not ref_base:         ref_base = latest_mutect.refbase
-                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')[0]
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                     
                 # Does't have this record. 
@@ -602,7 +602,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
                     if not ref_base:         ref_base = latest_mutect.refbase
-                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')[0]
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                 
                 # Does't have this record
@@ -630,7 +630,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                     # If ref_base, first_alt, and indel_length unknown, get it here:
                     if not ref_base:         ref_base = latest_mutect.refbase
-                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')
+                    if not first_alt:        first_alt = latest_mutect.altbase.split('\t')[0]
                     if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                             
                 else:
