@@ -33,12 +33,15 @@ input_sites.add_argument('-myvcf',  '--vcf-format',           type=str,   help='
 input_sites.add_argument('-mybed',  '--bed-format',           type=str,   help='Input file is BED formatted.', required=False, default=None)
 input_sites.add_argument('-mypos',  '--positions-list',       type=str,   help='A list of positions: tab seperating contig and positions.', required=False, default=None)
 
-parser.add_argument('-nbam', '--normal-bam-file',             type=str,   help='Normal BAM File',    required=True, default=None)
-parser.add_argument('-tbam', '--tumor-bam-file',              type=str,   help='Tumor BAM File',     required=True, default=None)
+parser.add_argument('-nbam', '--normal-bam-file',             type=str,   help='Normal BAM File',   required=True, default=None)
+parser.add_argument('-tbam', '--tumor-bam-file',              type=str,   help='Tumor BAM File',    required=True, default=None)
 
 parser.add_argument('-truth',     '--ground-truth-vcf',       type=str,   help='VCF of true hits',  required=False, default=None)
 parser.add_argument('-dbsnp',     '--dbsnp-vcf',              type=str,   help='dbSNP VCF: do not use if input VCF is annotated', required=False, default=None)
 parser.add_argument('-cosmic',    '--cosmic-vcf',             type=str,   help='COSMIC VCF: do not use if input VCF is annotated',   required=False, default=None)
+
+parser.add_argument('-haploN', '--haplotypecaller-normal-vcf', type=str,   help='HaplotypeCaller Normal VCF', required=False, default=None)
+parser.add_argument('-haploT', '--haplotypecaller-tumor-vcf',  type=str,   help='HaplotypeCaller Tumor VCF',  required=False, default=None)
 
 parser.add_argument('-mutect',  '--mutect-vcf',               type=str,   help='MuTect VCF',        required=False, default=None)
 parser.add_argument('-sniper',  '--somaticsniper-vcf',        type=str,   help='SomaticSniper VCF', required=False, default=None)
@@ -75,6 +78,8 @@ tbam_fn   = args.tumor_bam_file
 truehits  = args.ground_truth_vcf
 cosmic    = args.cosmic_vcf
 dbsnp     = args.dbsnp_vcf
+haploN    = args.haplotypecaller_normal_vcf
+haploT    = args.haplotypecaller_tumor_vcf
 mutect    = args.mutect_vcf
 sniper    = args.somaticsniper_vcf
 varscan   = args.varscan_vcf
@@ -198,6 +203,13 @@ out_header = \
 {nBAM_ALT_InDel_3bp}\t\
 {nBAM_ALT_InDel_2bp}\t\
 {nBAM_ALT_InDel_1bp}\t\
+{nHC_MLEAC}\t\
+{nHC_MLEAF}\t\
+{nHC_BQRankSum}\t\
+{nHC_ClipRankSum}\t\
+{nHC_LikelihoodRankSum}\t\
+{nHC_ReadPositionRankSum}\t\
+{nHC_MQRankSum}\t\
 {SOR}\t\
 {MSI}\t\
 {MSILEN}\t\
@@ -238,9 +250,15 @@ out_header = \
 {tBAM_ALT_InDel_3bp}\t\
 {tBAM_ALT_InDel_2bp}\t\
 {tBAM_ALT_InDel_1bp}\t\
+{tHC_MLEAC}\t\
+{tHC_MLEAF}\t\
+{tHC_BQRankSum}\t\
+{tHC_ClipRankSum}\t\
+{tHC_LikelihoodRankSum}\t\
+{tHC_ReadPositionRankSum}\t\
+{tHC_MQRankSum}\t\
 {InDel_Length}\t\
 {TrueVariant_or_False}'
-
 
 ## Running
 with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
@@ -268,6 +286,18 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         dbsnp_line = dbsnp.readline().rstrip()
         while dbsnp_line.startswith('#'):
             dbsnp_line = dbsnp.readline().rstrip()
+        
+    if haploN:
+        haploN = genome.open_textfile(haploN)
+        haploN_line = haploN.readline().rstrip()
+        while haploN_line.startswith('#'):
+            haploN_line = haploN.readline().rstrip()
+
+    if haploT:
+        haploT = genome.open_textfile(haploT)
+        haploT_line = haploT.readline().rstrip()
+        while haploT_line.startswith('#'):
+            haploT_line = haploT.readline().rstrip()
         
     if mutect:
         mutect = genome.open_textfile(mutect)
@@ -376,7 +406,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             
             ############################################################################################
             ######################## Find the same coordinate in MuTect's VCF #########################
-            if args.mutect_vcf:
+            if mutect:
                 
                 latest_mutect_run = genome.catchup(my_coordinate, mutect_line, mutect, chrom_seq)
                 latest_mutect = genome.Vcf_line(latest_mutect_run[1])
@@ -403,7 +433,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
             ############################################################################################
             ##################### Find the same coordinate in VarDict's VCF Output #####################
-            if args.vardict_vcf:
+            if vardict:
                 latest_vardict_run = genome.catchup(my_coordinate, vardict_line, vardict, chrom_seq)
                 latest_vardict = genome.Vcf_line(latest_vardict_run[1])
                 
@@ -468,7 +498,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             
             ############################################################################################
             ##################### Find the same coordinate in SomaticSniper's VCF# #####################
-            if args.somaticsniper_vcf:
+            if sniper:
                 
                 latest_sniper_run = genome.catchup(my_coordinate, sniper_line, sniper, chrom_seq)
                 latest_sniper = genome.Vcf_line(latest_sniper_run[1])
@@ -506,7 +536,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             
             ############################################################################################
             ######################## Find the same coordinate in VarScan's VCF #########################
-            if args.varscan_vcf:
+            if varscan:
                 
                 latest_varscan_run = genome.catchup(my_coordinate, varscan_line, varscan, chrom_seq)
                 latest_varscan = genome.Vcf_line(latest_varscan_run[1])
@@ -538,7 +568,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             
             ############################################################################################
             ########################## Find the same coordinate in JSM's VCF# ##########################
-            if args.jsm_vcf:
+            if jsm:
                 
                 latest_jsm_run = genome.catchup(my_coordinate, jsm_line, jsm, chrom_seq)
                 latest_jsm = genome.Vcf_line(latest_jsm_run[1])
@@ -575,7 +605,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             
             ############################################################################################
             ########################## Find the same coordinate in MuSE's VCF# #########################
-            if args.muse_vcf:
+            if muse:
                 
                 latest_muse_run = genome.catchup(my_coordinate, muse_line, muse, chrom_seq)
                 latest_muse = genome.Vcf_line(latest_muse_run[1])
@@ -618,7 +648,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             
             ############################################################################################
             ######################## Find the same coordinate in LoFreq's VCF #########################
-            if args.lofreq_vcf:
+            if lofreq:
                 
                 latest_lofreq_run = genome.catchup(my_coordinate, lofreq_line, lofreq, chrom_seq)
                 latest_lofreq = genome.Vcf_line(latest_lofreq_run[1])
@@ -647,7 +677,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             if num_callers >= args.minimum_num_callers:
 
                 ########## Ground truth file ##########
-                if args.ground_truth_vcf:
+                if truth:
                                                 
                     latest_truth_run = genome.catchup(my_coordinate, truth_line, truth, chrom_seq)
                     latest_truth = genome.Vcf_line(latest_truth_run[1])
@@ -670,7 +700,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 
 
                 ########## dbSNP ##########
-                if args.dbsnp_vcf:
+                if dbsnp:
                                                 
                     latest_dbsnp_run = genome.catchup(my_coordinate, dbsnp_line, dbsnp, chrom_seq)
                     latest_dbsnp = genome.Vcf_line(latest_dbsnp_run[1])
@@ -694,7 +724,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                                     
                 
                 ########## COSMIC ##########
-                if args.cosmic_vcf:
+                if cosmic:
                                                 
                     latest_cosmic_run = genome.catchup(my_coordinate, cosmic_line, cosmic, chrom_seq)
                     latest_cosmic = genome.Vcf_line(latest_cosmic_run[1])
@@ -723,6 +753,60 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     cosmic_line = latest_cosmic.vcf_line
 
 
+                ########## HaplotypeCaller Normal ##########
+                if haploN:
+                
+                    latest_haploN_run = genome.catchup(my_coordinate, haploN_line, haploN, chrom_seq)
+                    latest_haploN = genome.Vcf_line(latest_haploN_run[1])
+                        
+                    if latest_haploN[0]:
+                        assert my_coordinate[1] == latest_haploN.position
+                                            
+                        # Normal haplotype caller info extraction:
+                        N_mleac       = haplo_MLEAC(latest_haploN)
+                        N_mleaf       = haplo_MLEAF(latest_haploN)
+                        N_baseQrank   = haplo_BaseQRankSum(latest_haploN)
+                        N_cliprank    = haplo_ClippingRankSum(latest_haploN)
+                        N_likelirank  = haplo_LikelihoodRankSum(latest_haploN)
+                        N_readposrank = haplo_ReadPosRankSum(latest_haploN)
+                        N_mqrank      = haplo_MQRankSum(latest_haploN)
+                        
+                    else:
+                        N_mleac = N_mleaf = N_baseQrank = N_cliprank = N_likelirank = N_readposrank = N_mqrank = nan
+                
+                    haploN_line = latest_haploN.vcf_line
+                    
+                else:
+                    N_mleac = N_mleaf = N_baseQrank = N_cliprank = N_likelirank = N_readposrank = N_mqrank = nan
+                
+
+                ########## HaplotypeCaller Tumor ##########
+                if haploT:
+                
+                    latest_haploT_run = genome.catchup(my_coordinate, haploT_line, haploT, chrom_seq)
+                    latest_haploT = genome.Vcf_line(latest_haploT_run[1])
+                        
+                    if latest_haploT[0]:
+                        assert my_coordinate[1] == latest_haploT.position
+                                            
+                        # Normal haplotype caller info extraction:
+                        T_mleac       = haplo_MLEAC(latest_haploT)
+                        T_mleaf       = haplo_MLEAF(latest_haploT)
+                        T_baseQrank   = haplo_BaseQRankSum(latest_haploT)
+                        T_cliprank    = haplo_ClippingRankSum(latest_haploT)
+                        T_likelirank  = haplo_LikelihoodRankSum(latest_haploT)
+                        T_readposrank = haplo_ReadPosRankSum(latest_haploT)
+                        T_mqrank      = haplo_MQRankSum(latest_haploT)
+                        
+                    else:
+                        T_mleac = T_mleaf = T_baseQrank = T_cliprank = T_likelirank = T_readposrank = T_mqrank = nan
+                
+                    haploT_line = latest_haploT.vcf_line
+                    
+                else:
+                    T_mleac = T_mleaf = T_baseQrank = T_cliprank = T_likelirank = T_readposrank = T_mqrank = nan
+
+                        
                 ########## ######### ######### INFO EXTRACTION FROM BAM FILES ########## ######### #########
                 # Normal BAM file:
                 n_reads = nbam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1], multiple_iterators=False )
@@ -1110,6 +1194,13 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 nBAM_ALT_InDel_3bp      = n_alt_indel_3bp,                                        \
                 nBAM_ALT_InDel_2bp      = n_alt_indel_2bp,                                        \
                 nBAM_ALT_InDel_1bp      = n_alt_indel_1bp,                                        \
+                nHC_MLEAC               = N_mleac,                                                \
+                nHC_MLEAF               = N_mleaf,                                                \
+                nHC_BQRankSum           = N_baseQrank,                                            \
+                nHC_ClipRankSum         = N_cliprank,                                             \
+                nHC_LikelihoodRankSum   = N_likelirank,                                           \
+                nHC_ReadPositionRankSum = N_readposrank,                                          \
+                nHC_MQRankSum           = N_mqrank,                                               \
                 SOR                     = sor,                                                    \
                 MSI                     = msi,                                                    \
                 MSILEN                  = msilen,                                                 \
@@ -1150,6 +1241,13 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 tBAM_ALT_InDel_3bp      = t_alt_indel_3bp,                                        \
                 tBAM_ALT_InDel_2bp      = t_alt_indel_2bp,                                        \
                 tBAM_ALT_InDel_1bp      = t_alt_indel_1bp,                                        \
+                tHC_MLEAC               = T_mleac,                                                \
+                tHC_MLEAF               = T_mleaf,                                                \
+                tHC_BQRankSum           = T_baseQrank,                                            \
+                tHC_ClipRankSum         = T_cliprank,                                             \
+                tHC_LikelihoodRankSum   = T_likelirank,                                           \
+                tHC_ReadPositionRankSum = T_readposrank,                                          \
+                tHC_MQRankSum           = T_mqrank,                                               \
                 InDel_Length            = indel_length,                                           \
                 TrueVariant_or_False    = judgement )
                 
@@ -1160,5 +1258,5 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         my_line = my_sites.readline().rstrip()
         
     ##########  Close all open files if they were opened  ##########
-    opened_files = (ref_fa, nbam, tbam, truth, cosmic, dbsnp, mutect, sniper, varscan, jsm, vardict, muse, lofreq)
+    opened_files = (ref_fa, nbam, tbam, truth, cosmic, dbsnp, haploN, haploT, mutect, sniper, varscan, jsm, vardict, muse, lofreq)
     [opened_file.close() for opened_file in opened_files if opened_file]
