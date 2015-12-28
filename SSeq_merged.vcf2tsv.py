@@ -341,7 +341,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             
         elif fai_file:
             fai_item = my_line.split('\t')
-            my_coordinates = genomic_coordinates( pos_item[0], 1, int(pos_item[1]) )
+            my_coordinates = genomic_coordinates( fai_item[0], 1, int(fai_item[1]) )
         
         ##
         for my_coordinate in my_coordinates:
