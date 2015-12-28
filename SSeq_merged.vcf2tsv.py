@@ -410,7 +410,29 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 if latest_vardict_run[0]:
                     assert my_vcfcall.position == latest_vardict.position
                     
-                    vardict_classification = 1 if (latest_vardict.filters == 'PASS' and 'Somatic' in latest_vardict.info) else 0
+                    if (latest_vardict.filters == 'PASS') and ('Somatic' in latest_vardict.info):
+                        vardict_classification = 1
+                    else:
+                        vardict_filters = latest_vardict.filters.split(';')
+                        
+                        disqualifying_filters = ('d7' in vardict_filters or 'd5' in vardict_filters) or \
+                        ('DIFF0.2' in vardict_filters) or \
+                        ('LongAT' in vardict_filters) or \
+                        ('MAF0.05' in vardict_filters) or \
+                        ('MSI6' in vardict_filters) or \
+                        ('NM4' in vardict_filters or 'NM4.25' in vardict_filters) or \
+                        ('pSTD' in vardict_filters) or \
+                        ('SN1.5' in vardict_filters) or \
+                        ( 'P0.05' in vardict_filters and float(latest_vardict.get_info_value('SSF') ) >= 0.15 ) or \
+                        ( ('v3' in vardict_filters or 'v4' in vardict_filters) and int(latest_vardict.get_sample_value('VD', 0))<3 )
+                        
+                        no_bad_filter = not disqualifying_filters
+                        filter_fail_times = len(vardict_filters)
+                        
+                        if no_bad_filter and filter_fail_times<=2:
+                            vardict_classification = 0.5
+                        else:
+                            vardict_classification = 0
                     
                     # Somatic Score:
                     score_vardict = latest_vardict.get_info_value('SSF')

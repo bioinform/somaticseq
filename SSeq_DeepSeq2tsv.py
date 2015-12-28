@@ -504,7 +504,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                             
                             num_cases = latest_cosmic.get_info_value('CNT')
                             if num_cases:
-                                num_cases = int(num_cases)
+                                num_cases = num_cases
                             else:
                                 num_cases = nan
                                 
