@@ -408,7 +408,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 latest_vardict = genome.Vcf_line(latest_vardict_run[1])
                 
                 if latest_vardict_run[0]:
-                    assert my_vcfcall.position == latest_vardict.position
+                    assert my_coordinate[1] == latest_vardict.position
                     
                     if (latest_vardict.filters == 'PASS') and ('Somatic' in latest_vardict.info):
                         vardict_classification = 1
@@ -475,7 +475,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 
                 if latest_sniper_run[0]:
                     
-                    assert my_vcfcall.position == latest_sniper.position
+                    assert my_coordinate[1] == latest_sniper.position
                     
                     sniper_classification = 1 if latest_sniper.get_sample_value('SS', idxT) == '2' else 0
                     
@@ -513,7 +513,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 
                 if latest_varscan_run[0]:
                     
-                    assert my_vcfcall.position == latest_varscan.position
+                    assert my_coordinate[1] == latest_varscan.position
                     
                     varscan_classification = 1 if latest_varscan.get_info_value('SOMATIC') else 0
                     score_varscan2 = int(latest_varscan.get_info_value('SSC'))
@@ -545,7 +545,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 
                 if latest_jsm_run[0]:
                     
-                    assert my_vcfcall.position == latest_jsm.position
+                    assert my_coordinate[1] == latest_jsm.position
                     
                     jointsnvmix2_classification = 1
                     
@@ -582,7 +582,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 
                 if latest_muse_run[0]:
                     
-                    assert my_vcfcall.position == latest_muse.position
+                    assert my_coordinate[1] == latest_muse.position
                     
                     # PASS and Tiers:
                     if latest_muse.filters   == 'PASS':
@@ -742,13 +742,13 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         
                         N_dp += 1
                         
-                        code_i, ith_base, base_call_i, indel_length_i, flanking_indel_i = position_of_aligned_read(read_i, my_vcfcall.position-1 )
+                        code_i, ith_base, base_call_i, indel_length_i, flanking_indel_i = position_of_aligned_read(read_i, my_coordinate[1]-1 )
                         
                         if read_i.mapping_quality < min_mq and mean(read_i.query_qualities) < min_bq:
                             n_poor_read_count += 1
                         
                         # Reference calls:
-                        if code_i == 1 and base_call_i == my_vcfcall.refbase[0]:
+                        if code_i == 1 and base_call_i == ref_base[0]:
                         
                             n_ref_read_mq.append( read_i.mapping_quality )
                             n_ref_read_bq.append( read_i.query_qualities[ith_base] )
@@ -881,13 +881,13 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         
                         T_dp += 1
                         
-                        code_i, ith_base, base_call_i, indel_length_i, flanking_indel_i = position_of_aligned_read(read_i, my_vcfcall.position-1 )
+                        code_i, ith_base, base_call_i, indel_length_i, flanking_indel_i = position_of_aligned_read(read_i, my_coordinate[1]-1 )
                         
                         if read_i.mapping_quality < min_mq and mean(read_i.query_qualities) < min_bq:
                             t_poor_read_count += 1
 
                         # Reference calls:
-                        if code_i == 1 and base_call_i == my_vcfcall.refbase[0]:
+                        if code_i == 1 and base_call_i == ref_base[0]:
                         
                             t_ref_read_mq.append( read_i.mapping_quality )
                             t_ref_read_bq.append( read_i.query_qualities[ith_base] )
