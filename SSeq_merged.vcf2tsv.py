@@ -1131,7 +1131,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 site_homopolymer_length = max( alt_c+1, ref_c+1 )
     
                 if my_identifiers:
-                    my_identifiers = ','.join(my_identifiers)
+                    my_identifiers = ';'.join(my_identifiers)
                 else:
                     my_identifiers = '.'
 
