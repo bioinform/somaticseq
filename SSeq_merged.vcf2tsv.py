@@ -759,7 +759,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     latest_haploN_run = genome.catchup(my_coordinate, haploN_line, haploN, chrom_seq)
                     latest_haploN = genome.Vcf_line(latest_haploN_run[1])
                         
-                    if latest_haploN[0]:
+                    if latest_haploN_run[0]:
                         assert my_coordinate[1] == latest_haploN.position
                                             
                         # Normal haplotype caller info extraction:
@@ -786,7 +786,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     latest_haploT_run = genome.catchup(my_coordinate, haploT_line, haploT, chrom_seq)
                     latest_haploT = genome.Vcf_line(latest_haploT_run[1])
                         
-                    if latest_haploT[0]:
+                    if latest_haploT_run[0]:
                         assert my_coordinate[1] == latest_haploT.position
                                             
                         # Normal haplotype caller info extraction:
