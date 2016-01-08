@@ -183,7 +183,7 @@ We'll describe the workflow here, so you may modify the workflow and/or create y
 
 
 \subsection{Combine the call sets}
-	We use GATK CombineVariants to combine the VCF files from different callers. To make them compatible with GATK, the VCFs must be modified. A somatic call is also tagged with the tool names, so the combined VCF retains those information. 
+	We use GATK CombineVariants to combine the VCF files from different callers, although it does not matter what tools are used to merge VCF files. To make them compatible with GATK, the VCF files are modified. A somatic call is also tagged with the tool names, so the combined VCF retains those information. 
 
 \begin{enumerate}
 
