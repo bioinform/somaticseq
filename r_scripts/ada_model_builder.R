@@ -29,7 +29,7 @@ train_data[,'if_COSMIC'] <- NULL
 train_data[,'COSMIC_CNT'] <- NULL
 
 
-
+model_formula <- as.formula(TrueVariant_or_False ~ .)
 
 print("Fitting model...")
 ada.model <- ada(model_formula, data = train_data, iter = 500)
