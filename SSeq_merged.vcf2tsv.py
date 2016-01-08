@@ -677,7 +677,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             if num_callers >= args.minimum_num_callers:
 
                 ########## Ground truth file ##########
-                if truth:
+                if truehits:
                                                 
                     latest_truth_run = genome.catchup(my_coordinate, truth_line, truth, chrom_seq)
                     latest_truth = genome.Vcf_line(latest_truth_run[1])
