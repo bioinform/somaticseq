@@ -156,6 +156,15 @@ then
 	fi
 
 
+
+	if [[ -r ${mutect_vcf} ]]
+	then
+		mutect_input="-mutect ${mutect_vcf}"
+	else
+		mutect_input=''
+	fi
+
+
 	if [[ -r ${varscan_vcf} ]]
 	then
 		varscan_input="-varscan ${varscan_vcf}"
@@ -202,7 +211,8 @@ then
 	$MYDIR/SSeq_merged.vcf2tsv.py \
 	-ref ${hg_ref} \
 	-myvcf ${merged_dir}/BINA_somatic.snp.vcf \
-	${truth_input} \
+	$truth_input \
+	$mutect_input \
 	$varscan_input \
 	$jsm_input \
 	$sniper_input \
@@ -260,6 +270,13 @@ then
 
 
 	## Convert the sSNV file into TSV file, for machine learning data:
+	if [[ -r ${indelocator_vcf} ]]
+	then
+		indelocator_input="-mutect ${indelocator_vcf}"
+	else
+		indelocator_input=''
+	fi
+
 
         if [[ -r ${varscan_indel_vcf} ]]
         then
@@ -267,6 +284,7 @@ then
         else
                 varscan_input=''
         fi
+
 
         if [[ -r ${merged_dir}/indel.vardict.vcf ]]
         then
@@ -287,7 +305,8 @@ then
 	$MYDIR/SSeq_merged.vcf2tsv.py \
 	-ref ${hg_ref} \
 	-myvcf ${merged_dir}/BINA_somatic.indel.vcf \
-	${truth_input} \
+	$truth_input \
+	$indelocator_input \
 	$varscan_input \
 	$vardict_input \
 	-tbam ${tbam} \
