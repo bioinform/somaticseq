@@ -1277,5 +1277,5 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         my_line = my_sites.readline().rstrip()
         
     ##########  Close all open files if they were opened  ##########
-    opened_files = (ref_fa, nbam, tbam, truth, cosmic, dbsnp, haploN, haploT, mutect, sniper, varscan, jsm, vardict, muse, lofreq)
+    opened_files = (ref_fa, nbam, tbam, truehits, cosmic, dbsnp, haploN, haploT, mutect, sniper, varscan, jsm, vardict, muse, lofreq)
     [opened_file.close() for opened_file in opened_files if opened_file]
