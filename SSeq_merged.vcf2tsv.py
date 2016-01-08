@@ -811,14 +811,24 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 # Normal BAM file:
                 n_reads = nbam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1] )
 
-                n_ref_read_mq = n_alt_read_mq = n_ref_read_bq = n_alt_read_bq = []
-                n_ref_edit_distance = n_alt_edit_distance = []
+                n_ref_read_mq = []
+                n_alt_read_mq = []
+                n_ref_read_bq = []
+                n_alt_read_bq = []
+                
+                n_ref_edit_distance = []
+                n_alt_edit_distance = []
+                
                 n_ref_concordant_reads = n_alt_concordant_reads = n_ref_discordant_reads = n_alt_discordant_reads = 0
                 n_ref_for = n_ref_rev = n_alt_for = n_alt_rev = N_dp = 0
                 n_ref_SC_reads = n_alt_SC_reads = n_ref_notSC_reads = n_alt_notSC_reads = 0
                 n_ref_MQ0 = n_alt_MQ0 = 0
-                n_ref_pos_from_end = n_alt_pos_from_end = []
-                n_ref_flanking_indel = n_alt_flanking_indel = []
+                
+                n_ref_pos_from_end = []
+                n_alt_pos_from_end = []
+                n_ref_flanking_indel = []
+                n_alt_flanking_indel = []
+                
                 n_noise_read_count = n_poor_read_count  = 0
                 
                 for read_i in n_reads:
@@ -950,14 +960,23 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 # Tumor BAM file:
                 t_reads = tbam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1] )
                 
-                t_ref_read_mq = t_alt_read_mq = t_ref_read_bq = t_alt_read_bq = []
-                t_ref_edit_distance = t_alt_edit_distance = []
-                t_ref_concordant_reads =t_alt_concordant_reads = t_ref_discordant_reads = t_alt_discordant_reads = 0
+                t_ref_read_mq = []
+                t_alt_read_mq = []
+                t_ref_read_bq = []
+                t_alt_read_bq = []
+                t_ref_edit_distance = []
+                t_alt_edit_distance = []
+                
+                t_ref_concordant_reads = t_alt_concordant_reads = t_ref_discordant_reads = t_alt_discordant_reads = 0
                 t_ref_for = t_ref_rev = t_alt_for = t_alt_rev = T_dp = 0
                 t_ref_SC_reads = t_alt_SC_reads = t_ref_notSC_reads = t_alt_notSC_reads = 0
                 t_ref_MQ0 = t_alt_MQ0 = 0
-                t_ref_pos_from_end = t_alt_pos_from_end = []
-                t_ref_flanking_indel = t_alt_flanking_indel = []
+                
+                t_ref_pos_from_end = []
+                t_alt_pos_from_end = []
+                t_ref_flanking_indel = []
+                t_alt_flanking_indel = []
+                
                 t_noise_read_count = t_poor_read_count  = 0
                 
                 for read_i in t_reads:

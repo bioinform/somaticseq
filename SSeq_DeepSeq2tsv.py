@@ -533,15 +533,23 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     ###################################### Tumor BAM file ######################################
                     t_reads = tbam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1], multiple_iterators=False )
                     
-                    t_ref_read_mq = t_alt_read_mq = []
-                    t_ref_read_bq = t_alt_read_bq = []
-                    t_ref_edit_distance = t_alt_edit_distance = []
+                    t_ref_read_mq = []
+                    t_alt_read_mq = []
+                    t_ref_read_bq = []
+                    t_alt_read_bq = []
+                    t_ref_edit_distance = []
+                    t_alt_edit_distance = []
+                    
                     t_ref_concordant_reads = t_alt_concordant_reads = t_ref_discordant_reads = t_alt_discordant_reads = 0
                     t_ref_for = t_ref_rev = t_alt_for = t_alt_rev = T_dp = 0
                     t_ref_SC_reads = t_alt_SC_reads = t_ref_notSC_reads = t_alt_notSC_reads = 0
                     t_ref_MQ0 = t_alt_MQ0 = 0
-                    t_ref_pos_from_end = t_alt_pos_from_end = []
-                    t_ref_flanking_indel = t_alt_flanking_indel = []
+                    
+                    t_ref_pos_from_end = []
+                    t_alt_pos_from_end = []
+                    t_ref_flanking_indel = []
+                    t_alt_flanking_indel = []
+                    
                     t_noise_read_count = t_poor_read_count = 0
                     
                     for read_i in t_reads:
