@@ -211,7 +211,6 @@ then
 	-tbam ${tbam} \
 	-nbam ${nbam} \
 	-dedup \
-	-mincaller 0.5 \
 	-outfile ${merged_dir}/Ensemble.sSNV.tsv
 
 
@@ -294,7 +293,6 @@ then
 	-tbam ${tbam} \
 	-nbam ${nbam} \
 	-dedup \
-	-mincaller 0.5 \
 	-outfile ${merged_dir}/Ensemble.sINDEL.tsv
 
 
