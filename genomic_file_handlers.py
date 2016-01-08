@@ -154,10 +154,10 @@ class pysam_header:
     
     def __init__(self, bam_file):
         
-        import pysam
+        from pysam import AlignmentFile
         
-        '''Argument is a line in pileup file.'''
-        self.bam_header = bam_file.header
+        bam = AlignmentFile(bam_file)
+        self.bam_header = bam.header
         
     
     def SM(self):
