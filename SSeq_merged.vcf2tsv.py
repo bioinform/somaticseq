@@ -809,7 +809,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         
                 ########## ######### ######### INFO EXTRACTION FROM BAM FILES ########## ######### #########
                 # Normal BAM file:
-                n_reads = nbam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1], multiple_iterators=False )
+                n_reads = nbam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1] )
 
                 n_ref_read_mq = n_alt_read_mq = n_ref_read_bq = n_alt_read_bq = []
                 n_ref_edit_distance = n_alt_edit_distance = []
@@ -948,7 +948,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 
                 ########################################################################################
                 # Tumor BAM file:
-                t_reads = tbam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1], multiple_iterators=False )
+                t_reads = tbam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1] )
                 
                 t_ref_read_mq = t_alt_read_mq = t_ref_read_bq = t_alt_read_bq = []
                 t_ref_edit_distance = t_alt_edit_distance = []
