@@ -286,7 +286,7 @@ then
 
 
 	$MYDIR/SSeq_merged.vcf2tsv.py \
-	-fai ${hg_ref}.fai \
+	-ref ${hg_ref} \
 	-myvcf ${merged_dir}/BINA_somatic.indel.vcf \
 	${truth_input} \
 	$varscan_input \
