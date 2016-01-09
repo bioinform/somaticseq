@@ -387,7 +387,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 indel_length = len(first_alt) - len(ref_base)
                 
                 for ID_i in my_vcfcall.identifier.split(','):
-                    my_identifiers.append(ID_i)
+                    if ID_i != '.':
+                        my_identifiers.append(ID_i)
                 
                 if_dbsnp  = 1 if re.search(r'rs[0-9]+', my_vcfcall.identifier) else 0
                 if_cosmic = 1 if re.search(r'COS[MN][0-9]+', my_vcfcall.identifier) else 0
@@ -714,7 +715,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         
                         rsID = latest_dbsnp.identifier.split(',')
                         for ID_i in rsID:
-                            my_identifiers.append( ID_i )
+                            if ID_i != '.':
+                                my_identifiers.append( ID_i )
                     
                     else:
                         if_dbsnp = if_common = 0
@@ -743,7 +745,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             
                         cosmicID = latest_cosmic.identifier.split(',')
                         for ID_i in cosmicID:
-                            my_identifiers.append( ID_i )
+                            if ID_i != '.':
+                                my_identifiers.append( ID_i )
                     
                     else:
                         if_cosmic = 0
