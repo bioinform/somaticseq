@@ -75,7 +75,7 @@ is_pos    = args.positions_list
 nbam_fn   = args.normal_bam_file
 tbam_fn   = args.tumor_bam_file
 
-truehits  = args.ground_truth_vcf
+truth     = args.ground_truth_vcf
 cosmic    = args.cosmic_vcf
 dbsnp     = args.dbsnp_vcf
 haploN    = args.haplotypecaller_normal_vcf
@@ -269,8 +269,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
     tbam    = pysam.AlignmentFile(tbam_fn)
     ref_fa  = pysam.FastaFile(ref_fa)
     
-    if truehits:
-        truth = genome.open_textfile(truehits)
+    if truth:
+        truth = genome.open_textfile(truth)
         truth_line = truth.readline().rstrip()
         while truth_line.startswith('#'):
             truth_line = truth.readline().rstrip()
@@ -678,7 +678,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             if num_callers >= args.minimum_num_callers:
 
                 ########## Ground truth file ##########
-                if truehits:
+                if truth:
                                                 
                     latest_truth_run = genome.catchup(my_coordinate, truth_line, truth, chrom_seq)
                     latest_truth = genome.Vcf_line(latest_truth_run[1])
@@ -1280,5 +1280,5 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         my_line = my_sites.readline().rstrip()
         
     ##########  Close all open files if they were opened  ##########
-    opened_files = (ref_fa, nbam, tbam, truehits, cosmic, dbsnp, haploN, haploT, mutect, sniper, varscan, jsm, vardict, muse, lofreq)
+    opened_files = (ref_fa, nbam, tbam, truth, cosmic, dbsnp, haploN, haploT, mutect, sniper, varscan, jsm, vardict, muse, lofreq)
     [opened_file.close() for opened_file in opened_files if opened_file]
