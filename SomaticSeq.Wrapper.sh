@@ -147,57 +147,60 @@ then
 
 	files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf* $files_to_delete"
 
-	$MYDIR/score_Somatic.Variants.py -tools CGA VarScan2 JointSNVMix2 SomaticSniper VarDict MuSE -infile ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf   -mincaller 1 -outfile ${merged_dir}/BINA_somatic.snp.vcf
-
-	if [[ -r ${masked_region} ]]
-	then
-		intersectBed -header -a ${merged_dir}/BINA_somatic.snp.vcf -b ${masked_region} -v > ${merged_dir}/tmp.snp.vcf
-		mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/BINA_somatic.snp.vcf
-	fi
-
-
 
 	if [[ -r ${mutect_vcf} ]]
 	then
 		mutect_input="-mutect ${mutect_vcf}"
+		tool_mutect="CGA"
 	else
 		mutect_input=''
+		tool_mutect=''
 	fi
 
 
 	if [[ -r ${varscan_vcf} ]]
 	then
 		varscan_input="-varscan ${varscan_vcf}"
+		tool_varscan="VarScan2"
 	else
 		varscan_input=''
+		tool_varscan=''
 	fi
 
 	if [[ -r ${jsm_vcf} ]]
         then
                 jsm_input="-jsm ${jsm_vcf}"
+		tool_jsm="JointSNVMix2"
         else
                 jsm_input=''
+		tool_jsm=''
         fi
 
         if [[ -r ${sniper_vcf} ]]
         then
                 sniper_input="-sniper ${sniper_vcf}"
+		tool_sniper="SomaticSniper"
         else
                 sniper_input=''
+		tool_sniper=''
         fi
 
         if [[ -r ${merged_dir}/snp.vardict.vcf ]]
         then
                 vardict_input="-vardict ${merged_dir}/snp.vardict.vcf"
+		tool_vardict="VarDict"
         else
                 vardict_input=''
+		tool_vardict=''
         fi
 
         if [[ -r ${muse_vcf} ]]
         then
                 muse_input="-muse ${muse_vcf}"
+		tool_muse="MuSE"
         else
                 muse_input=''
+		tool_muse=''
         fi
 
 	if [[ -r ${snpgroundtruth} ]]
@@ -206,6 +209,17 @@ then
 	else
 		truth_input=''
 	fi
+
+
+	##
+	$MYDIR/score_Somatic.Variants.py -tools $tool_cga $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse -infile ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf   -mincaller 1 -outfile ${merged_dir}/BINA_somatic.snp.vcf
+
+	if [[ -r ${masked_region} ]]
+	then
+		intersectBed -header -a ${merged_dir}/BINA_somatic.snp.vcf -b ${masked_region} -v > ${merged_dir}/tmp.snp.vcf
+		mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/BINA_somatic.snp.vcf
+	fi
+
 
 
 	$MYDIR/SSeq_merged.vcf2tsv.py \
@@ -228,7 +242,7 @@ then
 	if [[ -r ${snpclassifier} ]] && [[ -r ${ada_r_script} ]]
 	then
 		R --no-save --args "$snpclassifier" "${merged_dir}/Ensemble.sSNV.tsv" "${merged_dir}/Trained.sSNV.tsv" < "$ada_r_script"
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse
 
 	# If ground truth is here, assume builder.R, and build a classifier
 	elif [[ -r ${snpgroundtruth} ]] && [[ -r ${ada_r_script} ]]
@@ -257,40 +271,37 @@ then
 
 	${snpSift_dbsnp} ${merged_dir}/CombineVariants_MVJSD.indel.vcf | ${snpSift_cosmic} - | ${snpEff_b37} - > ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf
 
-	$MYDIR/score_Somatic.Variants.py -tools CGA VarScan2 VarDict -infile ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf -mincaller 1 -outfile ${merged_dir}/BINA_somatic.indel.vcf
-
 	files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf* $files_to_delete"
-
-        if [[ -r ${masked_region} ]]
-        then
-		intersectBed -header -a ${merged_dir}/BINA_somatic.indel.vcf -b ${masked_region} -v > ${merged_dir}/tmp.indel.vcf
-		mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/BINA_somatic.indel.vcf
-        fi
-
 
 
 	## Convert the sSNV file into TSV file, for machine learning data:
 	if [[ -r ${indelocator_vcf} ]]
 	then
 		indelocator_input="-mutect ${indelocator_vcf}"
+		tool_indelocator="CGA"
 	else
 		indelocator_input=''
+		tool_indelocator=''
 	fi
 
 
         if [[ -r ${varscan_indel_vcf} ]]
         then
                 varscan_input="-varscan ${varscan_indel_vcf}"
+		tool_varscan="VarScan2"
         else
                 varscan_input=''
+		tool_varscan=''
         fi
 
 
         if [[ -r ${merged_dir}/indel.vardict.vcf ]]
         then
                 vardict_input="-vardict ${merged_dir}/indel.vardict.vcf"
+		tool_vardict="VarDict"
         else
                 vardict_input=''
+		tool_vardict=''
         fi
 
 
@@ -301,6 +312,15 @@ then
 		truth_input=''
 	fi
 
+
+	# 
+	$MYDIR/score_Somatic.Variants.py -tools $tool_indelocator $tool_varscan $tool_vardict -infile ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf -mincaller 1 -outfile ${merged_dir}/BINA_somatic.indel.vcf
+
+	if [[ -r ${masked_region} ]]
+	then
+		intersectBed -header -a ${merged_dir}/BINA_somatic.indel.vcf -b ${masked_region} -v > ${merged_dir}/tmp.indel.vcf
+		mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/BINA_somatic.indel.vcf
+	fi
 
 	$MYDIR/SSeq_merged.vcf2tsv.py \
 	-ref ${hg_ref} \
@@ -319,7 +339,7 @@ then
 	if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]
 	then
 		R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/Trained.sINDEL.tsv" < "$ada_r_script"
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict
 
         # If ground truth is here, assume builder.R, and build a classifier
         elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]
