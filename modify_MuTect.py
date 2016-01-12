@@ -26,7 +26,7 @@ parser.add_argument('-tsm',      '--tumor-input-name',     type=str, required=Fa
 parser.add_argument('-nsm',      '--normal-input-name',    type=str, required=False, help='Normal sample name in the MuTect vcf file.' )
 parser.add_argument('-N',        '--normal-sample-name',   type=str, help='1st Sample Name, default=NORMAL',  required=False, default='NORMAL')
 parser.add_argument('-T',        '--tumor-sample-name',    type=str, help='2nd Sample Name, default=TUMOR',   required=False, default='TUMOR')
-parser.add_argument('-samtools', '--samtools-command',     type=str, required=False, help='samtools path', default='samtools' )
+parser.add_argument('-samtools', '--samtools-command',     type=str, required=False, help='Deprecated', default='samtools' )
 parser.add_argument('-gz',       '--gz-compressed', action='store_true', help='If the input files are 1.vcf.gz, 2.vcf.gz, ...', required=False)
 
 
@@ -57,8 +57,8 @@ if tbam:
     paired_mode = True if nbam else False
     
     # Get tumor and normal sample names from the bam files:
-    nbam_header = genome.Bam_header(nbam, samtools) if nbam else None
-    tbam_header = genome.Bam_header(tbam, samtools)
+    nbam_header = genome.pysam_header(nbam) if nbam else None
+    tbam_header = genome.pysam_header(tbam)
     
     # When MuTect is run in a "single sample mode," the "normal" will be named "none."
     n_samplename = nbam_header.SM() if nbam else ['none']

@@ -36,6 +36,8 @@ train_data <- train_data[,-c(1, 2, 3, 4, 5)]
 train_data[,'REF'] <- NULL
 train_data[,'ALT'] <- NULL
 train_data[,'InDel_Length'] <- NULL
+train_data[,'if_COSMIC'] <- NULL
+train_data[,'COSMIC_CNT'] <- NULL
 
 
 if (FALSE) {

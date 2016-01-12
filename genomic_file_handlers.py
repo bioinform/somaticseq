@@ -107,7 +107,7 @@ class Vcf_line:
 class Bam_header:
     '''I wrote this to read the bam headers into a tuple'''
     
-    def __init__(self, bam_file, samtools = 'samtools'):
+    def __init__(self, bam_file, method = 'samtools'):
         
         '''Argument is a line in pileup file.'''
         self.bam_header = tuple( os.popen( '{} view -H {}'.format(samtools, bam_file) ) )
@@ -140,6 +140,38 @@ class Bam_header:
                     values_i.append( item_i.replace(tag_i+':', '') )
                     
         return values_i
+
+
+
+
+
+
+class pysam_header:
+    '''
+    Extract BAM header using pysam.
+    Only sample name (SM) so far.
+    '''
+    
+    def __init__(self, bam_file):
+        
+        from pysam import AlignmentFile
+        
+        bam = AlignmentFile(bam_file)
+        self.bam_header = bam.header
+        
+    
+    def SM(self):
+        '''Sample Name'''
+    
+        sample_name = set()
+    
+        for header_i in self.bam_header['RG']:
+            sample_name.add( header_i['SM'] )
+        sample_name = tuple(sample_name)
+        
+        return sample_name
+        
+        
 
 
 ### ### ### ### ### MAJOR CLASSES OVER ### ### ### ### ###

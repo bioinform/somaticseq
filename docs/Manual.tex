@@ -80,13 +80,13 @@ SomaticSeq.Wrapper.sh is a bash script that calls a series of scripts to combine
 \begin{itemize}
 
 \item
-All the .py scripts are written in Python 3 (Yes, Python 3. I deserve brownie points from Python developers). Also required are regex and pysam libraries for Python 3. 
+All the .py scripts are written in Python 3 (Yes, Python 3. I deserve brownie points from Python developers). Also required are regex, pysam, numpy, and scipy libraries for Python 3. 
 
 \item
 R, plus the ada package in R.
 
 \item
-GATK,, SnpEff/SnpSift, and BEDTools
+SnpEff/SnpSift, GATK (for CombineVariants), and BEDTools
 
 \item
 dbSNP in VCF format. COSMIC may be needed in the future.
@@ -110,7 +110,27 @@ To create a trained classifier, ground truth files are required for the data set
 \begin{lstlisting}
 # -M/-I/-V/-v/-J/-S/-D/-U are output VCF files from individual callers.
 # -i is also optional.
-SomaticSeq.Wrapper.sh -M MuTect/variants.snp.vcf -I Indelocator/variants.indel.vcf -V VarScan2/variants.snp.vcf -v VarScan2/variants.indel.vcf -J JointSNVMix2/variants.snp.vcf -S SomaticSniper/variants.snp.vcf -D VarDict/variants.vcf -U MuSE/variants.snp.vcf -N matched_normal.bam -T tumor.bam -R ada_model_builder.R -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/DIR/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -i ignore.bed -Z truth.snp.vcf -z truth.indel.vcf -o $OUTPUT_DIR
+SomaticSeq.Wrapper.sh \
+-M MuTect/variants.snp.vcf \
+-I Indelocator/variants.indel.vcf \
+-V VarScan2/variants.snp.vcf \
+-v VarScan2/variants.indel.vcf \
+-J JointSNVMix2/variants.snp.vcf \
+-S SomaticSniper/variants.snp.vcf \
+-D VarDict/variants.vcf \
+-U MuSE/variants.snp.vcf \
+-N matched_normal.bam \
+-T tumor.bam \
+-R ada_model_builder.R \
+-g human_b37.fasta \
+-c cosmic.b37.v71.vcf \
+-d dbSNP.b37.v141.vcf \
+-s $PATH/TO/DIR/snpSift \
+-G $PATH/TO/GenomeAnalysisTK.jar \
+-i ignore.bed \
+-Z truth.snp.vcf \
+-z truth.indel.vcf \
+-o $OUTPUT_DIR
 \end{lstlisting}
 
 SomaticSeq.Wrapper.sh supports any combination of the somatic mutation callers we have incorporated into the workflow, so -M/-I/-V/-v/-J/-S/-D/-U are all optional parameters. SomaticSeq will run based on the output VCFs you have provided. It will train SNV and/or indel if you provide the truth.snp.vcf and/or truth.indel.vcf file(s).
@@ -122,8 +142,38 @@ SomaticSeq.Wrapper.sh supports any combination of the somatic mutation callers w
 
 \begin{lstlisting}
 # The *.RData files are trained classifier from the training mode.
-SomaticSeq.Wrapper.sh -M MuTect/variants.snp.vcf -I Indelocator/variants.indel.vcf -V VarScan2/variants.snp.vcf -v VarScan2/variants.indel.vcf -J JointSNVMix2/variants.snp.vcf -S SomaticSniper/variants.snp.vcf -D VarDict/variants.vcf -U MuSE/variants.snp.vcf -N matched_normal.bam -T tumor.bam -R ada_model_predictor.R -C sSNV.Classifier.RData -x sINDEL.Classifier.RData -g human_b37.fasta -c cosmic.b37.v71.vcf -d dbSNP.b37.v141.vcf -s $PATH/TO/DIR/snpSift -G $PATH/TO/GenomeAnalysisTK.jar -o $OUTPUT_DIR
+SomaticSeq.Wrapper.sh \
+-M MuTect/variants.snp.vcf \
+-I Indelocator/variants.indel.vcf \
+-V VarScan2/variants.snp.vcf \
+-v VarScan2/variants.indel.vcf \
+-J JointSNVMix2/variants.snp.vcf \
+-S SomaticSniper/variants.snp.vcf \
+-D VarDict/variants.vcf \
+-U MuSE/variants.snp.vcf \
+-N matched_normal.bam \
+-T tumor.bam \
+-R ada_model_predictor.R \
+-C sSNV.Classifier.RData \
+-x sINDEL.Classifier.RData \
+-g human_b37.fasta \
+-c cosmic.b37.v71.vcf \
+-d dbSNP.b37.v141.vcf \
+-s $PATH/TO/DIR/snpSift \
+-G $PATH/TO/GenomeAnalysisTK.jar \
+-o $OUTPUT_DIR
 \end{lstlisting}
+
+
+
+
+
+\subsection{To simply create the tab delimited file without doing any machine learning}
+
+Same as the command previously, but not including -R, -C, or -x. 
+
+
+
 
 
 
@@ -133,7 +183,7 @@ We'll describe the workflow here, so you may modify the workflow and/or create y
 
 
 \subsection{Combine the call sets}
-	We use GATK CombineVariants to combine the VCF files from different callers. To make them compatible with GATK, the VCFs must be modified. A somatic call is also tagged with the tool names, so the combined VCF retains those information. 
+	We use GATK CombineVariants to combine the VCF files from different callers, although it does not matter what tools are used to merge VCF files. To make them compatible with GATK, the VCF files are modified. A somatic call is also tagged with the tool names, so the combined VCF retains those information. 
 
 \begin{enumerate}
 
@@ -284,8 +334,7 @@ And now, the call sets are combined into one VCF file for SNV and one VCF file f
 
 \subsection{For model training: process and annotate the VCF files (union of call sets)}
 
-This step makes sense for model training. The workflow in SomaticSeq.Wrapper.sh allows for an exclusion region, e.g., we don't care for anything inside the exclusion region. DREAM Challenge had exclusion regions, e.g., blacklisted regions, etc. Alternatively, you can use an inclusion region instead, to obtain a list of variants that you have done experimental validation, so you know which ones are true mutations and which ones are false positives, to facilitate model training. 
-It will then annotate the optionally processed VCF file (a subset of the original VCF file, which is optional) against a ground truth VCF file where only true mutations are included. Important: any variant inside the merged VCF file (processed or otherwise) but not inside the ground truth VCF file will be annotated as a false positive. Any variant that appears in both VCF file will be annotated as a true positive. Anything that appears in the ground truth but not in the merged VCF file will be annotate as a true negative. The output file for annotation is a VCF, but may not be properly formatted, which is okay us. 
+This step may be needed for model training. The workflow in SomaticSeq.Wrapper.sh allows for an exclusion region, e.g., we don't care for anything inside the exclusion region, typically because we don't know if a call made in this region is a false positive or true positive. DREAM Challenge had exclusion regions, e.g., blacklisted regions, etc. Alternatively, you can use an inclusion region instead, to obtain a list of variants that you have done experimental validation, so you know which ones are true mutations and which ones are false positives, to facilitate model training. 
 	
 \begin{lstlisting}
 # In the DREAM_Stage_3 directory, we have included an exclusion region BED file as an example
@@ -293,62 +342,26 @@ It will then annotate the optionally processed VCF file (a subset of the origina
 intersectBed -header -a BINA_somatic.snp.vcf -b ignore -v > somatic.snp.processed.vcf
 intersectBed -header -a BINA_somatic.indel.vcf -b ignore -v > somatic.indel.processed.vcf
 	
-# This script will annotate the processed VCF files against the ground truth.
-# DREAM Challenge Stage 3 ground truth VCF files are included in the DREAM_Stage_3 directory.
-tally_MyVCF_vs_Truth.py -truth truth.snp.vcf -myvcf somatic.snp.processed.vcf -fai genome.GRCh37.fa.fai -outfile annotated.snp.vcf
-tally_MyVCF_vs_Truth.py -truth truth.indel.vcf -myvcf somatic.indel.processed.vcf -fai genome.GRCh37.fa.fai -outfile annotated.indel.vcf
 \end{lstlisting}
 
 
 
 \subsection{Convert the VCF file, annotated or otherwise, into a tab separated file}
-This script works for all VCF files. If the input VCF file is annotated with ground truth, the output TSV file will have 1 and 0 for true mutations and false positives, and can be used for model training (as well as mutation prediction, so you can evaluate the prediction accuracy). Otherwise, those values will be "nan" and cannot be used for training (but can still be used for mutation prediction). 
-	
-The script extracts information from VCF files by BAM files, HaplotypeCallers, and/or individual VCF files created by the individual callers. 
+This script works for all VCF files. It extracts information from BAM files as well as VCF files created by the individual callers. If the ground truth VCF file is included, a called variant will be annotated as a true positive, and everything will be annotated as a false positive. 
 	
 	
 \begin{lstlisting}
-# -sniper / -varscan / -jsm / -vardict / -muse are optional. We do not extract any additional information from MuTect's output VCF file, so -mutect is not used. 
-SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.snp.processed.vcf -varscan VarScan2/variants.snp.vcf -jsm JSM2/variants.vcf -sniper SomaticSniper/variants.vcf -vardict VarDict/snp.variants.vcf -tbam tumor.bam -nbam normal.bam -haploT haploT.vcf -haploN haploN.vcf -outfile Ensemble.sSNV.tsv
+# -mutect / -sniper / -varscan / -jsm / -vardict / -muse are optional. 
+# -truth is also optional, but it is needed to annotate ground truth information, and is required for model training.
+SSeq_merged.vcf2tsv.py -ref genome.GRCh37.fa -myvcf somatic.snp.processed.vcf -truth Ground.truth.snp.vcf -mutect MuTect/variants.snp.vcf.gz -varscan VarScan2/variants.snp.vcf -jsm JSM2/variants.vcf -sniper SomaticSniper/variants.vcf -vardict VarDict/snp.variants.vcf -tbam tumor.bam -nbam normal.bam -outfile Ensemble.sSNV.tsv
 \end{lstlisting}
 
 
-
-To speed things up a little bit, SomaticSeq.Wrapper.sh uses FIFO for the VCF files generated by SAMtools and HaplotypeCaller:
-	
-\begin{lstlisting}
-# Make fifo for SAMtools and HaplotypeCaller outputs:
-mkfifo haploN.vcf.fifo haploT.vcf.fifo
-
-# Same concept for HaplotypeCaller:
-java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.snp.processed.vcf --emitRefConfidence BP_RESOLUTION -I normal.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || ( $4 ~ /^[GCTA]$/ && $5 !~ /[GCTA][GCTA]/ )' > haploN.vcf.fifo &
-java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.snp.processed.vcf --emitRefConfidence BP_RESOLUTION -I tumor.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || ( $4 ~ /^[GCTA]$/ && $5 !~ /[GCTA][GCTA]/ )' > haploT.vcf.fifo &
-		
-# Stream those .fifo into my script		
-SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.snp.processed.vcf -varscan VarScan2/variants.snp.vcf -jsm JSM2/variants.vcf -sniper SomaticSniper/variants.vcf -vardict VarDict/snp.variants.vcf -haploT haploT.vcf.fifo -haploN haploN.vcf.fifo -tbam tumor.bam -nbam normal.bam -outfile Ensemble.sSNV.tsv
-
-# Remove the FIFO's
-rm haploN.vcf.fifo haploT.vcf.fifo
-\end{lstlisting}
-
-
-That was for SNV, and indel is almost the same thing. After version 1.1, DP4 (i.e., 4 numbers related to read depth: forward reference read counts, reverse reference read counts, forward alternate read counts, and reverse alternate read counts) for indel are extracted from SAMtools mpileup instead of SAMtools VCF. SAMtools VCF has these information for indels only if it calls an indel variant at the site, so it's more appropriate to grab that information directly from pileup. In addition, if depth is not found in SAMtools or HaplotypeCaller (simply because they do not call indel variants in those sites), that's directly extracted from pileup as well. 
-
-If pileup files are supplied for SNV, they will take precedence over SAMtools and HaplotypeCaller VCF, but for SNV there is no advantage running extra processes because SAMtools gets all the DP4 stats for SNV.
+That was for SNV, and indel is almost the same thing. After version 2.1, we have replaced all information from SAMtools and HaplotypeCaller with information directly from the BAM files. The accuracy differences are negligible with significant improvement in usability and resource requirement.
 
 \begin{lstlisting}
-# Make fifo for SAMtools and HaplotypeCaller outputs:
-mkfifo haploN.indel.vcf.fifo haploT.indel.vcf.fifo
-
-# Same concept for HaplotypeCaller. Keep only indels.
-java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.indel.processed.vcf --emitRefConfidence BP_RESOLUTION -I normal.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > haploN.indel.vcf.fifo &
-java -Xms8g -Xmx8g -jar $PATH/TO/GenomeAnalysisTK.jar -T HaplotypeCaller --dbsnp dbSNP.b37.v141.vcf --reference_sequence genome.GRCh37.fa -L somatic.indel.processed.vcf --emitRefConfidence BP_RESOLUTION -I tumor.bam --out /dev/stdout | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > haploT.indel.vcf.fifo &
-
-# Stream those .fifo into my script		
-SSeq_merged.vcf2tsv.py -fai genome.GRCh37.fa.fai -myvcf somatic.indel.processed.vcf -varscan VarScan2/variants.snp.vcf -vardict VarDict/indel.variants.vcf -haploT haploT.indel.vcf.fifo -haploN haploN.indel.vcf.fifo -tbam tumor.bam -nbam normal.bam -outfile Ensemble.sINDEL.tsv
-
-# Remove the FIFO's
-rm haploN.indel.vcf.fifo haploT.indel.vcf.fifo
+# INDEL:
+SSeq_merged.vcf2tsv.py -ref genome.GRCh37.fa -myvcf somatic.indel.processed.vcf -truth Ground.truth.indel.vcf -varscan VarScan2/variants.snp.vcf -vardict VarDict/indel.variants.vcf -tbam tumor.bam -nbam normal.bam -outfile Ensemble.sINDEL.tsv
 \end{lstlisting}
 
 
@@ -379,13 +392,15 @@ R --no-save --args Ensemble.sINDEL.tsv.Classifier.RData Ensemble.sINDEL.tsv Trai
 \end{lstlisting}
 
 	
-After mutation prediction, if you feel like it, you may convert Trained.sSNV.tsv and Trained.sINDEL.tsv into VCF files. 
+After mutation prediction, if you feel like it, you may convert Trained.sSNV.tsv and Trained.sINDEL.tsv into VCF files.
 
 \begin{lstlisting}
-# If you want probability above 0.7 labeled PASS (-pass 0.7), and between 0.1 and 0.7 labeled LowQual (-low 0.1):
-# To include calls below 0.1 as REJECTS (-all)# To convert probability values (between 0 to 1) into Phred scale in the QUAL column in the VCF file (-phred)
-SSeq_tsv2vcf.py -tsv Trained.sSNV.tsv -vcf Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred
-SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred
+# Probability above 0.7 labeled PASS (-pass 0.7), and between 0.1 and 0.7 labeled LowQual (-low 0.1):
+# Use -all to include REJECT calls in the VCF file
+# Use -phred to convert probability values (between 0 to 1) into Phred scale in the QUAL column in the VCF file
+# Use -tools to list the individual tools used. Accepted tools are CGA (for MuTect/Indelocator), VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, and/or LoFreq. 
+SSeq_tsv2vcf.py -tsv Trained.sSNV.tsv -vcf Trained.sSNV.vcf -pass 0.7 -low 0.1 -tools CGA VarScan2 JointSNVMix2 SomaticSniper VarDict -all -phred
+SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0.1 -tools CGA VarScan2 VarDict -all -phred
 \end{lstlisting}
 
 
@@ -411,20 +426,40 @@ Have implemented the following improvement, mostly for indels:
 
 \begin{itemize}
  
- \item 
- SSeq\_merged.vcf2tsv.py can now accept pileup files to extract read depth and DP4 (reference forward, reference reverse, alternate forward, and alternate reverse) information (mainly for indels). Previously, that information can only be extracted from SAMtools VCF. Since the SAMtools or HaplotypeCaller generated VCFs hardly contain any indel information, this option improves the indel model. The SomaticSeq.Wrapper.sh script is modified accordingly.
+  \item 
+  SSeq\_merged.vcf2tsv.py can now accept pileup files to extract read depth and DP4 (reference forward, reference reverse, alternate forward, and alternate reverse) information (mainly for indels). Previously, that information can only be extracted from SAMtools VCF. Since the SAMtools or HaplotypeCaller generated VCFs hardly contain any indel information, this option improves the indel model. The SomaticSeq.Wrapper.sh script is modified accordingly.
  
- \item
- Extract mapping quality (MQ) from VarDict output if this information cannot be found in SAMtools VCF (also mostly benefits the indel model). 
+  \item
+  Extract mapping quality (MQ) from VarDict output if this information cannot be found in SAMtools VCF (also mostly benefits the indel model). 
  
- \item
- Indel length now positive for insertions and negative for deletions, instead of using the absolute value previously. 
+  \item
+  Indel length now positive for insertions and negative for deletions, instead of using the absolute value previously. 
  
  
 \end{itemize}
 
+
+
+
 \subsection{Version 2.0-rc1}
-Removed dependencies for SAMtools and pileup files. SSeq\_merged.vcf2tsv.py extracts those information (plus more) directly from BAM files. 
+
+\begin{itemize}
+  \item
+  Removed dependencies for SAMtools and HaplotypeCaller during feature extraction. SSeq\_merged.vcf2tsv.py extracts those information (plus more) directly from BAM files.
+
+  \item
+  Allow not only VCF file, but also BED file or a list of chromosome coordinate as input format for SSeq\_merged.vcf2tsv.py, i.e., use -mybed or -mypos instead of -myvcf. 
+
+  \item
+  Instead of a separate step to annotate ground truth, that can be done directly by SSeq\_merged.vcf2tsv.py.
+
+  \item
+  SSeq\_merged.vcf2tsv.py can annotate dbSNP and COSMIC information directly if BED file or a list of chromosome coordinates are used as input in lieu of an annotated VCF file. 
+
+  \item
+  Consolidated feature sets, e.g., removed some redundant feature sets coming from different resources.
+\end{itemize}
+
 
 
 
@@ -434,7 +469,7 @@ Removed dependencies for SAMtools and pileup files. SSeq\_merged.vcf2tsv.py extr
 \begin{itemize}
 
   \item
-  Validate on deep sequencing and low VAF data. 
+  Develop a version for deep sequencing cfDNA/ctDNA. 
   
   \item
   Dockerize SomaticSeq

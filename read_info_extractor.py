@@ -144,12 +144,20 @@ pysambase = {0: 'A', 1: 'C', 2: 'G', 3: 'T', \
 ### END OF PYSAM ###
 
 
-
-
 # Useful to make BED region into an iterator of coordinates
 def genomic_coordinates(contig_i, start, end):
     for pos_i in range(start, end+1):
         yield contig_i, pos_i
+
+
+
+
+def mean(stuff):
+    try:
+        return sum(stuff)/len(stuff)
+        
+    except ZeroDivisionError:
+        return float('nan')
 
 
 
@@ -167,7 +175,6 @@ def pileup_indel_DP4(pileup_object, indel_pattern):
         dp4 = nan,nan,nan,nan
 
     return dp4
-
 
 
 def pileup_DP4(pileup_object, ref_base, variant_call):
@@ -201,8 +208,6 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
     return ref_for, ref_rev, alt_for, alt_rev
     
     
-    
-
 
 ##### Extract information from external vcf files:
 ##### From Samtools vcf:
@@ -217,7 +222,6 @@ def sam_info_DP4(vcf_object):
     return dp4
     
 
-
 def sam_info_DP(vcf_object):
     result = vcf_object.get_info_value('DP')
     if result:
@@ -226,14 +230,12 @@ def sam_info_DP(vcf_object):
         return nan
     
 
-
 def sam_info_MQ(vcf_object):
     result = vcf_object.get_info_value('MQ')
     if result:
         return eval(result)
     else:
         return nan
-
 
 
 def sam_info_PV4(vcf_object):
@@ -262,7 +264,6 @@ def haplo_MQ0(vcf_object):
     return mq0
 
 
-
 def haplo_MQ(vcf_object):
     '''RMS Mapping Quality'''
     result = vcf_object.get_info_value('MQ')
@@ -270,7 +271,6 @@ def haplo_MQ(vcf_object):
         return eval(result)
     else:
         return nan
-    
     
     
 def haplo_MLEAF(vcf_object):
@@ -289,7 +289,6 @@ def haplo_MLEAF(vcf_object):
     return mleaf
     
     
-    
 def haplo_MLEAC(vcf_object):
     '''Maximum likelihood expectation (MLE) for the allele counts (not necessarily the same as the AC), for each ALT allele, in the same order as listed'''
     
@@ -304,7 +303,6 @@ def haplo_MLEAC(vcf_object):
         mleac = nan
         
     return mleac
-
 
 
 def haplo_DP(vcf_object):
@@ -359,7 +357,6 @@ def calculate_baf(caf_string):
     except TypeError:
         return nan
 
-  
 
 def find_AMQ(vcf_object, i):
     amq = vcf_object.get_sample_value('AMQ', idx=i)
@@ -376,7 +373,6 @@ def find_AMQ(vcf_object, i):
         amq_ref, amq_alt = nan, nan
         
     return amq_ref, amq_alt
-
 
 
 def find_BQ(vcf_object, i):
@@ -402,7 +398,6 @@ def find_BQ(vcf_object, i):
     return bq_ref, bq_alt
     
     
-
 def find_SOR(vcf_object):
     # VarDict's odd ratio, could be Inf, but other than Inf max was 180, so I will convert Inf --> 200. Stored in the TUMOR sample. 
     
@@ -415,7 +410,6 @@ def find_SOR(vcf_object):
     return sor
     
 
-
 def find_MSI(vcf_object):
     
     msi = vcf_object.get_info_value('MSI')
@@ -426,7 +420,6 @@ def find_MSI(vcf_object):
     return msi
     
     
-    
 def find_MSILEN(vcf_object):
     
     msilen = vcf_object.get_info_value('MSILEN')
@@ -435,7 +428,6 @@ def find_MSILEN(vcf_object):
     else:
         msilen = nan
     return msilen
-
 
 
 def find_SHIFT3(vcf_object):

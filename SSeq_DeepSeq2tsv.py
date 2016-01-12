@@ -6,7 +6,7 @@
 # 1-based index in this program.
 
 # Example command:
-# python3 SSeq_DeepSeq2tsv.py -sites actionable_region.bed -bed -tbam recalibrated.bam -varscan varscan.snp.vcf -mutect mutect.snp.vcf -vardict vardict.snp.vcf -lofreq lofreq.snp.vcf -ref human_g1k_v37_decoy.fasta -truth ground_truth.snp.vcf -minVAF 0.001 -maxVAF 0.1 -mincaller 1 --vaf-or-mincaller -outfile DeepSeq.tsv
+# python3 SSeq_DeepSeq2tsv.py -mybed actionable_region.bed -tbam recalibrated.bam -varscan varscan.snp.vcf -mutect mutect.snp.vcf -vardict vardict.snp.vcf -lofreq lofreq.snp.vcf -ref human_g1k_v37_decoy.fasta -truth ground_truth.snp.vcf -minVAF 0.001 -maxVAF 0.1 -mincaller 1 --vaf-or-mincaller -outfile DeepSeq.tsv
 
 # -- 1/1/2016
 
@@ -20,23 +20,22 @@ from read_info_extractor import *
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 input_sites = parser.add_mutually_exclusive_group()
-input_sites.add_argument('-vcf',   '--vcf-format',            action="store_true", help='Input file is VCF formatted.')
-input_sites.add_argument('-bed',   '--bed-format',            action="store_true", help='Input file is BED formatted.')
-input_sites.add_argument('-pos',   '--positions-list',        action="store_true", help='Input file is a list of positions, tab seperating contig and 1-based positions.')
+input_sites.add_argument('-myvcf',  '--vcf-format',           type=str,   help='Input file is VCF formatted.', required=False, default=None)
+input_sites.add_argument('-mybed',  '--bed-format',           type=str,   help='Input file is BED formatted.', required=False, default=None)
+input_sites.add_argument('-mypos',  '--positions-list',       type=str,   help='A list of positions: tab seperating contig and positions.', required=False, default=None)
 
-parser.add_argument('-sites',   '--candidate-site-file',   type=str,   help='Either VCF or BED file', required=True, default=None)
 parser.add_argument('-tbam',    '--tumor-bam-file',        type=str,   help='Tumor BAM File',    required=True,  default=None)
 
-parser.add_argument('-truth',     '--ground-truth-vcf',         type=str,   help='VCF of true hits',  required=False, default=None)
-parser.add_argument('-dbsnp',     '--dbsnp-vcf',                type=str,   help='dbSNP VCF file',    required=False, default=None)
-parser.add_argument('-cosmic',    '--cosmic-vcf',               type=str,   help='COSMIC VCF file',   required=False, default=None)
-parser.add_argument('-mutect',    '--mutect-vcf',               type=str,   help='MuTect VCF.',       required=False, default=None)
-parser.add_argument('-varscan',   '--varscan-vcf',              type=str,   help='VarScan2 VCF',      required=False, default=None)
-parser.add_argument('-vardict',   '--vardict-vcf',              type=str,   help='VarDict VCF',       required=False, default=None)
-parser.add_argument('-lofreq',    '--lofreq-vcf',               type=str,   help='LoFreq VCF',        required=False, default=None)
-parser.add_argument('-mincaller', '--minimum-num-callers',      type=float, help='Minimum number of tools to be considered', required=False, default=0)
+parser.add_argument('-truth',     '--ground-truth-vcf',    type=str,   help='VCF of true hits',  required=False, default=None)
+parser.add_argument('-dbsnp',     '--dbsnp-vcf',           type=str,   help='dbSNP VCF file',    required=False, default=None)
+parser.add_argument('-cosmic',    '--cosmic-vcf',          type=str,   help='COSMIC VCF file',   required=False, default=None)
+parser.add_argument('-mutect',    '--mutect-vcf',          type=str,   help='MuTect VCF.',       required=False, default=None)
+parser.add_argument('-varscan',   '--varscan-vcf',         type=str,   help='VarScan2 VCF',      required=False, default=None)
+parser.add_argument('-vardict',   '--vardict-vcf',         type=str,   help='VarDict VCF',       required=False, default=None)
+parser.add_argument('-lofreq',    '--lofreq-vcf',          type=str,   help='LoFreq VCF',        required=False, default=None)
+parser.add_argument('-mincaller', '--minimum-num-callers', type=float, help='Minimum number of tools to be considered', required=False, default=0)
 
-parser.add_argument('-ref',     '--reference-fasta',            type=str,   help='.fasta/.fa file',      required=True, default=None)
+parser.add_argument('-ref',       '--genome-reference',    type=str,   help='.fasta/.fa file',      required=True, default=None)
 
 parser.add_argument('-minVAF',  '--minimum-variant-allele-frequency', type=float,  help='Minimum VAF below which is thrown out', required=False, default=0.001)
 parser.add_argument('-maxVAF',  '--maximum-variant-allele-frequency', type=float,  help='Maximum VAF above which is thrown out', required=False, default=0.1)
@@ -61,22 +60,21 @@ args = parser.parse_args()
 
 
 # Rename input:
-mysites   = args.candidate_site_file
 is_vcf    = args.vcf_format
 is_bed    = args.bed_format
 is_pos    = args.positions_list
 
 tbam_fn   = args.tumor_bam_file
 
-truehits  = args.ground_truth_vcf         if args.ground_truth_vcf         else os.devnull
-dbsnpv    = args.dbsnp_vcf                if args.dbsnp_vcf                else os.devnull
-cosmicv   = args.cosmic_vcf               if args.cosmic_vcf               else os.devnull
-mutectv   = args.mutect_vcf               if args.mutect_vcf               else os.devnull
-varscanv  = args.varscan_vcf              if args.varscan_vcf              else os.devnull
-vardictv  = args.vardict_vcf              if args.vardict_vcf              else os.devnull
-lofreqv   = args.lofreq_vcf               if args.lofreq_vcf               else os.devnull
-mincaller = args.minimum_num_callers
+truehits  = args.ground_truth_vcf
+dbsnp     = args.dbsnp_vcf
+cosmic    = args.cosmic_vcf
+mutect    = args.mutect_vcf
+varscan   = args.varscan_vcf
+vardict   = args.vardict_vcf
+lofreq    = args.lofreq_vcf
 
+mincaller = args.minimum_num_callers
 min_mq    = args.minimum_mapping_quality
 min_bq    = args.minimum_base_quality
 min_dp    = args.minimum_depth
@@ -84,10 +82,18 @@ max_dp    = args.maximum_depth
 min_vaf   = args.minimum_variant_allele_frequency
 max_vaf   = args.maximum_variant_allele_frequency
 
-ref_fa    = args.reference_fasta
+ref_fa    = args.genome_reference
 outfile   = args.output_tsv_file
 p_scale   = args.p_scale
 
+# Determine input format:
+assert is_vcf or is_bed or is_pos
+if is_vcf:
+    mysites = is_vcf
+elif is_bed:
+    mysites = is_bed
+elif is_pos:
+    mysites = is_pos
 
 mpileup   = '{SAMTOOLS} mpileup -B -d {MAX_DEPTH} -q {minMQ} -Q {minBQ} -l {REGION} -f {REF} {TUMOR_BAM}'.format(SAMTOOLS=args.samtools_path, MAX_DEPTH=max_dp, minMQ=min_mq, minBQ=min_bq, REGION=mysites, REF=ref_fa, TUMOR_BAM=tbam_fn) 
 
@@ -103,15 +109,6 @@ else:
     p_scale = None
 
 
-
-# Convert contig_sequence to chrom_seq dict:
-fai_file = ref_fa + '.fai'
-chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
-
-pattern_chr_position = genome.pattern_chr_position
-
-
-# Define some functions:
 def rescale(x, original=None, rescale_to=p_scale, max_phred=1001):
     if ( rescale_to == None ) or ( original.lower() == rescale_to.lower() ):
         y = x if isinstance(x, int) else '%.2f' % x
@@ -124,13 +121,10 @@ def rescale(x, original=None, rescale_to=p_scale, max_phred=1001):
     return y
     
 
-def mean(stuff):
-    try:
-        return sum(stuff)/len(stuff)
-        
-    except ZeroDivisionError:
-        return float('nan')
-
+# Convert contig_sequence to chrom_seq dict:
+fai_file = ref_fa + '.fai'
+chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
+pattern_chr_position = genome.pattern_chr_position
 
 # Header for the output data, created here so I won't have to indent this line:
 out_header = \
@@ -195,56 +189,63 @@ out_header = \
 
 
 ## Running
-with genome.open_textfile(mysites) as mysites, \
-genome.open_textfile(truehits)     as truth, \
-genome.open_textfile(dbsnpv)       as dbsnp, \
-genome.open_textfile(cosmicv)      as cosmic, \
-genome.open_textfile(mutectv)      as mutect, \
-genome.open_textfile(varscanv)     as varscan, \
-genome.open_textfile(vardictv)     as vardict, \
-genome.open_textfile(lofreqv)      as lofreq, \
-genome.open_bam_file(tbam_fn)      as tbam, \
-pysam.FastaFile(ref_fa)            as ref_fa, \
-os.popen(mpileup)                  as pileup_out, \
-open(outfile, 'w')                 as outhandle:
+with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
     
-    my_line      = mysites.readline().rstrip()
+    my_line = mysites.readline().rstrip()
     
-    truth_line   = truth.readline().rstrip()
-    dbsnp_line   = dbsnp.readline().rstrip()
-    cosmic_line  = cosmic.readline().rstrip()
-    mutect_line  = mutect.readline().rstrip()
-    varscan_line = varscan.readline().rstrip()
-    vardict_line = vardict.readline().rstrip()
-    lofreq_line  = lofreq.readline().rstrip()
+    # Open required files:
+    tbam   = pysam.AlignmentFile(tbam_fn)
+    ref_fa = pysam.FastaFile(ref_fa)
+    
+    pileup_out   = os.popen(mpileup)
+    tpileup_line = pileup_out.readline().rstrip()
+    
+    # Open optional files if they exist:
+    if truehits:
+        truth = genome.open_textfile(truehits)
+        truth_line = truth.readline().rstrip()
+        while truth_line.startswith('#'):
+            truth_line = truth.readline().rstrip()
+    
+    if cosmic:
+        cosmic = genome.open_textfile(cosmic)
+        cosmic_line  = cosmic.readline().rstrip()
+        while cosmic_line.startswith('#'):
+            cosmic_line = cosmic.readline().rstrip()
+    
+    if dbsnp:
+        dbsnp = genome.open_textfile(dbsnp)
+        dbsnp_line = dbsnp.readline().rstrip()
+        while dbsnp_line.startswith('#'):
+            dbsnp_line = dbsnp.readline().rstrip()
+    
+    if mutect:
+        mutect = genome.open_textfile(mutect)
+        mutect_line  = mutect.readline().rstrip()
+        while mutect_line.startswith('#'):
+            mutect_line = mutect.readline().rstrip()
+    
+    if varscan:
+        varscan = genome.open_textfile(varscan)
+        varscan_line = varscan.readline().rstrip()
+        while varscan_line.startswith('#'):
+            varscan_line = varscan.readline().rstrip()
+    
+    if vardict:
+        vardict = genome.open_textfile(vardict)
+        vardict_line = vardict.readline().rstrip()
+        while vardict_line.startswith('#'):
+            vardict_line = vardict.readline().rstrip()
+    
+    if lofreq:
+        lofreq = genome.open_textfile(lofreq)
+        lofreq_line  = lofreq.readline().rstrip()
+        while lofreq_line.startswith('#'):
+            lofreq_line = lofreq.readline().rstrip()
     
     # Get through all the headers:
     while my_line.startswith('#') or my_line.startswith('track='):
         my_line = mysites.readline().rstrip()
-
-    while truth_line.startswith('#'):
-        truth_line = truth.readline().rstrip()
-    
-    while dbsnp_line.startswith('#'):
-        dbsnp_line = dbsnp.readline().rstrip()
-        
-    while cosmic_line.startswith('#'):
-        cosmic_line = cosmic.readline().rstrip()
-    
-    while mutect_line.startswith('#'):
-        mutect_line = mutect.readline().rstrip()
-
-    while varscan_line.startswith('#'):
-        varscan_line = varscan.readline().rstrip()
-
-    while vardict_line.startswith('#'):
-        vardict_line = vardict.readline().rstrip()
-
-    while lofreq_line.startswith('#'):
-        lofreq_line = lofreq.readline().rstrip()
-
-    tpileup_line = pileup_out.readline().rstrip()
-    
     
     # First line:
     outhandle.write( out_header.replace('{','').replace('}','')  + '\n' )
@@ -503,7 +504,7 @@ open(outfile, 'w')                 as outhandle:
                             
                             num_cases = latest_cosmic.get_info_value('CNT')
                             if num_cases:
-                                num_cases = int(num_cases)
+                                num_cases = num_cases
                             else:
                                 num_cases = nan
                                 
@@ -532,15 +533,23 @@ open(outfile, 'w')                 as outhandle:
                     ###################################### Tumor BAM file ######################################
                     t_reads = tbam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1], multiple_iterators=False )
                     
-                    t_ref_read_mq = t_alt_read_mq = []
-                    t_ref_read_bq = t_alt_read_bq = []
-                    t_ref_edit_distance = t_alt_edit_distance = []
+                    t_ref_read_mq = []
+                    t_alt_read_mq = []
+                    t_ref_read_bq = []
+                    t_alt_read_bq = []
+                    t_ref_edit_distance = []
+                    t_alt_edit_distance = []
+                    
                     t_ref_concordant_reads = t_alt_concordant_reads = t_ref_discordant_reads = t_alt_discordant_reads = 0
                     t_ref_for = t_ref_rev = t_alt_for = t_alt_rev = T_dp = 0
                     t_ref_SC_reads = t_alt_SC_reads = t_ref_notSC_reads = t_alt_notSC_reads = 0
                     t_ref_MQ0 = t_alt_MQ0 = 0
-                    t_ref_pos_from_end = t_alt_pos_from_end = []
-                    t_ref_flanking_indel = t_alt_flanking_indel = []
+                    
+                    t_ref_pos_from_end = []
+                    t_alt_pos_from_end = []
+                    t_ref_flanking_indel = []
+                    t_alt_flanking_indel = []
+                    
                     t_noise_read_count = t_poor_read_count = 0
                     
                     for read_i in t_reads:
@@ -781,3 +790,7 @@ open(outfile, 'w')                 as outhandle:
                 
         # Read on:
         my_line = mysites.readline().rstrip()
+
+    ##########  Close all open files if they were opened  ##########
+    opened_files = (ref_fa, tbam, truth, cosmic, dbsnp, mutect, varscan, vardict, lofreq)
+    [opened_file.close() for opened_file in opened_files if opened_file]
