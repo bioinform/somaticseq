@@ -740,9 +740,9 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                         altG, altC, altT, altA = 1,0,0,0
                     elif first_alt == 'C':
                         altG, altC, altT, altA = 0,1,0,0
-                    elif first_alt == 'C':
+                    elif first_alt == 'T':
                         altG, altC, altT, altA = 0,0,1,0
-                    elif first_alt == 'C':
+                    elif first_alt == 'A':
                         altG, altC, altT, altA = 0,0,0,1
                     else:
                         altG, altC, altT, altA = 0,0,0,0
