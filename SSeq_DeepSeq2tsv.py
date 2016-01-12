@@ -8,7 +8,7 @@
 # Example command:
 # python3 SSeq_DeepSeq2tsv.py -mybed actionable_region.bed -tbam recalibrated.bam -varscan varscan.snp.vcf -mutect mutect.snp.vcf -vardict vardict.snp.vcf -lofreq lofreq.snp.vcf -ref human_g1k_v37_decoy.fasta -truth ground_truth.snp.vcf -minVAF 0.001 -maxVAF 0.1 -mincaller 1 --vaf-or-mincaller -outfile DeepSeq.tsv
 
-# -- 1/1/2016
+# -- 1/11/2016
 
 import sys, argparse, math, gzip, os, pysam, numpy
 import regex as re
@@ -133,6 +133,14 @@ out_header = \
 {ID}\t\
 {REF}\t\
 {ALT}\t\
+{refG}\t\
+{refC}\t\
+{refT}\t\
+{refA}\t\
+{altG}\t\
+{altC}\t\
+{altT}\t\
+{altA}\t\
 {if_MuTect}\t\
 {if_VarScan2}\t\
 {if_VarDict}\t\
@@ -717,7 +725,28 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
 
                     site_homopolymer_length = max( alt_c+1, ref_c+1 )
 
-                
+                    if ref_base == 'G':
+                        refG, refC, refT, refA = 1,0,0,0
+                    elif ref_base == 'C':
+                        refG, refC, refT, refA = 0,1,0,0
+                    elif ref_base == 'T':
+                        refG, refC, refT, refA = 0,0,1,0
+                    elif ref_base == 'A':
+                        refG, refC, refT, refA = 0,0,0,1
+                    else:
+                        refG, refC, refT, refA = 0,0,0,0
+                        
+                    if first_alt == 'G':
+                        altG, altC, altT, altA = 1,0,0,0
+                    elif first_alt == 'C':
+                        altG, altC, altT, altA = 0,1,0,0
+                    elif first_alt == 'C':
+                        altG, altC, altT, altA = 0,0,1,0
+                    elif first_alt == 'C':
+                        altG, altC, altT, altA = 0,0,0,1
+                    else:
+                        altG, altC, altT, altA = 0,0,0,0
+                    
                     ## OUTPUT LINE ##
                     out_line = out_header.format( \
                     CHROM                   = my_coordinate[0],                                       \
@@ -725,6 +754,14 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     ID                      = my_identifiers,                                         \
                     REF                     = ref_base,                                               \
                     ALT                     = first_alt,                                              \
+                    refG                    = refG,                                                   \
+                    refC                    = refC,                                                   \
+                    refT                    = refT,                                                   \
+                    refA                    = refA,                                                   \
+                    altG                    = altG,                                                   \
+                    altC                    = altC,                                                   \
+                    altT                    = altT,                                                   \
+                    altA                    = altA,                                                   \
                     if_MuTect               = mutect_classification,                                  \
                     if_VarScan2             = varscan_classification,                                 \
                     if_VarDict              = vardict_classification,                                 \
