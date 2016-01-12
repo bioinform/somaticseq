@@ -285,18 +285,16 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         
         # PASS
         if score >= pass_score:
-                        
-            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, status_code, info_string, field_string, sample_string1, sample_string2)
+            
+            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'PASS', info_string, field_string, sample_string1, sample_string2)
             
             vcf.write( vcf_line )
             
         
         # Low Qual
         elif score > lowqual_score:
-            
-            pass_or_reject = 'LowQual'
-                            
-            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, pass_or_reject, info_string, field_string, sample_string1, sample_string2)
+                                        
+            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'LowQual', info_string, field_string, sample_string1, sample_string2)
             
             vcf.write( vcf_line )
         
