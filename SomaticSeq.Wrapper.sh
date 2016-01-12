@@ -151,12 +151,17 @@ then
 
 	if [[ -r ${masked_region} ]]
 	then
-	    intersectBed -header -a ${merged_dir}/BINA_somatic.snp.vcf -b ${masked_region} -v > ${merged_dir}/tmp.snp.vcf; mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/BINA_somatic.snp.vcf
+		intersectBed -header -a ${merged_dir}/BINA_somatic.snp.vcf -b ${masked_region} -v > ${merged_dir}/tmp.snp.vcf
+		mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/BINA_somatic.snp.vcf
 	fi
 
-	if [[ -r ${snpgroundtruth} ]]
+
+
+	if [[ -r ${mutect_vcf} ]]
 	then
-	    $MYDIR/tally_MyVCF_vs_Truth.py -truth $snpgroundtruth -myvcf ${merged_dir}/BINA_somatic.snp.vcf -fai ${hg_ref}.fai -outfile ${merged_dir}/tmp.snp.vcf; mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/BINA_somatic.snp.vcf
+		mutect_input="-mutect ${mutect_vcf}"
+	else
+		mutect_input=''
 	fi
 
 
@@ -195,19 +200,19 @@ then
                 muse_input=''
         fi
 
-        ## Convert the sSNV file into TSV file, for machine learning data:
-        mkfifo ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
+	if [[ -r ${snpgroundtruth} ]]
+	then
+		truth_input="-truth ${snpgroundtruth}"
+	else
+		truth_input=''
+	fi
 
-        # SNV Only
-        java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --dbsnp $dbsnp --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.snp.vcf --emitRefConfidence BP_RESOLUTION -I ${nbam} --out /dev/stdout \
-        | awk -F "\t" '$0 ~ /^#/ || ( $4 ~ /^[GCTA]$/ && $5 !~ /[GCTA][GCTA]/ )' > ${merged_dir}/haploN.vcf.fifo &
-
-        java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --dbsnp $dbsnp --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.snp.vcf --emitRefConfidence BP_RESOLUTION -I ${tbam} --out /dev/stdout \
-        | awk -F "\t" '$0 ~ /^#/ || ( $4 ~ /^[GCTA]$/ && $5 !~ /[GCTA][GCTA]/ )' > ${merged_dir}/haploT.vcf.fifo &
 
 	$MYDIR/SSeq_merged.vcf2tsv.py \
-	-fai ${hg_ref}.fai \
+	-ref ${hg_ref} \
 	-myvcf ${merged_dir}/BINA_somatic.snp.vcf \
+	$truth_input \
+	$mutect_input \
 	$varscan_input \
 	$jsm_input \
 	$sniper_input \
@@ -215,12 +220,9 @@ then
 	$muse_input \
 	-tbam ${tbam} \
 	-nbam ${nbam} \
-	-haploT ${merged_dir}/haploT.vcf.fifo \
-	-haploN ${merged_dir}/haploN.vcf.fifo \
 	-dedup \
 	-outfile ${merged_dir}/Ensemble.sSNV.tsv
 
-	rm ${merged_dir}/haploN.vcf.fifo ${merged_dir}/haploT.vcf.fifo
 
 	# If a classifier is used, assume predictor.R, and do the prediction routine:
 	if [[ -r ${snpclassifier} ]] && [[ -r ${ada_r_script} ]]
@@ -261,25 +263,19 @@ then
 
         if [[ -r ${masked_region} ]]
         then
-            intersectBed -header -a ${merged_dir}/BINA_somatic.indel.vcf -b ${masked_region} -v > ${merged_dir}/tmp.indel.vcf; mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/BINA_somatic.indel.vcf
+		intersectBed -header -a ${merged_dir}/BINA_somatic.indel.vcf -b ${masked_region} -v > ${merged_dir}/tmp.indel.vcf
+		mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/BINA_somatic.indel.vcf
         fi
 
 
-	if [[ -r ${indelgroundtruth} ]]
-	then
-	    $MYDIR/tally_MyVCF_vs_Truth.py -truth $indelgroundtruth -myvcf ${merged_dir}/BINA_somatic.indel.vcf -fai ${hg_ref}.fai -outfile ${merged_dir}/tmp.indel.vcf; mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/BINA_somatic.indel.vcf
-	fi
-
 
 	## Convert the sSNV file into TSV file, for machine learning data:
-	mkfifo ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo
-
-	# Only INDEL
-	java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --dbsnp $dbsnp --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.indel.vcf --emitRefConfidence BP_RESOLUTION -I ${nbam} --out /dev/stdout \
-	| awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > ${merged_dir}/haploN.indel.vcf.fifo &
-
-	java -Xms8g -Xmx8g -jar ${gatk} -T HaplotypeCaller --dbsnp $dbsnp --reference_sequence ${hg_ref} -L ${merged_dir}/BINA_somatic.indel.vcf --emitRefConfidence BP_RESOLUTION -I ${tbam} --out /dev/stdout \
-	| awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > ${merged_dir}/haploT.indel.vcf.fifo &
+	if [[ -r ${indelocator_vcf} ]]
+	then
+		indelocator_input="-mutect ${indelocator_vcf}"
+	else
+		indelocator_input=''
+	fi
 
 
         if [[ -r ${varscan_indel_vcf} ]]
@@ -289,6 +285,7 @@ then
                 varscan_input=''
         fi
 
+
         if [[ -r ${merged_dir}/indel.vardict.vcf ]]
         then
                 vardict_input="-vardict ${merged_dir}/indel.vardict.vcf"
@@ -296,19 +293,27 @@ then
                 vardict_input=''
         fi
 
+
+	if [[ -r ${indelgroundtruth} ]]
+	then
+		truth_input="-truth ${indelgroundtruth}"
+	else
+		truth_input=''
+	fi
+
+
 	$MYDIR/SSeq_merged.vcf2tsv.py \
-	-fai ${hg_ref}.fai \
+	-ref ${hg_ref} \
 	-myvcf ${merged_dir}/BINA_somatic.indel.vcf \
+	$truth_input \
+	$indelocator_input \
 	$varscan_input \
 	$vardict_input \
 	-tbam ${tbam} \
 	-nbam ${nbam} \
-	-haploT ${merged_dir}/haploT.indel.vcf.fifo \
-	-haploN ${merged_dir}/haploN.indel.vcf.fifo \
 	-dedup \
 	-outfile ${merged_dir}/Ensemble.sINDEL.tsv
 
-	rm ${merged_dir}/haploN.indel.vcf.fifo ${merged_dir}/haploT.indel.vcf.fifo
 
 	# If a classifier is used, use it:
 	if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]

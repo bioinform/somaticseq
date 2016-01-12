@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
+# Try to implement custom combination of "MVJSDUL"
 
 import sys, argparse, math, gzip
-
-# MVJS = MuTect : VarScan2 : JointSNVMix2 : SomaticSniper
 
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -13,8 +12,7 @@ parser.add_argument('-low',   '--lowqual-threshold', type=str, help='Low quality
 parser.add_argument('-all',   '--emit-all', action='store_true', help='Flag it to print out everything', required=False)
 parser.add_argument('-phred', '--phred-scale', action='store_true', help='Flag it to print out Phred scale QUAL (proper VCF format but more annoying to filter)', required=False)
 
-parser.add_argument('-mq',    '--min-mapping-quality', type=float, help='Change PASS to LowQual if this minumum is not met.', default=1)
-parser.add_argument('-vd',    '--min-variant-depth', type=int, help='Change PASS to LowQual if this minumum is not met.', default=0)
+parser.add_argument('-tools', '--individual-mutation-tools',  type=str,   help='A list of all tools: have to match the annotated tool name in the input vcf files', nargs='*', required=False, default=('CGA', 'VarScan2', 'JointSNVMix2', 'SomaticSniper', 'VarDict', 'MuSE', 'LoFreq') )
 
 
 args = parser.parse_args()
@@ -22,11 +20,28 @@ args = parser.parse_args()
 # Rename input:
 tsv_fn = args.tsv_in
 vcf_fn = args.vcf_out
+tools = args.individual_mutation_tools
 pass_score = float( args.pass_threshold )
 lowqual_score = float( args.lowqual_threshold )
 
 print_reject = args.emit_all
 phred_scaled = args.phred_scale
+
+
+tools_code = {'CGA':           'M',
+              'VarScan2':      'V',
+              'JointSNVMix2':  'J',
+              'SomaticSniper': 'S',
+              'VarDict':       'D',
+              'MuSE':          'U',
+              'LoFreq':        'L'}
+
+
+mvjsdu = ''
+for tool_i in tools:
+    mvjsdu = mvjsdu + tools_code[tool_i]
+total_num_tools = len(mvjsdu)
+
 
 def p2phred(p, max_phred=float('nan')):
     '''Convert p-value to Phred-scale quality score.'''
@@ -84,14 +99,28 @@ def dp4_to_gt(ref_for, ref_rev, alt_for, alt_rev):
     return gt
 
 
+
+
+
 with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     
     # First line is a header:
     tsv_i = tsv.readline().rstrip()
     
     tsv_header = tsv_i.split('\t')
+    
+    # Make the header items into indices
     for n,item in enumerate(tsv_header):
         vars()[item] = n
+    
+    toolcode2index = {'M': if_MuTect,
+                      'V': if_VarScan2,
+                      'J': if_JointSNVMix2,
+                      'S': if_SomaticSniper,
+                      'D': if_VarDict,
+                      'U': MuSE_Tier,
+                      'L': if_LoFreq}
+    
     
     # Create vcf headers:
     vcf.write('##fileformat=VCFv4.1\n')
@@ -99,20 +128,33 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     vcf.write('##FILTER=<ID=PASS,Description="Accept as a confident somatic mutation calls with probability value at least {}">\n'.format(pass_score) )
     vcf.write('##FILTER=<ID=REJECT,Description="Rejected as a confident somatic mutation with ONCOSCORE below 2">\n')
     vcf.write('##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Somatic mutation in primary">\n')
-    vcf.write('##INFO=<ID=MVJSDS,Number=6,Type=Integer,Description="Calling decision of 5 algorithms">\n')
+    vcf.write('##INFO=<ID={COMBO},Number={NUM},Type=Integer,Description="Calling decision of the {NUM} algorithms">\n'.format(COMBO=mvjsdu, NUM=total_num_tools) )
     vcf.write('##INFO=<ID=NUM_TOOLS,Number=1,Type=Float,Description="Number of tools called it Somatic">\n')
 
     vcf.write('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
     vcf.write('##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="ref forward, ref reverse, alt forward, alt reverse">\n')
-    vcf.write('##FORMAT=<ID=MQ,Number=1,Type=Float,Description="Mapping score">\n')
-    vcf.write('##FORMAT=<ID=SB,Number=1,Type=Float,Description="Strand bias">\n')
-    vcf.write('##FORMAT=<ID=BQB,Number=1,Type=Float,Description="Base Quality Bias">\n')
-    vcf.write('##FORMAT=<ID=MQB,Number=1,Type=Float,Description="Mapping Quality Bias">\n')
+    vcf.write('##FORMAT=<ID=CD4,Number=4,Type=Integer,Description="ref concordant, ref discordant, alt concordant, alt discordant">\n')
+    
+    vcf.write('##FORMAT=<ID=refMQ,Number=1,Type=Float,Description="average mapping score for reference reads">\n')
+    vcf.write('##FORMAT=<ID=altMQ,Number=1,Type=Float,Description="average mapping score for alternate reads">\n')
+    vcf.write('##FORMAT=<ID=refBQ,Number=1,Type=Float,Description="average base quality score for reference reads">\n')
+    vcf.write('##FORMAT=<ID=altBQ,Number=1,Type=Float,Description="average base quality score for alternate reads">\n')
+    vcf.write('##FORMAT=<ID=refNM,Number=1,Type=Float,Description="average edit distance for reference reads">\n')
+    vcf.write('##FORMAT=<ID=altNM,Number=1,Type=Float,Description="average edit distance for alternate reads">\n')
+
+    vcf.write('##FORMAT=<ID=fetSB,Number=1,Type=Float,Description="Strand bias FET">\n')
+    vcf.write('##FORMAT=<ID=fetCD,Number=1,Type=Float,Description="Concordance FET">\n')
+    vcf.write('##FORMAT=<ID=zMQ,Number=1,Type=Float,Description="z-score rank sum of mapping quality">\n')
+    vcf.write('##FORMAT=<ID=zBQ,Number=1,Type=Float,Description="z-score rank sum of base quality">\n')
+
     vcf.write('##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">\n')
+
     vcf.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNORMAL\tTUMOR\n' )
+    
     
     # Start writing content:
     tsv_i = tsv.readline().rstrip()
+    
     
     while tsv_i:
         
@@ -125,33 +167,65 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         else:
             scaled_score = score
         
+        
         try:
-            if tsv_item[MuSE_Tier] == '6':
-                if_MuSE = '1'
-            else:
+            # Non-PASS MuSE calls are made into fractions. 
+            if tsv_item[MuSE_Tier] != '1':
                 if_MuSE = '0'
+            else:
+                if_MuSE = '1'
         except NameError:
-            if_MuSE = '0'
+            if_MuSE = '.'
         
-        MVJS = '{},{},{},{},{},{}'.format(tsv_item[if_MuTect], tsv_item[if_VarScan2], tsv_item[if_JointSNVMix2], tsv_item[if_SomaticSniper], tsv_item[if_VarDict], if_MuSE )
         
-        num_tools = int(tsv_item[if_MuTect]) + int(tsv_item[if_VarScan2]) + int(tsv_item[if_JointSNVMix2]) + int(tsv_item[if_SomaticSniper]) + int(tsv_item[if_VarDict])
-        
-        info_string = 'SOMATIC;MVJSDS={MVJSD};NUM_TOOLS={NUM_TOOLS}'.format( MVJSD=MVJS, NUM_TOOLS=num_tools )
+        MVJS = []
+        num_tools = 0
+        for tool_i in mvjsdu:
+            
+            if_Tool = tsv_item[ toolcode2index[tool_i] ]
+            
+            if if_Tool != '1':
+                if_Tool = '0'
+            
+            MVJS.append( if_Tool )
+            num_tools = num_tools + int(if_Tool)
+            
+        MVJS = ','.join(MVJS)
+            
+        info_string = 'SOMATIC;{COMBO}={MVJSD};NUM_TOOLS={NUM_TOOLS}'.format( COMBO=mvjsdu, MVJSD=MVJS, NUM_TOOLS=num_tools )
 
         # NORMAL
-        n_mq  = tsv_item[N_MQ]         if tsv_item[N_MQ]         != 'nan' else '.'
-        n_sb  = tsv_item[N_StrandBias] if tsv_item[N_StrandBias] != 'nan' else '.'
-        n_bqb = tsv_item[N_BaseQBias]  if tsv_item[N_BaseQBias]  != 'nan' else '.'
-        n_mqb = tsv_item[N_MapQBias]   if tsv_item[N_MapQBias]   != 'nan' else '.'
+        n_ref_mq  = tsv_item[nBAM_REF_MQ]          if tsv_item[nBAM_REF_MQ]          != 'nan' else '.'
+        n_alt_mq  = tsv_item[nBAM_ALT_MQ]          if tsv_item[nBAM_ALT_MQ]          != 'nan' else '.'
         
-        n_alt_for = tsv_item[N_ALT_FOR] if tsv_item[N_ALT_FOR] != 'nan' else '0'
-        n_alt_rev = tsv_item[N_ALT_REV] if tsv_item[N_ALT_REV] != 'nan' else '0'
+        n_ref_bq  = tsv_item[nBAM_REF_BQ]          if tsv_item[nBAM_REF_BQ]          != 'nan' else '.'
+        n_alt_bq  = tsv_item[nBAM_ALT_BQ]          if tsv_item[nBAM_ALT_BQ]          != 'nan' else '.'
+        
+        n_ref_nm  = tsv_item[nBAM_REF_NM]          if tsv_item[nBAM_REF_NM]          != 'nan' else '.'
+        n_alt_nm  = tsv_item[nBAM_ALT_NM]          if tsv_item[nBAM_ALT_NM]          != 'nan' else '.'        
+        
+        n_sb      = tsv_item[nBAM_StrandBias_FET]  if tsv_item[nBAM_StrandBias_FET]  != 'nan' else '.'
+        n_cd      = tsv_item[nBAM_Concordance_FET] if tsv_item[nBAM_Concordance_FET] != 'nan' else '.'
+        n_bqb     = tsv_item[nBAM_Z_Ranksums_BQ]   if tsv_item[nBAM_Z_Ranksums_BQ]   != 'nan' else '.'
+        n_mqb     = tsv_item[nBAM_Z_Ranksums_MQ]   if tsv_item[nBAM_Z_Ranksums_MQ]   != 'nan' else '.'
+        
         n_ref_for = tsv_item[N_REF_FOR] if tsv_item[N_REF_FOR] != 'nan' else '0'
         n_ref_rev = tsv_item[N_REF_REV] if tsv_item[N_REF_REV] != 'nan' else '0'
+        n_alt_for = tsv_item[N_ALT_FOR] if tsv_item[N_ALT_FOR] != 'nan' else '0'
+        n_alt_rev = tsv_item[N_ALT_REV] if tsv_item[N_ALT_REV] != 'nan' else '0'
+        
+        n_ref_con = tsv_item[nBAM_REF_Concordant] if tsv_item[nBAM_REF_Concordant] != 'nan' else '0'
+        n_ref_dis = tsv_item[nBAM_REF_Discordant] if tsv_item[nBAM_REF_Discordant] != 'nan' else '0'
+        n_alt_con = tsv_item[nBAM_ALT_Concordant] if tsv_item[nBAM_ALT_Concordant] != 'nan' else '0'
+        n_alt_dis = tsv_item[nBAM_ALT_Concordant] if tsv_item[nBAM_ALT_Concordant] != 'nan' else '0'
+        
 
         # DP4toGT:
         gt = dp4_to_gt(n_ref_for, n_ref_rev, n_alt_for, n_alt_rev)
+        
+        # 4-number strings:
+        dp4_string = ','.join(( n_ref_for, n_ref_rev, n_alt_for, n_alt_rev ))
+        cd4_string = ','join( ( n_ref_con, n_ref_dis, n_alt_con, n_alt_dis ))
         
         try:
             vaf = ( int(n_alt_for) + int(n_alt_rev) ) / ( int(n_alt_for) + int(n_alt_rev) + int(n_ref_for) + int(n_ref_rev) )
@@ -159,27 +233,42 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
             vaf = 0
         vaf = '%.3g' % vaf
         
-        sample_string1 = '{}:{}:{}:{}:{}:{}:{}'.format(gt, ','.join(( n_ref_for, n_ref_rev, n_alt_for, n_alt_rev )), n_mq, n_sb, n_bqb, n_mqb, vaf)
+        sample_string1 = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=n_ref_mq, altMQ=n_alt_mq, refBQ=n_ref_bq, altBQ=n_alt_bq, refNM=n_ref_nm, altNM=n_alt_nm, fetSB=n_sb, fetCD=n_cd, zMQ=n_mqb, zBQ=n_bqb, VAF=vaf)
 
 
-        # TUMOR
-        mq  = tsv_item[T_MQ]         if tsv_item[T_MQ]         != 'nan' else '.'
-        sb  = tsv_item[T_StrandBias] if tsv_item[T_StrandBias] != 'nan' else '.'
-        bqb = tsv_item[T_BaseQBias]  if tsv_item[T_BaseQBias]  != 'nan' else '.'
-        mqb = tsv_item[T_MapQBias]   if tsv_item[T_MapQBias]   != 'nan' else '.'
+
+        ### TUMOR ###
+        t_ref_mq  = tsv_item[tBAM_REF_MQ]          if tsv_item[tBAM_REF_MQ]          != 'nan' else '.'
+        t_alt_mq  = tsv_item[tBAM_ALT_MQ]          if tsv_item[tBAM_ALT_MQ]          != 'nan' else '.'
         
-        try:
-            MQ = float( mq )
-        except ValueError:
-            MQ = 0
+        t_ref_bq  = tsv_item[tBAM_REF_BQ]          if tsv_item[tBAM_REF_BQ]          != 'nan' else '.'
+        t_alt_bq  = tsv_item[tBAM_ALT_BQ]          if tsv_item[tBAM_ALT_BQ]          != 'nan' else '.'
         
-        t_alt_for = tsv_item[T_ALT_FOR] if tsv_item[T_ALT_FOR] != 'nan' else '0'
-        t_alt_rev = tsv_item[T_ALT_REV] if tsv_item[T_ALT_REV] != 'nan' else '0'
+        t_ref_nm  = tsv_item[tBAM_REF_NM]          if tsv_item[tBAM_REF_NM]          != 'nan' else '.'
+        t_alt_nm  = tsv_item[tBAM_ALT_NM]          if tsv_item[tBAM_ALT_NM]          != 'nan' else '.'        
+        
+        t_sb      = tsv_item[tBAM_StrandBias_FET]  if tsv_item[tBAM_StrandBias_FET]  != 'nan' else '.'
+        t_cd      = tsv_item[tBAM_Concordance_FET] if tsv_item[tBAM_Concordance_FET] != 'nan' else '.'        
+        t_bqb     = tsv_item[tBAM_Z_Ranksums_BQ]   if tsv_item[tBAM_Z_Ranksums_BQ]   != 'nan' else '.'
+        t_mqb     = tsv_item[tBAM_Z_Ranksums_MQ]   if tsv_item[tBAM_Z_Ranksums_MQ]   != 'nan' else '.'
+        
         t_ref_for = tsv_item[T_REF_FOR] if tsv_item[T_REF_FOR] != 'nan' else '0'
         t_ref_rev = tsv_item[T_REF_REV] if tsv_item[T_REF_REV] != 'nan' else '0'
+        t_alt_for = tsv_item[T_ALT_FOR] if tsv_item[T_ALT_FOR] != 'nan' else '0'
+        t_alt_rev = tsv_item[T_ALT_REV] if tsv_item[T_ALT_REV] != 'nan' else '0'
+
+        t_ref_con = tsv_item[tBAM_REF_Concordant] if tsv_item[tBAM_REF_Concordant] != 'nan' else '0'
+        t_ref_dis = tsv_item[tBAM_REF_Discordant] if tsv_item[tBAM_REF_Discordant] != 'nan' else '0'
+        t_alt_con = tsv_item[tBAM_ALT_Concordant] if tsv_item[tBAM_ALT_Concordant] != 'nan' else '0'
+        t_alt_dis = tsv_item[tBAM_ALT_Concordant] if tsv_item[tBAM_ALT_Concordant] != 'nan' else '0'
 
         # DP4toGT:
         gt = dp4_to_gt(t_ref_for, t_ref_rev, t_alt_for, t_alt_rev)
+        
+        # 4-number strings:
+        dp4_string = ','.join(( t_ref_for, t_ref_rev, t_alt_for, t_alt_rev ))
+        cd4_string = ','join( ( t_ref_con, t_ref_dis, t_alt_con, t_alt_dis ))        
+        
         
         try:
             vd  = int(t_alt_for) + int(t_alt_rev)
@@ -187,21 +276,16 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         except ZeroDivisionError:
             vd  = 0
             vaf = 0
+            
         vaf = '%.3g' % vaf
 
-        sample_string2 = '{}:{}:{}:{}:{}:{}:{}'.format(gt, ','.join(( t_ref_for, t_ref_rev, t_alt_for, t_alt_rev )), mq, sb, bqb, mqb, vaf)
+        sample_string2 = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=t_ref_mq, altMQ=t_alt_mq, refBQ=t_ref_bq, altBQ=t_alt_bq, refNM=t_ref_nm, altNM=t_alt_nm, fetSB=t_sb, fetCD=t_cd, zMQ=t_mqb, zBQ=t_bqb, VAF=vaf)
 
-        field_string = 'GT:DP4:MQ:SB:BQB:MQB:VAF'
+        field_string = 'GT:DP4:CD4:refMQ:altMQ:refBQ:altBQ:refNM:altNM:fetSB:fetCD:zMQ:zBQ:VAF'
         
         # PASS
         if score >= pass_score:
-            
-            # Enforce a mapping quality for PASS:
-            if vd >= args.min_variant_depth and MQ >= args.min_mapping_quality:
-                status_code = 'PASS'
-            else:
-                status_code = 'LowQual'
-            
+                        
             vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, status_code, info_string, field_string, sample_string1, sample_string2)
             
             vcf.write( vcf_line )
