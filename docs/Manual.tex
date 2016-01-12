@@ -392,13 +392,15 @@ R --no-save --args Ensemble.sINDEL.tsv.Classifier.RData Ensemble.sINDEL.tsv Trai
 \end{lstlisting}
 
 	
-After mutation prediction, if you feel like it, you may convert Trained.sSNV.tsv and Trained.sINDEL.tsv into VCF files. 
+After mutation prediction, if you feel like it, you may convert Trained.sSNV.tsv and Trained.sINDEL.tsv into VCF files.
 
 \begin{lstlisting}
-# If you want probability above 0.7 labeled PASS (-pass 0.7), and between 0.1 and 0.7 labeled LowQual (-low 0.1):
-# To include calls below 0.1 as REJECTS (-all)# To convert probability values (between 0 to 1) into Phred scale in the QUAL column in the VCF file (-phred)
-SSeq_tsv2vcf.py -tsv Trained.sSNV.tsv -vcf Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred
-SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred
+# Probability above 0.7 labeled PASS (-pass 0.7), and between 0.1 and 0.7 labeled LowQual (-low 0.1):
+# Use -all to include REJECT calls in the VCF file
+# Use -phred to convert probability values (between 0 to 1) into Phred scale in the QUAL column in the VCF file
+# Use -tools to list the individual tools used. Accepted tools are CGA (for MuTect/Indelocator), VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, and/or LoFreq. 
+SSeq_tsv2vcf.py -tsv Trained.sSNV.tsv -vcf Trained.sSNV.vcf -pass 0.7 -low 0.1 -tools CGA VarScan2 JointSNVMix2 SomaticSniper VarDict -all -phred
+SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0.1 -tools CGA VarScan2 VarDict -all -phred
 \end{lstlisting}
 
 
@@ -467,7 +469,7 @@ Have implemented the following improvement, mostly for indels:
 \begin{itemize}
 
   \item
-  Validate on deep sequencing and low VAF data. 
+  Develop a version for deep sequencing cfDNA/ctDNA. 
   
   \item
   Dockerize SomaticSeq

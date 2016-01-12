@@ -192,7 +192,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
             
         MVJS = ','.join(MVJS)
             
-        info_string = 'SOMATIC;{COMBO}={MVJSD};NUM_TOOLS={NUM_TOOLS}'.format( COMBO=mvjsdu, MVJSD=MVJS, NUM_TOOLS=num_tools )
+        info_string = '{COMBO}={MVJSD};NUM_TOOLS={NUM_TOOLS}'.format( COMBO=mvjsdu, MVJSD=MVJS, NUM_TOOLS=num_tools )
 
         # NORMAL
         n_ref_mq  = tsv_item[nBAM_REF_MQ]          if tsv_item[nBAM_REF_MQ]          != 'nan' else '.'
@@ -286,7 +286,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         # PASS
         if score >= pass_score:
             
-            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'PASS', info_string, field_string, sample_string1, sample_string2)
+            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'PASS', 'SOMATIC;'+info_string, field_string, sample_string1, sample_string2)
             
             vcf.write( vcf_line )
             
