@@ -225,7 +225,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         
         # 4-number strings:
         dp4_string = ','.join(( n_ref_for, n_ref_rev, n_alt_for, n_alt_rev ))
-        cd4_string = ','join( ( n_ref_con, n_ref_dis, n_alt_con, n_alt_dis ))
+        cd4_string = ','.join(( n_ref_con, n_ref_dis, n_alt_con, n_alt_dis ))
         
         try:
             vaf = ( int(n_alt_for) + int(n_alt_rev) ) / ( int(n_alt_for) + int(n_alt_rev) + int(n_ref_for) + int(n_ref_rev) )
@@ -267,7 +267,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         
         # 4-number strings:
         dp4_string = ','.join(( t_ref_for, t_ref_rev, t_alt_for, t_alt_rev ))
-        cd4_string = ','join( ( t_ref_con, t_ref_dis, t_alt_con, t_alt_dis ))        
+        cd4_string = ','.join(( t_ref_con, t_ref_dis, t_alt_con, t_alt_dis ))        
         
         
         try:
