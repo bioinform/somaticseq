@@ -66,7 +66,7 @@ is_pos    = args.positions_list
 
 tbam_fn   = args.tumor_bam_file
 
-truehits  = args.ground_truth_vcf
+truth     = args.ground_truth_vcf
 dbsnp     = args.dbsnp_vcf
 cosmic    = args.cosmic_vcf
 mutect    = args.mutect_vcf
@@ -209,8 +209,8 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
     tpileup_line = pileup_out.readline().rstrip()
     
     # Open optional files if they exist:
-    if truehits:
-        truth = genome.open_textfile(truehits)
+    if truth:
+        truth = genome.open_textfile(truth)
         truth_line = truth.readline().rstrip()
         while truth_line.startswith('#'):
             truth_line = truth.readline().rstrip()
