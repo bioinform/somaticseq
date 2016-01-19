@@ -263,12 +263,48 @@ class Base_calls(Pileup_line):
         elif self.refbase.upper() == 'T':
             t_count = ref_reverse_count
             T_count = ref_forward_count
+        elif self.refbase.upper() == 'N':
+            n_count = ref_reverse_count
+            N_count = ref_forward_count
+
+        deletion_calls = {}
+        for call_i in del_forward:
+            try:
+                deletion_calls[call_i] += 1
+            except KeyError:
+                deletion_calls[call_i] = 1
+                
+        for call_i in del_reverse:
+            try:
+                deletion_calls[call_i.upper()] += 1
+            except KeyError:
+                deletion_calls[call_i.upper()] = 1
+
+        insertion_calls = {}
+        for call_i in ins_forward:
+            try:
+                insertion_calls[call_i] += 1
+            except KeyError:
+                insertion_calls[call_i] = 1
+                
+        for call_i in ins_reverse:
+            try:
+                insertion_calls[call_i.upper()] += 1
+            except KeyError:
+                insertion_calls[call_i.upper()] = 1
         
         # Returns these:
         self.A   = A_count, a_count
         self.C   = C_count, c_count
         self.G   = G_count, g_count
         self.T   = T_count, t_count
-        self.DEL = del_forward, del_reverse
-        self.INS = ins_forward, ins_reverse
+        self.DEL = len(del_forward), len(del_reverse)
+        self.INS = len(ins_forward), len(ins_reverse)
         self.N   = N_count, n_count
+        self.ref = ref_forward_count, ref_reverse_count
+        
+        self.deletions       = del_forward, del_reverse  # list of deletions
+        self.insertions      = ins_forward, ins_reverse  # list of insertions
+        self.deletion_calls  = deletion_calls  # dictionary of deletion calls (strand agnostic) and their occurrence
+        self.insertion_calls = insertion_calls # dictionary of insertion calls (strand agnostic) and their occurrence
+        

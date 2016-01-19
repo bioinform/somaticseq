@@ -121,6 +121,12 @@ def rescale(x, original=None, rescale_to=p_scale, max_phred=1001):
     return y
     
 
+
+pysambase = {0: 'A', 1: 'C', 2: 'G', 3: 'T', 4: r'-[0-9]+[GgCcTtAaNn]+', 5: r'+[0-9]+[GgCcTtAaNn]+', 6: 'N', \
+            'A': 0, 'C': 1, 'G': 2, 'T': 3,}
+
+
+
 # Convert contig_sequence to chrom_seq dict:
 fai_file = ref_fa + '.fai'
 chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
@@ -263,9 +269,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
         ###################################################################################
         ############################ my_coordinates are 1-based ###########################
         
-        # SNV-only now. Worry about INDELs later
-        indel_length = 0
-        
+        # SNV-only now. Worry about INDELs later        
         if is_vcf:
             my_vcf = genome.Vcf_line( my_line )
             end_i = my_vcf.get_info_value('END')
@@ -288,7 +292,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
         for my_coordinate in my_coordinates:
                         
             latest_tpileup_run   = genome.catchup(my_coordinate, tpileup_line, pileup_out, chrom_seq)
-            latest_pileuptumor   = pileup_reader.Pileup_line(latest_tpileup_run[1])
+            latest_pileuptumor   = pileup_reader.Base_calls(latest_tpileup_run[1])
             
             if latest_tpileup_run[0]:
                 
@@ -335,7 +339,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     vardict_line = latest_vardict.vcf_line
                     
                 else:
-                    msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
+                    msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = vardict_classification = nan
                 
                 
                 ############################################################################################
@@ -363,7 +367,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     varscan_line = latest_varscan.vcf_line
                         
                 else:
-                    score_varscan2 = nan
+                    score_varscan2 = varscan_classification = nan
             
             
                 ############################################################################################
@@ -419,49 +423,69 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                 ref_base = latest_pileuptumor.refbase
                 t_dp = latest_pileuptumor.dp
                 
-                A_count, a_count, C_count, c_count, G_count, g_count, T_count, t_count, DEL_count, del_count, INS_count, ins_count, N_count, n_count = latest_pileuptumor.count_all_calls()
+                A_count   = sum(latest_pileuptumor.A)
+                C_count   = sum(latest_pileuptumor.C)
+                G_count   = sum(latest_pileuptumor.G)
+                T_count   = sum(latest_pileuptumor.T)
+                DEL_count = sum(latest_pileuptumor.DEL)
+                INS_count = sum(latest_pileuptumor.INS)
+                N_count   = sum(latest_pileuptumor.N)
                 
-                t_ACGT = [ A_count+a_count, C_count+c_count, G_count+g_count, T_count+t_count, DEL_count+del_count, INS_count+ins_count ]
+                t_ACGT = [ A_count, C_count, G_count, T_count, DEL_count, INS_count, N_count ]
+                af_rank_idx = numpy.argsort( t_ACGT )                        
+                                    
+                # The most abundant read is the reference base, and the 2nd most abundant read is SNV:
+                if af_rank_idx[-1] == pysambase[ref_base] and af_rank_idx[-2] <= 3:
+                                        
+                    first_alt    = pysambase[ af_rank_idx[-2] ]
+                    first_alt_rc = t_ACGT[ af_rank_idx[-2] ]
+                    vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
+                    indel_length = 0
                 
-                
-                af_rank_idx = numpy.argsort( t_ACGT )
+                # If the most abundant read is the SNV (not ref base):
+                elif af_rank_idx[-1] != pysambase[ref_base] and af_rank_idx[-1] <= 3:
+                                        
+                    first_alt    = pysambase[ af_rank_idx[-1] ]
+                    first_alt_rc = t_ACGT[ af_rank_idx[-1] ]
+                    vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
+                    indel_length = 0
+                    
+                # Now if the alternate calls are INDELs
+                elif af_rank_idx[-1] == 4 or af_rank_idx[-2] == 4:
+                    
+                    # deletion
+                    first_alt_rc = max( latest_pileuptumor.deletion_calls.values() )
+                    for del_i in latest_pileuptumor.deletion_calls:
+                        if latest_pileuptumor.deletion_calls[del_i] == first_alt_rc:
+                            
+                            deleted_seq = del_i
+                            indel_length = -len(deleted_seq)
+                            first_alt = ref_base
+                            ref_base = ref_base + deleted_seq
+                            break
+                    
+                    vaf_check = min_vaf <= first_alt_rc/(t_dp+first_alt_rc) <= max_vaf
 
-                # If the most abundant read is the reference base:
-                if af_rank_idx[-1] == pysambase[ref_base]:
+                elif af_rank_idx[-1] == 5 or af_rank_idx[-2] == 5:
+                                        
+                    # insertion
+                    first_alt_rc = max( latest_pileuptumor.insertion_calls.values() )
+                    for ins_i in latest_pileuptumor.insertion_calls:
+                        if latest_pileuptumor.insertion_calls[ins_i] == first_alt_rc:
+                            
+                            inserted_seq = ins_i
+                            indel_length = len(inserted_seq)
+                            first_alt = ref_base + inserted_seq
+                            break
                     
-                    # See if the first alternate is SNV or INDEL:
-                    if af_rank_idx[-2] <= 3:
-                        first_alt    = pysambase[ af_rank_idx[-2] ]
-                        first_alt_rc = t_ACGT[ af_rank_idx[-2] ]
-                        vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
-                        
-                    elif af_rank_idx[-2] == 4:
-                        # deletion
-                        pass
-                    elif af_rank_idx[-2] == 5:
-                        # insertion
-                        pass
-                    else:
-                        # N
-                        pass
+                    vaf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
                     
-                # the most abundant read is the first alt:
                 else:
-                    
-                    if af_rank_idx[-1] <= 3:
-                        first_alt    = pysambase[ af_rank_idx[-1] ]
-                        first_alt_rc = t_ACGT[ af_rank_idx[-1] ]
-                        vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
-                    elif af_rank_idx[-1] == 4:
-                        pass
-                    elif af_rank_idx[-1] == 5:
-                        pass
-                    else:
-                        pass
-                
-                
-                
-                
+                                        
+                    # N
+                    first_alt = 'N'
+                    first_alt_rc = 0
+                    vaf_check = False
                 
                 # Decide to move forward or not, based on user options:
                 if args.only_vaf:
@@ -472,7 +496,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     move_ahead = vaf_check and num_callers >= mincaller
                 elif args.vaf_or_mincaller:
                     move_ahead = vaf_check or num_callers >= mincaller
-                    
+                
                 if move_ahead:
                     
                     # OUTPUT ID FIELD:
