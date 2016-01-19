@@ -485,6 +485,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     # N
                     first_alt = 'N'
                     first_alt_rc = 0
+                    indel_length = 0
                     vaf_check = False
                 
                 # Decide to move forward or not, based on user options:
