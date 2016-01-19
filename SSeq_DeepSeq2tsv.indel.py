@@ -435,7 +435,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                 af_rank_idx = numpy.argsort( t_ACGT )                        
                                     
                 # The most abundant read is the reference base, and the 2nd most abundant read is SNV:
-                if af_rank_idx[-1] == pysambase[ref_base] and af_rank_idx[-2] <= 3:
+                if af_rank_idx[-1] == pysambase[ref_base] and (af_rank_idx[-2] <= 3 and t_ACGT[ af_rank_idx[-2] ] > 0):
                                         
                     first_alt    = pysambase[ af_rank_idx[-2] ]
                     first_alt_rc = t_ACGT[ af_rank_idx[-2] ]
@@ -443,7 +443,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     indel_length = 0
                 
                 # If the most abundant read is the SNV (not ref base):
-                elif af_rank_idx[-1] != pysambase[ref_base] and af_rank_idx[-1] <= 3:
+                elif af_rank_idx[-1] != pysambase[ref_base] and (af_rank_idx[-1] <= 3 and t_ACGT[ af_rank_idx[-1] ] > 0):
                                         
                     first_alt    = pysambase[ af_rank_idx[-1] ]
                     first_alt_rc = t_ACGT[ af_rank_idx[-1] ]
@@ -451,7 +451,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     indel_length = 0
                     
                 # Now if the alternate calls are INDELs
-                elif af_rank_idx[-1] == 4 or af_rank_idx[-2] == 4:
+                elif (af_rank_idx[-1] == 4 and t_ACGT[ af_rank_idx[-1] ] > 0) or (af_rank_idx[-2] == 4 and t_ACGT[ af_rank_idx[-2] ] > 0):
                     
                     # deletion
                     first_alt_rc = max( latest_pileuptumor.deletion_calls.values() )
@@ -464,9 +464,9 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                             ref_base = ref_base + deleted_seq
                             break
                     
-                    vaf_check = min_vaf <= first_alt_rc/(t_dp+first_alt_rc) <= max_vaf
+                    vaf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
 
-                elif af_rank_idx[-1] == 5 or af_rank_idx[-2] == 5:
+                elif (af_rank_idx[-1] == 5 and t_ACGT[ af_rank_idx[-1] ] > 0) or (af_rank_idx[-2] == 5 and t_ACGT[ af_rank_idx[-2] ] > 0):
                                         
                     # insertion
                     first_alt_rc = max( latest_pileuptumor.insertion_calls.values() )
