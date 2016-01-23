@@ -122,8 +122,8 @@ def rescale(x, original=None, rescale_to=p_scale, max_phred=1001):
     
 
 
-pysambase = {0: 'A', 1: 'C', 2: 'G', 3: 'T', 4: r'-[0-9]+[GgCcTtAaNn]+', 5: r'+[0-9]+[GgCcTtAaNn]+', 6: 'N', \
-            'A': 0, 'C': 1, 'G': 2, 'T': 3,}
+baseordering = {0: 'A', 1: 'C', 2: 'G', 3: 'T', 4: 'DEL', 5: 'INS', 6: 'N', \
+               'A': 0, 'C': 1, 'G': 2, 'T': 3,}
 
 
 
@@ -278,7 +278,11 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
             else:
                 end_i = my_vcf.position
             
-            my_coordinates = genomic_coordinates(my_vcf.chromosome, my_vcf.position, end_i)            
+            my_coordinates = genomic_coordinates(my_vcf.chromosome, my_vcf.position, end_i)
+            ref_base  = my_vcf.refbase
+            first_alt = my_vcf.altbase.split(',')[0]
+            indel_length = len(first_alt) - len(ref_base)
+            
         
         elif is_bed:
             bed_item = my_line.split('\t')
@@ -307,27 +311,35 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     if latest_vardict_run[0]:
                         assert my_coordinate[1] == latest_vardict.position
                         
-                        vardict_classification = 1 if latest_vardict.filters == 'PASS' else 0
+                        vardict_indel_lengths = [ len(alt_i) - len(latest_vardict.refbase) for alt_i in latest_vardict.altbase.split(',') ]
+                        
+                        if indel_length in vardict_indel_lengths:
+                            
+                            vardict_classification = 1 if latest_vardict.filters == 'PASS' else 0
+                                    
+                            # VarDict reported metrics:
+                            msi = latest_vardict.get_info_value('MSI') 
+                            msi = msi if msi else nan
+                            
+                            msilen = latest_vardict.get_info_value('MSILEN')
+                            msilen = msilen if msilen else nan
+                            
+                            shift3 = latest_vardict.get_info_value('SHIFT3')
+                            shift3 = shift3 if shift3 else nan
+                            
+                            t_pmean = latest_vardict.get_info_value('PMEAN')
+                            t_pmean = t_pmean if t_pmean else nan
                                 
-                        # VarDict reported metrics:
-                        msi = latest_vardict.get_info_value('MSI') 
-                        msi = msi if msi else nan
+                            t_pstd = latest_vardict.get_info_value('PSTD')
+                            t_pstd = t_pstd if t_pstd else nan
+                                
+                            t_qstd = latest_vardict.get_info_value('QSTD')
+                            t_qstd = t_qstd if t_qstd else nan
                         
-                        msilen = latest_vardict.get_info_value('MSILEN')
-                        msilen = msilen if msilen else nan
-                        
-                        shift3 = latest_vardict.get_info_value('SHIFT3')
-                        shift3 = shift3 if shift3 else nan
-                        
-                        t_pmean = latest_vardict.get_info_value('PMEAN')
-                        t_pmean = t_pmean if t_pmean else nan
-                            
-                        t_pstd = latest_vardict.get_info_value('PSTD')
-                        t_pstd = t_pstd if t_pstd else nan
-                            
-                        t_qstd = latest_vardict.get_info_value('QSTD')
-                        t_qstd = t_qstd if t_qstd else nan
-                
+                        else:
+                            vardict_classification = 0
+                            msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
+
                     # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                     else:
                         vardict_classification = 0
@@ -353,8 +365,14 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                         
                         assert my_coordinate[1] == latest_varscan.position
                         
-                        varscan_classification = 1 if latest_varscan.filters == 'PASS' else 0
-                        score_varscan2 = eval(latest_varscan.get_sample_value('PVAL'))
+                        varscan_indel_lengths = [ len(alt_i) - len(latest_varscan.refbase) for alt_i in latest_varscan.altbase.split(',') ]
+                        
+                        if indel_length in varscan_indel_lengths:
+                            varscan_classification = 1 if latest_varscan.filters == 'PASS' else 0
+                            score_varscan2 = eval(latest_varscan.get_sample_value('PVAL'))
+                        else:
+                            score_varscan2 = nan
+                            varscan_classification = 0
                                 
                     # The VarScan.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                     else:
@@ -380,7 +398,13 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     if latest_mutect_run[0]:
                         
                         assert my_coordinate[1] == latest_mutect.position
-                        mutect_classification = 1
+                        
+                        mutect_indel_lengths = [ len(alt_i) - len(latest_mutect.refbase) for alt_i in latest_mutect.altbase.split(',') ]
+                        
+                        if indel_length in mutect_indel_lengths:
+                            mutect_classification = 1
+                        else:
+                            mutect_classification = 0
     
                     else:
                         mutect_classification = 0
@@ -404,7 +428,13 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     if latest_lofreq_run[0]:
                         
                         assert my_coordinate[1] == latest_lofreq.position
-                        lofreq_classification = 1 if latest_lofreq.filters == 'PASS' else 0
+                        
+                        loreq_indel_lengths = [ len(alt_i) - len(latest_lofreq.refbase) for alt_i in latest_lofreq.altbase.split(',') ]
+                        
+                        if indel_length in loreq_indel_lengths:
+                            lofreq_classification = 1 if latest_lofreq.filters == 'PASS' else 0
+                        else:
+                            lofreq_classification = 0
                                 
                     else:
                         lofreq_classification = 0
@@ -434,18 +464,32 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                 t_ACGT = [ A_count, C_count, G_count, T_count, DEL_count, INS_count, N_count ]
                 af_rank_idx = numpy.argsort( t_ACGT )                        
                                     
+                
+                if is_vcf:
+                    
+                    if indel_length == 0:
+                        first_alt_rc = t_ACGT[ baseordering[first_alt.upper()] ]
+                        
+                    elif indel_length < 0:
+                        first_alt_rc = t_ACGT[4]
+                        
+                    elif indel_length > 0:
+                        first_alt_rc = t_ACGT[5]
+                    
+                    vcf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
+                        
                 # The most abundant read is the reference base, and the 2nd most abundant read is SNV:
-                if af_rank_idx[-1] == pysambase[ref_base] and (af_rank_idx[-2] <= 3 and t_ACGT[ af_rank_idx[-2] ] > 0):
+                elif af_rank_idx[-1] == baseordering[ref_base] and (af_rank_idx[-2] <= 3 and t_ACGT[ af_rank_idx[-2] ] > 0):
                                         
-                    first_alt    = pysambase[ af_rank_idx[-2] ]
+                    first_alt    = baseordering[ af_rank_idx[-2] ]
                     first_alt_rc = t_ACGT[ af_rank_idx[-2] ]
                     vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
                     indel_length = 0
                 
                 # If the most abundant read is the SNV (not ref base):
-                elif af_rank_idx[-1] != pysambase[ref_base] and (af_rank_idx[-1] <= 3 and t_ACGT[ af_rank_idx[-1] ] > 0):
+                elif af_rank_idx[-1] != baseordering[ref_base] and (af_rank_idx[-1] <= 3 and t_ACGT[ af_rank_idx[-1] ] > 0):
                                         
-                    first_alt    = pysambase[ af_rank_idx[-1] ]
+                    first_alt    = baseordering[ af_rank_idx[-1] ]
                     first_alt_rc = t_ACGT[ af_rank_idx[-1] ]
                     vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
                     indel_length = 0
@@ -512,8 +556,15 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                         if latest_truth_run[0]:
                             
                             assert my_coordinate[1] == latest_truth.position
-                            judgement = 1
-                            my_identifiers.append('TruePositive')
+                            
+                            true_indel_lengths = [ len(alt_i) - len(latest_truth.refbase) for alt_i in latest_truth.altbase.split(',') ]
+                            
+                            if indel_length in true_indel_length:
+                                judgement = 1
+                                my_identifiers.append('TruePositive')
+                            else:
+                                judgement = 0
+                                my_identifiers.append('FalsePositive')
                         
                         else:
                             judgement = 0
