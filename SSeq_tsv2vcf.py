@@ -18,7 +18,7 @@ parser.add_argument('-phred', '--phred-scale', action='store_true', help='Flag i
 
 mode = parser.add_mutually_exclusive_group()
 mode.add_argument('-single',  '--single-sample',   action="store_true", help='Tumor-only mode')
-mode.add_argument('-paired',  '--paired-samples',  action="store_true", help='Paired tumor-normal samples')
+mode.add_argument('-paired',  '--paired-samples',  action="store_true", help='Paired tumor-normal samples', required=False, default=True)
 
 args = parser.parse_args()
 
@@ -213,7 +213,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         info_string = '{COMBO}={MVJSD};NUM_TOOLS={NUM_TOOLS}'.format( COMBO=mvjsdu, MVJSD=MVJS, NUM_TOOLS=num_tools )
 
         # NORMAL
-        if paired_mode:
+        if not single_mode:
             n_ref_mq  = tsv_item[nBAM_REF_MQ]          if tsv_item[nBAM_REF_MQ]          != 'nan' else '.'
             n_alt_mq  = tsv_item[nBAM_ALT_MQ]          if tsv_item[nBAM_ALT_MQ]          != 'nan' else '.'
             n_ref_bq  = tsv_item[nBAM_REF_BQ]          if tsv_item[nBAM_REF_BQ]          != 'nan' else '.'
