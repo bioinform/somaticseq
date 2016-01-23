@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 
-## Take care of SNV first. Worry about INDEL later.
 # Tumor only, no matched normal
-
-# 1-based index in this program.
+# 1-based index in this program
 
 # Example command:
 # python3 SSeq_DeepSeq2tsv.py -mybed actionable_region.bed -tbam recalibrated.bam -varscan varscan.snp.vcf -mutect mutect.snp.vcf -vardict vardict.snp.vcf -lofreq lofreq.snp.vcf -ref human_g1k_v37_decoy.fasta -truth ground_truth.snp.vcf -minVAF 0.001 -maxVAF 0.1 -mincaller 1 --vaf-or-mincaller -outfile DeepSeq.tsv
 
-# 1/19/2016
+# 1/23/2016
 
 import sys, argparse, math, gzip, os, pysam, numpy
 import regex as re
@@ -121,10 +119,8 @@ def rescale(x, original=None, rescale_to=p_scale, max_phred=1001):
     return y
     
 
-
 baseordering = {0: 'A', 1: 'C', 2: 'G', 3: 'T', 4: 'DEL', 5: 'INS', 6: 'N', \
                'A': 0, 'C': 1, 'G': 2, 'T': 3,}
-
 
 
 # Convert contig_sequence to chrom_seq dict:
@@ -283,7 +279,6 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
             first_alt = my_vcf.altbase.split(',')[0]
             indel_length = len(first_alt) - len(ref_base)
             
-        
         elif is_bed:
             bed_item = my_line.split('\t')
             my_coordinates = genomic_coordinates( bed_item[0], int(bed_item[1])+1, int(bed_item[2]) )
@@ -382,7 +377,6 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     first_alt_rc = 0
                     indel_length = 0
                     vaf_check = False
-
 
 
                 num_callers = 0
