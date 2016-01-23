@@ -677,7 +677,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                                 t_poor_read_count += 1
     
                             # Reference calls:
-                            if code_i == 1 and base_call_i == ref_base:
+                            if code_i == 1 and base_call_i == ref_base[0]:
                             
                                 t_ref_read_mq.append( read_i.mapping_quality )
                                 t_ref_read_bq.append( read_i.query_qualities[ith_base] )
