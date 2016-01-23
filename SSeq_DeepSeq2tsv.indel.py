@@ -299,9 +299,93 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
             latest_pileuptumor   = pileup_reader.Base_calls(latest_tpileup_run[1])
             
             if latest_tpileup_run[0]:
+
+                ########## ######### ######### IF VAF passes threshold: INFO EXTRACTION FROM BAM FILES ########## ######### #########
+                # Tumor pileup info extraction:
+                ref_base = latest_pileuptumor.refbase
+                t_dp = latest_pileuptumor.dp
                 
+                A_count   = sum(latest_pileuptumor.A)
+                C_count   = sum(latest_pileuptumor.C)
+                G_count   = sum(latest_pileuptumor.G)
+                T_count   = sum(latest_pileuptumor.T)
+                DEL_count = sum(latest_pileuptumor.DEL)
+                INS_count = sum(latest_pileuptumor.INS)
+                N_count   = sum(latest_pileuptumor.N)
+                
+                t_ACGT = [ A_count, C_count, G_count, T_count, DEL_count, INS_count, N_count ]
+                af_rank_idx = numpy.argsort( t_ACGT )                        
+                                    
+                
+                if is_vcf:
+                    
+                    if indel_length == 0:
+                        first_alt_rc = t_ACGT[ baseordering[first_alt.upper()] ]
+                        
+                    elif indel_length < 0:
+                        first_alt_rc = t_ACGT[4]
+                        
+                    elif indel_length > 0:
+                        first_alt_rc = t_ACGT[5]
+                    
+                    vcf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
+                        
+                # The most abundant read is the reference base, and the 2nd most abundant read is SNV:
+                elif af_rank_idx[-1] == baseordering[ref_base] and (af_rank_idx[-2] <= 3 and t_ACGT[ af_rank_idx[-2] ] > 0):
+                                        
+                    first_alt    = baseordering[ af_rank_idx[-2] ]
+                    first_alt_rc = t_ACGT[ af_rank_idx[-2] ]
+                    vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
+                    indel_length = 0
+                
+                # If the most abundant read is the SNV (not ref base):
+                elif af_rank_idx[-1] != baseordering[ref_base] and (af_rank_idx[-1] <= 3 and t_ACGT[ af_rank_idx[-1] ] > 0):
+                                        
+                    first_alt    = baseordering[ af_rank_idx[-1] ]
+                    first_alt_rc = t_ACGT[ af_rank_idx[-1] ]
+                    vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
+                    indel_length = 0
+                    
+                # Now if the alternate calls are INDELs
+                elif (af_rank_idx[-1] == 4 and t_ACGT[ af_rank_idx[-1] ] > 0) or (af_rank_idx[-2] == 4 and t_ACGT[ af_rank_idx[-2] ] > 0):
+                    
+                    # deletion
+                    first_alt_rc = max( latest_pileuptumor.deletion_calls.values() )
+                    for del_i in latest_pileuptumor.deletion_calls:
+                        if latest_pileuptumor.deletion_calls[del_i] == first_alt_rc:
+                            
+                            deleted_seq = del_i
+                            indel_length = -len(deleted_seq)
+                            first_alt = ref_base
+                            ref_base = ref_base + deleted_seq
+                            break
+                    
+                    vaf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
+
+                elif (af_rank_idx[-1] == 5 and t_ACGT[ af_rank_idx[-1] ] > 0) or (af_rank_idx[-2] == 5 and t_ACGT[ af_rank_idx[-2] ] > 0):
+                                        
+                    # insertion
+                    first_alt_rc = max( latest_pileuptumor.insertion_calls.values() )
+                    for ins_i in latest_pileuptumor.insertion_calls:
+                        if latest_pileuptumor.insertion_calls[ins_i] == first_alt_rc:
+                            
+                            inserted_seq = ins_i
+                            indel_length = len(inserted_seq)
+                            first_alt = ref_base + inserted_seq
+                            break
+                    
+                    vaf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
+                    
+                else:
+                    # N
+                    first_alt = 'N'
+                    first_alt_rc = 0
+                    indel_length = 0
+                    vaf_check = False
+
+
+
                 num_callers = 0
-                                
                 ############################################################################################
                 ##################### Find the same coordinate in VarDict's VCF Output #####################
                 if args.vardict_vcf:
@@ -446,92 +530,9 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     
                 else:
                     lofreq_classification = nan
-            
 
-                ########## ######### ######### IF VAF passes threshold: INFO EXTRACTION FROM BAM FILES ########## ######### #########
-                # Tumor pileup info extraction:
-                ref_base = latest_pileuptumor.refbase
-                t_dp = latest_pileuptumor.dp
-                
-                A_count   = sum(latest_pileuptumor.A)
-                C_count   = sum(latest_pileuptumor.C)
-                G_count   = sum(latest_pileuptumor.G)
-                T_count   = sum(latest_pileuptumor.T)
-                DEL_count = sum(latest_pileuptumor.DEL)
-                INS_count = sum(latest_pileuptumor.INS)
-                N_count   = sum(latest_pileuptumor.N)
-                
-                t_ACGT = [ A_count, C_count, G_count, T_count, DEL_count, INS_count, N_count ]
-                af_rank_idx = numpy.argsort( t_ACGT )                        
-                                    
-                
-                if is_vcf:
-                    
-                    if indel_length == 0:
-                        first_alt_rc = t_ACGT[ baseordering[first_alt.upper()] ]
-                        
-                    elif indel_length < 0:
-                        first_alt_rc = t_ACGT[4]
-                        
-                    elif indel_length > 0:
-                        first_alt_rc = t_ACGT[5]
-                    
-                    vcf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
-                        
-                # The most abundant read is the reference base, and the 2nd most abundant read is SNV:
-                elif af_rank_idx[-1] == baseordering[ref_base] and (af_rank_idx[-2] <= 3 and t_ACGT[ af_rank_idx[-2] ] > 0):
-                                        
-                    first_alt    = baseordering[ af_rank_idx[-2] ]
-                    first_alt_rc = t_ACGT[ af_rank_idx[-2] ]
-                    vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
-                    indel_length = 0
-                
-                # If the most abundant read is the SNV (not ref base):
-                elif af_rank_idx[-1] != baseordering[ref_base] and (af_rank_idx[-1] <= 3 and t_ACGT[ af_rank_idx[-1] ] > 0):
-                                        
-                    first_alt    = baseordering[ af_rank_idx[-1] ]
-                    first_alt_rc = t_ACGT[ af_rank_idx[-1] ]
-                    vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
-                    indel_length = 0
-                    
-                # Now if the alternate calls are INDELs
-                elif (af_rank_idx[-1] == 4 and t_ACGT[ af_rank_idx[-1] ] > 0) or (af_rank_idx[-2] == 4 and t_ACGT[ af_rank_idx[-2] ] > 0):
-                    
-                    # deletion
-                    first_alt_rc = max( latest_pileuptumor.deletion_calls.values() )
-                    for del_i in latest_pileuptumor.deletion_calls:
-                        if latest_pileuptumor.deletion_calls[del_i] == first_alt_rc:
-                            
-                            deleted_seq = del_i
-                            indel_length = -len(deleted_seq)
-                            first_alt = ref_base
-                            ref_base = ref_base + deleted_seq
-                            break
-                    
-                    vaf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
 
-                elif (af_rank_idx[-1] == 5 and t_ACGT[ af_rank_idx[-1] ] > 0) or (af_rank_idx[-2] == 5 and t_ACGT[ af_rank_idx[-2] ] > 0):
-                                        
-                    # insertion
-                    first_alt_rc = max( latest_pileuptumor.insertion_calls.values() )
-                    for ins_i in latest_pileuptumor.insertion_calls:
-                        if latest_pileuptumor.insertion_calls[ins_i] == first_alt_rc:
-                            
-                            inserted_seq = ins_i
-                            indel_length = len(inserted_seq)
-                            first_alt = ref_base + inserted_seq
-                            break
-                    
-                    vaf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
-                    
-                else:
-                                        
-                    # N
-                    first_alt = 'N'
-                    first_alt_rc = 0
-                    indel_length = 0
-                    vaf_check = False
-                
+                ####   ####   ####   ####   ####   ####   ####   ####
                 # Decide to move forward or not, based on user options:
                 if args.only_vaf:
                     move_ahead = vaf_check
