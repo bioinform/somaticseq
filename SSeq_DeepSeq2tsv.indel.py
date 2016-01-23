@@ -560,7 +560,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                             
                             true_indel_lengths = [ len(alt_i) - len(latest_truth.refbase) for alt_i in latest_truth.altbase.split(',') ]
                             
-                            if indel_length in true_indel_length:
+                            if indel_length in true_indel_lengths:
                                 judgement = 1
                                 my_identifiers.append('TruePositive')
                             else:
