@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 
-## Take care of SNV first. Worry about INDEL later.
 # Tumor only, no matched normal
-
-# 1-based index in this program.
+# 1-based index in this program
 
 # Example command:
 # python3 SSeq_DeepSeq2tsv.py -mybed actionable_region.bed -tbam recalibrated.bam -varscan varscan.snp.vcf -mutect mutect.snp.vcf -vardict vardict.snp.vcf -lofreq lofreq.snp.vcf -ref human_g1k_v37_decoy.fasta -truth ground_truth.snp.vcf -minVAF 0.001 -maxVAF 0.1 -mincaller 1 --vaf-or-mincaller -outfile DeepSeq.tsv
 
-# -- 1/11/2016
+# 1/23/2016
 
 import sys, argparse, math, gzip, os, pysam, numpy
 import regex as re
@@ -120,6 +118,10 @@ def rescale(x, original=None, rescale_to=p_scale, max_phred=1001):
         y = '%.2f' % y
     return y
     
+
+baseordering = {0: 'A', 1: 'C', 2: 'G', 3: 'T', 4: 'DEL', 5: 'INS', 6: 'N', \
+               'A': 0, 'C': 1, 'G': 2, 'T': 3,}
+
 
 # Convert contig_sequence to chrom_seq dict:
 fai_file = ref_fa + '.fai'
@@ -263,9 +265,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
         ###################################################################################
         ############################ my_coordinates are 1-based ###########################
         
-        # SNV-only now. Worry about INDELs later
-        indel_length = 0
-        
+        # SNV-only now. Worry about INDELs later        
         if is_vcf:
             my_vcf = genome.Vcf_line( my_line )
             end_i = my_vcf.get_info_value('END')
@@ -274,8 +274,11 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
             else:
                 end_i = my_vcf.position
             
-            my_coordinates = genomic_coordinates(my_vcf.chromosome, my_vcf.position, end_i)            
-        
+            my_coordinates = genomic_coordinates(my_vcf.chromosome, my_vcf.position, end_i)
+            ref_base  = my_vcf.refbase
+            first_alt = my_vcf.altbase.split(',')[0]
+            indel_length = len(first_alt) - len(ref_base)
+            
         elif is_bed:
             bed_item = my_line.split('\t')
             my_coordinates = genomic_coordinates( bed_item[0], int(bed_item[1])+1, int(bed_item[2]) )
@@ -288,12 +291,95 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
         for my_coordinate in my_coordinates:
                         
             latest_tpileup_run   = genome.catchup(my_coordinate, tpileup_line, pileup_out, chrom_seq)
-            latest_pileuptumor   = pileup_reader.Pileup_line(latest_tpileup_run[1])
+            latest_pileuptumor   = pileup_reader.Base_calls(latest_tpileup_run[1])
             
             if latest_tpileup_run[0]:
+
+                ########## ######### ######### IF VAF passes threshold: INFO EXTRACTION FROM BAM FILES ########## ######### #########
+                # Tumor pileup info extraction:
+                ref_base = latest_pileuptumor.refbase
+                t_dp = latest_pileuptumor.dp
                 
+                A_count   = sum(latest_pileuptumor.A)
+                C_count   = sum(latest_pileuptumor.C)
+                G_count   = sum(latest_pileuptumor.G)
+                T_count   = sum(latest_pileuptumor.T)
+                DEL_count = sum(latest_pileuptumor.DEL)
+                INS_count = sum(latest_pileuptumor.INS)
+                N_count   = sum(latest_pileuptumor.N)
+                
+                t_ACGT = [ A_count, C_count, G_count, T_count, DEL_count, INS_count, N_count ]
+                af_rank_idx = numpy.argsort( t_ACGT )                        
+                                    
+                
+                if is_vcf:
+                    
+                    if indel_length == 0:
+                        first_alt_rc = t_ACGT[ baseordering[first_alt.upper()] ]
+                        
+                    elif indel_length < 0:
+                        first_alt_rc = t_ACGT[4]
+                        
+                    elif indel_length > 0:
+                        first_alt_rc = t_ACGT[5]
+                    
+                    vcf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
+                        
+                # The most abundant read is the reference base, and the 2nd most abundant read is SNV:
+                elif af_rank_idx[-1] == baseordering[ref_base] and (af_rank_idx[-2] <= 3 and t_ACGT[ af_rank_idx[-2] ] > 0):
+                                        
+                    first_alt    = baseordering[ af_rank_idx[-2] ]
+                    first_alt_rc = t_ACGT[ af_rank_idx[-2] ]
+                    vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
+                    indel_length = 0
+                
+                # If the most abundant read is the SNV (not ref base):
+                elif af_rank_idx[-1] != baseordering[ref_base] and (af_rank_idx[-1] <= 3 and t_ACGT[ af_rank_idx[-1] ] > 0):
+                                        
+                    first_alt    = baseordering[ af_rank_idx[-1] ]
+                    first_alt_rc = t_ACGT[ af_rank_idx[-1] ]
+                    vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
+                    indel_length = 0
+                    
+                # Now if the alternate calls are INDELs
+                elif (af_rank_idx[-1] == 4 and t_ACGT[ af_rank_idx[-1] ] > 0) or (af_rank_idx[-2] == 4 and t_ACGT[ af_rank_idx[-2] ] > 0):
+                    
+                    # deletion
+                    first_alt_rc = max( latest_pileuptumor.deletion_calls.values() )
+                    for del_i in latest_pileuptumor.deletion_calls:
+                        if latest_pileuptumor.deletion_calls[del_i] == first_alt_rc:
+                            
+                            deleted_seq = del_i
+                            indel_length = -len(deleted_seq)
+                            first_alt = ref_base
+                            ref_base = ref_base + deleted_seq
+                            break
+                    
+                    vaf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
+
+                elif (af_rank_idx[-1] == 5 and t_ACGT[ af_rank_idx[-1] ] > 0) or (af_rank_idx[-2] == 5 and t_ACGT[ af_rank_idx[-2] ] > 0):
+                                        
+                    # insertion
+                    first_alt_rc = max( latest_pileuptumor.insertion_calls.values() )
+                    for ins_i in latest_pileuptumor.insertion_calls:
+                        if latest_pileuptumor.insertion_calls[ins_i] == first_alt_rc:
+                            
+                            inserted_seq = ins_i
+                            indel_length = len(inserted_seq)
+                            first_alt = ref_base + inserted_seq
+                            break
+                    
+                    vaf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
+                    
+                else:
+                    # N
+                    first_alt = 'N'
+                    first_alt_rc = 0
+                    indel_length = 0
+                    vaf_check = False
+
+
                 num_callers = 0
-                                
                 ############################################################################################
                 ##################### Find the same coordinate in VarDict's VCF Output #####################
                 if args.vardict_vcf:
@@ -303,27 +389,35 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     if latest_vardict_run[0]:
                         assert my_coordinate[1] == latest_vardict.position
                         
-                        vardict_classification = 1 if latest_vardict.filters == 'PASS' else 0
+                        vardict_indel_lengths = [ len(alt_i) - len(latest_vardict.refbase) for alt_i in latest_vardict.altbase.split(',') ]
+                        
+                        if indel_length in vardict_indel_lengths:
+                            
+                            vardict_classification = 1 if latest_vardict.filters == 'PASS' else 0
+                                    
+                            # VarDict reported metrics:
+                            msi = latest_vardict.get_info_value('MSI') 
+                            msi = msi if msi else nan
+                            
+                            msilen = latest_vardict.get_info_value('MSILEN')
+                            msilen = msilen if msilen else nan
+                            
+                            shift3 = latest_vardict.get_info_value('SHIFT3')
+                            shift3 = shift3 if shift3 else nan
+                            
+                            t_pmean = latest_vardict.get_info_value('PMEAN')
+                            t_pmean = t_pmean if t_pmean else nan
                                 
-                        # VarDict reported metrics:
-                        msi = latest_vardict.get_info_value('MSI') 
-                        msi = msi if msi else nan
+                            t_pstd = latest_vardict.get_info_value('PSTD')
+                            t_pstd = t_pstd if t_pstd else nan
+                                
+                            t_qstd = latest_vardict.get_info_value('QSTD')
+                            t_qstd = t_qstd if t_qstd else nan
                         
-                        msilen = latest_vardict.get_info_value('MSILEN')
-                        msilen = msilen if msilen else nan
-                        
-                        shift3 = latest_vardict.get_info_value('SHIFT3')
-                        shift3 = shift3 if shift3 else nan
-                        
-                        t_pmean = latest_vardict.get_info_value('PMEAN')
-                        t_pmean = t_pmean if t_pmean else nan
-                            
-                        t_pstd = latest_vardict.get_info_value('PSTD')
-                        t_pstd = t_pstd if t_pstd else nan
-                            
-                        t_qstd = latest_vardict.get_info_value('QSTD')
-                        t_qstd = t_qstd if t_qstd else nan
-                
+                        else:
+                            vardict_classification = 0
+                            msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
+
                     # The VarDict.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                     else:
                         vardict_classification = 0
@@ -335,7 +429,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     vardict_line = latest_vardict.vcf_line
                     
                 else:
-                    msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
+                    msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = vardict_classification = nan
                 
                 
                 ############################################################################################
@@ -349,8 +443,14 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                         
                         assert my_coordinate[1] == latest_varscan.position
                         
-                        varscan_classification = 1 if latest_varscan.filters == 'PASS' else 0
-                        score_varscan2 = eval(latest_varscan.get_sample_value('PVAL'))
+                        varscan_indel_lengths = [ len(alt_i) - len(latest_varscan.refbase) for alt_i in latest_varscan.altbase.split(',') ]
+                        
+                        if indel_length in varscan_indel_lengths:
+                            varscan_classification = 1 if latest_varscan.filters == 'PASS' else 0
+                            score_varscan2 = eval(latest_varscan.get_sample_value('PVAL'))
+                        else:
+                            score_varscan2 = nan
+                            varscan_classification = 0
                                 
                     # The VarScan.vcf doesn't have this record, which doesn't make sense. It means wrong file supplied. 
                     else:
@@ -363,7 +463,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     varscan_line = latest_varscan.vcf_line
                         
                 else:
-                    score_varscan2 = nan
+                    score_varscan2 = varscan_classification = nan
             
             
                 ############################################################################################
@@ -376,7 +476,13 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     if latest_mutect_run[0]:
                         
                         assert my_coordinate[1] == latest_mutect.position
-                        mutect_classification = 1
+                        
+                        mutect_indel_lengths = [ len(alt_i) - len(latest_mutect.refbase) for alt_i in latest_mutect.altbase.split(',') ]
+                        
+                        if indel_length in mutect_indel_lengths:
+                            mutect_classification = 1
+                        else:
+                            mutect_classification = 0
     
                     else:
                         mutect_classification = 0
@@ -400,7 +506,13 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     if latest_lofreq_run[0]:
                         
                         assert my_coordinate[1] == latest_lofreq.position
-                        lofreq_classification = 1 if latest_lofreq.filters == 'PASS' else 0
+                        
+                        loreq_indel_lengths = [ len(alt_i) - len(latest_lofreq.refbase) for alt_i in latest_lofreq.altbase.split(',') ]
+                        
+                        if indel_length in loreq_indel_lengths:
+                            lofreq_classification = 1 if latest_lofreq.filters == 'PASS' else 0
+                        else:
+                            lofreq_classification = 0
                                 
                     else:
                         lofreq_classification = 0
@@ -412,28 +524,9 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     
                 else:
                     lofreq_classification = nan
-            
 
-                ########## ######### ######### IF VAF passes threshold: INFO EXTRACTION FROM BAM FILES ########## ######### #########
-                # Tumor pileup info extraction:
-                ref_base = latest_pileuptumor.refbase
-                t_dp = latest_pileuptumor.dp
-                A_count, a_count, C_count, c_count, G_count, g_count, T_count, t_count, *indels = latest_pileuptumor.count_all_calls()
-                t_ACGT = [A_count + a_count, C_count + c_count, G_count + g_count, T_count + t_count]
-                
-                af_rank_idx = numpy.argsort( t_ACGT )
 
-                if af_rank_idx[-1] == pysambase[ref_base]:
-                    
-                    first_alt    = pysambase[ af_rank_idx[-2] ]
-                    first_alt_rc = t_ACGT[ af_rank_idx[-2] ]
-                    vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
-                    
-                else:
-                    first_alt    = pysambase[ af_rank_idx[-1] ]
-                    first_alt_rc = t_ACGT[ af_rank_idx[-1] ]
-                    vaf_check    = min_vaf <= first_alt_rc/t_dp <= max_vaf
-                
+                ####   ####   ####   ####   ####   ####   ####   ####
                 # Decide to move forward or not, based on user options:
                 if args.only_vaf:
                     move_ahead = vaf_check
@@ -443,7 +536,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                     move_ahead = vaf_check and num_callers >= mincaller
                 elif args.vaf_or_mincaller:
                     move_ahead = vaf_check or num_callers >= mincaller
-                    
+                
                 if move_ahead:
                     
                     # OUTPUT ID FIELD:
@@ -458,8 +551,15 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                         if latest_truth_run[0]:
                             
                             assert my_coordinate[1] == latest_truth.position
-                            judgement = 1
-                            my_identifiers.append('TruePositive')
+                            
+                            true_indel_lengths = [ len(alt_i) - len(latest_truth.refbase) for alt_i in latest_truth.altbase.split(',') ]
+                            
+                            if indel_length in true_indel_lengths:
+                                judgement = 1
+                                my_identifiers.append('TruePositive')
+                            else:
+                                judgement = 0
+                                my_identifiers.append('FalsePositive')
                         
                         else:
                             judgement = 0
@@ -571,7 +671,7 @@ with genome.open_textfile(mysites) as mysites, open(outfile, 'w') as outhandle:
                                 t_poor_read_count += 1
     
                             # Reference calls:
-                            if code_i == 1 and base_call_i == ref_base:
+                            if code_i == 1 and base_call_i == ref_base[0]:
                             
                                 t_ref_read_mq.append( read_i.mapping_quality )
                                 t_ref_read_bq.append( read_i.query_qualities[ith_base] )
