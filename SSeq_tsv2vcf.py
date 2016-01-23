@@ -111,8 +111,6 @@ def dp4_to_gt(ref_for, ref_rev, alt_for, alt_rev, hom_threshold=hom_threshold, h
 
 
 
-
-
 with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     
     # First line is a header:
@@ -124,13 +122,21 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     for n,item in enumerate(tsv_header):
         vars()[item] = n
     
-    toolcode2index = {'M': if_MuTect,
-                      'V': if_VarScan2,
-                      'J': if_JointSNVMix2,
-                      'S': if_SomaticSniper,
-                      'D': if_VarDict,
-                      'U': MuSE_Tier,
-                      'L': if_LoFreq}
+    try:
+        toolcode2index = {'M': if_MuTect,
+                          'V': if_VarScan2,
+                          'J': if_JointSNVMix2,
+                          'S': if_SomaticSniper,
+                          'D': if_VarDict,
+                          'U': MuSE_Tier,
+                          'L': if_LoFreq}
+                          
+    # Some tools aren't included for single sample modes
+    except NameError:
+        toolcode2index = {'M': if_MuTect,
+                          'V': if_VarScan2,
+                          'D': if_VarDict,
+                          'L': if_LoFreq}
     
     # Create vcf headers:
     vcf.write('##fileformat=VCFv4.1\n')
@@ -245,7 +251,6 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
             vaf = '%.3g' % vaf
             
             normal_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=n_ref_mq, altMQ=n_alt_mq, refBQ=n_ref_bq, altBQ=n_alt_bq, refNM=n_ref_nm, altNM=n_alt_nm, fetSB=n_sb, fetCD=n_cd, zMQ=n_mqb, zBQ=n_bqb, VAF=vaf)
-
 
 
         ### TUMOR ###
