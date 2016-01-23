@@ -300,7 +300,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         # PASS
         if score >= pass_score:
             
-            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'PASS', 'SOMATIC;'+info_string, field_string)
+            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'PASS', 'SOMATIC;'+info_string, field_string)
             
             if single_mode:
                 vcf_line = vcf_line + '\t' + tumor_sample_string
@@ -312,7 +312,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         # Low Qual
         elif score > lowqual_score:
                                         
-            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'LowQual', info_string, field_string, normal_sample_string)
+            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'LowQual', info_string, field_string, normal_sample_string)
             
             if single_mode:
                 vcf_line = vcf_line + '\t' + tumor_sample_string
@@ -324,7 +324,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         # REJECT
         elif print_reject:
             
-            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'REJECT', info_string, field_string, normal_sample_string)
+            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'REJECT', info_string, field_string, normal_sample_string)
 
             if single_mode:
                 vcf_line = vcf_line + '\t' + tumor_sample_string
