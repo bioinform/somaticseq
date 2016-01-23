@@ -18,7 +18,7 @@ parser.add_argument('-phred', '--phred-scale', action='store_true', help='Flag i
 
 mode = parser.add_mutually_exclusive_group()
 mode.add_argument('-single',  '--single-sample',   action="store_true", help='Tumor-only mode')
-mode.add_argument('-paired',  '--paired-samples',  action="store_true", default=True, help='Paired tumor-normal samples')
+mode.add_argument('-paired',  '--paired-samples',  action="store_true", help='Paired tumor-normal samples')
 
 args = parser.parse_args()
 
