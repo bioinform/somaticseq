@@ -300,6 +300,9 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
 
         field_string = 'GT:DP4:CD4:refMQ:altMQ:refBQ:altBQ:refNM:altNM:fetSB:fetCD:zMQ:zBQ:VAF'
         
+        if score is nan:
+            scaled_score = 0
+        
         
         # PASS
         if score >= pass_score or (score is nan and num_tools > 0.5*total_num_tools):
