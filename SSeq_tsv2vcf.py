@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
-# Try to implement custom combination of "MVJSDUL"
 
 import sys, argparse, math, gzip
 
-
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-tsv',   '--tsv-in', type=str, help='TSV in', required=True)
-parser.add_argument('-vcf',   '--vcf-out', type=str, help='VCF iut', required=True)
-parser.add_argument('-pass',  '--pass-threshold', type=str, help='Above which is automatically PASS', required=True)
-parser.add_argument('-low',   '--lowqual-threshold', type=str, help='Low quality subject to lenient filter', required=True)
-parser.add_argument('-all',   '--emit-all', action='store_true', help='Flag it to print out everything', required=False)
+parser.add_argument('-tsv',   '--tsv-in',                    type=str,   help='TSV in', required=True)
+parser.add_argument('-vcf',   '--vcf-out',                   type=str,   help='VCF iut', required=True)
+parser.add_argument('-pass',  '--pass-threshold',            type=float, help='Above which is automatically PASS', required=False, default=0.7)
+parser.add_argument('-low',   '--lowqual-threshold',         type=float, help='Low quality subject to lenient filter', required=False, default=0.1)
+parser.add_argument('-hom',   '--hom-threshold',             type=float, help='Above which is automatically PASS', required=False, default=0.85)
+parser.add_argument('-het',   '--het-threshold',             type=float, help='Low quality subject to lenient filter', required=False, default=0.05)
+parser.add_argument('-N',     '--normal-sample-name',        type=str,   help='Normal Sample Name', required=False, default='NORMAL')
+parser.add_argument('-T',     '--tumor-sample-name',         type=str,   help='Tumor Sample Name', required=False, default='TUMOR')
+parser.add_argument('-tools', '--individual-mutation-tools', type=str,   help='A list of all tools: have to match the annotated tool name in the input vcf files', nargs='*', required=False, default=('CGA', 'VarScan2', 'JointSNVMix2', 'SomaticSniper', 'VarDict', 'MuSE', 'LoFreq') )
+
+parser.add_argument('-all',   '--emit-all',    action='store_true', help='Flag it to print out everything', required=False)
 parser.add_argument('-phred', '--phred-scale', action='store_true', help='Flag it to print out Phred scale QUAL (proper VCF format but more annoying to filter)', required=False)
 
-parser.add_argument('-tools', '--individual-mutation-tools',  type=str,   help='A list of all tools: have to match the annotated tool name in the input vcf files', nargs='*', required=False, default=('CGA', 'VarScan2', 'JointSNVMix2', 'SomaticSniper', 'VarDict', 'MuSE', 'LoFreq') )
-
+mode = parser.add_mutually_exclusive_group()
+mode.add_argument('-single',  '--single-sample',   action="store_true", help='Tumor-only mode')
+mode.add_argument('-paired',  '--paired-samples',  action="store_true", help='Paired tumor-normal samples', required=False, default=True)
 
 args = parser.parse_args()
 
@@ -21,12 +26,18 @@ args = parser.parse_args()
 tsv_fn = args.tsv_in
 vcf_fn = args.vcf_out
 tools = args.individual_mutation_tools
-pass_score = float( args.pass_threshold )
-lowqual_score = float( args.lowqual_threshold )
+pass_score = args.pass_threshold
+lowqual_score = args.lowqual_threshold
+hom_threshold = args.hom_threshold
+het_threshold = args.het_threshold
+
+single_mode = args.single_sample
+paired_mode = args.paired_samples
 
 print_reject = args.emit_all
 phred_scaled = args.phred_scale
 
+nan = float('nan')
 
 tools_code = {'CGA':           'M',
               'VarScan2':      'V',
@@ -39,6 +50,7 @@ tools_code = {'CGA':           'M',
 
 mvjsdu = ''
 for tool_i in tools:
+    assert tool_i in tools_code.keys()
     mvjsdu = mvjsdu + tools_code[tool_i]
 total_num_tools = len(mvjsdu)
 
@@ -60,7 +72,7 @@ def p2phred(p, max_phred=float('nan')):
     return Q
     
 
-def dp4_to_gt(ref_for, ref_rev, alt_for, alt_rev):
+def dp4_to_gt(ref_for, ref_rev, alt_for, alt_rev, hom_threshold=hom_threshold, het_threshold=het_threshold):
     try:
         ref_for = int(ref_for)
     except ValueError:
@@ -87,18 +99,16 @@ def dp4_to_gt(ref_for, ref_rev, alt_for, alt_rev):
     if ref_counts == var_counts == 0:
         gt = './.'
         
-    elif var_counts/(var_counts+ref_counts) > 0.85:
+    elif var_counts/(var_counts+ref_counts) > hom_threshold:
         gt = '1/1'
         
-    elif var_counts/(var_counts+ref_counts) >= 0.05:
+    elif var_counts/(var_counts+ref_counts) >= het_threshold:
         gt = '0/1'
         
     else:
         gt = '0/0'
         
     return gt
-
-
 
 
 
@@ -113,14 +123,21 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     for n,item in enumerate(tsv_header):
         vars()[item] = n
     
-    toolcode2index = {'M': if_MuTect,
-                      'V': if_VarScan2,
-                      'J': if_JointSNVMix2,
-                      'S': if_SomaticSniper,
-                      'D': if_VarDict,
-                      'U': MuSE_Tier,
-                      'L': if_LoFreq}
-    
+    try:
+        toolcode2index = {'M': if_MuTect,
+                          'V': if_VarScan2,
+                          'J': if_JointSNVMix2,
+                          'S': if_SomaticSniper,
+                          'D': if_VarDict,
+                          'U': MuSE_Tier,
+                          'L': if_LoFreq}
+                          
+    # Some tools aren't included for single sample modes
+    except NameError:
+        toolcode2index = {'M': if_MuTect,
+                          'V': if_VarScan2,
+                          'D': if_VarDict,
+                          'L': if_LoFreq}
     
     # Create vcf headers:
     vcf.write('##fileformat=VCFv4.1\n')
@@ -149,7 +166,10 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
 
     vcf.write('##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">\n')
 
-    vcf.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNORMAL\tTUMOR\n' )
+    if paired_mode:
+        vcf.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\t{}\n'.format(args.normal_sample_name, args.tumor_sample_name) )
+    elif single_mode:
+        vcf.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\n'.format(args.tumor_sample_name) )
     
     
     # Start writing content:
@@ -159,8 +179,10 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     while tsv_i:
         
         tsv_item = tsv_i.split('\t')
-        
-        score = float( tsv_item[SCORE] )
+        try:
+            score = float( tsv_item[SCORE] )
+        except NameError:
+            score = nan
 
         if phred_scaled:
             scaled_score = p2phred(1-score, max_phred = 255)
@@ -195,55 +217,51 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         info_string = '{COMBO}={MVJSD};NUM_TOOLS={NUM_TOOLS}'.format( COMBO=mvjsdu, MVJSD=MVJS, NUM_TOOLS=num_tools )
 
         # NORMAL
-        n_ref_mq  = tsv_item[nBAM_REF_MQ]          if tsv_item[nBAM_REF_MQ]          != 'nan' else '.'
-        n_alt_mq  = tsv_item[nBAM_ALT_MQ]          if tsv_item[nBAM_ALT_MQ]          != 'nan' else '.'
-        
-        n_ref_bq  = tsv_item[nBAM_REF_BQ]          if tsv_item[nBAM_REF_BQ]          != 'nan' else '.'
-        n_alt_bq  = tsv_item[nBAM_ALT_BQ]          if tsv_item[nBAM_ALT_BQ]          != 'nan' else '.'
-        
-        n_ref_nm  = tsv_item[nBAM_REF_NM]          if tsv_item[nBAM_REF_NM]          != 'nan' else '.'
-        n_alt_nm  = tsv_item[nBAM_ALT_NM]          if tsv_item[nBAM_ALT_NM]          != 'nan' else '.'        
-        
-        n_sb      = tsv_item[nBAM_StrandBias_FET]  if tsv_item[nBAM_StrandBias_FET]  != 'nan' else '.'
-        n_cd      = tsv_item[nBAM_Concordance_FET] if tsv_item[nBAM_Concordance_FET] != 'nan' else '.'
-        n_bqb     = tsv_item[nBAM_Z_Ranksums_BQ]   if tsv_item[nBAM_Z_Ranksums_BQ]   != 'nan' else '.'
-        n_mqb     = tsv_item[nBAM_Z_Ranksums_MQ]   if tsv_item[nBAM_Z_Ranksums_MQ]   != 'nan' else '.'
-        
-        n_ref_for = tsv_item[N_REF_FOR] if tsv_item[N_REF_FOR] != 'nan' else '0'
-        n_ref_rev = tsv_item[N_REF_REV] if tsv_item[N_REF_REV] != 'nan' else '0'
-        n_alt_for = tsv_item[N_ALT_FOR] if tsv_item[N_ALT_FOR] != 'nan' else '0'
-        n_alt_rev = tsv_item[N_ALT_REV] if tsv_item[N_ALT_REV] != 'nan' else '0'
-        
-        n_ref_con = tsv_item[nBAM_REF_Concordant] if tsv_item[nBAM_REF_Concordant] != 'nan' else '0'
-        n_ref_dis = tsv_item[nBAM_REF_Discordant] if tsv_item[nBAM_REF_Discordant] != 'nan' else '0'
-        n_alt_con = tsv_item[nBAM_ALT_Concordant] if tsv_item[nBAM_ALT_Concordant] != 'nan' else '0'
-        n_alt_dis = tsv_item[nBAM_ALT_Concordant] if tsv_item[nBAM_ALT_Concordant] != 'nan' else '0'
-        
-
-        # DP4toGT:
-        gt = dp4_to_gt(n_ref_for, n_ref_rev, n_alt_for, n_alt_rev)
-        
-        # 4-number strings:
-        dp4_string = ','.join(( n_ref_for, n_ref_rev, n_alt_for, n_alt_rev ))
-        cd4_string = ','.join(( n_ref_con, n_ref_dis, n_alt_con, n_alt_dis ))
-        
-        try:
-            vaf = ( int(n_alt_for) + int(n_alt_rev) ) / ( int(n_alt_for) + int(n_alt_rev) + int(n_ref_for) + int(n_ref_rev) )
-        except ZeroDivisionError:
-            vaf = 0
-        vaf = '%.3g' % vaf
-        
-        sample_string1 = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=n_ref_mq, altMQ=n_alt_mq, refBQ=n_ref_bq, altBQ=n_alt_bq, refNM=n_ref_nm, altNM=n_alt_nm, fetSB=n_sb, fetCD=n_cd, zMQ=n_mqb, zBQ=n_bqb, VAF=vaf)
-
+        if not single_mode:
+            n_ref_mq  = tsv_item[nBAM_REF_MQ]          if tsv_item[nBAM_REF_MQ]          != 'nan' else '.'
+            n_alt_mq  = tsv_item[nBAM_ALT_MQ]          if tsv_item[nBAM_ALT_MQ]          != 'nan' else '.'
+            n_ref_bq  = tsv_item[nBAM_REF_BQ]          if tsv_item[nBAM_REF_BQ]          != 'nan' else '.'
+            n_alt_bq  = tsv_item[nBAM_ALT_BQ]          if tsv_item[nBAM_ALT_BQ]          != 'nan' else '.'
+            n_ref_nm  = tsv_item[nBAM_REF_NM]          if tsv_item[nBAM_REF_NM]          != 'nan' else '.'
+            n_alt_nm  = tsv_item[nBAM_ALT_NM]          if tsv_item[nBAM_ALT_NM]          != 'nan' else '.'        
+            
+            n_sb      = tsv_item[nBAM_StrandBias_FET]  if tsv_item[nBAM_StrandBias_FET]  != 'nan' else '.'
+            n_cd      = tsv_item[nBAM_Concordance_FET] if tsv_item[nBAM_Concordance_FET] != 'nan' else '.'
+            n_bqb     = tsv_item[nBAM_Z_Ranksums_BQ]   if tsv_item[nBAM_Z_Ranksums_BQ]   != 'nan' else '.'
+            n_mqb     = tsv_item[nBAM_Z_Ranksums_MQ]   if tsv_item[nBAM_Z_Ranksums_MQ]   != 'nan' else '.'
+            
+            n_ref_for = tsv_item[N_REF_FOR] if tsv_item[N_REF_FOR] != 'nan' else '0'
+            n_ref_rev = tsv_item[N_REF_REV] if tsv_item[N_REF_REV] != 'nan' else '0'
+            n_alt_for = tsv_item[N_ALT_FOR] if tsv_item[N_ALT_FOR] != 'nan' else '0'
+            n_alt_rev = tsv_item[N_ALT_REV] if tsv_item[N_ALT_REV] != 'nan' else '0'
+            
+            n_ref_con = tsv_item[nBAM_REF_Concordant] if tsv_item[nBAM_REF_Concordant] != 'nan' else '0'
+            n_ref_dis = tsv_item[nBAM_REF_Discordant] if tsv_item[nBAM_REF_Discordant] != 'nan' else '0'
+            n_alt_con = tsv_item[nBAM_ALT_Concordant] if tsv_item[nBAM_ALT_Concordant] != 'nan' else '0'
+            n_alt_dis = tsv_item[nBAM_ALT_Concordant] if tsv_item[nBAM_ALT_Concordant] != 'nan' else '0'
+            
+    
+            # DP4toGT:
+            gt = dp4_to_gt(n_ref_for, n_ref_rev, n_alt_for, n_alt_rev)
+            
+            # 4-number strings:
+            dp4_string = ','.join(( n_ref_for, n_ref_rev, n_alt_for, n_alt_rev ))
+            cd4_string = ','.join(( n_ref_con, n_ref_dis, n_alt_con, n_alt_dis ))
+            
+            try:
+                vaf = ( int(n_alt_for) + int(n_alt_rev) ) / ( int(n_alt_for) + int(n_alt_rev) + int(n_ref_for) + int(n_ref_rev) )
+            except ZeroDivisionError:
+                vaf = 0
+            vaf = '%.3g' % vaf
+            
+            normal_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=n_ref_mq, altMQ=n_alt_mq, refBQ=n_ref_bq, altBQ=n_alt_bq, refNM=n_ref_nm, altNM=n_alt_nm, fetSB=n_sb, fetCD=n_cd, zMQ=n_mqb, zBQ=n_bqb, VAF=vaf)
 
 
         ### TUMOR ###
         t_ref_mq  = tsv_item[tBAM_REF_MQ]          if tsv_item[tBAM_REF_MQ]          != 'nan' else '.'
         t_alt_mq  = tsv_item[tBAM_ALT_MQ]          if tsv_item[tBAM_ALT_MQ]          != 'nan' else '.'
-        
         t_ref_bq  = tsv_item[tBAM_REF_BQ]          if tsv_item[tBAM_REF_BQ]          != 'nan' else '.'
         t_alt_bq  = tsv_item[tBAM_ALT_BQ]          if tsv_item[tBAM_ALT_BQ]          != 'nan' else '.'
-        
         t_ref_nm  = tsv_item[tBAM_REF_NM]          if tsv_item[tBAM_REF_NM]          != 'nan' else '.'
         t_alt_nm  = tsv_item[tBAM_ALT_NM]          if tsv_item[tBAM_ALT_NM]          != 'nan' else '.'        
         
@@ -269,7 +287,6 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         dp4_string = ','.join(( t_ref_for, t_ref_rev, t_alt_for, t_alt_rev ))
         cd4_string = ','.join(( t_ref_con, t_ref_dis, t_alt_con, t_alt_dis ))        
         
-        
         try:
             vd  = int(t_alt_for) + int(t_alt_rev)
             vaf = vd / ( vd + int(t_ref_for) + int(t_ref_rev) )
@@ -279,32 +296,50 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
             
         vaf = '%.3g' % vaf
 
-        sample_string2 = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=t_ref_mq, altMQ=t_alt_mq, refBQ=t_ref_bq, altBQ=t_alt_bq, refNM=t_ref_nm, altNM=t_alt_nm, fetSB=t_sb, fetCD=t_cd, zMQ=t_mqb, zBQ=t_bqb, VAF=vaf)
+        tumor_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=t_ref_mq, altMQ=t_alt_mq, refBQ=t_ref_bq, altBQ=t_alt_bq, refNM=t_ref_nm, altNM=t_alt_nm, fetSB=t_sb, fetCD=t_cd, zMQ=t_mqb, zBQ=t_bqb, VAF=vaf)
 
         field_string = 'GT:DP4:CD4:refMQ:altMQ:refBQ:altBQ:refNM:altNM:fetSB:fetCD:zMQ:zBQ:VAF'
         
+        if score is nan:
+            scaled_score = 0
+        
+        
         # PASS
-        if score >= pass_score:
+        if score >= pass_score or (score is nan and num_tools > 0.5*total_num_tools):
             
-            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'PASS', 'SOMATIC;'+info_string, field_string, sample_string1, sample_string2)
+            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'PASS', 'SOMATIC;'+info_string, field_string)
             
-            vcf.write( vcf_line )
+            if single_mode:
+                vcf_line = vcf_line + '\t' + tumor_sample_string
+            elif paired_mode:
+                vcf_line = vcf_line + '\t' + normal_sample_string + '\t' + tumor_sample_string
             
-        
+            vcf.write( vcf_line + '\n' )
+            
         # Low Qual
-        elif score > lowqual_score:
+        elif score >= lowqual_score or (score is nan and num_tools >= 1):
                                         
-            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'LowQual', info_string, field_string, sample_string1, sample_string2)
+            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'LowQual', info_string, field_string)
             
-            vcf.write( vcf_line )
-        
+            if single_mode:
+                vcf_line = vcf_line + '\t' + tumor_sample_string
+            elif paired_mode:
+                vcf_line = vcf_line + '\t' + normal_sample_string + '\t' + tumor_sample_string
+            
+            vcf.write( vcf_line + '\n' )
         
         # REJECT
         elif print_reject:
             
-            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'REJECT', info_string, field_string, sample_string1, sample_string2)
-            
-            vcf.write( vcf_line )
+            vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'REJECT', info_string, field_string)
 
-        
+            if single_mode:
+                vcf_line = vcf_line + '\t' + tumor_sample_string
+            elif paired_mode:
+                vcf_line = vcf_line + '\t' + normal_sample_string + '\t' + tumor_sample_string
+            
+            vcf.write( vcf_line + '\n' )
+
+
+        # Next line:
         tsv_i = tsv.readline().rstrip()

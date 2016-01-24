@@ -137,10 +137,6 @@ def dedup_test(read_i, remove_dup_or_not=True):
 
 
 
-pysambase = {0: 'A', 1: 'C', 2: 'G', 3: 'T', \
-            'A': 0, 'C': 1, 'G': 2, 'T': 3,}
-
-
 ### END OF PYSAM ###
 
 

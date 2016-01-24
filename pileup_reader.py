@@ -53,7 +53,12 @@ class Pileup_line:
         base_calls = seq(self.reads)
         
         ref_forward_count = ref_reverse_count = 0
-        alt_forward = alt_reverse = del_forward = del_reverse = ins_forward = ins_reverse = []        
+        alt_forward = []
+        alt_reverse = []
+        del_forward = []
+        del_reverse = []
+        ins_forward = []
+        ins_reverse = []
         n_count = N_count = 0
         
         for base_i in base_calls:
@@ -124,17 +129,47 @@ class Pileup_line:
                     ins_reverse.append(inserted_seq)
                     
         return ref_forward_count, ref_reverse_count, alt_forward, alt_reverse, del_forward, del_reverse, ins_forward, ins_reverse, n_count, N_count
-                
 
-
-    def count_all_calls(self):
+    
+    def total_insertion_calls(self):
+        ins = re.findall(r'\+[0-9]+[ACGTNacgtn]+', self.reads)
+        total_count = len(ins)
+        return total_count
+    
+    def total_deletion_calls(self):
+        dels = re.findall(r'-[0-9]+[ACGTNacgtn]+', self.reads)
+        total_count = len(dels)
+        return total_count
+    
+    def indel_fraction(self):
+        ins = self.total_insertion_calls()
+        dels = self.total_deletion_calls()
         
-        # Make the base_calls into a generator:        
+        try:
+            fraction = (ins + dels ) / self.dp
+        except ZeroDivisionError:
+            fraction = 0
+        return fraction
+
+
+
+
+
+class Base_calls(Pileup_line):
+    
+    def __init__(self, pileup_line):
+
+        Pileup_line.__init__(self, pileup_line)        
+        
+        # Make the base_calls into a generator:
         base_calls = seq(self.reads)
         
         ref_forward_count = ref_reverse_count = 0
-        alt_forward = alt_reverse = del_forward = del_reverse = ins_forward = ins_reverse = []
         n_count = a_count = c_count = g_count = t_count = N_count = A_count = C_count = G_count = T_count = 0
+        del_forward = []
+        del_reverse = []
+        ins_forward = []
+        ins_reverse = []
         
         for base_i in base_calls:
             
@@ -215,7 +250,6 @@ class Pileup_line:
                 elif inserted_seq.islower():
                     ins_reverse.append(inserted_seq)
         
-        
         # Before going there, find out what is the ref base and re-assign accordingly:
         if self.refbase.upper() == 'A':
             a_count = ref_reverse_count
@@ -229,27 +263,48 @@ class Pileup_line:
         elif self.refbase.upper() == 'T':
             t_count = ref_reverse_count
             T_count = ref_forward_count
-                    
-        return A_count, a_count, C_count, c_count, G_count, g_count, T_count, t_count, del_reverse, ins_forward, ins_reverse, n_count, N_count
+        elif self.refbase.upper() == 'N':
+            n_count = ref_reverse_count
+            N_count = ref_forward_count
 
+        deletion_calls = {}
+        for call_i in del_forward:
+            try:
+                deletion_calls[call_i] += 1
+            except KeyError:
+                deletion_calls[call_i] = 1
+                
+        for call_i in del_reverse:
+            try:
+                deletion_calls[call_i.upper()] += 1
+            except KeyError:
+                deletion_calls[call_i.upper()] = 1
 
-    
-    def total_insertion_calls(self):
-        ins = re.findall(r'\+[0-9]+[ACGTNacgtn]+', self.reads)
-        total_count = len(ins)
-        return total_count
-    
-    def total_deletion_calls(self):
-        dels = re.findall(r'-[0-9]+[ACGTNacgtn]+', self.reads)
-        total_count = len(dels)
-        return total_count
-    
-    def indel_fraction(self):
-        ins = self.total_insertion_calls()
-        dels = self.total_deletion_calls()
+        insertion_calls = {}
+        for call_i in ins_forward:
+            try:
+                insertion_calls[call_i] += 1
+            except KeyError:
+                insertion_calls[call_i] = 1
+                
+        for call_i in ins_reverse:
+            try:
+                insertion_calls[call_i.upper()] += 1
+            except KeyError:
+                insertion_calls[call_i.upper()] = 1
         
-        try:
-            fraction = (ins + dels ) / self.dp
-        except ZeroDivisionError:
-            fraction = 0
-        return fraction
+        # Returns these:
+        self.A   = A_count, a_count
+        self.C   = C_count, c_count
+        self.G   = G_count, g_count
+        self.T   = T_count, t_count
+        self.DEL = len(del_forward), len(del_reverse)
+        self.INS = len(ins_forward), len(ins_reverse)
+        self.N   = N_count, n_count
+        self.ref = ref_forward_count, ref_reverse_count
+        
+        self.deletions       = del_forward, del_reverse  # list of deletions
+        self.insertions      = ins_forward, ins_reverse  # list of insertions
+        self.deletion_calls  = deletion_calls  # dictionary of deletion calls (strand agnostic) and their occurrence
+        self.insertion_calls = insertion_calls # dictionary of insertion calls (strand agnostic) and their occurrence
+        
