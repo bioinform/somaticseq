@@ -5,8 +5,8 @@ import sys, argparse, math, gzip
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-tsv',   '--tsv-in',                    type=str,   help='TSV in', required=True)
 parser.add_argument('-vcf',   '--vcf-out',                   type=str,   help='VCF iut', required=True)
-parser.add_argument('-pass',  '--pass-threshold',            type=float, help='Above which is automatically PASS', required=False, default=0.5)
-parser.add_argument('-low',   '--lowqual-threshold',         type=float, help='Low quality subject to lenient filter', required=False, default=0.2)
+parser.add_argument('-pass',  '--pass-threshold',            type=float, help='Above which is automatically PASS', required=False, default=0.7)
+parser.add_argument('-low',   '--lowqual-threshold',         type=float, help='Low quality subject to lenient filter', required=False, default=0.1)
 parser.add_argument('-hom',   '--hom-threshold',             type=float, help='Above which is automatically PASS', required=False, default=0.85)
 parser.add_argument('-het',   '--het-threshold',             type=float, help='Low quality subject to lenient filter', required=False, default=0.05)
 parser.add_argument('-N',     '--normal-sample-name',        type=str,   help='Normal Sample Name', required=False, default='NORMAL')
@@ -37,6 +37,7 @@ paired_mode = args.paired_samples
 print_reject = args.emit_all
 phred_scaled = args.phred_scale
 
+nan = float('nan')
 
 tools_code = {'CGA':           'M',
               'VarScan2':      'V',
@@ -178,7 +179,10 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     while tsv_i:
         
         tsv_item = tsv_i.split('\t')
-        score = float( tsv_item[SCORE] )
+        try:
+            score = float( tsv_item[SCORE] )
+        except NameError:
+            score = nan
 
         if phred_scaled:
             scaled_score = p2phred(1-score, max_phred = 255)
@@ -298,7 +302,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         
         
         # PASS
-        if score >= pass_score:
+        if score >= pass_score or (score is nan and num_tools > 0.5*total_num_tools):
             
             vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'PASS', 'SOMATIC;'+info_string, field_string)
             
@@ -310,7 +314,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
             vcf.write( vcf_line + '\n' )
             
         # Low Qual
-        elif score > lowqual_score:
+        elif score >= lowqual_score or (score is nan and num_tools >= 1):
                                         
             vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'LowQual', info_string, field_string)
             
