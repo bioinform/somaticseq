@@ -248,10 +248,10 @@ then
 	elif [[ -r ${snpgroundtruth} ]] && [[ -r ${ada_r_script} ]]
 	then
 		R --no-save --args "${merged_dir}/Ensemble.sSNV.tsv" < ${ada_r_script}
-	
+
 	# If no training and no classification, then make VCF by majority vote consensus:
 	else
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Untrained.sSNV.vcf -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sSNV.tsv -vcf ${merged_dir}/Untrained.sSNV.vcf -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse
 	fi
 
 fi
@@ -317,7 +317,7 @@ then
 	fi
 
 
-	# 
+	#
 	$MYDIR/score_Somatic.Variants.py -tools $tool_indelocator $tool_varscan $tool_vardict -infile ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf -mincaller 1 -outfile ${merged_dir}/BINA_somatic.indel.vcf
 
 	if [[ -r ${masked_region} ]]
@@ -349,10 +349,10 @@ then
         elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]
         then
                 R --no-save --args "${merged_dir}/Ensemble.sINDEL.tsv" < ${ada_r_script}
-	
+
 	# If no training and no classification, then make VCF by majority vote consensus:
 	else
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -tools $tool_indelocator $tool_varscan $tool_vardict
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -tools $tool_indelocator $tool_varscan $tool_vardict
 	fi
 
 fi
