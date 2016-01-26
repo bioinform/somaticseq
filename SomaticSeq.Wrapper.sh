@@ -352,7 +352,7 @@ then
 
 	# If no training and no classification, then make VCF by majority vote consensus:
 	else
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -tools $tool_indelocator $tool_varscan $tool_vardict
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sINDEL.tsv -vcf ${merged_dir}/Untrained.sINDEL.vcf -tools $tool_indelocator $tool_varscan $tool_vardict
 	fi
 
 fi
