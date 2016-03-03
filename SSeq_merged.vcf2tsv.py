@@ -1115,6 +1115,9 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 lseq  = ref_fa.fetch(my_coordinate[0], my_coordinate[1]-20, my_coordinate[1])
                 rseq  = ref_fa.fetch(my_coordinate[0], my_coordinate[1]+1,  my_coordinate[1]+21)
                 
+                lseq = lseq.decode() if isinstance(lseq, bytes) else lseq
+                rseq = rseq.decode() if isinstance(rseq, bytes) else rseq
+                
                 seq41_ref = lseq + ref_base  + rseq
                 seq41_alt = lseq + first_alt + rseq
                 
