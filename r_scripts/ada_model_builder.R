@@ -39,13 +39,13 @@ save(ada.model, file = paste(training_data_filename, ".Classifier.RData", sep=""
 
 print(ada.model)
 
-pdf( paste(training_data_filename, ".varplot.pdf", sep = "") )
-varplot(ada.model)
-dev.off()
+#pdf( paste(training_data_filename, ".varplot.pdf", sep = "") )
+#varplot(ada.model)
+#dev.off()
 
-pdf( paste(training_data_filename, ".iterplot.pdf", sep = "") )
-plot(ada.model, TRUE, TRUE)
-dev.off()
+#pdf( paste(training_data_filename, ".iterplot.pdf", sep = "") )
+#plot(ada.model, TRUE, TRUE)
+#dev.off()
 
 #print("Computing prediction values...")
 #ada.pred <- predict(ada.model, newdata = test_data, type="both")
