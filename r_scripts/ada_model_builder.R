@@ -12,6 +12,11 @@ train_filename = paste(training_data_filename)
 
 train_data = read.table(train_filename, header=TRUE)
 
+
+if (!(1 %in% train_data$TrueVariant_or_False && 0 %in% train_data$TrueVariant_or_False)) {
+stop("In training mode, there must be both true positives and false positives in the call set.")
+}
+
 if (FALSE) {
 print("Updating missing values...")
 train_data <- set_missing_values(train_data)
