@@ -25,15 +25,15 @@ model_formula <- as.formula(TrueVariant_or_False ~ .)
 print("Fitting model...")
 ada.model <- ada(model_formula, data = train_data, iter = 500)
 
-save(ada.model, file = paste(training_data_filename, ".Classifier.RData", sep="") )
+save(ada.model, file = paste(train_filename, ".Classifier.RData", sep="") )
 
 print(ada.model)
 
-#pdf( paste(training_data_filename, ".varplot.pdf", sep = "") )
+#pdf( paste(train_filename, ".varplot.pdf", sep = "") )
 #varplot(ada.model)
 #dev.off()
 
-#pdf( paste(training_data_filename, ".iterplot.pdf", sep = "") )
+#pdf( paste(train_filename, ".iterplot.pdf", sep = "") )
 #plot(ada.model, TRUE, TRUE)
 #dev.off()
 
