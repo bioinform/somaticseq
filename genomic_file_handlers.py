@@ -245,7 +245,11 @@ def ascii2phred33(x):
     return ord(x)-33
     
     
+def phred33toascii(x):
+    '''Put in a Phred33 score, return the character.'''
+    return chr(x+33)
     
+
 def p2phred(p, max_phred=inf):
     '''Convert p-value to Phred-scale quality score.'''
     
