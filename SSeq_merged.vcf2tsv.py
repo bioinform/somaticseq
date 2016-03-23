@@ -1114,7 +1114,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 # Homopolymer eval (Make sure to modify for INDEL):
                 # The min and max is to prevent the +/- 20 bases from exceeding the reference sequence
                 lseq  = ref_fa.fetch(my_coordinate[0], max(0, my_coordinate[1]-20), my_coordinate[1])
-                rseq  = ref_fa.fetch(my_coordinate[0], my_coordinate[1]+1,          min(ref_fa.get_reference_length(my_coordinate[0]), my_coordinate[1]+21) )
+                rseq  = ref_fa.fetch(my_coordinate[0], my_coordinate[1]+1,          min(ref_fa.get_reference_length(my_coordinate[0])+1, my_coordinate[1]+21) )
                 
                 # This is to get around buy in old version of pysam that reads the reference sequence in bytes instead of strings
                 lseq = lseq.decode() if isinstance(lseq, bytes) else lseq
