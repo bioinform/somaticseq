@@ -128,7 +128,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <ul>
     <li>Python3 and regex package</li>
     <li>R and ada package</li>
-    <li>GATK (optional)</li>
+    <li>Free GATK</li>
     <li>snpEFF and snpSIFT</li>
     <li>dbSNP and COSMIC file</li>
     </ul>
@@ -139,7 +139,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <h2>Running SomaticSeq</h2>
     This SomaticSeq workflow takes about 3 hours for an ensmeble call set of 50K calls.
 
-    The shell command (VCF file can also be bgzipped, but make sure it has .gz extention):
+    The shell command (All VCF files need to be properly sorted. VCF files can also be bgzipped, but make sure they have .gz extension):
     
     <ul>
     <li><b>Running SomaticSeq's somatic mutation prediction mode:</b>
@@ -187,7 +187,6 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
 
 
     <h3>Known Issues:</h3>
-    Some older versions of GATK seem to have problem with FIFO used in the SomaticSeq script (i.e., we had problem with GATK version 2014.1-2.8.1), so we recommend at least version version 2014.4-2 or later.
 
 
 
@@ -199,12 +198,12 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
 
     <h3>References/Tools</h3>
     <ul>
-    <li>MuTect: <a href='http://dx.doi.org/10.1038/nbt.2514' target=_blank>Cibulskis K, Lawrence MS, Carter SL, et al. Sensitive detection of somatic point mutations in impure and heterogeneous cancer samples. Nat Biotechnol. 2013;31(3):213-9.</a></li>
-    <li>VarScan2: <a href='http://dx.doi.org/10.1101/gr.129684.111' target=_blank>Koboldt DC, Zhang Q, Larson DE, et al. VarScan 2: somatic mutation and copy number alteration discovery in cancer by exome sequencing. Genome Res. 2012;22(3):568-76.</a></li>
-    <li>JointSNVMix2: <a href='http://dx.doi.org/10.1093/bioinformatics/bts053' target=_blank>Roth A, Ding J, Morin R, et al. JointSNVMix: a probabilistic model for accurate detection of somatic mutations in normal/tumour paired next-generation sequencing data. Bioinformatics. 2012;28(7):907-13.</a></li>
-    <li>SomaticSniper: <a href='http://dx.doi.org/10.1093/bioinformatics/btr665' target=_blank> Larson DE, Harris CC, Chen K, et al. SomaticSniper: identification of somatic point mutations in whole genome sequencing data. Bioinformatics. 2012;28(3):311-7.</a></li>
-    <li>VarDict: <a href='http://dx.doi.org/10.1093/nar/gkw227' target=_blank>Lai Z, Markovets A, Ahdesmaki M, Chapman B, et al. VarDict: a novel and versatile variant caller for next-generation sequencing in cancer research. Nucleic Acids Research. 2016.</a></li>
-    <li>Indelocator: <a href='http://dx.doi.org/10.1038/nature11154' target=_blank'>Banerji S, Cibulskis K, Rangel-escareno C, et al. Sequence analysis of mutations and translocations across breast cancer subtypes. Nature. 2012;486(7403):405-9.</a></li>
+    <li>MuTect: <a href="http://dx.doi.org/10.1038/nbt.2514" target=_blank>Cibulskis K, Lawrence MS, Carter SL, et al. Sensitive detection of somatic point mutations in impure and heterogeneous cancer samples. Nat Biotechnol. 2013;31(3):213-9.</a></li>
+    <li>VarScan2: <a href="http://dx.doi.org/10.1101/gr.129684.111" target=_blank>Koboldt DC, Zhang Q, Larson DE, et al. VarScan 2: somatic mutation and copy number alteration discovery in cancer by exome sequencing. Genome Res. 2012;22(3):568-76.</a></li>
+    <li>JointSNVMix2: <a href="http://dx.doi.org/10.1093/bioinformatics/bts053" target=_blank>Roth A, Ding J, Morin R, et al. JointSNVMix: a probabilistic model for accurate detection of somatic mutations in normal/tumour paired next-generation sequencing data. Bioinformatics. 2012;28(7):907-13.</a></li>
+    <li>SomaticSniper: <a href="http://dx.doi.org/10.1093/bioinformatics/btr665" target=_blank> Larson DE, Harris CC, Chen K, et al. SomaticSniper: identification of somatic point mutations in whole genome sequencing data. Bioinformatics. 2012;28(3):311-7.</a></li>
+    <li>VarDict: <a href="http://dx.doi.org/10.1093/nar/gkw227" target=_blank>Lai Z, Markovets A, Ahdesmaki M, Chapman B, et al. VarDict: a novel and versatile variant caller for next-generation sequencing in cancer research. Nucleic Acids Research. 2016.</a></li>
+    <li>Indelocator: <a href="http://dx.doi.org/10.1038/nature11154" target=_blank'>Banerji S, Cibulskis K, Rangel-escareno C, et al. Sequence analysis of mutations and translocations across breast cancer subtypes. Nature. 2012;486(7403):405-9.</a></li>
     <li>MuSE: <a href="http://bioinformatics.mdanderson.org/main/MuSE" target=_blank>http://bioinformatics.mdanderson.org/main/MuSE</a></li>
     </ul>
 
