@@ -443,7 +443,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     
                     if (latest_vardict.filters == 'PASS') and ('Somatic' in latest_vardict.info):
                         vardict_classification = 1
-                    else:
+                        
+                    elif 'Somatic' in latest_vardict.info:
                         vardict_filters = latest_vardict.filters.split(';')
                         
                         disqualifying_filters = ('d7' in vardict_filters or 'd5' in vardict_filters) or \
@@ -464,6 +465,9 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             vardict_classification = 0.5
                         else:
                             vardict_classification = 0
+                            
+                    else:
+                        vardict_classification = 0
                     
                     # Somatic Score:
                     score_vardict = latest_vardict.get_info_value('SSF')
