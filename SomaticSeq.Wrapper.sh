@@ -198,7 +198,7 @@ then
 
 	if [[ -r ${lofreq_vcf} ]]
 	then
-		lofreq_input="lofreq ${lofreq_vcf}"
+		lofreq_input="-lofreq ${lofreq_vcf}"
 		tool_lofreq="LoFreq"
 	else
 		lofreq_input=''
