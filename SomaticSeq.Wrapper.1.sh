@@ -1,5 +1,5 @@
 #!/bin/bash
-# Use getopt instead of getopts for long options
+# Version 2
 
 set -e
 
@@ -7,40 +7,36 @@ PATH=/net/kodiak/volumes/lake/shared/opt/python3/bin:/home/ltfang/apps/bedtools-
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
-while true; do
-	case "$1" in
-		-o | --output-dir )       merged_dir="$2";        shift; shift ;;
-		-M | --mutect )           mutect_vcf="$2";       shift; shift ;;
-		-I | --indelocator )      indelocator_vcf="$2";   shift; shift ;;
-		-V | --varscan-snv )      varscan_vcf="$2";       shift; shift ;;
-		-v | --varscan-indel )    varscan_indel_vcf="$2"; shift; shift ;;
-		-J | --jsm )              jsm_vcf="$2";           shift; shift ;;
-		-S | --sniper )           sniper_vcf="$2";        shift; shift ;;
-		-D | --vardict )          vardict_vcf="$2";       shift; shift ;;
-		-U | --muse )             muse_vcf="$2";          shift; shift ;;
-		-L | --lofreq-snv )       lofreq_vcf="$2";        shift; shift ;;
-		-l | --lofreq-indel )     lofreq_indel_vcf="$2";  shift; shift ;;
-		-p | --scapel )           scapel_vcf="$2";        shift; shift ;;
-		-g | --genome-reference ) hg_ref="$2";            shift; shift ;;
-		-c | --cosmic )           cosmic="$2";            shift; shift ;;
-		-d | --dbsnp )            dbsnp="$2";             shift; shift ;;
-		-s | --snpeff-dir )       snpeff_dir="$2";        shift; shift ;;
-		-G | --gatk )             gatk="$2";              shift; shift ;;
-		-T | --tumor-bam )        tbam="$2";              shift; shift ;;
-		-N | --normal-bam )       nbam="$2";              shift; shift ;;
-		-C | --classifier-snv )   snpclassifier="$2";     shift; shift ;;
-		-x | --classifier-indel ) indelclassifier="$2";   shift; shift ;;
-		-R | --ada-r-script )     ada_r_script="$2";      shift; shift ;;
-		-i | --ignore-region )    masked_region="$2";     shift; shift ;;
-		-z | --truth-indel )      indelgroundtruth="$2";  shift; shift ;;
-		-Z | --truth-snv )        snpgroundtruth="$2";    shift; shift ;;
-		-- ) shift; break ;;
-		* ) break ;;
-	esac
+while getopts "o:M:I:V:v:J:S:D:U:L:l:g:c:d:s:G:T:N:C:x:R:i:z:Z:" opt
+do
+    case $opt in
+        o) merged_dir=$OPTARG;;
+	M) mutect_vcf=$OPTARG;;
+	I) indelocator_vcf=$OPTARG;;
+	V) varscan_vcf=$OPTARG;;
+	v) varscan_indel_vcf=$OPTARG;;
+	J) jsm_vcf=$OPTARG;;
+	S) sniper_vcf=$OPTARG;;
+	D) vardict_vcf=$OPTARG;;
+	U) muse_vcf=$OPTARG;;
+	L) lofreq_vcf=$OPTARG;;
+	l) lofreq_indel_vcf=$OPTARG;;
+	g) hg_ref=$OPTARG;;
+	c) cosmic=$OPTARG;;
+	d) dbsnp=$OPTARG;;
+	s) snpeff_dir=$OPTARG;;
+	G) gatk=$OPTARG;;
+	T) tbam=$OPTARG;;
+	N) nbam=$OPTARG;;
+	C) snpclassifier=$OPTARG;;
+	x) indelclassifier=$OPTARG;;
+	R) ada_r_script=$OPTARG;;
+	i) masked_region=$OPTARG;;
+	z) indelgroundtruth=$OPTARG;;
+	Z) snpgroundtruth=$OPTARG;;
+    esac
 done
 
-#echo $merged_dir $mutect_vcf $indelocator_vcf $varscan_vcf $varscan_indel_vcf $jsm_vcf $sniper_vcf $vardict_vcf $muse_vcf $lofreq_vcf $lofreq_indel_vcf $hg_ref $cosmic $dbsnp $snpeff_dir $gatk $tbam $nbam $snpclassifier $indelclassifier $ada_r_script $masked_region $indelgroundtruth $snpgroundtruth
-#false
 
 if ! [[ -d ${merged_dir} ]];
 then
