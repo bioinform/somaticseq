@@ -9,32 +9,158 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 while true; do
 	case "$1" in
-		-o | --output-dir )       merged_dir="$2";        shift; shift ;;
-		-M | --mutect )           mutect_vcf="$2";       shift; shift ;;
-		-I | --indelocator )      indelocator_vcf="$2";   shift; shift ;;
-		-V | --varscan-snv )      varscan_vcf="$2";       shift; shift ;;
-		-v | --varscan-indel )    varscan_indel_vcf="$2"; shift; shift ;;
-		-J | --jsm )              jsm_vcf="$2";           shift; shift ;;
-		-S | --sniper )           sniper_vcf="$2";        shift; shift ;;
-		-D | --vardict )          vardict_vcf="$2";       shift; shift ;;
-		-U | --muse )             muse_vcf="$2";          shift; shift ;;
-		-L | --lofreq-snv )       lofreq_vcf="$2";        shift; shift ;;
-		-l | --lofreq-indel )     lofreq_indel_vcf="$2";  shift; shift ;;
-		-p | --scapel )           scapel_vcf="$2";        shift; shift ;;
-		-g | --genome-reference ) hg_ref="$2";            shift; shift ;;
-		-c | --cosmic )           cosmic="$2";            shift; shift ;;
-		-d | --dbsnp )            dbsnp="$2";             shift; shift ;;
-		-s | --snpeff-dir )       snpeff_dir="$2";        shift; shift ;;
-		-G | --gatk )             gatk="$2";              shift; shift ;;
-		-T | --tumor-bam )        tbam="$2";              shift; shift ;;
-		-N | --normal-bam )       nbam="$2";              shift; shift ;;
-		-C | --classifier-snv )   snpclassifier="$2";     shift; shift ;;
-		-x | --classifier-indel ) indelclassifier="$2";   shift; shift ;;
-		-R | --ada-r-script )     ada_r_script="$2";      shift; shift ;;
-		-i | --ignore-region )    masked_region="$2";     shift; shift ;;
-		-z | --truth-indel )      indelgroundtruth="$2";  shift; shift ;;
-		-Z | --truth-snv )        snpgroundtruth="$2";    shift; shift ;;
+		-o | --output-dir )
+			case "$2" in
+				"") shift 2 ;;
+				*)  merged_dir=$2 ; shift 2 ;;
+			esac ;;
+
+		-M | --mutect )
+			case "$2" in
+				"") shift 2 ;;
+				*)  mutect_dir=$2 ; shift 2 ;;
+			esac ;;
+
+		-I | --indelocator )
+			case "$2" in
+				"") shift 2 ;;
+				*)  indelocator_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		-V | --varscan-snv )
+			case "$2" in
+				"") shift 2 ;;
+				*)  varscan_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		-v | --varscan-indel )
+			case "$2" in
+				"") shift 2 ;;
+				*)  varscan_indel_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		-J | --jsm )
+			case "$2" in
+				"") shift 2 ;;
+				*)  jsm_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		-S | --sniper )
+			case "$2" in
+				"") shift 2 ;;
+				*)  sniper_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		-D | --vardict )
+			case "$2" in
+				"") shift 2 ;;
+				*)  vardict_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		-U | --muse )
+			case "$2" in
+				"") shift 2 ;;
+				*)  muse_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		-L | --lofreq-snv )
+			case "$2" in
+				"") shift 2 ;;
+				*)  lofreq_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		-l | --lofreq-indel )
+			case "$2" in
+				"") shift 2 ;;
+				*)  lofreq_indel_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		-p | --scapel )
+			case "$2" in
+				"") shift 2 ;;
+				*)  scapel_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		-g | --genome-reference )
+			case "$2" in
+				"") shift 2 ;;
+				*)  hg_ref=$2 ; shift 2 ;;
+			esac ;;
+
+		-c | --cosmic )
+			case "$2" in
+				"") shift 2 ;;
+				*)  cosmic=$2 ; shift 2 ;;
+			esac ;;
+
+		-d | --dbsnp )
+			case "$2" in
+				"") shift 2 ;;
+				*)  dbsnp=$2 ; shift 2 ;;
+			esac ;;
+
+		-s | --snpeff-dir )
+			case "$2" in
+				"") shift 2 ;;
+				*)  snpeff_dir=$2 ; shift 2 ;;
+			esac ;;
+
+		-G | --gatk )
+			case "$2" in
+				"") shift 2 ;;
+				*)  gatk=$2 ; shift 2 ;;
+			esac ;;
+
+		-T | --tumor-bam )
+			case "$2" in
+				"") shift 2 ;;
+				*)  tbam=$2 ; shift 2 ;;
+			esac ;;
+
+		-N | --normal-bam )
+			case "$2" in
+				"") shift 2 ;;
+				*)  nbam=$2 ; shift 2 ;;
+			esac ;;
+
+		-C | --classifier-snv )
+			case "$2" in
+				"") shift 2 ;;
+				*)  snpclassifier=$2 ; shift 2 ;;
+			esac ;;
+
+		-x | --classifier-indel )
+			case "$2" in
+				"") shift 2 ;;
+				*)  indelclassifier=$2 ; shift 2 ;;
+			esac ;;
+
+		-R | --ada-r-script )
+			case "$2" in
+				"") shift 2 ;;
+				*)  ada_r_script=$2 ; shift 2 ;;
+			esac ;;
+
+		-i | --ignore-region )
+			case "$2" in
+				"") shift 2 ;;
+				*)  masked_region=$2 ; shift 2 ;;
+			esac ;;
+
+		-z | --truth-indel )
+			case "$2" in
+				"") shift 2 ;;
+				*)  indelgroundtruth=$2 ; shift 2 ;;
+			esac ;;
+
+		-Z | --truth-snv )
+			case "$2" in
+				"") shift 2 ;;
+				*)  snpgroundtruth=$2 ; shift 2 ;;
+			esac ;;
+
 		-- ) shift; break ;;
+
 		* ) break ;;
 	esac
 done
