@@ -80,19 +80,22 @@ SomaticSeq.Wrapper.sh is a bash script that calls a series of scripts to combine
 \begin{itemize}
 
 \item
-All the .py scripts are written in Python 3 (Yes, Python 3. I deserve brownie points from Python developers). Also required are regex, pysam, numpy, and scipy libraries for Python 3. 
+All the .py scripts are written in Python 3 (Yes, Python 3. I deserve brownie points from Python developers). Also required are regex, pysam, numpy, and scipy libraries. 
 
 \item
 R, plus the ada package in R.
 
 \item
-SnpEff/SnpSift, GATK (for CombineVariants), and BEDTools
+BEDTools
+
+\item
+Optional: SnpEff/SnpSift and GATK (only for CombineVariants so the free version is adequate)
 
 \item
 dbSNP in VCF format. COSMIC may be needed in the future.
 
 \item
-At least one of MuTect/Indelocator, VarScan2, JointSNVMix, SomaticSniper, VarDict, and MuSE. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
+At least one of MuTect/Indelocator, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, or LoFreq. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
 
 \end{itemize}
 
@@ -111,26 +114,28 @@ To create a trained classifier, ground truth files are required for the data set
 # -M/-I/-V/-v/-J/-S/-D/-U are output VCF files from individual callers.
 # -i is also optional.
 SomaticSeq.Wrapper.sh \
--M MuTect/variants.snp.vcf \
--I Indelocator/variants.indel.vcf \
--V VarScan2/variants.snp.vcf \
--v VarScan2/variants.indel.vcf \
--J JointSNVMix2/variants.snp.vcf \
--S SomaticSniper/variants.snp.vcf \
--D VarDict/variants.vcf \
--U MuSE/variants.snp.vcf \
--N matched_normal.bam \
--T tumor.bam \
--R ada_model_builder.R \
--g human_b37.fasta \
--c cosmic.b37.v71.vcf \
--d dbSNP.b37.v141.vcf \
--s $PATH/TO/DIR/snpSift \
--G $PATH/TO/GenomeAnalysisTK.jar \
--i ignore.bed \
--Z truth.snp.vcf \
--z truth.indel.vcf \
--o $OUTPUT_DIR
+--mutect           MuTect/variants.snp.vcf \
+--indelocator      Indelocator/variants.indel.vcf \
+--varscan-snv      VarScan2/variants.snp.vcf \
+--varscan-indel    VarScan2/variants.indel.vcf \
+--jsm              JointSNVMix2/variants.snp.vcf \
+--sniper           SomaticSniper/variants.snp.vcf \
+--vardict          VarDict/variants.vcf \
+--muse             MuSE/variants.snp.vcf \
+--lofreq-snv       LoFreq/variants.snp.vcf \
+--lofreq-indel     LoFreq/variants.indel.vcf \
+--normal-bam       matched_normal.bam \
+--tumor-bam        tumor.bam \
+--ada-r-script     ada_model_builder.R \
+--genome-reference human_b37.fasta \
+--cosmic           cosmic.b37.v71.vcf \
+--dbsnp            dbSNP.b37.v141.vcf \
+--snpeff-dir       $PATH/TO/DIR/snpSift \
+--gatk             $PATH/TO/GenomeAnalysisTK.jar \
+--ignore-region    ignore.bed \
+--truth-snv        truth.snp.vcf \
+--truth-indel      truth.indel.vcf \
+--output-dir       $OUTPUT_DIR
 \end{lstlisting}
 
 SomaticSeq.Wrapper.sh supports any combination of the somatic mutation callers we have incorporated into the workflow, so -M/-I/-V/-v/-J/-S/-D/-U are all optional parameters. SomaticSeq will run based on the output VCFs you have provided. It will train SNV and/or indel if you provide the truth.snp.vcf and/or truth.indel.vcf file(s).
@@ -143,25 +148,29 @@ SomaticSeq.Wrapper.sh supports any combination of the somatic mutation callers w
 \begin{lstlisting}
 # The *.RData files are trained classifier from the training mode.
 SomaticSeq.Wrapper.sh \
--M MuTect/variants.snp.vcf \
--I Indelocator/variants.indel.vcf \
--V VarScan2/variants.snp.vcf \
--v VarScan2/variants.indel.vcf \
--J JointSNVMix2/variants.snp.vcf \
--S SomaticSniper/variants.snp.vcf \
--D VarDict/variants.vcf \
--U MuSE/variants.snp.vcf \
--N matched_normal.bam \
--T tumor.bam \
--R ada_model_predictor.R \
--C sSNV.Classifier.RData \
--x sINDEL.Classifier.RData \
--g human_b37.fasta \
--c cosmic.b37.v71.vcf \
--d dbSNP.b37.v141.vcf \
--s $PATH/TO/DIR/snpSift \
--G $PATH/TO/GenomeAnalysisTK.jar \
--o $OUTPUT_DIR
+--mutect           MuTect/variants.snp.vcf \
+--indelocator      Indelocator/variants.indel.vcf \
+--varscan-snv      VarScan2/variants.snp.vcf \
+--varscan-indel    VarScan2/variants.indel.vcf \
+--jsm              JointSNVMix2/variants.snp.vcf \
+--sniper           SomaticSniper/variants.snp.vcf \
+--vardict          VarDict/variants.vcf \
+--muse             MuSE/variants.snp.vcf \
+--lofreq-snv       LoFreq/variants.snp.vcf \
+--lofreq-indel     LoFreq/variants.indel.vcf \
+--normal-bam       matched_normal.bam \
+--tumor-bam        tumor.bam \
+--ada-r-script     ada_model_predictor.R \
+--genome-reference human_b37.fasta \
+--cosmic           cosmic.b37.v71.vcf \
+--dbsnp            dbSNP.b37.v141.vcf \
+--snpeff-dir       $PATH/TO/DIR/snpSift \
+--gatk             $PATH/TO/GenomeAnalysisTK.jar \
+--ignore-region    ignore.bed \
+--classifier-snv   sSNV.Classifier.RData \
+--classifier-indel sINDEL.Classifier.RData \
+--output-dir       $OUTPUT_DIR
+
 \end{lstlisting}
 
 
@@ -441,7 +450,7 @@ Have implemented the following improvement, mostly for indels:
 
 
 
-\subsection{Version 2.0-rc1}
+\subsection{Version 2.0}
 
 \begin{itemize}
   \item
@@ -460,6 +469,14 @@ Have implemented the following improvement, mostly for indels:
   Consolidated feature sets, e.g., removed some redundant feature sets coming from different resources.
 \end{itemize}
 
+
+\subsection{Version 2.0.2}
+
+\begin{itemize}
+  \item
+  Used getopt to replace getopts in the SomaticSeq.Wrapper.sh script to allow long options. 
+  
+\end{itemize}
 
 
 
