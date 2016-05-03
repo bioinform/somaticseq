@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, argparse, math, gzip
+import sys, argparse, math, gzip, os
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-tsv',   '--tsv-in',                    type=str,   help='TSV in', required=True)
@@ -36,6 +36,12 @@ paired_mode = args.paired_samples
 
 print_reject = args.emit_all
 phred_scaled = args.phred_scale
+
+
+MY_DIR = os.path.dirname(os.path.realpath(__file__))
+with open(os.path.join(MY_DIR, "VERSION")) as version_info_file:
+    version_line = version_info_file.readline()
+
 
 nan = float('nan')
 
@@ -141,6 +147,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     
     # Create vcf headers:
     vcf.write('##fileformat=VCFv4.1\n')
+    vcf.write(version_line)
     vcf.write('##FILTER=<ID=LowQual,Description="Less confident somatic mutation calls with probability value at least {}">\n'.format(lowqual_score) )
     vcf.write('##FILTER=<ID=PASS,Description="Accept as a confident somatic mutation calls with probability value at least {}">\n'.format(pass_score) )
     vcf.write('##FILTER=<ID=REJECT,Description="Rejected as a confident somatic mutation with ONCOSCORE below 2">\n')
