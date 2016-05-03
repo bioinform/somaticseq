@@ -160,7 +160,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     --tumor-bam tumor.bam                                 \<br>
     --ada-r-script ada_model_predictor.R                  \<br>
     --classifier-snv sSNV.Classifier.RData                \<br>
-    --classifier-inde sINDEL.Classifier.RData             \<br>
+    --classifier-indel sINDEL.Classifier.RData             \<br>
     --genome-reference human_b37.fasta                    \<br>
     --cosmic cosmic.b37.v71.vcf                           \<br>
     --dbsnp dbSNP.b37.v141.vcf                            \<br>
@@ -185,7 +185,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     --vardict $PATH/TO/Vardict/variants.vcf \<br>
     --muse $PATH/TO/MuSE/variants.snv.vcf \<br>
     --indelocator $PATH/TO/Indelocator/variants.indel.vcf \<br>
-    -varscan-indel $PATH/TO/Varscan/variants.indel.vcf \<br>
+    --varscan-indel $PATH/TO/Varscan/variants.indel.vcf \<br>
     --normal-bam normal.bam \<br>
     --tumor-bam tumor.bam \<br>
     --ada-r-script ada_model_builder.R \<br>
@@ -207,28 +207,28 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <h3>Command-line options for SomaticSeq.Wrapper.sh:</h3>
     <h4>Long options only available after v2.0.3</h4>
     <ul>
-    <li><code>-M | --mutect variants.vcf</code>: MuTect's output VCF (Optional)</li>
-    <li><code>-V | --varscan-snv variants.snp.vcf</code>: VarScan2's output SNV VCF (Optional)</li>
-    <li><code>-J | --jsm variants.vcf</code>: JointSNVMix's variant output converted to VCF (Optional)</li>
-    <li><code>-S | --sniper variants.vcf</code>: SomaticSniper's output VCF (Optional)</li>
-    <li><code>-D | --vardict variants.vcf</code>: VarDict's output VCF (Optional)</li>
-    <li><code>-U | --muse variants.vcf</code>: MuSE's output VCF (Optional)</li>
-    <li><code>-I | --indelocator variants.vcf</code>: Indelocator's output VCF (Optional)</li>
-    <li><code>-v | --varscan-indel variants.indel.vcf</code>: VarScan2's output INDEL VCF (Optional)</li>
-    <li><code>-N | --normal-bam normal.bam</code>: Normal BAM files</li>
-    <li><code>-T | --tumor-bam tumor.bam</code>: Tumor BAM files</li>
-    <li><code>-R | --ada-r-script ada_model_[predictor|builder].R</code>: Ada script in R. (Optional. If not provided, SomaticSeq will not attempt to train or predict. If -C and -x are provided, this script is assumed to be predictor.R. If -Z and -z are provided, this script is assumed to be builder.R).</li>
-    <li><code>-C | --classifier-snv Trained_SNV_Classifier.RData</code>: Trained model/classifier for SNV, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
-    <li><code>-x | --classifier-indel Trained_INDEL_Classifier.RData</code>: Trained model/classifier for INDEL, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
-    <li><code>-g | --genome-reference human_b37_decoy.fasta</code>: Genome reference FASTA file</li>
-    <li><code>-c | --cosmic COSMIC.b37.vcf</code>: COSMIC VCF file</li>
-    <li><code>-d | --dbsnp dbSNP.v141.b37.vcf</code>: dbSNP VCF file</li>
-    <li><code>-s | --snpeff-dir path/to/SnpEFF</code>: snpEFF/snpSift's installation directory containing the executable .jar files</li>
-    <li><code>-G | --gatk path/to/GATK.jar</code>: GATK's java executable file</li>
-    <li><code>-i | --ignore-region IGNORE.bed</code>: Regions to toss out in the final VCF files (Optional)</li>
-    <li><code>-Z | --truth-snv SNV_Ground_Truth.vcf</code>: A VCF file containing true sSNVs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
-    <li><code>-z | --truth-indel INDEL_Ground_Truth.vcf</code>: A VCF file containing true sINDELs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
-    <li><code>-o | --output-dir output</code>: Output directory (make sure it exists)</li>
+    <li><code>-M | --mutect</code>: MuTect's output VCF (Optional)</li>
+    <li><code>-V | --varscan-snv</code>: VarScan2's output SNV VCF (Optional)</li>
+    <li><code>-J | --jsm</code>: JointSNVMix's variant output converted to VCF (Optional)</li>
+    <li><code>-S | --sniper</code>: SomaticSniper's output VCF (Optional)</li>
+    <li><code>-D | --vardict</code>: VarDict's output VCF (Optional)</li>
+    <li><code>-U | --muse</code>: MuSE's output VCF (Optional)</li>
+    <li><code>-I | --indelocator</code>: Indelocator's output VCF (Optional)</li>
+    <li><code>-v | --varscan-indel</code>: VarScan2's output INDEL VCF (Optional)</li>
+    <li><code>-N | --normal-bam</code>: Normal BAM files</li>
+    <li><code>-T | --tumor-bam</code>: Tumor BAM files</li>
+    <li><code>-R | --ada-r-script</code>: Ada script in R. (Optional. If not provided, SomaticSeq will not attempt to train or predict. If -C and -x are provided, this script is assumed to be predictor.R. If -Z and -z are provided, this script is assumed to be builder.R).</li>
+    <li><code>-C | --classifier-snv</code>: Trained model/classifier for SNV, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
+    <li><code>-x | --classifier-indel</code>: Trained model/classifier for INDEL, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
+    <li><code>-g | --genome-reference</code>: Genome reference FASTA file</li>
+    <li><code>-c | --cosmic</code>: COSMIC VCF file</li>
+    <li><code>-d | --dbsnp</code>: dbSNP VCF file</li>
+    <li><code>-s | --snpeff-dir</code>: snpEFF/snpSift's installation directory containing the executable .jar files</li>
+    <li><code>-G | --gatk</code>: GATK's java executable file</li>
+    <li><code>-i | --ignore-region</code>: Regions to toss out in the final VCF files (Optional)</li>
+    <li><code>-Z | --truth-snv</code>: A VCF file containing true sSNVs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
+    <li><code>-z | --truth-indel</code>: A VCF file containing true sINDELs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
+    <li><code>-o | --output-dir</code>: Output directory (make sure it exists)</li>
     </ul>
 
 
