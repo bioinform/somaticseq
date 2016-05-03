@@ -506,6 +506,109 @@ def catchup(coordinate_i, line_j, filehandle_j, chrom_sequence):
 
 
 
+
+def catchup_multilines(coordinate_i, line_j, filehandle_j, chrom_sequence):
+    
+    '''
+    Keep reading the j_th vcf file until it hits (or goes past) the i_th coordinate, then
+        1) Create a list to store information for this coordinate in the j_th vcf file
+        2) Keep reading the j_th vcf file and store all lines with the same coordinate, until the coordinate goes to the next coordiate at which time the function stops reading and you can do stuff with the list created above.
+        3) Basically, it won't stop when vcf_j reaches the coordinate, but only stop when vcf_j has gone beyond the coordinate. 
+    
+    Returns (True, [Vcf_lines], line_j) if the j_th vcf file contains an entry that matches the i_th coordinate.
+    Returns (False, []        , line_j) if the j_th vcf file does not contain such an entry, and therefore the function has run past the i_th coordinate, by which time the programmer can decide to move into the next i_th coordiate.
+    '''
+    
+    coordinate_j = re.match( pattern_chr_position, line_j )
+    
+    if coordinate_j:
+        coordinate_j = coordinate_j.group()
+    else:
+        coordinate_j = ''
+
+    # Which coordinate is behind?
+    is_behind = whoisbehind( coordinate_i, coordinate_j, chrom_sequence )
+            
+    # The file_j is already ahead, return the same line_j, but tag it "False"
+    if is_behind == 0:
+        reporter = (False, [], line_j)
+    
+    # The two coordinates are the same, return the same line_j, but tag it "True"
+    elif is_behind == 10:
+        
+        # Create a list, initiated with the current line:
+        lines_of_coordinate_i = [ line_j ]
+        
+        while is_behind == 10:
+            line_j = filehandle_j.readline().rstrip()
+            next_coord = re.match( pattern_chr_position, line_j )
+            
+            if next_coord:
+                coordinate_j = next_coord.group()
+            else:
+                coordinate_j = ''
+                
+            is_behind = whoisbehind( coordinate_i, coordinate_j, chrom_sequence )
+        
+            # If the next line (still) has the same coordinate:
+            if is_behind == 10:
+                lines_of_coordinate_i.append( line_j )
+        
+        reporter = (True, lines_of_coordinate_i, line_j)
+        
+        
+    # If file_j is behind, then needs to catch up:
+    elif is_behind == 1:
+        
+        # Keep at it until line_j is no longer behind:
+        while is_behind == 1:
+        
+            # Catch up
+            line_j = filehandle_j.readline().rstrip()
+            next_coord = re.match( pattern_chr_position, line_j )
+                
+            if next_coord:
+                coordinate_j = next_coord.group()
+            else:
+                coordinate_j = ''
+                
+            is_behind = whoisbehind( coordinate_i, coordinate_j, chrom_sequence )
+        
+        
+        # If file_j has caught up exactly to the position of coordinate_i:
+        if is_behind == 10:
+            
+            # Create a list, initiated with the current line:
+            lines_of_coordinate_i = [ line_j ]
+            
+            while is_behind == 10:
+                line_j = filehandle_j.readline().rstrip()
+                next_coord = re.match( pattern_chr_position, line_j )
+                
+                if next_coord:
+                    coordinate_j = next_coord.group()
+                else:
+                    coordinate_j = ''
+                    
+                is_behind = whoisbehind( coordinate_i, coordinate_j, chrom_sequence )
+            
+                # If the next line (still) has the same coordinate:
+                if is_behind == 10:
+                    lines_of_coordinate_i.append( line_j )
+                    
+            reporter = (True, lines_of_coordinate_i, line_j)
+        
+        
+        elif is_behind == 0:
+            
+            reporter = (False, [], line_j)
+    
+    return reporter
+
+
+
+
+
 # Read the 2nd file (i.e., filehandle_j) one line down if it's behind the i_th coordinate:
 def catchup_one_line_at_a_time(coordinate_i, line_j, filehandle_j, chrom_sequence):
     
