@@ -51,7 +51,8 @@ tools_code = {'CGA':           'M',
               'SomaticSniper': 'S',
               'VarDict':       'D',
               'MuSE':          'U',
-              'LoFreq':        'L'}
+              'LoFreq':        'L',
+              'Scalpel':       'P'}
 
 
 mvjsdu = ''
@@ -136,14 +137,16 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
                           'S': if_SomaticSniper,
                           'D': if_VarDict,
                           'U': MuSE_Tier,
-                          'L': if_LoFreq}
+                          'L': if_LoFreq,
+                          'P': if_ScalPel}
                           
     # Some tools aren't included for single sample modes
     except NameError:
         toolcode2index = {'M': if_MuTect,
                           'V': if_VarScan2,
                           'D': if_VarDict,
-                          'L': if_LoFreq}
+                          'L': if_LoFreq,
+                          'P': if_Scalpel}
     
     # Create vcf headers:
     vcf.write('##fileformat=VCFv4.1\n')
