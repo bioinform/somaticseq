@@ -138,7 +138,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
                           'D': if_VarDict,
                           'U': MuSE_Tier,
                           'L': if_LoFreq,
-                          'P': if_ScalPel}
+                          'P': if_Scalpel}
                           
     # Some tools aren't included for single sample modes
     except NameError:
