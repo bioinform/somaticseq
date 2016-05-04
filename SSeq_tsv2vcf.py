@@ -130,23 +130,16 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     for n,item in enumerate(tsv_header):
         vars()[item] = n
     
-    try:
-        toolcode2index = {'M': if_MuTect,
-                          'V': if_VarScan2,
-                          'J': if_JointSNVMix2,
-                          'S': if_SomaticSniper,
-                          'D': if_VarDict,
-                          'U': MuSE_Tier,
-                          'L': if_LoFreq,
-                          'P': if_Scalpel}
+    
+    if 'if_MuTect' in vars():        toolcode2index = {'M': if_MuTect}
+    if 'if_VarScan2' in vars():      toolcode2index = {'V': if_VarScan2}
+    if 'if_JointSNVMix2' in vars():  toolcode2index = {'J': if_JointSNVMix2}
+    if 'if_SomaticSniper' in vars(): toolcode2index = {'S': if_SomaticSniper}
+    if 'if_VarDict' in vars():       toolcode2index = {'D': if_VarDict}
+    if 'MuSE_Tier' in vars():        toolcode2index = {'U': MuSE_Tier}
+    if 'if_LoFreq' in vars():        toolcode2index = {'L': if_LoFreq}
+    if 'if_Scalpel' in vars():       toolcode2index = {'P': if_Scalpel}
                           
-    # Some tools aren't included for single sample modes
-    except NameError:
-        toolcode2index = {'M': if_MuTect,
-                          'V': if_VarScan2,
-                          'D': if_VarDict,
-                          'L': if_LoFreq,
-                          'P': if_Scalpel}
     
     # Create vcf headers:
     vcf.write('##fileformat=VCFv4.1\n')
