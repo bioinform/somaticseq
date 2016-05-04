@@ -130,15 +130,15 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     for n,item in enumerate(tsv_header):
         vars()[item] = n
     
-    
-    if 'if_MuTect' in vars():        toolcode2index = {'M': if_MuTect}
-    if 'if_VarScan2' in vars():      toolcode2index = {'V': if_VarScan2}
-    if 'if_JointSNVMix2' in vars():  toolcode2index = {'J': if_JointSNVMix2}
-    if 'if_SomaticSniper' in vars(): toolcode2index = {'S': if_SomaticSniper}
-    if 'if_VarDict' in vars():       toolcode2index = {'D': if_VarDict}
-    if 'MuSE_Tier' in vars():        toolcode2index = {'U': MuSE_Tier}
-    if 'if_LoFreq' in vars():        toolcode2index = {'L': if_LoFreq}
-    if 'if_Scalpel' in vars():       toolcode2index = {'P': if_Scalpel}
+    toolcode2index = {}
+    if 'if_MuTect' in vars():        toolcode2index['M'] = if_MuTect
+    if 'if_VarScan2' in vars():      toolcode2index['V'] = if_VarScan2
+    if 'if_JointSNVMix2' in vars():  toolcode2index['J'] = if_JointSNVMix2
+    if 'if_SomaticSniper' in vars(): toolcode2index['S'] = if_SomaticSniper
+    if 'if_VarDict' in vars():       toolcode2index['D'] = if_VarDict
+    if 'MuSE_Tier' in vars():        toolcode2index['U'] = MuSE_Tier
+    if 'if_LoFreq' in vars():        toolcode2index['L'] = if_LoFreq
+    if 'if_Scalpel' in vars():       toolcode2index['P'] = if_Scalpel
                           
     
     # Create vcf headers:
