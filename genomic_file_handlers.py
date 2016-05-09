@@ -296,7 +296,6 @@ def count_repeating_bases(sequence):
     '''For a string, count the number of characters that appears in a row. 
     E.g., for string "ABBCCCDDDDAAAAAAA", the function returns 1, 2, 3, 4, 7, because there is 1 A, 2 B's, 3 C's, 4 D's, and then 7 A's.
     '''
-    
     counters = []
     previous_base = None
     
@@ -605,6 +604,35 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, chrom_sequence):
     
     return reporter
 
+
+
+
+
+
+def find_vcf_at_coordinate(my_coordinate, latest_vcf_line, vcf_file_handle, chrom_seq):
+    '''Best used in conjunction with catchup_multilines.
+    Given the current coordinate, the latest vcf_line from a vcf file, and the vcf file handle, it will return all the VCF variants (as VCF objects) at the given coordinate as a dictionary, where the key is the ( (contig, position), ref_base_i, alt_base_i ).
+    If there are two ALT bases in a given VCF line, the output dictionary will include two copies of this VCF object, with two different keys, each representing a different ALT base.
+    '''
+    latest_vcf_run = genome.catchup_multilines(my_coordinate, latest_vcf_line, vcf_file_handle, chrom_seq)
+    latest_vcf_here = latest_vcf_run[1]
+
+    vcf_variants = {}
+    if latest_vcf_run[0]:
+
+        for vcf_line_i in latest_vcf_here:
+
+            vcf_i = genome.Vcf_line( vcf_line_i )
+
+            altbases = vcf_i.altbase.split(',')
+            for alt_i in altbases:
+                vcf_variants[ ((vcf_i.chromosome, vcf_i.position), vcf_i.refbase, alt_i) ] = vcf_i
+
+            assert my_coordinate[1] == vcf_i.position
+
+    latest_vcf_line = latest_vcf_run[-1]
+
+    return latest_vcf_run[0], vcf_variants, latest_vcf_line
 
 
 
