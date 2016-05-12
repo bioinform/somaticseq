@@ -77,10 +77,10 @@ while true; do
 				*)  lofreq_indel_vcf=$2 ; shift 2 ;;
 			esac ;;
 
-		-p | --scapel )
+		-p | --scalpel )
 			case "$2" in
 				"") shift 2 ;;
-				*)  scapel_vcf=$2 ; shift 2 ;;
+				*)  scalpel_vcf=$2 ; shift 2 ;;
 			esac ;;
 
 		-g | --genome-reference )
@@ -172,9 +172,6 @@ while true; do
 		* ) break ;;
 	esac
 done
-
-#echo $merged_dir $mutect_vcf $indelocator_vcf $varscan_vcf $varscan_indel_vcf $jsm_vcf $sniper_vcf $vardict_vcf $muse_vcf $lofreq_vcf $lofreq_indel_vcf $hg_ref $cosmic $dbsnp $snpeff_dir $gatk $tbam $nbam $snpclassifier $indelclassifier $ada_r_script $masked_region $indelgroundtruth $snpgroundtruth
-#false
 
 if ! [[ -d ${merged_dir} ]];
 then
