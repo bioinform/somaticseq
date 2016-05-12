@@ -7,6 +7,8 @@ PATH=/net/kodiak/volumes/lake/shared/opt/python3/bin:/home/ltfang/apps/bedtools-
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
+keep_intermediates=false
+
 while true; do
 	case "$1" in
 		-o | --output-dir )
@@ -157,6 +159,12 @@ while true; do
 			case "$2" in
 				"") shift 2 ;;
 				*)  snpgroundtruth=$2 ; shift 2 ;;
+			esac ;;
+
+		-k | --keep-intermediates )
+			 case "$2" in
+				"") shift 2 ;;
+				*)  keep_intermediates=$2 ; shift 2 ;;
 			esac ;;
 
 		-- ) shift; break ;;
@@ -500,5 +508,8 @@ then
 
 fi
 
-# Clean up intermediate files
-rm ${files_to_delete}
+# Clean up intermediate files if wants to
+if ! [ keep_intermediates ]
+then
+	rm ${files_to_delete}
+fi
