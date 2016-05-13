@@ -335,6 +335,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             
             my_vcf = genome.Vcf_line( my_line )
             my_coordinates = [(my_vcf.chromosome, my_vcf.position)]
+            variants_at_my_coordinate = []
             
             alt_bases = my_vcf.altbase.split(',')
             for alt_i in alt_bases:
