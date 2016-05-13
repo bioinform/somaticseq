@@ -614,7 +614,7 @@ def find_vcf_at_coordinate(my_coordinate, latest_vcf_line, vcf_file_handle, chro
     Given the current coordinate, the latest vcf_line from a vcf file, and the vcf file handle, it will return all the VCF variants (as VCF objects) at the given coordinate as a dictionary, where the key is the ( (contig, position), ref_base_i, alt_base_i ).
     If there are two ALT bases in a given VCF line, the output dictionary will include two copies of this VCF object, with two different keys, each representing a different ALT base.
     '''
-    latest_vcf_run = genome.catchup_multilines(my_coordinate, latest_vcf_line, vcf_file_handle, chrom_seq)
+    latest_vcf_run  = catchup_multilines(my_coordinate, latest_vcf_line, vcf_file_handle, chrom_seq)
     latest_vcf_here = latest_vcf_run[1]
 
     vcf_variants = {}
