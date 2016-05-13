@@ -622,7 +622,7 @@ def find_vcf_at_coordinate(my_coordinate, latest_vcf_line, vcf_file_handle, chro
 
         for vcf_line_i in latest_vcf_here:
 
-            vcf_i = genome.Vcf_line( vcf_line_i )
+            vcf_i = Vcf_line( vcf_line_i )
 
             altbases = vcf_i.altbase.split(',')
             for alt_i in altbases:
