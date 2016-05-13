@@ -506,7 +506,7 @@ then
 fi
 
 # Clean up intermediate files if wants to
-if ! [ keep_intermediates ]
+if ! [ $keep_intermediates ]
 then
 	rm ${files_to_delete}
 fi
