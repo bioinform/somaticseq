@@ -48,6 +48,7 @@ parser.add_argument('-jsm',     '--jsm-vcf',                  type=str,   help='
 parser.add_argument('-vardict', '--vardict-vcf',              type=str,   help='VarDict VCF',       required=False, default=None)
 parser.add_argument('-muse',    '--muse-vcf',                 type=str,   help='MuSE VCF',          required=False, default=None)
 parser.add_argument('-lofreq',  '--lofreq-vcf',               type=str,   help='LoFreq VCF',        required=False, default=None)
+parser.add_argument('-scalpel', '--scalpel-vcf',              type=str,   help='Scalpel VCF',       required=False, default=None)
 
 parser.add_argument('-mincaller', '--minimum-num-callers',    type=float, help='Minimum number of tools to be considered', required=False, default=0)
 
@@ -85,6 +86,7 @@ jsm       = args.jsm_vcf
 vardict   = args.vardict_vcf
 muse      = args.muse_vcf
 lofreq    = args.lofreq_vcf
+scalpel   = args.scalpel_vcf
 
 min_mq    = args.minimum_mapping_quality
 min_bq    = args.minimum_base_quality
@@ -137,9 +139,6 @@ nan = float('nan')
 inf = float('inf')
 pattern_chr_position = genome.pattern_chr_position
 
-baseordering = {0: 'A', 1: 'C', 2: 'G', 3: 'T', 4: 'DEL', 5: 'INS', 6: 'N', \
-               'A': 0, 'C': 1, 'G': 2, 'T': 3,}
-
 # Normal/Tumor index in the Merged VCF file, or any other VCF file that puts NORMAL first. 
 idxN,idxT = 0,1
 
@@ -160,6 +159,7 @@ out_header = \
 {if_SomaticSniper}\t\
 {if_VarDict}\t\
 {if_LoFreq}\t\
+{if_Scalpel}\t\
 {MuSE_Tier}\t\
 {VarScan2_Score}\t\
 {SNVMix2_Score}\t\
@@ -328,6 +328,13 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         lofreq_line = lofreq.readline().rstrip()
         while lofreq_line.startswith('#'):
             lofreq_line = lofreq.readline().rstrip()
+            
+    if scalpel:
+        scalpel = genome.open_textfile(scalpel)
+        scalpel_line = scalpel.readline().rstrip()
+        while scalpel_line.startswith('#'):
+            scalpel_line = scalpel.readline().rstrip()
+
     
     
     # Get through all the headers:
@@ -376,16 +383,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         ##### ##### ##### ##### ##### #####
         for my_coordinate in my_coordinates:
             
-            
-            
             ######## If VCF, can get ref base, variant base, as well as other identifying information ######## 
             if is_vcf:
                 
                 ref_bases = []
                 alt_bases = []
                 indel_lengths = []
-                first_alt_rcs = []
-                vaf_checks = []
 
                 for variant_i in variants_at_my_coordinate:
 
@@ -393,25 +396,22 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     first_alt = variant_i.altbase.split(',')[0]
                     indel_length = len(first_alt) - len(ref_base)
 
-                    if indel_length == 0:
-                        first_alt_rc = t_ACGT[ baseordering[first_alt.upper()] ]
-                    elif indel_length < 0:
-                        first_alt_rc = t_ACGT[4]
-                    elif indel_length > 0:
-                        first_alt_rc = t_ACGT[5]
-
-                    vaf_check = min_vaf <= first_alt_rc/t_dp <= max_vaf
-
                     ref_bases.append( ref_base )
                     alt_bases.append( first_alt )
                     indel_lengths.append( indel_length )
-                    first_alt_rcs.append( first_alt_rc )
-                    vaf_checks.append( vaf_check )
+                    
+                    # Extract these information if they exist in the VCF file.
+                    if_dbsnp  = 1 if re.search(r'rs[0-9]+', variant_i.identifier) else 0
+                    if_cosmic = 1 if re.search(r'COS[MN][0-9]+', variant_i.identifier) else 0
+                    if_common = 1 if variant_i.get_info_value('COMMON') == '1' else 0
+                    num_cases = variant_i.get_info_value('CNT') if variant_i.get_info_value('CNT') else nan
                                 
             ## If not, 1) get ref_base, first_alt from other VCF files. 
             #          2) Create placeholders for dbSNP and COSMIC that can be overwritten with dbSNP/COSMIC VCF files (if provided)
             else:
-                pass
+                variants_at_my_coordinate = [None] # Just to have something to iterate
+                ref_base = first_alt = indel_length = None
+                if_dbsnp = if_cosmic = if_common = num_cases = nan
 
 
             # Keep track of NumCallers:
@@ -438,14 +438,11 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     # The particular line in the input VCF file:
                     variant_id = ( (my_call.chromosome, my_call.position), my_call.refbase, my_call.altbase )
 
-                    # mpileup information of this variant call:
                     ref_base     = ref_bases[ith_call]
-                    first_alt_rc = first_alt_rcs[ith_call]
+                    first_alt    = alt_bases[ith_call]
                     indel_length = indel_lengths[ith_call]
-                    vaf_check    = vaf_checks[ith_call]
                 else:
                     variant_id = ( (my_coordinate[0], my_coordinate[1]), ref_base, first_alt )
-
 
 
                 #################### Collect MuTect ####################:
@@ -455,6 +452,11 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                         mutect_variant_i = mutect_variants[variant_id]
                         mutect_classification = 1 if mutect_variant_i.get_info_value('SOMATIC') else 0
+                        
+                        # If ref_base, first_alt, and indel_length unknown, get it here:
+                        if not ref_base:         ref_base = mutect_variant_i.refbase
+                        if not first_alt:        first_alt = mutect_variant_i.altbase
+                        if indel_length == None: indel_length = len(first_alt) - len(ref_base)
 
                     else:
                         # Not called by mutect
@@ -474,6 +476,11 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         varscan_variant_i = varscan_variants[ variant_id ]
                         varscan_classification = 1 if varscan_variant_i.get_info_value('SOMATIC') else 0
                         score_varscan2 = int(varscan_variant_i.get_info_value('SSC'))
+
+                        # If ref_base, first_alt, and indel_length unknown, get it here:
+                        if not ref_base:         ref_base = varscan_variant_i.refbase
+                        if not first_alt:        first_alt = varscan_variant_i.altbase
+                        if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                         
                     else:
                         varscan_classification = 0
@@ -495,6 +502,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         aabb = float( jsm_variant_i.get_info_value('AABB') )
                         jointsnvmix2_p = 1 - aaab - aabb
                         score_jointsnvmix2 = genome.p2phred(jointsnvmix2_p, max_phred=50)
+
+                        # If ref_base, first_alt, and indel_length unknown, get it here:
+                        if not ref_base:         ref_base = jsm_variant_i.refbase
+                        if not first_alt:        first_alt = jsm_variant_i.altbase
+                        if indel_length == None: indel_length = len(first_alt) - len(ref_base)
+                        
                     else:
                         jointsnvmix2_classification = 0
                         score_jointsnvmix2 = nan
@@ -503,7 +516,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 else:
                     jointsnvmix2_classification = score_jointsnvmix2 = 0
 
-                        
+                
                 #################### Collect SomaticSniper ####################:
                 if args.sniper_vcf:
                     
@@ -515,6 +528,11 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             score_somaticsniper = int(score_somaticsniper) if score_somaticsniper else nan
                         else:
                             score_somaticsniper = nan
+
+                        # If ref_base, first_alt, and indel_length unknown, get it here:
+                        if not ref_base:         ref_base = sniper_variant_i.refbase
+                        if not first_alt:        first_alt = sniper_variant_i.altbase
+                        if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                             
                     else:
                         sniper_classification = 0
@@ -525,7 +543,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     sniper_classification = score_somaticsniper = nan
                 
                 
-                #################### Collect VarDict ####################:                
+                #################### Collect VarDict ####################:
                 if args.vardict_vcf:
                     
                     if variant_id in vardict_variants:
@@ -573,7 +591,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         msi    = find_MSI(vardict_variant_i)
                         msilen = find_MSILEN(vardict_variant_i)
                         shift3 = find_SHIFT3(vardict_variant_i)                        
-                            
+
+                        # If ref_base, first_alt, and indel_length unknown, get it here:
+                        if not ref_base:         ref_base = vardict_variant_i.refbase
+                        if not first_alt:        first_alt = vardict_variant_i.altbase
+                        if indel_length == None: indel_length = len(first_alt) - len(ref_base)
+                        
                     else:
                         vardict_classification = 0
                         sor = msi = msilen = shift3 = score_vardict = nan
@@ -584,28 +607,32 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     vardict_classification = sor = msi = msilen = shift3 = score_vardict = nan
 
 
-
-                #################### Collect MuSE ####################:                
+                #################### Collect MuSE ####################:
                 if args.muse_vcf:
                     
                     if variant_id in muse_variants:
                         
-                        must_variant_i = muse_variants[ variant_id ]
+                        muse_variant_i = muse_variants[ variant_id ]
                         
-                        if must_variant_i.filters   == 'PASS':
+                        if muse_variant_i.filters   == 'PASS':
                             muse_classification = 1
-                        elif must_variant_i.filters == 'Tier1':
+                        elif muse_variant_i.filters == 'Tier1':
                             muse_classification = 0.9                        
-                        elif must_variant_i.filters == 'Tier2':
+                        elif muse_variant_i.filters == 'Tier2':
                             muse_classification = 0.8
-                        elif must_variant_i.filters == 'Tier3':
+                        elif muse_variant_i.filters == 'Tier3':
                             muse_classification = 0.7
-                        elif must_variant_i.filters == 'Tier4':
+                        elif muse_variant_i.filters == 'Tier4':
                             muse_classification = 0.6
-                        elif must_variant_i.filters == 'Tier5':
+                        elif muse_variant_i.filters == 'Tier5':
                             muse_classification = 0.5
                         else:
                             muse_classification = 0
+
+                        # If ref_base, first_alt, and indel_length unknown, get it here:
+                        if not ref_base:         ref_base = muse_variant_i.refbase
+                        if not first_alt:        first_alt = muse_variant_i.altbase
+                        if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                             
                     else:
                         muse_classification = 0
@@ -616,13 +643,18 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     muse_classification = nan
             
             
-                #################### Collect LoFreq ####################:                
+                #################### Collect LoFreq ####################:
                 if args.lofreq_vcf:
                     
                     if variant_id in lofreq_variants:
                         
                         lofreq_variant_i = lofreq_variants[ variant_id ]
                         lofreq_classification = 1 if lofreq_variant_i.filters == 'PASS' else 0
+
+                        # If ref_base, first_alt, and indel_length unknown, get it here:
+                        if not ref_base:         ref_base = lofreq_variant_i.refbase
+                        if not first_alt:        first_alt = lofreq_variant_i.altbase
+                        if indel_length == None: indel_length = len(first_alt) - len(ref_base)
                         
                     else:
                         lofreq_classification = 0
@@ -633,7 +665,27 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     lofreq_classification = nan
                     
 
-            
+                #################### Collect Scalpel ####################:
+                if args.scalpel_vcf:
+                    
+                    if variant_id in scalpel_variants:
+                        
+                        scalpel_variant_i = scalpel_variants[ variant_id ]
+                        scalpel_classification = 1 if scalpel_variant_i.filters == 'PASS' else 0.5
+
+                        # If ref_base, first_alt, and indel_length unknown, get it here:
+                        if not ref_base:         ref_base = scalpel_variant_i.refbase
+                        if not first_alt:        first_alt = scalpel_variant_i.altbase
+                        if indel_length == None: indel_length = len(first_alt) - len(ref_base)
+
+                    else:
+                        scalpel_classification = 0
+                    
+                    num_callers += scalpel_classification
+                else:
+                    scalpel_classification = nan
+                
+                            
                 # Potentially write the output only if it meets this threshold:
                 if num_callers >= args.minimum_num_callers:
 
@@ -651,7 +703,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         judgement = nan
 
 
-                    ########## dbSNP ##########
+                    ########## dbSNP ########## May overwrite dbsnp info from input VCF file
                     if args.dbsnp_vcf:
                         if variant_id in dbsnp_variants.keys():
 
@@ -669,7 +721,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         if_dbsnp = if_common = nan
 
                     
-                    ########## COSMIC ##########
+                    ########## COSMIC ########## May overwrite COSMIC info from input VCF file
                     if args.cosmic_vcf:
                         if variant_id in cosmic_variants.keys():
 
@@ -687,8 +739,6 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             if_cosmic = num_cases = 0
                     else:
                         if_cosmic = num_cases = nan
-                
-
                 
                         
                     ########## ######### ######### INFO EXTRACTION FROM BAM FILES ########## ######### #########
@@ -1044,7 +1094,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         my_identifiers = '.'
     
                     # If VCF file was output, take the ALT. Otherwise, use "first_alt"
-                    my_alt = my_vcfcall.altbase if is_vcf else first_alt
+                    my_alt = my_call.altbase if is_vcf else first_alt
                     
                     ###
                     out_line = out_header.format( \
@@ -1059,6 +1109,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     if_SomaticSniper        = sniper_classification,                                  \
                     if_VarDict              = vardict_classification,                                 \
                     if_LoFreq               = lofreq_classification,                                  \
+                    if_Scalpel              = scalpel_classification,                                 \
                     MuSE_Tier               = muse_classification,                                    \
                     VarScan2_Score          = rescale(score_varscan2,      'phred', p_scale, 1001),   \
                     SNVMix2_Score           = rescale(score_jointsnvmix2,  'phred', p_scale, 1001),   \
