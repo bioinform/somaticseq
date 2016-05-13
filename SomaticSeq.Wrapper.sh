@@ -7,7 +7,7 @@ PATH=/net/kodiak/volumes/lake/shared/opt/python3/bin:/home/ltfang/apps/bedtools-
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
-keep_intermediates=false
+keep_intermediates=`false`
 
 while true; do
 	case "$1" in
