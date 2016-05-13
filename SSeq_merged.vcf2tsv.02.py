@@ -509,6 +509,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         sniper_variant_i = sniper_variants[ variant_id ]
                         sniper_classification = 1 if sniper_variant_i.get_sample_value('SS', idxT) == '2' else 0
                         if sniper_classification == 1:
+                            score_somaticsniper = sniper_variant_i.get_sample_value('SSC', idxT)
                             score_somaticsniper = int(score_somaticsniper) if score_somaticsniper else nan
                         else:
                             score_somaticsniper = nan
