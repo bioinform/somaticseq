@@ -201,13 +201,6 @@ out_header = \
 {nBAM_ALT_InDel_3bp}\t\
 {nBAM_ALT_InDel_2bp}\t\
 {nBAM_ALT_InDel_1bp}\t\
-{nHC_MLEAC}\t\
-{nHC_MLEAF}\t\
-{nHC_BQRankSum}\t\
-{nHC_ClipRankSum}\t\
-{nHC_LikelihoodRankSum}\t\
-{nHC_ReadPositionRankSum}\t\
-{nHC_MQRankSum}\t\
 {SOR}\t\
 {MSI}\t\
 {MSILEN}\t\
@@ -248,13 +241,6 @@ out_header = \
 {tBAM_ALT_InDel_3bp}\t\
 {tBAM_ALT_InDel_2bp}\t\
 {tBAM_ALT_InDel_1bp}\t\
-{tHC_MLEAC}\t\
-{tHC_MLEAF}\t\
-{tHC_BQRankSum}\t\
-{tHC_ClipRankSum}\t\
-{tHC_LikelihoodRankSum}\t\
-{tHC_ReadPositionRankSum}\t\
-{tHC_MQRankSum}\t\
 {InDel_Length}\t\
 {TrueVariant_or_False}'
 
@@ -1090,17 +1076,14 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         my_identifiers = ';'.join(my_identifiers)
                     else:
                         my_identifiers = '.'
-    
-                    # If VCF file was output, take the ALT. Otherwise, use "first_alt"
-                    my_alt = my_call.altbase if is_vcf else first_alt
-                    
+                        
                     ###
                     out_line = out_header.format( \
                     CHROM                   = my_coordinate[0],                                       \
                     POS                     = my_coordinate[1],                                       \
                     ID                      = my_identifiers,                                         \
                     REF                     = ref_base,                                               \
-                    ALT                     = my_alt,                                                 \
+                    ALT                     = first_alt,                                                 \
                     if_MuTect               = mutect_classification,                                  \
                     if_VarScan2             = varscan_classification,                                 \
                     if_JointSNVMix2         = jointsnvmix2_classification,                            \
@@ -1151,13 +1134,6 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     nBAM_ALT_InDel_3bp      = n_alt_indel_3bp,                                        \
                     nBAM_ALT_InDel_2bp      = n_alt_indel_2bp,                                        \
                     nBAM_ALT_InDel_1bp      = n_alt_indel_1bp,                                        \
-                    nHC_MLEAC               = N_mleac,                                                \
-                    nHC_MLEAF               = N_mleaf,                                                \
-                    nHC_BQRankSum           = N_baseQrank,                                            \
-                    nHC_ClipRankSum         = N_cliprank,                                             \
-                    nHC_LikelihoodRankSum   = N_likelirank,                                           \
-                    nHC_ReadPositionRankSum = N_readposrank,                                          \
-                    nHC_MQRankSum           = N_mqrank,                                               \
                     SOR                     = sor,                                                    \
                     MSI                     = msi,                                                    \
                     MSILEN                  = msilen,                                                 \
@@ -1198,13 +1174,6 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     tBAM_ALT_InDel_3bp      = t_alt_indel_3bp,                                        \
                     tBAM_ALT_InDel_2bp      = t_alt_indel_2bp,                                        \
                     tBAM_ALT_InDel_1bp      = t_alt_indel_1bp,                                        \
-                    tHC_MLEAC               = T_mleac,                                                \
-                    tHC_MLEAF               = T_mleaf,                                                \
-                    tHC_BQRankSum           = T_baseQrank,                                            \
-                    tHC_ClipRankSum         = T_cliprank,                                             \
-                    tHC_LikelihoodRankSum   = T_likelirank,                                           \
-                    tHC_ReadPositionRankSum = T_readposrank,                                          \
-                    tHC_MQRankSum           = T_mqrank,                                               \
                     InDel_Length            = indel_length,                                           \
                     TrueVariant_or_False    = judgement )
                     
