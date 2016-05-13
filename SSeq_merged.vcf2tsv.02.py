@@ -345,7 +345,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                 if my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
                     
-                    altbases = my_vcf.altbase.split(',')
+                    alt_bases = my_vcf.altbase.split(',')
                     for alt_i in alt_bases:
                         
                         vcf_i = copy(my_vcf)
