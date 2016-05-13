@@ -416,17 +416,17 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             num_callers = 0
             
             #################################### Find the same coordinate in those VCF files ####################################
-            if args.mutect_vcf:       got_mutect,  mutect_variants,  mutect_line  = genome.find_vcf_at_coordinate(my_coordinate, mutect_line,  mutect,  chrom_seq)
-            if args.varscan_vcf:      got_varscan, varscan_variants, varscan_line = genome.find_vcf_at_coordinate(my_coordinate, varscan_line, varscan, chrom_seq)
-            if args.jsm_vcf:          got_jsm,     jsm_variants,     jsm_line     = genome.find_vcf_at_coordinate(my_coordinate, jsm_line,     jsm,     chrom_seq)
-            if args.sniper_vcf:       got_sniper,  sniper_variants,  sniper_line  = genome.find_vcf_at_coordinate(my_coordinate, sniper_line,  sniper,  chrom_seq)
-            if args.vardict_vcf:      got_vardict, vardict_variants, vardict_line = genome.find_vcf_at_coordinate(my_coordinate, vardict_line, vardict, chrom_seq)
-            if args.muse_vcf:         got_muse,    muse_variants,    muse_line    = genome.find_vcf_at_coordinate(my_coordinate, muse_line,    muse,    chrom_seq)
-            if args.lofreq_vcf:       got_lofreq,  lofreq_variants,  lofreq_line  = genome.find_vcf_at_coordinate(my_coordinate, lofreq_line,  lofreq,  chrom_seq)
-            if args.scalpel_vcf:      got_scalpel, scalpel_variants, scalpel_line = genome.find_vcf_at_coordinate(my_coordinate, scalpel_line, scalpel, chrom_seq)
-            if args.ground_truth_vcf: got_truth,   truth_variants,   truth_line   = genome.find_vcf_at_coordinate(my_coordinate, truth_line,   truth,   chrom_seq)
-            if args.dbsnp_vcf:        got_dbsnp,   dbsnp_variants,   dbsnp_line   = genome.find_vcf_at_coordinate(my_coordinate, dbsnp_line,   dbsnp,   chrom_seq)
-            if args.cosmic_vcf:       got_cosmic,  cosmic_variants,  cosmic_line  = genome.find_vcf_at_coordinate(my_coordinate, cosmic_line,  cosmic,  chrom_seq)
+            if args.mutect_vcf:        got_mutect,  mutect_variants,  mutect_line  = genome.find_vcf_at_coordinate(my_coordinate, mutect_line,  mutect,  chrom_seq)
+            if args.varscan_vcf:       got_varscan, varscan_variants, varscan_line = genome.find_vcf_at_coordinate(my_coordinate, varscan_line, varscan, chrom_seq)
+            if args.jsm_vcf:           got_jsm,     jsm_variants,     jsm_line     = genome.find_vcf_at_coordinate(my_coordinate, jsm_line,     jsm,     chrom_seq)
+            if args.somaticsniper_vcf: got_sniper,  sniper_variants,  sniper_line  = genome.find_vcf_at_coordinate(my_coordinate, sniper_line,  sniper,  chrom_seq)
+            if args.vardict_vcf:       got_vardict, vardict_variants, vardict_line = genome.find_vcf_at_coordinate(my_coordinate, vardict_line, vardict, chrom_seq)
+            if args.muse_vcf:          got_muse,    muse_variants,    muse_line    = genome.find_vcf_at_coordinate(my_coordinate, muse_line,    muse,    chrom_seq)
+            if args.lofreq_vcf:        got_lofreq,  lofreq_variants,  lofreq_line  = genome.find_vcf_at_coordinate(my_coordinate, lofreq_line,  lofreq,  chrom_seq)
+            if args.scalpel_vcf:       got_scalpel, scalpel_variants, scalpel_line = genome.find_vcf_at_coordinate(my_coordinate, scalpel_line, scalpel, chrom_seq)
+            if args.ground_truth_vcf:  got_truth,   truth_variants,   truth_line   = genome.find_vcf_at_coordinate(my_coordinate, truth_line,   truth,   chrom_seq)
+            if args.dbsnp_vcf:         got_dbsnp,   dbsnp_variants,   dbsnp_line   = genome.find_vcf_at_coordinate(my_coordinate, dbsnp_line,   dbsnp,   chrom_seq)
+            if args.cosmic_vcf:        got_cosmic,  cosmic_variants,  cosmic_line  = genome.find_vcf_at_coordinate(my_coordinate, cosmic_line,  cosmic,  chrom_seq)
             
             
             # Now, use pysam to look into the BAM file(s), variant by variant from the input:
@@ -516,7 +516,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                 
                 #################### Collect SomaticSniper ####################:
-                if args.sniper_vcf:
+                if args.somaticsniper_vcf:
                     
                     if variant_id in sniper_variants:
                         
