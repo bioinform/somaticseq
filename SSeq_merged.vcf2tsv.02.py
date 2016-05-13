@@ -77,8 +77,6 @@ tbam_fn   = args.tumor_bam_file
 truth     = args.ground_truth_vcf
 cosmic    = args.cosmic_vcf
 dbsnp     = args.dbsnp_vcf
-haploN    = args.haplotypecaller_normal_vcf
-haploT    = args.haplotypecaller_tumor_vcf
 mutect    = args.mutect_vcf
 sniper    = args.somaticsniper_vcf
 varscan   = args.varscan_vcf
@@ -356,7 +354,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             # As long as the "coordinate" stays the same, it will keep reading until it's different.
             while my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
 
-                my_line = mysites.readline().rstrip()
+                my_line = my_sites.readline().rstrip()
                 my_vcf = genome.Vcf_line( my_line )
 
                 if my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
