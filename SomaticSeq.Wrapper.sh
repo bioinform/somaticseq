@@ -143,10 +143,16 @@ while true; do
 				*)  ada_r_script=$2 ; shift 2 ;;
 			esac ;;
 
-		-i | --ignore-region )
+		-e | --exclusion-region )
 			case "$2" in
 				"") shift 2 ;;
 				*)  masked_region=$2 ; shift 2 ;;
+			esac ;;
+
+		-i | --inclusion-region )
+			case "$2" in
+				"") shift 2 ;;
+				*)  inclusion_region=$2 ; shift 2 ;;
 			esac ;;
 
 		-z | --truth-indel )
@@ -270,10 +276,7 @@ then
 	done
 
 	java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 12 --setKey null --genotypemergeoption UNSORTED $mergesnp --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
-
-	${snpSift_dbsnp} ${merged_dir}/CombineVariants_MVJSD.snp.vcf | ${snpSift_cosmic} - | ${snpEff_b37} - > ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf
-
-	files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf* $files_to_delete"
+	files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* $files_to_delete"
 
 
 	if [[ -r ${mutect_vcf} ]]
@@ -352,15 +355,14 @@ then
 	##
 	if [[ -r ${masked_region} ]]
 	then
-		intersectBed -header -a ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf -b ${masked_region} -v > ${merged_dir}/tmp.snp.vcf
-		mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf
+		intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.snp.vcf -b ${masked_region} -v > ${merged_dir}/tmp.snp.vcf
+		mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf
 	fi
-
 
 
 	$MYDIR/SSeq_merged.vcf2tsv.py \
 	-ref ${hg_ref} \
-	-myvcf ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.snp.vcf \
+	-myvcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf \
 	$truth_input \
 	$mutect_input \
 	$varscan_input \
@@ -410,10 +412,7 @@ then
 	done
 
 	java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 12 --setKey null --genotypemergeoption UNSORTED $mergeindel --out ${merged_dir}/CombineVariants_MVJSD.indel.vcf
-
-	${snpSift_dbsnp} ${merged_dir}/CombineVariants_MVJSD.indel.vcf | ${snpSift_cosmic} - | ${snpEff_b37} - > ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf
-
-	files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf* $files_to_delete"
+	files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* $files_to_delete"
 
 
 	## Convert the sSNV file into TSV file, for machine learning data:
@@ -468,13 +467,13 @@ then
 	#
 	if [[ -r ${masked_region} ]]
 	then
-		intersectBed -header -a ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf -b ${masked_region} -v > ${merged_dir}/tmp.indel.vcf
-		mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf
+		intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.indel.vcf -b ${masked_region} -v > ${merged_dir}/tmp.indel.vcf
+		mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 	fi
 
 	$MYDIR/SSeq_merged.vcf2tsv.py \
 	-ref ${hg_ref} \
-	-myvcf ${merged_dir}/EFF.cosmic.dbsnp.CombineVariants_MVJSD.indel.vcf \
+	-myvcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf \
 	$truth_input \
 	$indelocator_input \
 	$varscan_input \
