@@ -335,8 +335,14 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             
             my_vcf = genome.Vcf_line( my_line )
             my_coordinates = [(my_vcf.chromosome, my_vcf.position)]
-            variants_at_my_coordinate = [my_vcf]
+            
+            alt_bases = my_vcf.altbase.split(',')
+            for alt_i in alt_bases:
+                vcf_i = copy(my_vcf)
+                vcf_i.altbase = alt_i
+                variants_at_my_coordinate.append( vcf_i )     
 
+            
             # As long as the "coordinate" stays the same, it will keep reading until it's different.
             while my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
 
