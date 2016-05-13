@@ -624,7 +624,8 @@ def find_vcf_at_coordinate(my_coordinate, latest_vcf_line, vcf_file_handle, chro
 
             vcf_i = Vcf_line( vcf_line_i )
 
-            altbases = vcf_i.altbase.split(',')
+            # Some VCF files wrongly uses "/" to separate different ALT's
+            altbases = re.split(r'[,/]', vcf_i.altbase)
             for alt_i in altbases:
                 vcf_variants[ ((vcf_i.chromosome, vcf_i.position), vcf_i.refbase, alt_i) ] = vcf_i
 
