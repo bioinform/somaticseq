@@ -379,7 +379,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 ref_bases = []
                 alt_bases = []
                 indel_lengths = []
-
+                all_my_identifiers = []
+                
                 for variant_i in variants_at_my_coordinate:
 
                     ref_base = variant_i.refbase
@@ -390,20 +391,26 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     alt_bases.append( first_alt )
                     indel_lengths.append( indel_length )
                     
-                    # Extract these information if they exist in the VCF file.
+                    # Extract these information if they exist in the VCF file, but they could be re-written if dbSNP/COSMIC are supplied.
                     if_dbsnp  = 1 if re.search(r'rs[0-9]+', variant_i.identifier) else 0
                     if_cosmic = 1 if re.search(r'COS[MN][0-9]+', variant_i.identifier) else 0
                     if_common = 1 if variant_i.get_info_value('COMMON') == '1' else 0
                     num_cases = variant_i.get_info_value('CNT') if variant_i.get_info_value('CNT') else nan
-                    my_identifiers = [ variant_i.identifier ]
+                    
+                    if variant_i.identifier == '.':
+                        my_identifier_i = set()
+                    else:
+                        my_identifier_i = variant_i.identifier.split(';')
+                        my_identifier_i = set( my_identifier_i )
+                    
+                    all_my_identifiers.append( my_identifier_i )
                                 
             ## If not, 1) get ref_base, first_alt from other VCF files. 
             #          2) Create placeholders for dbSNP and COSMIC that can be overwritten with dbSNP/COSMIC VCF files (if provided)
             else:
                 variants_at_my_coordinate = [None] # Just to have something to iterate
                 ref_base = first_alt = indel_length = None
-                if_dbsnp = if_cosmic = if_common = num_cases = nan
-                my_identifiers = []
+                if_dbsnp = if_cosmic = if_common = num_cases = nan # Could be re-written if dbSNP/COSMIC are supplied
 
             # Keep track of NumCallers:
             num_callers = 0
@@ -429,9 +436,11 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     # The particular line in the input VCF file:
                     variant_id = ( (my_call.chromosome, my_call.position), my_call.refbase, my_call.altbase )
 
-                    ref_base     = ref_bases[ith_call]
-                    first_alt    = alt_bases[ith_call]
-                    indel_length = indel_lengths[ith_call]
+                    ref_base       = ref_bases[ith_call]
+                    first_alt      = alt_bases[ith_call]
+                    indel_length   = indel_lengths[ith_call]
+                    my_identifiers = all_my_identifiers[ith_call]
+                    
                 else:
                     variant_id = ( (my_coordinate[0], my_coordinate[1]), ref_base, first_alt )
 
@@ -680,15 +689,15 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             
                 # Potentially write the output only if it meets this threshold:
                 if num_callers >= args.minimum_num_callers:
-
+                                        
                     ########## Ground truth file ##########
                     if args.ground_truth_vcf:
                         if variant_id in truth_variants.keys():
                             judgement = 1
-                            my_identifiers.append('TruePositive')
+                            my_identifiers.add('TruePositive')
                         else:
                             judgement = 0
-                            my_identifiers.append('FalsePositive')
+                            my_identifiers.add('FalsePositive')
                     else:
                         judgement = nan
 
@@ -703,7 +712,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                             rsID = dbsnp_variant_i.identifier.split(',')
                             for ID_i in rsID:
-                                my_identifiers.append( ID_i )
+                                my_identifiers.add( ID_i )
 
                         else:
                             if_dbsnp = if_common = 0
@@ -723,7 +732,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                             cosmicID = cosmic_variant_i.identifier.split(',')
                             for ID_i in cosmicID:
-                                my_identifiers.append( ID_i )
+                                my_identifiers.add( ID_i )
                                 
                         else:
                             if_cosmic = num_cases = 0
