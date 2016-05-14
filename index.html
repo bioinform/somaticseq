@@ -126,11 +126,10 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
 
     <h2>Software Dependencies</h2>
     <ul>
-    <li>Python3 and regex package</li>
+    <li>Python3, plus regex, numpy, scipy, and pysam packages</li>
     <li>R and ada package</li>
-    <li>Free GATK</li>
-    <li>snpEFF and snpSIFT</li>
-    <li>dbSNP and COSMIC file</li>
+    <li>Optional: free GATK (we use GATK CombineVariants)</li>
+    <li>Optional: dbSNP and COSMIC file</li>
     </ul>
 
 
@@ -160,11 +159,12 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     --tumor-bam tumor.bam                                 \<br>
     --ada-r-script ada_model_predictor.R                  \<br>
     --classifier-snv sSNV.Classifier.RData                \<br>
-    --classifier-indel sINDEL.Classifier.RData             \<br>
+    --classifier-indel sINDEL.Classifier.RData            \<br>
     --genome-reference human_b37.fasta                    \<br>
     --cosmic cosmic.b37.v71.vcf                           \<br>
     --dbsnp dbSNP.b37.v141.vcf                            \<br>
-    --snpeff-dir $PATH/TO/DIR/snpSift                     \<br>
+    --inclusion-region validated.bed                      \<br>
+    --exclusion-region blacklist.bed                      \<br>
     --gatk $PATH/TO/GenomeAnalysisTK.jar                  \<br>
     --output-dir $OUTPUT_DIR
     </code>
@@ -177,26 +177,26 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <li><b>Running SomaticSeq's model training mode:</b><br>
     
     <code>
-    SomaticSeq.Wrapper.sh \<br>
-    --mutect $PATH/TO/MuTect/variants.snv.vcf \<br>
-    --varscan-snv $PATH/TO/VarScan/variants.snv.vcf \<br>
-    --jsm $PATH/TO/JointSNVMix/variants.snv.vcf \<br>
-    --sniper $PATH/TO/SomaticSniper/variants.snv.vcf \<br>
-    --vardict $PATH/TO/Vardict/variants.vcf \<br>
-    --muse $PATH/TO/MuSE/variants.snv.vcf \<br>
+    SomaticSeq.Wrapper.sh                                 \<br>
+    --mutect $PATH/TO/MuTect/variants.snv.vcf             \<br>
+    --varscan-snv $PATH/TO/VarScan/variants.snv.vcf       \<br>
+    --jsm $PATH/TO/JointSNVMix/variants.snv.vcf           \<br>
+    --sniper $PATH/TO/SomaticSniper/variants.snv.vcf      \<br>
+    --vardict $PATH/TO/Vardict/variants.vcf               \<br>
+    --muse $PATH/TO/MuSE/variants.snv.vcf                 \<br>
     --indelocator $PATH/TO/Indelocator/variants.indel.vcf \<br>
-    --varscan-indel $PATH/TO/Varscan/variants.indel.vcf \<br>
-    --normal-bam normal.bam \<br>
-    --tumor-bam tumor.bam \<br>
-    --ada-r-script ada_model_builder.R \<br>
-    --genome-reference human_b37.fasta \<br>
-    --cosmic cosmic.b37.v71.vcf \<br>
-    --dbsnp dbSNP.b37.v141.vcf \<br>
-    --snpeff-dir $PATH/TO/DIR/snpSift \<br>
-    --gatk $PATH/TO/GenomeAnalysisTK.jar \<br>
-    --ignore-region Regions_to_Ignore.bed \<br>
-    --truth-snv SNV_Ground_Truth.vcf \<br>
-    --truth-indel Indel_Ground_Truth.vcf \<br>
+    --varscan-indel $PATH/TO/Varscan/variants.indel.vcf   \<br>
+    --normal-bam normal.bam                               \<br>
+    --tumor-bam tumor.bam                                 \<br>
+    --ada-r-script ada_model_builder.R                    \<br>
+    --genome-reference human_b37.fasta                    \<br>
+    --cosmic cosmic.b37.v71.vcf                           \<br>
+    --dbsnp dbSNP.b37.v141.vcf                            \<br>
+    --gatk $PATH/TO/GenomeAnalysisTK.jar                  \<br>
+    --inclusion-region validated.bed                      \<br>
+    --exclusion-region blacklist.bed                      \<br>
+    --truth-snv SNV_Ground_Truth.vcf                      \<br>
+    --truth-indel Indel_Ground_Truth.vcf                  \<br>
     --output-dir $OUTPUT_DIR
     </code>
     </li>
@@ -213,8 +213,11 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <li><code>-S | --sniper</code>: SomaticSniper's output VCF (Optional)</li>
     <li><code>-D | --vardict</code>: VarDict's output VCF (Optional)</li>
     <li><code>-U | --muse</code>: MuSE's output VCF (Optional)</li>
+    <li><code>-L | --lofreq-snv</code>: LoFreq's output VCF (Optional)</li>
     <li><code>-I | --indelocator</code>: Indelocator's output VCF (Optional)</li>
     <li><code>-v | --varscan-indel</code>: VarScan2's output INDEL VCF (Optional)</li>
+    <li><code>-l | --lofreq-indel</code>: LoFreq's output INDEL VCF (Optional)</li>
+    <li><code>-p | --scalpel</code>: Scalpel's output VCF (Optional)</li>
     <li><code>-N | --normal-bam</code>: Normal BAM files</li>
     <li><code>-T | --tumor-bam</code>: Tumor BAM files</li>
     <li><code>-R | --ada-r-script</code>: Ada script in R. (Optional. If not provided, SomaticSeq will not attempt to train or predict. If -C and -x are provided, this script is assumed to be predictor.R. If -Z and -z are provided, this script is assumed to be builder.R).</li>
@@ -225,16 +228,18 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <li><code>-d | --dbsnp</code>: dbSNP VCF file</li>
     <li><code>-s | --snpeff-dir</code>: snpEFF/snpSift's installation directory containing the executable .jar files</li>
     <li><code>-G | --gatk</code>: GATK's java executable file</li>
-    <li><code>-i | --ignore-region</code>: Regions to toss out in the final VCF files (Optional)</li>
+    <li><code>-i | --inclusion-region</code>: Only include those regions in analysis</li>
+    <li><code>-e | --exclusion-region</code>: Regions to toss out in the final VCF files (Optional)</li>
     <li><code>-Z | --truth-snv</code>: A VCF file containing true sSNVs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
     <li><code>-z | --truth-indel</code>: A VCF file containing true sINDELs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
     <li><code>-o | --output-dir</code>: Output directory (make sure it exists)</li>
+    <li><code>-k | --keep-intermediates</code>: [0|1], whether to keep intermediate files for debugging. [Optional. Default: 0]</li>
     </ul>
 
 
 
     <h3>Known Issues:</h3>
-
+    None right now. Please <a href="mailto:li_tai.fang@bina.roche.com">contact us</a> if you find anything. 
 
 
     <h3>Contact Us:</h3>
