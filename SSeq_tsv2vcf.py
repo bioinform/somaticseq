@@ -39,8 +39,11 @@ phred_scaled = args.phred_scale
 
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
-with open(os.path.join(MY_DIR, "VERSION")) as version_info_file:
-    version_line = version_info_file.readline()
+try:
+    with open(os.path.join(MY_DIR, "VERSION")) as version_info_file:
+        version_line = version_info_file.readline()
+except FileNotFoundError:
+    version_line = '##SomaticSeq\n'
 
 
 nan = float('nan')
