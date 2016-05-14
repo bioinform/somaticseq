@@ -201,7 +201,7 @@ if [[ -r $mutect_vcf ]]; then
 fi
 
 
-# Somatic Sniper:
+# SomaticSniper:
 if [[ -r $sniper_vcf ]]; then
 	$MYDIR/modify_VJSD.py -method SomaticSniper -infile ${sniper_vcf} -outfile ${merged_dir}/somaticsniper.vcf
 	files_to_delete="${merged_dir}/somaticsniper.vcf* $files_to_delete"
@@ -359,6 +359,12 @@ then
 		mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf
 	fi
 
+	if [[ -r ${inclusion_region} ]]
+	then
+		intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.snp.vcf -b ${masked_region} > ${merged_dir}/tmp.snp.vcf
+		mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf
+	fi
+
 
 	$MYDIR/SSeq_merged.vcf2tsv.py \
 	-ref ${hg_ref} \
@@ -455,6 +461,15 @@ then
 		tool_lofreq=''
 	fi
 
+	if [[ -r ${scalpel_vcf} ]]
+	then
+		scalpel_input="-scalpel ${scalpel_vcf}"
+		tool_scalpel="Scalpel"
+	else
+		scalpel_input=''
+		tool_scalpel=''
+	fi
+
 
 	if [[ -r ${indelgroundtruth} ]]
 	then
@@ -471,6 +486,12 @@ then
 		mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 	fi
 
+	if [[ -r ${inclusion_region} ]]
+	then
+		intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.indel.vcf -b ${masked_region} > ${merged_dir}/tmp.indel.vcf
+		mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf
+	fi
+
 	$MYDIR/SSeq_merged.vcf2tsv.py \
 	-ref ${hg_ref} \
 	-myvcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf \
@@ -479,6 +500,7 @@ then
 	$varscan_input \
 	$vardict_input \
 	$lofreq_input \
+	$scalpel_input \
 	-mincaller 0.5 \
 	-tbam ${tbam} \
 	-nbam ${nbam} \
@@ -490,7 +512,7 @@ then
 	if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]
 	then
 		R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/Trained.sINDEL.tsv" < "$ada_r_script"
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel
 
         # If ground truth is here, assume builder.R, and build a classifier
         elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]
@@ -499,7 +521,7 @@ then
 
 	# If no training and no classification, then make VCF by majority vote consensus:
 	else
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sINDEL.tsv -vcf ${merged_dir}/Untrained.sINDEL.vcf -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq -all
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sINDEL.tsv -vcf ${merged_dir}/Untrained.sINDEL.vcf -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel -all
 	fi
 
 fi
