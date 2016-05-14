@@ -11,7 +11,7 @@ parser.add_argument('-hom',   '--hom-threshold',             type=float, help='A
 parser.add_argument('-het',   '--het-threshold',             type=float, help='Low quality subject to lenient filter', required=False, default=0.05)
 parser.add_argument('-N',     '--normal-sample-name',        type=str,   help='Normal Sample Name', required=False, default='NORMAL')
 parser.add_argument('-T',     '--tumor-sample-name',         type=str,   help='Tumor Sample Name', required=False, default='TUMOR')
-parser.add_argument('-tools', '--individual-mutation-tools', type=str,   help='A list of all tools: have to match the annotated tool name in the input vcf files', nargs='*', required=False, default=('CGA', 'VarScan2', 'JointSNVMix2', 'SomaticSniper', 'VarDict', 'MuSE', 'LoFreq') )
+parser.add_argument('-tools', '--individual-mutation-tools', type=str,   help='A list of all tools: have to match the annotated tool name in the input vcf files', nargs='*', required=False, default=('CGA', 'VarScan2', 'JointSNVMix2', 'SomaticSniper', 'VarDict', 'MuSE', 'LoFreq', 'Scalpel') )
 
 parser.add_argument('-all',   '--emit-all',    action='store_true', help='Flag it to print out everything', required=False)
 parser.add_argument('-phred', '--phred-scale', action='store_true', help='Flag it to print out Phred scale QUAL (proper VCF format but more annoying to filter)', required=False)

@@ -48,12 +48,13 @@ parser.add_argument('-vardict', '--vardict-vcf',              type=str,   help='
 parser.add_argument('-muse',    '--muse-vcf',                 type=str,   help='MuSE VCF',          required=False, default=None)
 parser.add_argument('-lofreq',  '--lofreq-vcf',               type=str,   help='LoFreq VCF',        required=False, default=None)
 parser.add_argument('-scalpel', '--scalpel-vcf',              type=str,   help='Scalpel VCF',       required=False, default=None)
-parser.add_argument('-mincaller', '--minimum-num-callers',    type=float, help='Minimum number of tools to be considered', required=False, default=0)
 
 parser.add_argument('-ref',     '--genome-reference',         type=str,   help='.fasta.fai file to get the contigs', required=True, default=None)
-parser.add_argument('-minMQ',   '--minimum-mapping-quality',  type=float, help='Minimum mapping quality below which is considered poor', required=False, default=1)
-parser.add_argument('-minBQ',   '--minimum-base-quality',     type=float, help='Minimum base quality below which is considered poor', required=False, default=5)
 parser.add_argument('-dedup',   '--deduplicate',     action='store_true', help='Do not consider duplicate reads from BAM files. Default is to count everything', required=False, default=False)
+
+parser.add_argument('-minMQ',     '--minimum-mapping-quality',  type=float, help='Minimum mapping quality below which is considered poor', required=False, default=1)
+parser.add_argument('-minBQ',     '--minimum-base-quality',     type=float, help='Minimum base quality below which is considered poor', required=False, default=5)
+parser.add_argument('-mincaller', '--minimum-num-callers',    type=float, help='Minimum number of tools to be considered', required=False, default=0)
 
 parser.add_argument('-scale',      '--p-scale',               type=str,   help='phred, fraction, or none', required=False, default=None)
 parser.add_argument('-samtools',   '--samtools-path',         type=str,   help='Path to samtools',required=False, default='samtools')
