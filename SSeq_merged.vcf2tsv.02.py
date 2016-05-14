@@ -395,6 +395,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     if_cosmic = 1 if re.search(r'COS[MN][0-9]+', variant_i.identifier) else 0
                     if_common = 1 if variant_i.get_info_value('COMMON') == '1' else 0
                     num_cases = variant_i.get_info_value('CNT') if variant_i.get_info_value('CNT') else nan
+                    my_identifiers = [ variant_i.identifier ]
                                 
             ## If not, 1) get ref_base, first_alt from other VCF files. 
             #          2) Create placeholders for dbSNP and COSMIC that can be overwritten with dbSNP/COSMIC VCF files (if provided)
@@ -402,7 +403,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 variants_at_my_coordinate = [None] # Just to have something to iterate
                 ref_base = first_alt = indel_length = None
                 if_dbsnp = if_cosmic = if_common = num_cases = nan
-
+                my_identifiers = []
 
             # Keep track of NumCallers:
             num_callers = 0
@@ -679,8 +680,6 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             
                 # Potentially write the output only if it meets this threshold:
                 if num_callers >= args.minimum_num_callers:
-
-                    my_identifiers = []
 
                     ########## Ground truth file ##########
                     if args.ground_truth_vcf:
