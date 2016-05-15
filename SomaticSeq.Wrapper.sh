@@ -3,6 +3,14 @@
 
 set -e
 
+OPTS=`getopt -o o:M:I:V:v:J:S:D:U:L:l:p:g:c:d:s:G:T:N:C:x:R:e:i:z:Z:k: --long output-dir:,mutect:,indelocator:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,genome-reference:,cosmic:,dbsnp:,snpeff-dir:,gatk:,tumor-bam:,normal-bam:,classifier-snv:,classifier-indel:,ada-r-script:,exclusion-region:,inclusion-region:,truth-indel:,truth-snv:,keep-intermediates: -n 'SomaticSeq.Wrapper.sh'  -- "$@"`
+
+if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
+
+echo "$OPTS"
+eval set -- "$OPTS"
+
+
 PATH=/net/kodiak/volumes/lake/shared/opt/python3/bin:/home/ltfang/apps/bedtools-2.23.0/bin/:$PATH
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
@@ -263,7 +271,26 @@ if [[ -r $lofreq_indel_vcf ]]; then
 fi
 
 
-##
+# dbSNP
+if [[ -r ${dbsnp} ]]
+then
+	dbsnp_input="-dbsnp ${dbsnp}"
+else
+	dbsnp_input=''
+fi
+
+
+# COSMIC
+if [[ -r ${cosmic} ]]
+then
+	cosmic_input="-cosmic ${cosmic}"
+else
+	cosmic_input=''
+fi
+
+
+
+#################### SNV ####################
 if [[ -r ${merged_dir}/mutect.snp.vcf || -r ${merged_dir}/somaticsniper.vcf || -r ${merged_dir}/jsm.vcf || -r ${merged_dir}/varscan2.snp.vcf || -r ${merged_dir}/muse.vcf || -r ${merged_dir}/snp.vardict.vcf || -r ${lofreq_vcf} ]]
 then
 
@@ -370,6 +397,8 @@ then
 	-ref ${hg_ref} \
 	-myvcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf \
 	$truth_input \
+	$dbsnp_input \
+	$cosmic_input \
 	$mutect_input \
 	$varscan_input \
 	$jsm_input \
@@ -405,7 +434,7 @@ fi
 
 
 
-# INDEL:
+#################### INDEL ####################
 if [[ -r ${merged_dir}/mutect.indel.vcf || -r ${merged_dir}/varscan2.indel.vcf || -r ${merged_dir}/indel.vardict.vcf || -r ${lofreq_indel_vcf} ]]
 then
 
@@ -496,6 +525,8 @@ then
 	-ref ${hg_ref} \
 	-myvcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf \
 	$truth_input \
+	$dbsnp_input \
+	$cosmic_input \
 	$indelocator_input \
 	$varscan_input \
 	$vardict_input \
