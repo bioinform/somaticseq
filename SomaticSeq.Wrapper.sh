@@ -393,7 +393,7 @@ then
 	fi
 
 
-	$MYDIR/SSeq_merged.vcf2tsv.py \
+	$MYDIR/SSeq_merged.vcf2tsv.02.py \
 	-ref ${hg_ref} \
 	-myvcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf \
 	$truth_input \
@@ -521,7 +521,7 @@ then
 		mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 	fi
 
-	$MYDIR/SSeq_merged.vcf2tsv.py \
+	$MYDIR/SSeq_merged.vcf2tsv.02.py \
 	-ref ${hg_ref} \
 	-myvcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf \
 	$truth_input \
