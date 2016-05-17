@@ -28,7 +28,7 @@ while true; do
 		-M | --mutect )
 			case "$2" in
 				"") shift 2 ;;
-				*)  mutect_dir=$2 ; shift 2 ;;
+				*)  mutect_vcf=$2 ; shift 2 ;;
 			esac ;;
 
 		-I | --indelocator )

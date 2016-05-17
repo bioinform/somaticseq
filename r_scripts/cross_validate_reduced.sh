@@ -11,7 +11,7 @@ do
 
 	cat ${tsv}.header.tmp ${tsv}.tmp  > ${tsv}.DC.scrambled.snp.${i}.tsv
 
-	R --no-save "--args ${tsv}.DC.scrambled.snp.${i}.tsv  3951" < /home/ltfang/shared_delta/data/published/SomaticSeq/somaticseq/r_scripts/ada_cross_validation.R >> snp.${tsv}.Results.txt
+	R --no-save "--args ${tsv}.DC.scrambled.snp.${i}.tsv  3951" < /home/ltfang/apps/Bina_SomaticMerge/somaticseq/r_scripts/ada_cross_validation.R >> snp.${tsv}.Results.txt
 
 	rm ${tsv}.tmp
 
