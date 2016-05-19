@@ -52,7 +52,7 @@
 
 
 
-%\author{Li Tai Fang}
+\author{Li Tai Fang}
 
 \title{SomaticSeq Documentation}
 
@@ -89,10 +89,10 @@ R, plus the ada package in R.
 BEDTools (if there is an inclusion and/or an exclusion region file)
 
 \item
-Optional: Free GATK (We use it for CombineVariants)
+Optional: Free GATK (We use GATK CombineVariants to merge VCF files. You may do it other ways.)
 
 \item
-Optional: dbSNP and COSMIC files in VCF format (if you want to use these featuers as a part of the training).
+Optional: dbSNP and COSMIC files in VCF format (if you want to use these features as a part of the training).
 
 \item
 At least one of MuTect/Indelocator, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, and/or Scalpel. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
@@ -103,15 +103,17 @@ At least one of MuTect/Indelocator, VarScan2, JointSNVMix, SomaticSniper, VarDic
 
 \section{To use SomaticSeq.Wrapper.sh}
 
-The SomaticSeq.Wrapper.sh is a wrapper script that calls a series of programs and procedures. It can be run easily if all the dependencies are met. Some optional parameters are hard-coded as defaults, but can be easily edited by advanced users. In the next section, we also described the workflow in more detail, so you are not dependent on this wrapper script. You can either modify this wrapper script or create your own workflow. 
+The SomaticSeq.Wrapper.sh is a wrapper script that calls a series of programs and procedures. It can be easily run if all the dependencies are met. Some optional parameters are hard-coded as defaults, but can be easily edited by advanced users. In the next section, we also described the workflow in more detail, so you are not dependent on this wrapper script. You can either modify this wrapper script or create your own workflow. 
 
 
 \subsection{To train data set into a classifier}
 
 To create a trained classifier, ground truth files are required for the data sets. There is also an option to include a list of regions to include and/or exclude. The exclusion or inclusion regions can be VCF or BED files. An inclusion region may be subset of the call sets where you have validated their true/false mutation status, so that only those regions will be used for training. An exclusion region can be regions where the ``truth'' is ambigious. 
 
+All the output VCF files from individual callers are optional. Those VCF files can be bgzipped if they have .vcf.gz extensions. It is imperative that the parameters used for the training and prediction are identical. 
+
+
 \begin{lstlisting}
-# All the output VCF files from individual callers are optional. You may choose to run any combination of callers you like.
 # For training, truth file and the correct R script are required.
 
 SomaticSeq.Wrapper.sh \
@@ -125,6 +127,7 @@ SomaticSeq.Wrapper.sh \
 --muse             MuSE/variants.snp.vcf \
 --lofreq-snv       LoFreq/variants.snp.vcf \
 --lofreq-indel     LoFreq/variants.indel.vcf \
+--scalpel          Scalpel/variants.indel.vcf \
 --normal-bam       matched_normal.bam \
 --tumor-bam        tumor.bam \
 --ada-r-script     ada_model_builder.R \
@@ -139,12 +142,15 @@ SomaticSeq.Wrapper.sh \
 --output-dir       $OUTPUT_DIR
 \end{lstlisting}
 
-SomaticSeq.Wrapper.sh supports any combination of the somatic mutation callers we have incorporated into the workflow. SomaticSeq will run based on the output VCFs you have provided. It will train SNV and/or indel if you provide the truth.snp.vcf and/or truth.indel.vcf file(s).
+SomaticSeq.Wrapper.sh supports any combination of the somatic mutation callers we have incorporated into the workflow. SomaticSeq will run based on the output VCFs you have provided. It will train for SNV and/or INDEL if you provide the truth.snp.vcf and/or truth.indel.vcf file(s) as well as the proper R script (ada\_model\_builder.R). Otherwise, it will fall back to the simple caller consensus mode.
 
 
 
 
 \subsection{To predict somatic mutation based on trained classifiers}
+
+Make sure the classifiers and the proper R script (ada\_model\_predictor.R) are supplied, Without either of them, it will fall back to the simple caller consensus mode.
+
 
 \begin{lstlisting}
 # The *.RData files are trained classifier from the training mode.
@@ -159,6 +165,7 @@ SomaticSeq.Wrapper.sh \
 --muse             MuSE/variants.snp.vcf \
 --lofreq-snv       LoFreq/variants.snp.vcf \
 --lofreq-indel     LoFreq/variants.indel.vcf \
+--scalpel          Scalpel/variants.indel.vcf \
 --normal-bam       matched_normal.bam \
 --tumor-bam        tumor.bam \
 --ada-r-script     ada_model_predictor.R \
@@ -194,28 +201,25 @@ We'll describe the workflow here, so you may modify the workflow and/or create y
 
 
 \subsection{Combine the call sets}
-	We use GATK CombineVariants to combine the VCF files from different callers, although it does not matter what tools are used to merge VCF files. To make them compatible with GATK, the VCF files are modified. A somatic call is also tagged with the tool names, so the combined VCF retains those information. 
+	We use GATK CombineVariants to combine the VCF files from different callers, although it does not matter what tools are used to merge VCF files. We GATK CombineVariants because it's quite fast. To make them compatible with GATK, the VCF files are modified.
+
+	A simple alternative method is to use GNU sort and uniq in Linux to list all the unique first-5-column (i.e., CHROM, POS, ID, REF, and ALT) from all the VCF files, and then fill the remaining required VCF columns with whatever string and sort it according to the reference. That VCF file will do the job just fine. 
+
+For our GATK CombineVariants procedure:
 
 \begin{enumerate}
 
 % MuTect and Indelocator
 \item 
 Modify MuTect and/or Indelocator output VCF files. 
-Since MuTect's output VCF do not always put the tumor and normal samples in the same columns, the script uses samtools extract sample name information from the BAM files, and then determine which column belongs to the normal, and which column belongs to the tumor. 
+Since MuTect's output VCF do not always put the tumor and normal samples in the same columns, the script will determine that information based on either the BAM files (the header has sample name information), or based on the sample information that you tell it, and then determine which column belongs to the normal, and which column belongs to the tumor. 
 	
 \begin{lstlisting}
-# Modify MuTect and Indelocator's output VCF
+# Modify MuTect and Indelocator's output VCF based on BAM files
 modify_MuTect.py -infile input.vcf -outfile output.vcf -nbam normal.bam -tbam tumor.bam
 	
-# If samtools is not in the PATH:
-modify_MuTect.py -infile input.vcf -outfile output.vcf -nbam normal.bam -tbam tumor.bam -samtools $PATH/TO/samtools
-\end{lstlisting}
-	
-Alternatively, you can supply the normal and tumor sample names, instead of supplying the BAM files:
-\begin{lstlisting}
-# Modify MuTect's output VCF
-# -type snp for MuTect, and -type indel for Indelocator.
-modify_MuTect.py -type snp -infile input.vcf -outfile output.vcf -nsm NormalSampleName -tsm TumorSampleName
+# Based on the sample name you supply:
+modify_MuTect.py -infile input.vcf -outfile output.vcf -nsm NormalSampleName -tsm TumorSampleName
 \end{lstlisting}
 
 % VarScan2
@@ -229,7 +233,7 @@ modify_VJSD.py -method VarScan2 -infile input.vcf -outfile output.vcf
 
 % JointSNVMix2
 \item
-JointSNVMix2 does not output VCF files. In our own workflow, we have already converted its text file into a basic VCF file with an 2 awk one-liner, which you may see in the Run\_5\_callers directory, which are:
+JointSNVMix2 does not output VCF files. In our own workflow, we have already converted its text file into a basic VCF file with an 2 awk one-liners, which you may see in the Run\_5\_callers directory, which are:
 
 \begin{lstlisting}
 # To avoid text files in the order of terabytes, this awk one-liner keeps entries where the reference is not "N", and the somatic probabilities are at least 0.95.
@@ -294,15 +298,21 @@ MuSE was not a part of our analysis in the SomaticSeq paper. We have implemented
 modify_VJSD.py -method MuSE -infile input.vcf -outfile output.vcf
 \end{lstlisting}
 
+
+% LoFreq
+\item
+LoFreq does not require modification. It has no sample columns anyway. 
+
+
 % GATK CombineVariants
 \item
-Finally, with the VCF files modified, you may combine them with GATK CombineVariants: one for SNV and one for indel separately. There is no particular reason to use GATK CombineVariants. Other combiners should also work. The only useful thing here is to combine the calls, and preserve the tags we have written into each individual VCF file's INFO. 
+Finally, with the VCF files modified, you may combine them with GATK CombineVariants: one for SNV and one for indel separately. There is no particular reason to use GATK CombineVariants. Other combiners should also work. The only useful thing here is to combine the calls and GATK CombineVariants does it well and pretty fast. 
 	
 \begin{lstlisting}
 # Combine the VCF files for SNV. Any or all of the VCF files may be present.
-# -nt 12 means to use 12 threads in parallel
-java -jar $PATH/TO/GenomeAnalysisTK.jar -T CombineVariants -R genome.GRCh37.fa -nt 12 --setKey null --genotypemergeoption UNSORTED -V mutect.vcf -V varscan.snp.vcf -V jointsnvmix.vcf -V snp.vardict.vcf -V muse.vcf --out CombineVariants.snp.vcf
-java -jar $PATH/TO/GenomeAnalysisTK.jar -T CombineVariants -R genome.GRCh37.fa -nt 12 --setKey null --genotypemergeoption UNSORTED -V indelocator.vcf -V varscan.snp.vcf -V indel.vardict.vcf --out CombineVariants.indel.vcf
+# -nt 6 means to use 6 threads in parallel
+java -jar $PATH/TO/GenomeAnalysisTK.jar -T CombineVariants -R genome.GRCh37.fa -nt 6 --setKey null --genotypemergeoption UNSORTED -V mutect.vcf -V varscan.snp.vcf -V jointsnvmix.vcf -V snp.vardict.vcf -V muse.vcf --out CombineVariants.snp.vcf
+java -jar $PATH/TO/GenomeAnalysisTK.jar -T CombineVariants -R genome.GRCh37.fa -nt 6 --setKey null --genotypemergeoption UNSORTED -V indelocator.vcf -V varscan.snp.vcf -V indel.vardict.vcf --out CombineVariants.indel.vcf
 \end{lstlisting}
 
 
@@ -332,7 +342,7 @@ intersectBed -header -a BINA_somatic.indel.vcf -b inclusion.bed > somatic.indel.
 
 \subsection{Convert the VCF file, annotated or otherwise, into a tab separated file}
 This script works for all VCF files. It extracts information from BAM files as well as VCF files created by the individual callers. If the ground truth VCF file is included, a called variant will be annotated as a true positive, and everything will be annotated as a false positive. 
-	
+
 	
 \begin{lstlisting}
 # -mutect / -sniper / -varscan / -jsm / -vardict / -muse / -lofreq are optional. 
@@ -351,6 +361,45 @@ SSeq_merged.vcf2tsv.py -ref genome.GRCh37.fa -myvcf somatic.indel.processed.vcf 
 
 
 At the end of this, Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv are created. 
+
+All the options for SSeq\_merged.vcf2tsv.py can be displayed by running SSeq\_merged.vcf2tsv.py --help. We're listing them here:
+
+\begin{lstlisting}
+
+  -myvcf       Input VCF file of the merged calls [REQUIRED]
+  -nbam        BAM file of the matched normal sample [REQUIRED]
+  -tbam        BAM file of the tumor sample [REQUIRED]
+  -truth       Ground truth VCF file. Every other position is a False Positive.
+  -dbsnp       dbSNP VCF file
+  -cosmic      COSMIC VCF file
+  -mutect      VCF file from either MuTect or Indelocator
+  -sniper      VCF file from SomaticSniper
+  -varscan     VCF file from VarScan2
+  -jsm         VCF file from Bina's workflow that contains JointSNVMix2
+  -vardict     VCF file that contains only SNV or only INDEL from VarDict
+  -muse        VCF file from MuSE
+  -lofreq      VCF file from LoFreq
+  -scalpel     VCF file from Scalpel
+  -ref         genome reference
+  -dedup       A flag to consider only primary reads
+  -minMQ       Minimum mapping quality for reads to be considered
+  -minBQ       Minimum base quality for reads to be considered
+  -mincaller   Minimum number of callers for a call to be considered (Use 0.5 to consider some LowQual calls. Default = 0).
+  -scale       The options are phred, fraction, or None, to convert numbers to Phred scale or fractional scale. (default: None, i.e., no conversion)
+  -outfile     Output TSV file name
+                        
+\end{lstlisting}
+
+
+Note: Do not worry if Python throws some warning like this. 
+
+\begin{lstlisting}
+RuntimeWarning: invalid value encountered in double_scalars
+  z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
+\end{lstlisting}
+
+This is to tell you that scipy was attempting some statistical test with empty data. That's usually due to the fact that normal BAM file has no variant reads at that given position. That is why lots of values are NaN for the normal. 
+
 
 
 
@@ -460,7 +509,7 @@ Have implemented the following improvement, mostly for indels:
 
 
 
-\subsection{Version 2.1}
+\subsection{Version 2.1.2}
 
 \begin{itemize}
 
@@ -468,11 +517,16 @@ Have implemented the following improvement, mostly for indels:
   Incorporated Scalpel
   
   \item
-  Properly handle calls with multiple ALT calls in the same position. The VCF files can either have more than one call in the ALT column (i.e., A,G), or have multiple lines corresponding to the same position (one line for each call).
+  Properly handle cases with multiple ALT calls in the same position. The VCF files can either have more than one call in the ALT column (i.e., A,G), or have multiple lines corresponding to the same position (one line for each call).
   
   \item
-  Removed SnpSift/SnpEff dependencies. Those information can be directly obtained during the SSeq\_merged.vcf2tsv.py step.
+  Deprecated HaplotypeCaller dependencies.
   
+  \item
+  Improved the Wrapper script to remove SnpSift/SnpEff dependencies. Those information can be directly obtained during the SSeq\_merged.vcf2tsv.py step. Also removed some additional legacy steps that were useless (i.e., score\_Somatic.Variants.py), and added a step to check the correctness of the input. The v2.1 and 2.1.1 had some typos in the wrapper script, but no change in the core programs.
+  
+  
+
 \end{itemize}
 
 
@@ -482,7 +536,7 @@ Have implemented the following improvement, mostly for indels:
 \begin{itemize}
 
   \item
-  Develop a version for deep sequencing cfDNA/ctDNA. 
+  Develop a version for deep sequencing cfDNA/ctDNA.
   
 \end{itemize}
 

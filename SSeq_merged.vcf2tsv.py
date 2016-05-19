@@ -54,7 +54,6 @@ parser.add_argument('-minBQ',     '--minimum-base-quality',     type=float, help
 parser.add_argument('-mincaller', '--minimum-num-callers',    type=float, help='Minimum number of tools to be considered', required=False, default=0)
 
 parser.add_argument('-scale',      '--p-scale',               type=str,   help='phred, fraction, or none', required=False, default=None)
-parser.add_argument('-samtools',   '--samtools-path',         type=str,   help='Path to samtools',required=False, default='samtools')
 
 parser.add_argument('-outfile',    '--output-tsv-file',       type=str,   help='Output TSV Name', required=False, default=os.sys.stdout)
 
