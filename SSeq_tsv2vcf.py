@@ -7,8 +7,8 @@ parser.add_argument('-tsv',   '--tsv-in',                    type=str,   help='T
 parser.add_argument('-vcf',   '--vcf-out',                   type=str,   help='VCF iut', required=True)
 parser.add_argument('-pass',  '--pass-threshold',            type=float, help='Above which is automatically PASS', required=False, default=0.7)
 parser.add_argument('-low',   '--lowqual-threshold',         type=float, help='Low quality subject to lenient filter', required=False, default=0.1)
-parser.add_argument('-hom',   '--hom-threshold',             type=float, help='Above which is automatically PASS', required=False, default=0.85)
-parser.add_argument('-het',   '--het-threshold',             type=float, help='Low quality subject to lenient filter', required=False, default=0.05)
+parser.add_argument('-hom',   '--hom-threshold',             type=float, help='The VAF to be labeled 1/1 in GT', required=False, default=0.85)
+parser.add_argument('-het',   '--het-threshold',             type=float, help='The VAF to be labeled 0/1 in GT', required=False, default=0.05)
 parser.add_argument('-N',     '--normal-sample-name',        type=str,   help='Normal Sample Name', required=False, default='NORMAL')
 parser.add_argument('-T',     '--tumor-sample-name',         type=str,   help='Tumor Sample Name', required=False, default='TUMOR')
 parser.add_argument('-tools', '--individual-mutation-tools', type=str,   help='A list of all tools: have to match the annotated tool name in the input vcf files', nargs='*', required=False, default=('CGA', 'VarScan2', 'JointSNVMix2', 'SomaticSniper', 'VarDict', 'MuSE', 'LoFreq', 'Scalpel') )
@@ -172,10 +172,10 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
 
     vcf.write('##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">\n')
 
-    if paired_mode:
-        vcf.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\t{}\n'.format(args.normal_sample_name, args.tumor_sample_name) )
-    elif single_mode:
+    if single_mode:
         vcf.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\n'.format(args.tumor_sample_name) )
+    elif paired_mode:
+        vcf.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\t{}\n'.format(args.normal_sample_name, args.tumor_sample_name) )
     
     
     # Start writing content:
