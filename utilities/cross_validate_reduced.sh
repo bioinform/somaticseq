@@ -1,6 +1,10 @@
 #!/bin/bash
 
 tsv=$1
+half_FP=$2  # For IS3:  3951 SNVs and 4146 INDELs
+
+
+MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 head -n 1 $tsv > ${tsv}.header.tmp
 
@@ -11,7 +15,7 @@ do
 
 	cat ${tsv}.header.tmp ${tsv}.tmp  > ${tsv}.DC.scrambled.snp.${i}.tsv
 
-	R --no-save "--args ${tsv}.DC.scrambled.snp.${i}.tsv  3951" < /home/ltfang/apps/Bina_SomaticMerge/somaticseq/r_scripts/ada_cross_validation.R >> snp.${tsv}.Results.txt
+	R --no-save "--args ${tsv}.DC.scrambled.snp.${i}.tsv  $half_FP" < ${MYDIR}/../r_scripts/ada_cross_validation.R >> tallied.${tsv}.Results.txt
 
 	rm ${tsv}.tmp
 

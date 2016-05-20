@@ -6,10 +6,14 @@
 # Output will be Tumor and then Normal. 
 
 
-import sys, argparse
+import sys, argparse, os
 import regex as re
 import gzip
-from os import sep
+
+MY_DIR = os.path.dirname(os.path.realpath(__file__))
+PRE_DIR = os.path.join(MY_DIR, os.pardir)
+sys.path.append( PRE_DIR )
+
 import genomic_file_handlers as genome
 
 
