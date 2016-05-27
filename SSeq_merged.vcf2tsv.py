@@ -12,6 +12,7 @@
   # Allow user to count only non-duplicate reads if -dedup option is invoked. 
   # Allow handling of VCF files with multiple lines (i.e., different variants) at the same chromosome coordinates, as well as ALT columns with multiple ALT calls.
   # Deprecated HaplotypeCaller and SAMTools dependencies
+  # Get useful metrics from MuTect2
 
 # -- 6/1/2016
 
@@ -195,6 +196,14 @@ out_header = \
 {nBAM_ALT_InDel_3bp}\t\
 {nBAM_ALT_InDel_2bp}\t\
 {nBAM_ALT_InDel_1bp}\t\
+{M2_RPA}\t\
+{M2_NLOD}\t\
+{M2_TLOD}\t\
+{M2_STR}\t\
+{M2_ECNT}\t\
+{M2_HCNT}\t\
+{M2_MAXED}\t\
+{M2_MINED}\t\
 {SOR}\t\
 {MSI}\t\
 {MSILEN}\t\
@@ -449,7 +458,17 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     if variant_id in mutect_variants:
 
                         mutect_variant_i = mutect_variants[variant_id]
-                        mutect_classification = 1 if mutect_variant_i.get_info_value('SOMATIC') else 0
+                        mutect_classification = 1 if (mutect_variant_i.get_info_value('SOMATIC') or 'PASS' in mutect_variant_i.filters) else 0
+                        
+                        # MuTect2 has some useful information:
+                        rpa    = mutect2_RPA(mutect_variant_i)
+                        nlod   = mutect2_nlod(mutect_variant_i)
+                        tlod   = mutect2_tlod(mutect_variant_i)
+                        tandem = mutect2_STR(mutect_variant_i)
+                        ecnt   = mutect2_ECNT(mutect_variant_i)
+                        hcnt   = mutect2_HCNT(mutect_variant_i)
+                        maxED  = mutect2_maxED(mutect_variant_i)
+                        minED  = mutect2_minED(mutect_variant_i)
                         
                         # If ref_base, first_alt, and indel_length unknown, get it here:
                         if not ref_base:         ref_base = mutect_variant_i.refbase
@@ -464,6 +483,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 else:
                     # Assign a bunch of NaN's
                     mutect_classification = nan
+                    rpa = nlod = tlod = tandem = ecnt = hcnt = maxED = minED
 
 
                 #################### Collect VarScan ####################:
@@ -1037,7 +1057,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     # Homopolymer eval (Make sure to modify for INDEL):
                     # The min and max is to prevent the +/- 20 bases from exceeding the reference sequence
                     lseq  = ref_fa.fetch(my_coordinate[0], max(0, my_coordinate[1]-20), my_coordinate[1])
-                    rseq  = ref_fa.fetch(my_coordinate[0], my_coordinate[1]+1,          min(ref_fa.get_reference_length(my_coordinate[0])+1, my_coordinate[1]+21) )
+                    rseq  = ref_fa.fetch(my_coordinate[0], my_coordinate[1]+1, min(ref_fa.get_reference_length(my_coordinate[0])+1, my_coordinate[1]+21) )
                     
                     # This is to get around buy in old version of pysam that reads the reference sequence in bytes instead of strings
                     lseq = lseq.decode() if isinstance(lseq, bytes) else lseq
@@ -1091,7 +1111,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     POS                     = my_coordinate[1],                                       \
                     ID                      = my_identifiers,                                         \
                     REF                     = ref_base,                                               \
-                    ALT                     = first_alt,                                                 \
+                    ALT                     = first_alt,                                              \
                     if_MuTect               = mutect_classification,                                  \
                     if_VarScan2             = varscan_classification,                                 \
                     if_JointSNVMix2         = jointsnvmix2_classification,                            \
@@ -1142,6 +1162,14 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     nBAM_ALT_InDel_3bp      = n_alt_indel_3bp,                                        \
                     nBAM_ALT_InDel_2bp      = n_alt_indel_2bp,                                        \
                     nBAM_ALT_InDel_1bp      = n_alt_indel_1bp,                                        \
+                    M2_RPA                  = rpa,                                                    \
+                    M2_NLOD                 = nlod,                                                   \
+                    M2_TLOD                 = tlod,                                                   \
+                    M2_STR                  = tandem,                                                 \
+                    M2_ECNT                 = ecnt,                                                   \
+                    M2_HCNT                 = hcnt,                                                   \
+                    M2_MAXED                = maxED,                                                  \
+                    M2_MINED                = minED,                                                  \
                     SOR                     = sor,                                                    \
                     MSI                     = msi,                                                    \
                     MSILEN                  = msilen,                                                 \

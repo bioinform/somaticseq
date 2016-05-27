@@ -439,36 +439,87 @@ def find_SHIFT3(vcf_object):
 
 
 
-
-# MuTect2's stuff:
+# MuTect2's Stuff:
 def mutect2_RPA(vcf_object):
     rpa = vcf_object.get_info_value('RPA')
     
     if rpa:
-	rpa = rpa.split(',')
-	return [ int(i) for i in rpa ]
+        rpa = rpa.split(',')
+        return [ int(i) for i in rpa ]
     else:
-	return nan
+        return nan
     
 
 def mutect2_nlod(vcf_object):
     nlod = vcf_object.get_info_value('NLOD')
     if nlod:
-	return int(nlod)
+        return int(nlod)
     else:
-	return nan
+        return nan
 
-	
+    
 def mutect2_tlod(vcf_object):
     tlod = vcf_object.get_info_value('TLOD')
     if tlod:
-	return int(tlod)
+        return int(tlod)
     else:
-	return nan
-	
+        return nan
+    
 
 def mutect2_STR(vcf_object):
     if vcf_object.get_info_value('STR'):
-	return 1
+        return 1
     else:
-	return 0
+        return 0
+
+
+def mutect2_ECNT(vcf_object):
+    ecnt = vcf_object.get_info_value('ECNT')
+    if ecnt:
+        try:
+            ecnt = int( ecnt )
+        except TypeError:
+            ecnt = nan
+    else:
+        ecnt = nan
+    
+    return ecnt
+    
+
+def mutect2_HCNT(vcf_object):
+    hcnt = vcf_object.get_info_value('HCNT')
+    if hcnt:
+        try:
+            hcnt = int( hcnt )
+        except TypeError:
+            hcnt = nan
+    else:
+        hcnt = nan
+        
+    return hcnt
+    
+
+def mutect2_maxED(vcf_object):
+    maxED = vcf_object.get_info_value('MAX_ED')
+    if maxED:
+        try:
+            maxED = int( maxED )
+        except TypeError:
+            maxED = nan
+    else:
+        maxED = nan
+    
+    return maxED
+    
+
+def mutect2_minED(vcf_object):
+    minED = vcf_object.get_info_value('MIN_ED')
+    if minED:
+        try:
+            minED = int( minED )
+        except TypeError:
+            minED = nan
+    else:
+        minED = nan
+    
+    return minED
