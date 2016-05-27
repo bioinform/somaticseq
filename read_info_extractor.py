@@ -393,7 +393,9 @@ def find_BQ(vcf_object, i):
         
     return bq_ref, bq_alt
     
-    
+
+
+# VarDict's stuff
 def find_SOR(vcf_object):
     # VarDict's odd ratio, could be Inf, but other than Inf max was 180, so I will convert Inf --> 200. Stored in the TUMOR sample. 
     
@@ -434,3 +436,39 @@ def find_SHIFT3(vcf_object):
     else:
         shift3 = nan
     return shift3
+
+
+
+
+# MuTect2's stuff:
+def mutect2_RPA(vcf_object):
+    rpa = vcf_object.get_info_value('RPA')
+    
+    if rpa:
+	rpa = rpa.split(',')
+	return [ int(i) for i in rpa ]
+    else:
+	return nan
+    
+
+def mutect2_nlod(vcf_object):
+    nlod = vcf_object.get_info_value('NLOD')
+    if nlod:
+	return int(nlod)
+    else:
+	return nan
+
+	
+def mutect2_tlod(vcf_object):
+    tlod = vcf_object.get_info_value('TLOD')
+    if tlod:
+	return int(tlod)
+    else:
+	return nan
+	
+
+def mutect2_STR(vcf_object):
+    if vcf_object.get_info_value('STR'):
+	return 1
+    else:
+	return 0
