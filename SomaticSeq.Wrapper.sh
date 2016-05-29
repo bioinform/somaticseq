@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o:M:I:V:v:J:S:D:U:L:l:p:g:c:d:s:G:T:N:C:x:R:e:i:z:Z:k: --long output-dir:,mutect:,indelocator:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,genome-reference:,cosmic:,dbsnp:,snpeff-dir:,gatk:,tumor-bam:,normal-bam:,classifier-snv:,classifier-indel:,ada-r-script:,exclusion-region:,inclusion-region:,truth-indel:,truth-snv:,keep-intermediates: -n 'SomaticSeq.Wrapper.sh'  -- "$@"`
+OPTS=`getopt -o o:M:m:I:V:v:J:S:D:U:L:l:p:g:c:d:s:G:T:N:C:x:R:e:i:z:Z:k: --long output-dir:,mutect:,mutect2:,indelocator:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,genome-reference:,cosmic:,dbsnp:,snpeff-dir:,gatk:,tumor-bam:,normal-bam:,classifier-snv:,classifier-indel:,ada-r-script:,exclusion-region:,inclusion-region:,truth-indel:,truth-snv:,keep-intermediates: -n 'SomaticSeq.Wrapper.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -29,6 +29,12 @@ while true; do
 			case "$2" in
 				"") shift 2 ;;
 				*)  mutect_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		-m | --mutect2 )
+			case "$2" in
+				"") shift 2 ;;
+				*)  mutect2_vcf=$2 ; shift 2 ;;
 			esac ;;
 
 		-I | --indelocator )
@@ -209,6 +215,14 @@ if [[ -r $mutect_vcf ]]; then
 fi
 
 
+# MuTect2
+if [[ -r $mutect2_vcf ]]; then
+	cat $mutect2_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /^[GCTA]$/ && $5 ~ /^[GCTA]$/' > ${merged_dir}/mutect.snp.vcf
+	cat $mutect2_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ && $5 ~ /[GCTA][GCTA]/' > ${merged_dir}/indelocator.vcf
+	files_to_delete="${merged_dir}/mutect.snp.vcf* ${merged_dir}/indelocator* $files_to_delete"
+fi
+
+
 # SomaticSniper:
 if [[ -r $sniper_vcf ]]; then
 	$MYDIR/modify_VJSD.py -method SomaticSniper -infile ${sniper_vcf} -outfile ${merged_dir}/somaticsniper.vcf
@@ -306,7 +320,11 @@ then
 	files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* $files_to_delete"
 
 
-	if [[ -r ${mutect_vcf} ]]
+	if [[ -r ${merged_dir}/mutect.snp.vcf ]]
+	then
+		mutect_input="-mutect ${merged_dir}/mutect.snp.vcf"
+		tool_mutect="CGA"
+	elif [[ -r ${mutect_vcf} ]]
 	then
 		mutect_input="-mutect ${mutect_vcf}"
 		tool_mutect="CGA"
@@ -450,9 +468,12 @@ then
 	files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* $files_to_delete"
 
 
-	## Convert the sSNV file into TSV file, for machine learning data:
-	if [[ -r ${indelocator_vcf} ]]
+	## MuTect2 will take precedence over Indelocator
+	if [[ -r ${merged_dir}/indelocator.vcf ]]
 	then
+		indelocator_input="-mutect ${merged_dir}/indelocator.vcf"
+		tool_indelocator="CGA"
+	elif [[ -r ${indelocator_vcf} ]]; then
 		indelocator_input="-mutect ${indelocator_vcf}"
 		tool_indelocator="CGA"
 	else
