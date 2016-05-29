@@ -453,7 +453,7 @@ def mutect2_RPA(vcf_object):
 def mutect2_nlod(vcf_object):
     nlod = vcf_object.get_info_value('NLOD')
     if nlod:
-        return int(nlod)
+        return float(nlod)
     else:
         return nan
 
@@ -461,7 +461,7 @@ def mutect2_nlod(vcf_object):
 def mutect2_tlod(vcf_object):
     tlod = vcf_object.get_info_value('TLOD')
     if tlod:
-        return int(tlod)
+        return float(tlod)
     else:
         return nan
     
