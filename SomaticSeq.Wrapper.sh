@@ -217,8 +217,8 @@ fi
 
 # MuTect2
 if [[ -r $mutect2_vcf ]]; then
-	cat $mutect2_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /^[GCTA]$/ && $5 ~ /^[GCTA]$/' > ${merged_dir}/mutect.snp.vcf
-	cat $mutect2_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ && $5 ~ /[GCTA][GCTA]/' > ${merged_dir}/indelocator.vcf
+	cat $mutect2_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /^[GgCcTtAa]$/         && $5 !~ /[GgCcTtAa][GgCcTtAa]/' > ${merged_dir}/mutect.snp.vcf
+	cat $mutect2_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GgCcTtAa][GgCcTtAa]/ || $5 ~  /[GgCcTtAa][GgCcTtAa]/' > ${merged_dir}/indelocator.vcf
 	files_to_delete="${merged_dir}/mutect.snp.vcf* ${merged_dir}/indelocator* $files_to_delete"
 fi
 
