@@ -478,6 +478,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     else:
                         # Not called by mutect
                         mutect_classification = 0
+                        rpa = nlod = tlod = tandem = ecnt = hcnt = maxED = minED = nan
 
                     num_callers += mutect_classification
                 else:
