@@ -478,7 +478,7 @@ def mutect2_ECNT(vcf_object):
     if ecnt:
         try:
             ecnt = int( ecnt )
-        except TypeError:
+        except ValueError:
             ecnt = nan
     else:
         ecnt = nan
@@ -491,7 +491,7 @@ def mutect2_HCNT(vcf_object):
     if hcnt:
         try:
             hcnt = int( hcnt )
-        except TypeError:
+        except ValueError:
             hcnt = nan
     else:
         hcnt = nan
@@ -503,8 +503,8 @@ def mutect2_maxED(vcf_object):
     maxED = vcf_object.get_info_value('MAX_ED')
     if maxED:
         try:
-            maxED = int( maxED )
-        except TypeError:
+            maxED = float( maxED )
+        except ValueError:
             maxED = nan
     else:
         maxED = nan
@@ -516,8 +516,8 @@ def mutect2_minED(vcf_object):
     minED = vcf_object.get_info_value('MIN_ED')
     if minED:
         try:
-            minED = int( minED )
-        except TypeError:
+            minED = float( minED )
+        except ValueError:
             minED = nan
     else:
         minED = nan
