@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+PA#!/usr/bin/env python3
 
 # 1-based index in this program.
 # Sample command:
@@ -483,7 +483,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 else:
                     # Assign a bunch of NaN's
                     mutect_classification = nan
-                    rpa = nlod = tlod = tandem = ecnt = hcnt = maxED = minED
+                    rpa = nlod = tlod = tandem = ecnt = hcnt = maxED = minED = nan
 
 
                 #################### Collect VarScan ####################:
