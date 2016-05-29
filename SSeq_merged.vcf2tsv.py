@@ -1,4 +1,4 @@
-PA#!/usr/bin/env python3
+#!/usr/bin/env python3
 
 # 1-based index in this program.
 # Sample command:
