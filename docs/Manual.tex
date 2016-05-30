@@ -118,6 +118,7 @@ All the output VCF files from individual callers are optional. Those VCF files c
 
 SomaticSeq.Wrapper.sh \
 --mutect           MuTect/variants.snp.vcf \
+--mutect2          MuTect2/variants.vcf \
 --indelocator      Indelocator/variants.indel.vcf \
 --varscan-snv      VarScan2/variants.snp.vcf \
 --varscan-indel    VarScan2/variants.indel.vcf \
@@ -156,6 +157,7 @@ Make sure the classifiers and the proper R script (ada\_model\_predictor.R) are 
 # The *.RData files are trained classifier from the training mode.
 SomaticSeq.Wrapper.sh \
 --mutect           MuTect/variants.snp.vcf \
+--mutect2          MuTect2/variants.vcf \
 --indelocator      Indelocator/variants.indel.vcf \
 --varscan-snv      VarScan2/variants.snp.vcf \
 --varscan-indel    VarScan2/variants.indel.vcf \
@@ -182,7 +184,7 @@ SomaticSeq.Wrapper.sh \
 
 \end{lstlisting}
 
-
+If both MuTect2 and MuTect/Indelocator VCF files are provided, the script is written such that it will use MuTect2 and ignore MuTect.
 
 
 
@@ -372,7 +374,7 @@ All the options for SSeq\_merged.vcf2tsv.py are listed here. They can also be di
   -truth       Ground truth VCF file. Every other position is a False Positive.
   -dbsnp       dbSNP VCF file
   -cosmic      COSMIC VCF file
-  -mutect      VCF file from either MuTect or Indelocator
+  -mutect      VCF file from either MuTect2, MuTect, or Indelocator
   -sniper      VCF file from SomaticSniper
   -varscan     VCF file from VarScan2
   -jsm         VCF file from Bina's workflow that contains JointSNVMix2
@@ -526,10 +528,21 @@ Have implemented the following improvement, mostly for indels:
   
   \item
   The Wrapper script removed SnpSift/SnpEff dependencies. Those information can be directly obtained during the SSeq\_merged.vcf2tsv.py step. Also removed some additional legacy steps that has become useless since v2 (i.e., score\_Somatic.Variants.py). Added a step to check the correctness of the input. The v2.1 and 2.1.1 had some typos in the wrapper script, so only describing v2.1.2 here.
-  
- 
 
 \end{itemize}
+
+
+
+\subsection{Version 2.2}
+
+\begin{itemize}
+
+  \item
+  Added MuTect2 support.
+
+\end{itemize}
+
+
 
 
 
