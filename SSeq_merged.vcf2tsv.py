@@ -469,6 +469,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         hcnt   = mutect2_HCNT(mutect_variant_i)
                         maxED  = mutect2_maxED(mutect_variant_i)
                         minED  = mutect2_minED(mutect_variant_i)
+                        rpa    = sum(rpa)/len(rpa)
                         
                         # If ref_base, first_alt, and indel_length unknown, get it here:
                         if not ref_base:         ref_base = mutect_variant_i.refbase
