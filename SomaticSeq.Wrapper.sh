@@ -223,14 +223,16 @@ fi
 
 # MuTect2
 if [[ -r $mutect2_vcf ]]; then
-	if [ ${file: -4} == ".vcf" ]; then
+
+	if [ ${mutect2_vcf: -4} == ".vcf" ]; then
 		cat $mutect2_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /^[GgCcTtAa]$/         && $5 !~ /[GgCcTtAa][GgCcTtAa]/' > ${merged_dir}/mutect.snp.vcf
 		cat $mutect2_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GgCcTtAa][GgCcTtAa]/ || $5 ~  /[GgCcTtAa][GgCcTtAa]/' > ${merged_dir}/mutect.indel.vcf
-		files_to_delete="${merged_dir}/mutect.snp.vcf*${merged_dir}/mutect.indel.vcf* $files_to_delete"
-	elif [ ${file: -3} == ".gz" ]; then
+	elif [ ${mutect2_vcf: -3} == ".gz" ]; then
 		gunzip -c $mutect2_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /^[GgCcTtAa]$/         && $5 !~ /[GgCcTtAa][GgCcTtAa]/' > ${merged_dir}/mutect.snp.vcf
 		gunzip -c $mutect2_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GgCcTtAa][GgCcTtAa]/ || $5 ~  /[GgCcTtAa][GgCcTtAa]/' > ${merged_dir}/mutect.indel.vcf
 	fi
+
+	files_to_delete="${merged_dir}/mutect.snp.vcf*${merged_dir}/mutect.indel.vcf* $files_to_delete"
 fi
 
 
