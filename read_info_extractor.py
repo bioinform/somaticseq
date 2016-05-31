@@ -447,7 +447,7 @@ def mutect2_RPA(vcf_object):
         rpa = rpa.split(',')
         return [ int(i) for i in rpa ]
     else:
-        return nan
+        return [nan]
     
 
 def mutect2_nlod(vcf_object):
