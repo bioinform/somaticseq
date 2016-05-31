@@ -446,11 +446,11 @@ fi
 
 
 #################### INDEL ####################
-if [[ -r ${merged_dir}/mutect.indel.vcf || -r ${merged_dir}/varscan2.indel.vcf || -r ${merged_dir}/indel.vardict.vcf || -r ${lofreq_indel_vcf} || ${merged_dir}/indelocator.vcf ]]
+if [[ -r ${merged_dir}/mutect.indel.vcf || -r ${merged_dir}/varscan2.indel.vcf || -r ${merged_dir}/indel.vardict.vcf || -r ${lofreq_indel_vcf} || ${merged_dir}/indelocator.vcf || $scalpel_vcf ]]
 then
 
 	mergeindel=''
-	for vcf in ${merged_dir}/mutect.indel.vcf ${merged_dir}/indel.vardict.vcf ${merged_dir}/varscan2.indel.vcf ${merged_dir}/mutect.indel.vcf ${lofreq_indel_vcf} ${merged_dir}/indelocator.vcf
+	for vcf in ${merged_dir}/mutect.indel.vcf ${merged_dir}/indel.vardict.vcf ${merged_dir}/varscan2.indel.vcf ${merged_dir}/mutect.indel.vcf ${lofreq_indel_vcf} ${merged_dir}/indelocator.vcf $scalpel_vcf
 	do
 		if [[ -r $vcf ]]; then
 			mergeindel="$mergeindel --variant $vcf"
