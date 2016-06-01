@@ -235,20 +235,17 @@ if [[ -r $mutect2_vcf ]]; then
 	files_to_delete="${merged_dir}/mutect.snp.vcf*${merged_dir}/mutect.indel.vcf* $files_to_delete"
 fi
 
-
 # SomaticSniper:
 if [[ -r $sniper_vcf ]]; then
 	$MYDIR/modify_VJSD.py -method SomaticSniper -infile ${sniper_vcf} -outfile ${merged_dir}/somaticsniper.vcf
 	files_to_delete="${merged_dir}/somaticsniper.vcf* $files_to_delete"
 fi
 
-
 # JointSNVMix2:
 if [[ -r $jsm_vcf ]] ; then
 	$MYDIR/modify_VJSD.py -method JointSNVMix2  -infile ${jsm_vcf} -outfile ${merged_dir}/jsm.vcf
 	files_to_delete="${merged_dir}/jsm.vcf* $files_to_delete"
 fi
-
 
 # VarScan2:
 if [[ -r $varscan_vcf ]]; then
@@ -262,19 +259,16 @@ if [[ -r $muse_vcf ]]; then
 	files_to_delete="${merged_dir}/muse.vcf* $files_to_delete"
 fi
 
-
 # LoFreq:
 if [[ -r $lofreq_vcf ]]; then
 	files_to_delete="${lofreq_vcf}.idx $files_to_delete"
 fi
-
 
 # VarScan2:
 if [[ -r $varscan_indel_vcf ]]; then
 	$MYDIR/modify_VJSD.py -method VarScan2 -infile ${varscan_indel_vcf} -outfile ${merged_dir}/varscan2.indel.vcf
 	files_to_delete="${merged_dir}/varscan2.indel.vcf* $files_to_delete"
 fi
-
 
 # VarDict:
 # Does both SNV and INDEL
@@ -283,12 +277,10 @@ if [[ -r $vardict_vcf ]]; then
 	files_to_delete="${merged_dir}/snp.vardict.vcf* ${merged_dir}/indel.vardict.vcf* $files_to_delete"
 fi
 
-
 # LoFreq:
 if [[ -r $lofreq_indel_vcf ]]; then
 	files_to_delete="${lofreq_indel_vcf}.idx $files_to_delete"
 fi
-
 
 # dbSNP
 if [[ -r ${dbsnp} ]]; then
@@ -296,7 +288,6 @@ if [[ -r ${dbsnp} ]]; then
 else
 	dbsnp_input=''
 fi
-
 
 # COSMIC
 if [[ -r ${cosmic} ]]; then
@@ -319,7 +310,7 @@ then
 		fi
 	done
 
-	java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 12 --setKey null --genotypemergeoption UNSORTED $mergesnp --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
+	java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 6 --setKey null --genotypemergeoption UNSORTED $mergesnp --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
 	files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* $files_to_delete"
 
 
@@ -459,7 +450,7 @@ then
 		fi
 	done
 
-	java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 12 --setKey null --genotypemergeoption UNSORTED $mergeindel --out ${merged_dir}/CombineVariants_MVJSD.indel.vcf
+	java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 6 --setKey null --genotypemergeoption UNSORTED $mergeindel --out ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 	files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* $files_to_delete"
 
 
@@ -501,6 +492,7 @@ then
 		lofreq_input=''
 		tool_lofreq=''
 	fi
+
 
 	if [[ -r ${scalpel_vcf} ]]; then
 		scalpel_input="-scalpel ${scalpel_vcf}"
@@ -548,14 +540,12 @@ then
 
 
 	# If a classifier is used, use it:
-	if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]
-	then
+	if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]; then
 		R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/Trained.sINDEL.tsv" < "$ada_r_script"
 		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel
 
 	# If ground truth is here, assume builder.R, and build a classifier
-	elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]
-	then
+	elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]; then
 		R --no-save --args "${merged_dir}/Ensemble.sINDEL.tsv" < ${ada_r_script}
 
 	# If no training and no classification, then make VCF by majority vote consensus:
