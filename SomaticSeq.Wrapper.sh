@@ -232,7 +232,7 @@ if [[ -r $mutect2_vcf ]]; then
 		gunzip -c $mutect2_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GgCcTtAa][GgCcTtAa]/ || $5 ~  /[GgCcTtAa][GgCcTtAa]/' > ${merged_dir}/mutect.indel.vcf
 	fi
 
-	files_to_delete="${merged_dir}/mutect.snp.vcf*${merged_dir}/mutect.indel.vcf* $files_to_delete"
+	files_to_delete="${merged_dir}/mutect.snp.vcf* ${merged_dir}/mutect.indel.vcf* $files_to_delete"
 fi
 
 # SomaticSniper:
