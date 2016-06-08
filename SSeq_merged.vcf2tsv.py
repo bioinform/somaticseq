@@ -1045,7 +1045,19 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     t_alt_indel_2bp = t_alt_flanking_indel.count(2) + t_alt_indel_1bp
                     t_alt_indel_3bp = t_alt_flanking_indel.count(3) + t_alt_indel_2bp + t_alt_indel_1bp
         
-                    sor = ((n_alt_for + n_alt_rev) / (n_ref_for + n_ref_rev)) / ((t_alt_for + t_alt_rev) / (t_ref_for + t_ref_rev))
+                    
+                    # Odds Ratio (just like VarDict, but get from BAM)
+                    sor_numerator   = (n_alt_for + n_alt_rev) * (t_ref_for + t_ref_rev)
+                    sor_denominator = (n_ref_for + n_ref_rev) * (t_alt_for + t_alt_rev)
+                    if sor_numerator == 0 and sor_denominator == 0:
+                        sor = nan
+                    elif sor_denominator == 0:
+                        sor = 100
+                    else:
+                        sor = sor_numerator / sor_denominator
+                        if sor >= 100:
+                            sor = 100
+                    
                     ############################################################################################
                     ############################################################################################
                     # Homopolymer eval (Make sure to modify for INDEL):
