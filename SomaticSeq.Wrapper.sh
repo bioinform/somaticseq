@@ -262,7 +262,7 @@ fi
 # LoFreq:
 if [[ -r $lofreq_vcf ]]; then
 
-	if [ ${lofreq_vcf: -3} == '.gz' ]; then
+	if [ ${lofreq_vcf: -3} == ".gz" ]; then
 		gunzip -c $lofreq_vcf > ${merged_dir}/lofreq.snv.vcf
 		lofreq_vcf="${merged_dir}/lofreq.snv.vcf"
 		files_to_delete="${merged_dir}/lofreq.snv.vcf* $files_to_delete"
@@ -287,12 +287,13 @@ fi
 # LoFreq:
 if [[ -r $lofreq_indel_vcf ]]; then
 
-	if [ ${lofreq_indel_vcf: -3} == '.gz' ]; then
+	if [ ${lofreq_indel_vcf: -3} == ".gz" ]; then
 		gunzip -c $lofreq_indel_vcf > ${merged_dir}/lofreq.indel.vcf
 		lofreq_indel_vcf="${merged_dir}/lofreq.indel.vcf"
 		files_to_delete="${merged_dir}/lofreq.indel.vcf* $files_to_delete"
 	else
 		files_to_delete="${lofreq_indel_vcf}.idx $files_to_delete"
+	fi
 fi
 
 # dbSNP
