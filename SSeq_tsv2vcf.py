@@ -64,7 +64,7 @@ for tool_i in tools:
     mvjsdu = mvjsdu + tools_code[tool_i]
 
 total_num_tools = len(mvjsdu)
-tool_string = ','.join( tools )
+tool_string = ', '.join( tools )
 
 def p2phred(p, max_phred=float('nan')):
     '''Convert p-value to Phred-scale quality score.'''
@@ -170,7 +170,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     vcf.write('##FORMAT=<ID=fetCD,Number=1,Type=Float,Description="Concordance FET">\n')
     vcf.write('##FORMAT=<ID=zMQ,Number=1,Type=Float,Description="z-score rank sum of mapping quality">\n')
     vcf.write('##FORMAT=<ID=zBQ,Number=1,Type=Float,Description="z-score rank sum of base quality">\n')
-
+    vcf.write('##FORMAT=<ID=MQ0,Number=1,Type=Float,Description="Number of reads with mapping quality of 0">\n')
     vcf.write('##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">\n')
 
     if single_mode:
