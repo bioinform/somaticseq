@@ -934,7 +934,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             if read_i.mapping_quality < min_mq and mean(read_i.query_qualities) < min_bq:
                                 t_poor_read_count += 1
                             
-                            if mapping_quality == 0:
+                            if read_i.mapping_quality == 0:
                                 t_MQ0 += 1
                             
                             # Reference calls:
