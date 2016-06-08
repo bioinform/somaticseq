@@ -605,8 +605,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         else:
                             score_vardict = nan
     
-                        # SOR, MSI, MSILEN, and SHIFT3:
-                        sor    = find_SOR(vardict_variant_i)
+                        # MSI, MSILEN, and SHIFT3:
                         msi    = find_MSI(vardict_variant_i)
                         msilen = find_MSILEN(vardict_variant_i)
                         shift3 = find_SHIFT3(vardict_variant_i)                        
@@ -618,12 +617,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         
                     else:
                         vardict_classification = 0
-                        sor = msi = msilen = shift3 = score_vardict = nan
+                        msi = msilen = shift3 = score_vardict = nan
                     
                     num_callers += vardict_classification
                     
                 else:
-                    vardict_classification = sor = msi = msilen = shift3 = score_vardict = nan
+                    vardict_classification = msi = msilen = shift3 = score_vardict = nan
 
 
                 #################### Collect MuSE ####################:
@@ -1046,6 +1045,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     t_alt_indel_2bp = t_alt_flanking_indel.count(2) + t_alt_indel_1bp
                     t_alt_indel_3bp = t_alt_flanking_indel.count(3) + t_alt_indel_2bp + t_alt_indel_1bp
         
+                    sor = ((n_alt_for + n_alt_rev) / (n_ref_for + n_ref_rev)) / ((t_alt_for + t_alt_rev) / (t_ref_for + t_ref_rev))
                     ############################################################################################
                     ############################################################################################
                     # Homopolymer eval (Make sure to modify for INDEL):
