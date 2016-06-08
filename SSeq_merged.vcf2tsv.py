@@ -186,8 +186,7 @@ out_header = \
 {nBAM_REF_Clipped_Reads}\t\
 {nBAM_ALT_Clipped_Reads}\t\
 {nBAM_Clipping_FET}\t\
-{nBAM_REF_MQ0}\t\
-{nBAM_ALT_MQ0}\t\
+{nBAM_MQ0}\t\
 {nBAM_Other_Reads}\t\
 {nBAM_Poor_Reads}\t\
 {nBAM_REF_InDel_3bp}\t\
@@ -234,8 +233,7 @@ out_header = \
 {tBAM_REF_Clipped_Reads}\t\
 {tBAM_ALT_Clipped_Reads}\t\
 {tBAM_Clipping_FET}\t\
-{tBAM_REF_MQ0}\t\
-{tBAM_ALT_MQ0}\t\
+{tBAM_MQ0}\t\
 {tBAM_Other_Reads}\t\
 {tBAM_Poor_Reads}\t\
 {tBAM_REF_InDel_3bp}\t\
@@ -772,7 +770,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     n_ref_concordant_reads = n_alt_concordant_reads = n_ref_discordant_reads = n_alt_discordant_reads = 0
                     n_ref_for = n_ref_rev = n_alt_for = n_alt_rev = N_dp = 0
                     n_ref_SC_reads = n_alt_SC_reads = n_ref_notSC_reads = n_alt_notSC_reads = 0
-                    n_ref_MQ0 = n_alt_MQ0 = 0
+                    n_MQ0 = 0
                     
                     n_ref_pos_from_end = []
                     n_alt_pos_from_end = []
@@ -790,6 +788,9 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             
                             if read_i.mapping_quality < min_mq and mean(read_i.query_qualities) < min_bq:
                                 n_poor_read_count += 1
+                            
+                            if read_i.mapping_quality == 0:
+                                n_MQ0 += 1
                             
                             # Reference calls:
                             if code_i == 1 and base_call_i == ref_base[0]:
@@ -819,10 +820,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                                     n_ref_SC_reads += 1
                                 else:
                                     n_ref_notSC_reads += 1
-                                    
-                                if read_i.mapping_quality == 0:
-                                    n_ref_MQ0 += 1
-                                    
+                                                                        
                                 # Distance from the end of the read:
                                 if ith_base != None:
                                     n_ref_pos_from_end.append( min(ith_base, read_i.query_length-ith_base) )
@@ -863,9 +861,6 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                                 else:
                                     n_alt_notSC_reads += 1
     
-                                if read_i.mapping_quality == 0:
-                                    n_alt_MQ0 += 1
-    
                                 # Distance from the end of the read:
                                 if ith_base != None:
                                     n_alt_pos_from_end.append( min(ith_base, read_i.query_length-ith_base) )
@@ -898,12 +893,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     
                     n_z_ranksums_endpos = stats.ranksums(n_alt_pos_from_end, n_ref_pos_from_end)[0]
                     
-                    n_ref_indel_3bp = n_ref_flanking_indel.count(3)
-                    n_ref_indel_2bp = n_ref_flanking_indel.count(2)
                     n_ref_indel_1bp = n_ref_flanking_indel.count(1)
-                    n_alt_indel_3bp = n_alt_flanking_indel.count(3)
-                    n_alt_indel_2bp = n_alt_flanking_indel.count(2)
+                    n_ref_indel_2bp = n_ref_flanking_indel.count(2) + n_ref_indel_1bp
+                    n_ref_indel_3bp = n_ref_flanking_indel.count(3) + n_ref_indel_2bp + n_ref_indel_1bp
                     n_alt_indel_1bp = n_alt_flanking_indel.count(1)
+                    n_alt_indel_2bp = n_alt_flanking_indel.count(2) + n_alt_indel_1bp
+                    n_alt_indel_3bp = n_alt_flanking_indel.count(3) + n_alt_indel_2bp + n_alt_indel_1bp
         
                     
                     ########################################################################################
@@ -920,7 +915,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     t_ref_concordant_reads = t_alt_concordant_reads = t_ref_discordant_reads = t_alt_discordant_reads = 0
                     t_ref_for = t_ref_rev = t_alt_for = t_alt_rev = T_dp = 0
                     t_ref_SC_reads = t_alt_SC_reads = t_ref_notSC_reads = t_alt_notSC_reads = 0
-                    t_ref_MQ0 = t_alt_MQ0 = 0
+                    t_MQ0 = 0
                     
                     t_ref_pos_from_end = []
                     t_alt_pos_from_end = []
@@ -938,7 +933,10 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             
                             if read_i.mapping_quality < min_mq and mean(read_i.query_qualities) < min_bq:
                                 t_poor_read_count += 1
-    
+                            
+                            if mapping_quality == 0:
+                                t_MQ0 += 1
+                            
                             # Reference calls:
                             if code_i == 1 and base_call_i == ref_base[0]:
                             
@@ -968,9 +966,6 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                                 else:
                                     t_ref_notSC_reads += 1
     
-                                if read_i.mapping_quality == 0:
-                                    t_ref_MQ0 += 1
-                                    
                                 # Distance from the end of the read:
                                 if ith_base != None:
                                     t_ref_pos_from_end.append( min(ith_base, read_i.query_length-ith_base) )
@@ -1011,9 +1006,6 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                                 else:
                                     t_alt_notSC_reads += 1
     
-                                if read_i.mapping_quality == 0:
-                                    t_alt_MQ0 += 1
-    
                                 # Distance from the end of the read:
                                 if ith_base != None:
                                     t_alt_pos_from_end.append( min(ith_base, read_i.query_length-ith_base) )
@@ -1047,12 +1039,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     
                     t_z_ranksums_endpos = stats.ranksums(t_alt_pos_from_end, t_ref_pos_from_end)[0]
                     
-                    t_ref_indel_3bp = t_ref_flanking_indel.count(3)
-                    t_ref_indel_2bp = t_ref_flanking_indel.count(2)
                     t_ref_indel_1bp = t_ref_flanking_indel.count(1)
-                    t_alt_indel_3bp = t_alt_flanking_indel.count(3)
-                    t_alt_indel_2bp = t_alt_flanking_indel.count(2)
+                    t_ref_indel_2bp = t_ref_flanking_indel.count(2) + t_ref_indel_1bp
+                    t_ref_indel_3bp = t_ref_flanking_indel.count(3) + t_ref_indel_2bp + t_ref_indel_1bp
                     t_alt_indel_1bp = t_alt_flanking_indel.count(1)
+                    t_alt_indel_2bp = t_alt_flanking_indel.count(2) + t_alt_indel_1bp
+                    t_alt_indel_3bp = t_alt_flanking_indel.count(3) + t_alt_indel_2bp + t_alt_indel_1bp
         
                     ############################################################################################
                     ############################################################################################
@@ -1154,8 +1146,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     nBAM_REF_Clipped_Reads  = n_ref_SC_reads,                                         \
                     nBAM_ALT_Clipped_Reads  = n_alt_SC_reads,                                         \
                     nBAM_Clipping_FET       = rescale(n_clipping_fet, 'fraction', p_scale, 1001),     \
-                    nBAM_REF_MQ0            = n_ref_MQ0,                                              \
-                    nBAM_ALT_MQ0            = n_alt_MQ0,                                              \
+                    nBAM_MQ0                = n_MQ0,                                                  \
                     nBAM_Other_Reads        = n_noise_read_count,                                     \
                     nBAM_Poor_Reads         = n_poor_read_count,                                      \
                     nBAM_REF_InDel_3bp      = n_ref_indel_3bp,                                        \
@@ -1202,8 +1193,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     tBAM_REF_Clipped_Reads  = t_ref_SC_reads,                                         \
                     tBAM_ALT_Clipped_Reads  = t_alt_SC_reads,                                         \
                     tBAM_Clipping_FET       = rescale(t_clipping_fet, 'fraction', p_scale, 1001),     \
-                    tBAM_REF_MQ0            = t_ref_MQ0,                                              \
-                    tBAM_ALT_MQ0            = t_alt_MQ0,                                              \
+                    tBAM_MQ0                = t_MQ0,                                                  \
                     tBAM_Other_Reads        = t_noise_read_count,                                     \
                     tBAM_Poor_Reads         = t_poor_read_count,                                      \
                     tBAM_REF_InDel_3bp      = t_ref_indel_3bp,                                        \

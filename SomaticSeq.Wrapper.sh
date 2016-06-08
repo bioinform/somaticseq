@@ -394,7 +394,7 @@ then
 	fi
 
 	if [[ -r ${inclusion_region} ]]; then
-		intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.snp.vcf -b ${masked_region} > ${merged_dir}/tmp.snp.vcf
+		intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.snp.vcf -b ${inclusion_region} | uniq > ${merged_dir}/tmp.snp.vcf
 		mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf
 	fi
 
@@ -517,7 +517,7 @@ then
 	fi
 
 	if [[ -r ${inclusion_region} ]]; then
-		intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.indel.vcf -b ${masked_region} > ${merged_dir}/tmp.indel.vcf
+		intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.indel.vcf -b ${inclusion_region} | uniq > ${merged_dir}/tmp.indel.vcf
 		mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 	fi
 

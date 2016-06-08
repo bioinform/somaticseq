@@ -62,8 +62,9 @@ mvjsdu = ''
 for tool_i in tools:
     assert tool_i in tools_code.keys()
     mvjsdu = mvjsdu + tools_code[tool_i]
-total_num_tools = len(mvjsdu)
 
+total_num_tools = len(mvjsdu)
+tool_string = ','.join( tools )
 
 def p2phred(p, max_phred=float('nan')):
     '''Convert p-value to Phred-scale quality score.'''
@@ -151,13 +152,13 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     vcf.write('##FILTER=<ID=PASS,Description="Accept as a confident somatic mutation calls with probability value at least {}">\n'.format(pass_score) )
     vcf.write('##FILTER=<ID=REJECT,Description="Rejected as a confident somatic mutation with ONCOSCORE below 2">\n')
     vcf.write('##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Somatic mutation in primary">\n')
-    vcf.write('##INFO=<ID={COMBO},Number={NUM},Type=Integer,Description="Calling decision of the {NUM} algorithms">\n'.format(COMBO=mvjsdu, NUM=total_num_tools) )
+    vcf.write('##INFO=<ID={COMBO},Number={NUM},Type=Integer,Description="Calling decision of the {NUM} algorithms: {TOOL_STRING}">\n'.format(COMBO=mvjsdu, NUM=total_num_tools, TOOL_STRING=tool_string) )
     vcf.write('##INFO=<ID=NUM_TOOLS,Number=1,Type=Float,Description="Number of tools called it Somatic">\n')
 
     vcf.write('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
     vcf.write('##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="ref forward, ref reverse, alt forward, alt reverse">\n')
     vcf.write('##FORMAT=<ID=CD4,Number=4,Type=Integer,Description="ref concordant, ref discordant, alt concordant, alt discordant">\n')
-    
+
     vcf.write('##FORMAT=<ID=refMQ,Number=1,Type=Float,Description="average mapping score for reference reads">\n')
     vcf.write('##FORMAT=<ID=altMQ,Number=1,Type=Float,Description="average mapping score for alternate reads">\n')
     vcf.write('##FORMAT=<ID=refBQ,Number=1,Type=Float,Description="average base quality score for reference reads">\n')
@@ -229,7 +230,8 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
             n_ref_bq  = tsv_item[nBAM_REF_BQ]          if tsv_item[nBAM_REF_BQ]          != 'nan' else '.'
             n_alt_bq  = tsv_item[nBAM_ALT_BQ]          if tsv_item[nBAM_ALT_BQ]          != 'nan' else '.'
             n_ref_nm  = tsv_item[nBAM_REF_NM]          if tsv_item[nBAM_REF_NM]          != 'nan' else '.'
-            n_alt_nm  = tsv_item[nBAM_ALT_NM]          if tsv_item[nBAM_ALT_NM]          != 'nan' else '.'        
+            n_alt_nm  = tsv_item[nBAM_ALT_NM]          if tsv_item[nBAM_ALT_NM]          != 'nan' else '.'
+            n_MQ0     = tsv_item[nBAM_MQ0]             if tsv_item[nBAM_MQ0]             != 'nan' else '.'
             
             n_sb      = tsv_item[nBAM_StrandBias_FET]  if tsv_item[nBAM_StrandBias_FET]  != 'nan' else '.'
             n_cd      = tsv_item[nBAM_Concordance_FET] if tsv_item[nBAM_Concordance_FET] != 'nan' else '.'
@@ -260,7 +262,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
                 vaf = 0
             vaf = '%.3g' % vaf
             
-            normal_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=n_ref_mq, altMQ=n_alt_mq, refBQ=n_ref_bq, altBQ=n_alt_bq, refNM=n_ref_nm, altNM=n_alt_nm, fetSB=n_sb, fetCD=n_cd, zMQ=n_mqb, zBQ=n_bqb, VAF=vaf)
+            normal_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{MQ0}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=n_ref_mq, altMQ=n_alt_mq, refBQ=n_ref_bq, altBQ=n_alt_bq, refNM=n_ref_nm, altNM=n_alt_nm, fetSB=n_sb, fetCD=n_cd, zMQ=n_mqb, zBQ=n_bqb, MQ0=n_MQ0, VAF=vaf)
 
 
         ### TUMOR ###
@@ -270,6 +272,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         t_alt_bq  = tsv_item[tBAM_ALT_BQ]          if tsv_item[tBAM_ALT_BQ]          != 'nan' else '.'
         t_ref_nm  = tsv_item[tBAM_REF_NM]          if tsv_item[tBAM_REF_NM]          != 'nan' else '.'
         t_alt_nm  = tsv_item[tBAM_ALT_NM]          if tsv_item[tBAM_ALT_NM]          != 'nan' else '.'        
+        t_MQ0     = tsv_item[tBAM_MQ0]             if tsv_item[tBAM_MQ0]             != 'nan' else '.'
         
         t_sb      = tsv_item[tBAM_StrandBias_FET]  if tsv_item[tBAM_StrandBias_FET]  != 'nan' else '.'
         t_cd      = tsv_item[tBAM_Concordance_FET] if tsv_item[tBAM_Concordance_FET] != 'nan' else '.'        
@@ -302,9 +305,9 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
             
         vaf = '%.3g' % vaf
 
-        tumor_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=t_ref_mq, altMQ=t_alt_mq, refBQ=t_ref_bq, altBQ=t_alt_bq, refNM=t_ref_nm, altNM=t_alt_nm, fetSB=t_sb, fetCD=t_cd, zMQ=t_mqb, zBQ=t_bqb, VAF=vaf)
+        tumor_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{MQ0}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=t_ref_mq, altMQ=t_alt_mq, refBQ=t_ref_bq, altBQ=t_alt_bq, refNM=t_ref_nm, altNM=t_alt_nm, fetSB=t_sb, fetCD=t_cd, zMQ=t_mqb, zBQ=t_bqb, MQ0=t_MQ0, VAF=vaf)
 
-        field_string = 'GT:DP4:CD4:refMQ:altMQ:refBQ:altBQ:refNM:altNM:fetSB:fetCD:zMQ:zBQ:VAF'
+        field_string = 'GT:DP4:CD4:refMQ:altMQ:refBQ:altBQ:refNM:altNM:fetSB:fetCD:zMQ:zBQ:MQ0:VAF'
         
         if score is nan:
             scaled_score = 0
