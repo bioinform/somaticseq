@@ -544,6 +544,27 @@ Have implemented the following improvement, mostly for indels:
 
 
 
+\subsection{Version 2.2.1}
+
+\begin{itemize}
+
+  \item
+  InDel\_3bp now stands for indel counts within 3 bps of the variant site, instead of exactly 3 bps from the variant site as it was previously (likewise for InDel\_2bp). 
+ 
+  \item
+  Collapse MQ0 (mapping quality of 0) reads supporting reference/variant reads into a single metric of MQ00 reads (i.e., tBAM\_MQ0 and nBAM\_MQ0). From experience, the number of MQ00 reads is at least equally predictive of false positive calls, rather than distinguishing if those MQ0 reads support reference or variant. 
+  
+  \item
+  Obtain SOR (Somatic Odds Ratio) from BAM files instead of VarDict's VCF file.
+  
+  \item
+  Fixed a typo in the SomaticSeq.Wrapper.sh script that did not handle inclusion region correctly.
+  
+
+\end{itemize}
+
+
+
 
 
 \section{To do: planned improvement}

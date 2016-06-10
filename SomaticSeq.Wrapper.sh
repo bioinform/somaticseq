@@ -261,7 +261,14 @@ fi
 
 # LoFreq:
 if [[ -r $lofreq_vcf ]]; then
-	files_to_delete="${lofreq_vcf}.idx $files_to_delete"
+
+	if [ ${lofreq_vcf: -3} == ".gz" ]; then
+		gunzip -c $lofreq_vcf > ${merged_dir}/lofreq.snv.vcf
+		lofreq_vcf="${merged_dir}/lofreq.snv.vcf"
+		files_to_delete="${merged_dir}/lofreq.snv.vcf* $files_to_delete"
+	else
+		files_to_delete="${lofreq_vcf}.idx $files_to_delete"
+	fi
 fi
 
 # VarScan2:
@@ -279,7 +286,14 @@ fi
 
 # LoFreq:
 if [[ -r $lofreq_indel_vcf ]]; then
-	files_to_delete="${lofreq_indel_vcf}.idx $files_to_delete"
+
+	if [ ${lofreq_indel_vcf: -3} == ".gz" ]; then
+		gunzip -c $lofreq_indel_vcf > ${merged_dir}/lofreq.indel.vcf
+		lofreq_indel_vcf="${merged_dir}/lofreq.indel.vcf"
+		files_to_delete="${merged_dir}/lofreq.indel.vcf* $files_to_delete"
+	else
+		files_to_delete="${lofreq_indel_vcf}.idx $files_to_delete"
+	fi
 fi
 
 # dbSNP
@@ -394,7 +408,7 @@ then
 	fi
 
 	if [[ -r ${inclusion_region} ]]; then
-		intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.snp.vcf -b ${masked_region} > ${merged_dir}/tmp.snp.vcf
+		intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.snp.vcf -b ${inclusion_region} | uniq > ${merged_dir}/tmp.snp.vcf
 		mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf
 	fi
 
@@ -517,7 +531,7 @@ then
 	fi
 
 	if [[ -r ${inclusion_region} ]]; then
-		intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.indel.vcf -b ${masked_region} > ${merged_dir}/tmp.indel.vcf
+		intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.indel.vcf -b ${inclusion_region} | uniq > ${merged_dir}/tmp.indel.vcf
 		mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 	fi
 
