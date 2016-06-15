@@ -535,21 +535,21 @@ def capp_duplex_depth(vcf_object):
         return nan
     
     
-def duplex_supports(vcf_object):
+def capp_duplex_supports(vcf_object):
     du_supports = vcf_object.get_info_value('DUPLEXALTDP')
     if du_supports:
         return int(du_supports)
     else:
         return nan
 
-def gene_error_density(vcf_object):
+def capp_gene_error_density(vcf_object):
     nged = vcf_object.get_info_value('NGED')
     if nged:
         return float( nged )
     else:
         return nan
 
-def num_bgsamples(vcf_object):
+def capp_num_bgsamples(vcf_object):
     smaf = vcf_object.get_info_value('SMAF')
     if smaf:
         return len( smaf.split(',') )
