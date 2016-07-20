@@ -18,7 +18,7 @@ test_data[,'TrueVariant_or_False'] <- NULL
 test_data[,'REF'] <- NULL
 test_data[,'ALT'] <- NULL
 
-#test_data$SOR <- as.numeric(test_data$SOR)
+test_data$SOR <- as.numeric(test_data$SOR)
 
 #test_data[,'if_dbsnp'] <- NULL
 #test_data[,'BAF'] <- NULL

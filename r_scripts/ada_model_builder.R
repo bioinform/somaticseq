@@ -20,6 +20,8 @@ train_data[,'ALT'] <- NULL
 train_data[,'if_COSMIC'] <- NULL
 train_data[,'COSMIC_CNT'] <- NULL
 
+train_data$SOR <- as.numeric(train_data$SOR)
+
 model_formula <- as.formula(TrueVariant_or_False ~ .)
 
 print("Fitting model...")
