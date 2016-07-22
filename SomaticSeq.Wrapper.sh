@@ -436,7 +436,7 @@ then
 	# If a classifier is used, assume predictor.R, and do the prediction routine:
 	if [[ -r ${snpclassifier} ]] && [[ -r ${ada_r_script} ]]; then
 		R --no-save --args "$snpclassifier" "${merged_dir}/Ensemble.sSNV.tsv" "${merged_dir}/Trained.sSNV.tsv" < "$ada_r_script"
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass 0.7 -low 0.1 -all -phred -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass 0.5 -low 0.1 -all -phred -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq
 
 	# If ground truth is here, assume builder.R, and build a classifier
 	elif [[ -r ${snpgroundtruth} ]] && [[ -r ${ada_r_script} ]]; then
@@ -556,7 +556,7 @@ then
 	# If a classifier is used, use it:
 	if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]; then
 		R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/Trained.sINDEL.tsv" < "$ada_r_script"
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.7 -low 0.1 -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass 0.5 -low 0.1 -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel
 
 	# If ground truth is here, assume builder.R, and build a classifier
 	elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]; then
