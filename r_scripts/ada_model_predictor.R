@@ -26,9 +26,14 @@ test_data$SOR <- as.numeric(test_data$SOR)
 #test_data[,'G5'] <- NULL
 #test_data[,'G5A'] <- NULL
 
-load( trained_model )
+if ( nrow(test_data)>=1 ) {
+    load( trained_model )
+    ada.pred <- predict(ada.model, newdata = test_data, type="both")
+    test_data_output <- cbind(test_data_, SCORE = ada.pred$prob[,2])
 
-ada.pred <- predict(ada.model, newdata = test_data, type="both")
+}   else {
 
-test_data_output <- cbind(test_data_, SCORE = ada.pred$prob[,2])
+        test_data_output <- test_data_
+}
+
 write.table(test_data_output, row.names = FALSE, sep="\t", na = "nan", file = output_filename, quote=FALSE)
