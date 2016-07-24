@@ -118,6 +118,7 @@ All the output VCF files from individual callers are optional. Those VCF files c
 
 SomaticSeq.Wrapper.sh \
 --mutect           MuTect/variants.snp.vcf \
+--mutect2          MuTect2/variants.vcf \
 --indelocator      Indelocator/variants.indel.vcf \
 --varscan-snv      VarScan2/variants.snp.vcf \
 --varscan-indel    VarScan2/variants.indel.vcf \
@@ -156,6 +157,7 @@ Make sure the classifiers and the proper R script (ada\_model\_predictor.R) are 
 # The *.RData files are trained classifier from the training mode.
 SomaticSeq.Wrapper.sh \
 --mutect           MuTect/variants.snp.vcf \
+--mutect2          MuTect2/variants.vcf \
 --indelocator      Indelocator/variants.indel.vcf \
 --varscan-snv      VarScan2/variants.snp.vcf \
 --varscan-indel    VarScan2/variants.indel.vcf \
@@ -182,7 +184,7 @@ SomaticSeq.Wrapper.sh \
 
 \end{lstlisting}
 
-
+If both MuTect2 and MuTect/Indelocator VCF files are provided, the script is written such that it will use MuTect2 and ignore MuTect.
 
 
 
@@ -372,7 +374,7 @@ All the options for SSeq\_merged.vcf2tsv.py are listed here. They can also be di
   -truth       Ground truth VCF file. Every other position is a False Positive.
   -dbsnp       dbSNP VCF file
   -cosmic      COSMIC VCF file
-  -mutect      VCF file from either MuTect or Indelocator
+  -mutect      VCF file from either MuTect2, MuTect, or Indelocator
   -sniper      VCF file from SomaticSniper
   -varscan     VCF file from VarScan2
   -jsm         VCF file from Bina's workflow that contains JointSNVMix2
@@ -425,15 +427,17 @@ R --no-save --args Ensemble.sINDEL.tsv.Classifier.RData Ensemble.sINDEL.tsv Trai
 \end{lstlisting}
 
 	
-After mutation prediction, if you feel like it, you may convert Trained.sSNV.tsv and Trained.sINDEL.tsv into VCF files.
+After mutation prediction, if you feel like it, you may convert Trained.sSNV.tsv and Trained.sINDEL.tsv into VCF files. Use -tools to list ONLY the individual tools used to have appropriately annotated VCF files. Accepted tools are CGA (for MuTect/Indelocator), VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, and/or Scalpel. To list a tool without having run it, the VCF will be annotated as if the tool was run but did not identify that position as a somatic variant. 
+
 
 \begin{lstlisting}
 # Probability above 0.7 labeled PASS (-pass 0.7), and between 0.1 and 0.7 labeled LowQual (-low 0.1):
 # Use -all to include REJECT calls in the VCF file
 # Use -phred to convert probability values (between 0 to 1) into Phred scale in the QUAL column in the VCF file
-# Use -tools to list ONLY the individual tools used to have appropriately annotated VCF files. Accepted tools are CGA (for MuTect/Indelocator), VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq. and/or Scalpel.
-SSeq_tsv2vcf.py -tsv Trained.sSNV.tsv   -vcf Trained.sSNV.vcf   -pass 0.7 -low 0.1 -tools CGA VarScan2 JointSNVMix2 SomaticSniper VarDict -all -phred
-SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0.1 -tools CGA VarScan2 VarDict -all -phred
+
+SSeq_tsv2vcf.py -tsv Trained.sSNV.tsv   -vcf Trained.sSNV.vcf   -pass 0.7 -low 0.1 -tools CGA VarScan2 JointSNVMix2 SomaticSniper VarDict MuSE LoFreq -all -phred
+
+SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0.1 -tools CGA VarScan2 VarDict LoFreq Scalpel -all -phred
 \end{lstlisting}
 
 
@@ -444,7 +448,8 @@ SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0
 
 \section{Release Notes}
 
-Make sure training and prediction use the same version.
+Make sure training and prediction use the same version. Otherwise the prediction is not valid. 
+
 
 \subsection{Version 1.0}
 Version used to generate data in the manuscript and \href{https://www.synapse.org/#!Synapse:syn312572/wiki/72943}{Stage 5 of the ICGC-TCGA DREAM Somatic Mutation Challenge}, where SomaticSeq's results were \#1 for INDEL and \#2 for SNV. 
@@ -484,7 +489,7 @@ Have implemented the following improvement, mostly for indels:
   Allow not only VCF file, but also BED file or a list of chromosome coordinate as input format for SSeq\_merged.vcf2tsv.py, i.e., use -mybed or -mypos instead of -myvcf. 
 
   \item
-  Instead of a separate step to annotate ground truth, that can be done directly by SSeq\_merged.vcf2tsv.py.
+  Instead of a separate step to annotate ground truth, that can be done directly by SSeq\_merged.vcf2tsv.py by supplying the ground truth VCF via -truth.
 
   \item
   SSeq\_merged.vcf2tsv.py can annotate dbSNP and COSMIC information directly if BED file or a list of chromosome coordinates are used as input in lieu of an annotated VCF file. 
@@ -499,7 +504,7 @@ Have implemented the following improvement, mostly for indels:
 \begin{itemize}
 
   \item
-  Incorporated LoFreq
+  Incorporated LoFreq.
   
   \item
   Used getopt to replace getopts in the SomaticSeq.Wrapper.sh script to allow long options. 
@@ -513,20 +518,65 @@ Have implemented the following improvement, mostly for indels:
 \begin{itemize}
 
   \item
-  Incorporated Scalpel
+  Properly handle cases when multiple ALT's are calls in the same position. The VCF files can either contain multiple calls in the ALT column (i.e., A,G), or have multiple lines corresponding to the same position (one line for each variant call). Some functions were significantly re-written to allow this.
+
+  \item
+  Incorporated Scalpel.
   
   \item
-  Properly handle cases with multiple ALT calls in the same position. The VCF files can either have more than one call in the ALT column (i.e., A,G), or have multiple lines corresponding to the same position (one line for each call).
+  Deprecated HaplotypeCaller and SAMTools dependencies completely as far as feature generation is concerned.
   
   \item
-  Deprecated HaplotypeCaller dependencies.
-  
-  \item
-  Improved the Wrapper script to remove SnpSift/SnpEff dependencies. Those information can be directly obtained during the SSeq\_merged.vcf2tsv.py step. Also removed some additional legacy steps that were useless (i.e., score\_Somatic.Variants.py), and added a step to check the correctness of the input. The v2.1 and 2.1.1 had some typos in the wrapper script, but no change in the core programs.
-  
-  
+  The Wrapper script removed SnpSift/SnpEff dependencies. Those information can be directly obtained during the SSeq\_merged.vcf2tsv.py step. Also removed some additional legacy steps that has become useless since v2 (i.e., score\_Somatic.Variants.py). Added a step to check the correctness of the input. The v2.1 and 2.1.1 had some typos in the wrapper script, so only describing v2.1.2 here.
 
 \end{itemize}
+
+
+
+\subsection{Version 2.2}
+
+\begin{itemize}
+
+  \item
+  Added MuTect2 support.
+
+\end{itemize}
+
+
+
+\subsection{Version 2.2.1}
+
+\begin{itemize}
+
+  \item
+  InDel\_3bp now stands for indel counts within 3 bps of the variant site, instead of exactly 3 bps from the variant site as it was previously (likewise for InDel\_2bp). 
+ 
+  \item
+  Collapse MQ0 (mapping quality of 0) reads supporting reference/variant reads into a single metric of MQ00 reads (i.e., tBAM\_MQ0 and nBAM\_MQ0). From experience, the number of MQ00 reads is at least equally predictive of false positive calls, rather than distinguishing if those MQ0 reads support reference or variant. 
+  
+  \item
+  Obtain SOR (Somatic Odds Ratio) from BAM files instead of VarDict's VCF file.
+  
+  \item
+  Fixed a typo in the SomaticSeq.Wrapper.sh script that did not handle inclusion region correctly.
+  
+\end{itemize}
+
+
+
+\subsection{Version 2.2.2}
+
+\begin{itemize}
+
+  \item
+  Got around an occasional unexplained issue in then ada package were the SOR is sometimes categorized as type, by forcing it to be numeric. 
+  
+  \item
+  Defaults PASS score from 0.7 to 0.5, and make them tunable in the SomaticSeq.Wrapper.sh script. 
+  
+\end{itemize}
+
+
 
 
 
@@ -550,7 +600,7 @@ Have implemented the following improvement, mostly for indels:
 
 
 \section{Contact Us}
-For suggestions, bug reports, or technical support, please email \href{mailto:li_tai.fang@bina.roche.com}{li\_tai.fang@bina.roche.com}.
+For suggestions, bug reports, or technical support, please post in the \href{https://github.com/bioinform/somaticseq/issues}{github issues} page, or email \href{mailto:li_tai.fang@bina.roche.com}{li\_tai.fang@bina.roche.com}.
 
 
 \end{sloppypar}

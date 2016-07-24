@@ -69,11 +69,11 @@
 
 \section{Introduction}
 
-SomaticSeq is a flexible post-somatic-mutation-calling workflow for improved accuracy. We have incorporated multiple somatic mutation caller(s) to obtain a combined call set, and then it uses machine learning to distinguish true mutations from false positives from that call set. We have incorporated the following somatic mutation caller: MuTect/Indelocator, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, and Scalpel. You may incorporate some or all of those callers into your own pipeline with SomaticSeq.
+SomaticSeq is a flexible post-somatic-mutation-calling workflow for improved accuracy. We have incorporated multiple somatic mutation caller(s) to obtain a combined call set, and then it uses machine learning to distinguish true mutations from false positives from that call set. We have incorporated the following somatic mutation caller: MuTect/Indelocator, MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, and Scalpel. You may incorporate some or all of those callers into your own pipeline with SomaticSeq.
 
 The manuscript, An ensemble approach to accurately detect somatic mutations using SomaticSeq, is published in \href{http://dx.doi.org/10.1186/s13059-015-0758-2}{Genome Biology 2015, 16:197}. The SomaticSeq project is located at \href{http://bioinform.github.io/somaticseq/}{\textit{http://bioinform.github.io/somaticseq/}}. The data described in the manuscript is also described at \href{http://bioinform.github.io/somaticseq/data.html}{\textit{http://bioinform.github.io/somaticseq/data.html}}. There have been some major improvements since the publication. 
 
-SomaticSeq.Wrapper.sh is a bash script that calls a series of scripts to combine the output of the somatic mutation caller(s), after the somatic mutation callers are run. Then, depending on what R scripts are fed to SomaticSeq.Wrapper.sh, it will either 1) train the call set into a classifier, 2) predict high-confidence somatic mutations from the call set based on a pre-defined classifier, or 3) simply label the calls (i.e., PASS or REJECT) based on majority vote of the tools. 
+SomaticSeq.Wrapper.sh is a bash script that calls a series of scripts to combine the output of the somatic mutation caller(s), after the somatic mutation callers are run. Then, depending on what R scripts are fed to SomaticSeq.Wrapper.sh, it will either 1) train the call set into a classifier, 2) predict high-confidence somatic mutations from the call set based on a pre-defined classifier, or 3) simply label the calls (i.e., PASS, LowQual, or REJECT) based on majority vote of the tools. 
 
 \subsection{Dependencies}
 
@@ -95,7 +95,7 @@ Optional: Free GATK (We use GATK CombineVariants to merge VCF files. You may do 
 Optional: dbSNP and COSMIC files in VCF format (if you want to use these features as a part of the training).
 
 \item
-At least one of MuTect/Indelocator, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, and/or Scalpel. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
+At least one of MuTect/Indelocator, MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, and/or Scalpel. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
 
 \end{itemize}
 
@@ -117,30 +117,32 @@ All the output VCF files from individual callers are optional. Those VCF files c
 # For training, truth file and the correct R script are required.
 
 SomaticSeq.Wrapper.sh \
---mutect           MuTect/variants.snp.vcf \
---mutect2          MuTect2/variants.vcf \
---indelocator      Indelocator/variants.indel.vcf \
---varscan-snv      VarScan2/variants.snp.vcf \
---varscan-indel    VarScan2/variants.indel.vcf \
---jsm              JointSNVMix2/variants.snp.vcf \
---sniper           SomaticSniper/variants.snp.vcf \
---vardict          VarDict/variants.vcf \
---muse             MuSE/variants.snp.vcf \
---lofreq-snv       LoFreq/variants.snp.vcf \
---lofreq-indel     LoFreq/variants.indel.vcf \
---scalpel          Scalpel/variants.indel.vcf \
---normal-bam       matched_normal.bam \
---tumor-bam        tumor.bam \
---ada-r-script     ada_model_builder.R \
---genome-reference human_b37.fasta \
---cosmic           cosmic.b37.v71.vcf \
---dbsnp            dbSNP.b37.v141.vcf \
---gatk             $PATH/TO/GenomeAnalysisTK.jar \
---exclusion-region ignore.bed \
---inclusion-region validated.bed
---truth-snv        truth.snp.vcf \
---truth-indel      truth.indel.vcf \
---output-dir       $OUTPUT_DIR
+--mutect            MuTect/variants.snp.vcf \
+--mutect2           MuTect2/variants.vcf \
+--indelocator       Indelocator/variants.indel.vcf \
+--varscan-snv       VarScan2/variants.snp.vcf \
+--varscan-indel     VarScan2/variants.indel.vcf \
+--jsm               JointSNVMix2/variants.snp.vcf \
+--sniper            SomaticSniper/variants.snp.vcf \
+--vardict           VarDict/variants.vcf \
+--muse              MuSE/variants.snp.vcf \
+--lofreq-snv        LoFreq/variants.snp.vcf \
+--lofreq-indel      LoFreq/variants.indel.vcf \
+--scalpel           Scalpel/variants.indel.vcf \
+--normal-bam        matched_normal.bam \
+--tumor-bam         tumor.bam \
+--ada-r-script      ada_model_builder.R \
+--genome-reference  human_b37.fasta \
+--cosmic            cosmic.b37.v71.vcf \
+--dbsnp             dbSNP.b37.v141.vcf \
+--gatk              $PATH/TO/GenomeAnalysisTK.jar \
+--exclusion-region  ignore.bed \
+--inclusion-region  validated.bed
+--truth-snv         truth.snp.vcf \
+--truth-indel       truth.indel.vcf \
+--pass-threshold    0.5 \
+--lowqual-threshold 0.1 \
+--output-dir        $OUTPUT_DIR
 \end{lstlisting}
 
 SomaticSeq.Wrapper.sh supports any combination of the somatic mutation callers we have incorporated into the workflow. SomaticSeq will run based on the output VCFs you have provided. It will train for SNV and/or INDEL if you provide the truth.snp.vcf and/or truth.indel.vcf file(s) as well as the proper R script (ada\_model\_builder.R). Otherwise, it will fall back to the simple caller consensus mode.
@@ -203,7 +205,7 @@ We'll describe the workflow here, so you may modify the workflow and/or create y
 
 
 \subsection{Combine the call sets}
-	We use GATK CombineVariants to combine the VCF files from different callers, although it does not matter what tools are used to merge VCF files. We GATK CombineVariants because it's quite fast. To make them compatible with GATK, the VCF files are modified.
+	We use GATK CombineVariants to combine the VCF files fkeep-intermediates:rom different callers, although it does not matter what tools are used to merge VCF files. We GATK CombineVariants because it's quite fast. To make them compatible with GATK, the VCF files are modified.
 
 	A simple alternative method is to use GNU sort and uniq in Linux to list all the unique first-5-column (i.e., CHROM, POS, ID, REF, and ALT) from all the VCF files, and then fill the remaining required VCF columns with whatever string and sort it according to the reference. That VCF file will do the job just fine. 
 
@@ -552,7 +554,7 @@ Have implemented the following improvement, mostly for indels:
   InDel\_3bp now stands for indel counts within 3 bps of the variant site, instead of exactly 3 bps from the variant site as it was previously (likewise for InDel\_2bp). 
  
   \item
-  Collapse MQ0 (mapping quality of 0) reads supporting reference/variant reads into a single metric of MQ00 reads (i.e., tBAM\_MQ0 and nBAM\_MQ0). From experience, the number of MQ00 reads is at least equally predictive of false positive calls, rather than distinguishing if those MQ0 reads support reference or variant. 
+  Collapse MQ0 (mapping quality of 0) reads supporting reference/variant reads into a single metric of MQ0 reads (i.e., tBAM\_MQ0 and nBAM\_MQ0). From experience, the number of MQ0 reads is at least equally predictive of false positive calls, rather than distinguishing if those MQ0 reads support reference or variant. 
   
   \item
   Obtain SOR (Somatic Odds Ratio) from BAM files instead of VarDict's VCF file.
@@ -560,14 +562,27 @@ Have implemented the following improvement, mostly for indels:
   \item
   Fixed a typo in the SomaticSeq.Wrapper.sh script that did not handle inclusion region correctly.
   
+\end{itemize}
 
+
+
+\subsection{Version 2.2.2}
+
+\begin{itemize}
+
+  \item
+  Got around an occasional unexplained issue in then ada package were the SOR is sometimes categorized as type, by forcing it to be numeric. 
+  
+  \item
+  Defaults PASS score from 0.7 to 0.5, and make them tunable in the SomaticSeq.Wrapper.sh script (--pass-threshold and --lowqual-threshold). 
+  
 \end{itemize}
 
 
 
 
 
-\section{To do: planned improvement}
+\section{Future development}
 
 \begin{itemize}
 
@@ -587,8 +602,7 @@ Have implemented the following improvement, mostly for indels:
 
 
 \section{Contact Us}
-For suggestions, bug reports, or technical support, please post in the \href{https://github.com/bioinform/somaticseq/issues}{github issues} page, or email \href{mailto:li_tai.fang@bina.roche.com}{li\_tai.fang@bina.roche.com}.
-
+For suggestions, bug reports, or technical support, please post in the \href{https://github.com/bioinform/somaticseq/issues}{github issues} page. The developers are alerted when issues are created there. 
 
 \end{sloppypar}
 \end{document}
