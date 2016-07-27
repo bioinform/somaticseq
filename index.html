@@ -242,20 +242,19 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <li><code>-Z | --truth-snv</code>: A VCF file containing true sSNVs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
     <li><code>-z | --truth-indel</code>: A VCF file containing true sINDELs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
     <li><code>-o | --output-dir</code>: Output directory (make sure it exists)</li>
-    <li><code>-k | --keep-intermediates</code>: [0|1], whether to keep intermediate files for debugging. [Optional. Default: 0]</li>
-    <li><code>--pass-threshold</code>: the probability value above which a call will be labeled as PASS. (Default = 0.5. Optional)</li>
-    <li><code>--lowqual-threshold</code>: the probability value above which (but below the PASS threshold) a call will be labeled as LowQual. (Default = 0.1. Optional)</li>
+    <li><code>-k | --keep-intermediates</code>: [0|1], whether to keep intermediate files for debugging. [Optional. Default = 0]</li>
+    <li><code>--pass-threshold</code>: Probability value above which a call will be labeled as PASS. (Default = 0.5. Optional. Available after v2.2.2)</li>
+    <li><code>--lowqual-threshold</code>: Probability value above which (but below the PASS threshold) a call will be labeled as LowQual. (Default = 0.1. Optional. Available after v2.2.2)</li>
     </ul>
 
 
 
     <h3>Known Issues:</h3>
-    None right now. Please <a href="mailto:li_tai.fang@bina.roche.com">contact us</a> if you find anything. 
+    None right now. Please <a href="https://github.com/bioinform/somaticseq/issues" target=_blank>report issues</a> if you find anything. 
 
 
     <h3>Contact Us:</h3>
     Please report bugs and suggestions to <a href="mailto:li_tai.fang@bina.roche.com">li_tai.fang@bina.roche.com</a>.
-
 
 
 
