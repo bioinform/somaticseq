@@ -140,8 +140,6 @@ SomaticSeq.Wrapper.sh \
 --inclusion-region  validated.bed
 --truth-snv         truth.snp.vcf \
 --truth-indel       truth.indel.vcf \
---pass-threshold    0.5 \
---lowqual-threshold 0.1 \
 --output-dir        $OUTPUT_DIR
 \end{lstlisting}
 
@@ -182,6 +180,8 @@ SomaticSeq.Wrapper.sh \
 --inclusion-region validated.bed
 --classifier-snv   sSNV.Classifier.RData \
 --classifier-indel sINDEL.Classifier.RData \
+--pass-threshold    0.5 \
+--lowqual-threshold 0.1 \
 --output-dir       $OUTPUT_DIR
 
 \end{lstlisting}
@@ -588,6 +588,9 @@ Have implemented the following improvement, mostly for indels:
 
   \item
   Develop a version for deep sequencing cfDNA/ctDNA.
+  
+  \item
+  Dockerize SomaticSeq
   
 \end{itemize}
 
