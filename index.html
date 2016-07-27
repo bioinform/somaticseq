@@ -168,6 +168,8 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     --ada-r-script ada_model_predictor.R                  \<br>
     --classifier-snv sSNV.Classifier.RData                \<br>
     --classifier-indel sINDEL.Classifier.RData            \<br>
+    --pass-threshold 0.5                                  \<br>
+    --lowqual-threshold 0.1                               \<br>
     --genome-reference human_b37.fasta                    \<br>
     --cosmic cosmic.b37.v71.vcf                           \<br>
     --dbsnp dbSNP.b37.v141.vcf                            \<br>
@@ -242,6 +244,8 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <li><code>-z | --truth-indel</code>: A VCF file containing true sINDELs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
     <li><code>-o | --output-dir</code>: Output directory (make sure it exists)</li>
     <li><code>-k | --keep-intermediates</code>: [0|1], whether to keep intermediate files for debugging. [Optional. Default: 0]</li>
+    <li><code>--pass-threshold</code>: the probability value above which a call will be labeled as PASS. (Default = 0.5. Optional)</li>
+    <li><code>--lowqual-threshold</code>: the probability value above which (but below the PASS threshold) a call will be labeled as LowQual. (Default = 0.1. Optional)</li>
     </ul>
 
 
