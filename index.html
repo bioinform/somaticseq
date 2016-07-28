@@ -156,13 +156,17 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <code>
     SomaticSeq.Wrapper.sh                                 \<br>
     --mutect $PATH/TO/MuTect/variants.snv.vcf             \<br>
+    --mutect2 $PATH/TO/MuTect2/variants.vcf               \<br>
+    --indelocator $PATH/TO/Indelocator/variants.indel.vcf \<br>
     --varscan-snv $PATH/TO/VarScan/variants.snv.vcf       \<br>
+    --varscan-indel $PATH/TO/Varscan/variants.indel.vcf   \<br>
     --jsm $PATH/TO/JointSNVMix/variants.snv.vcf           \<br>
     --sniper $PATH/TO/SomaticSniper/variants.snv.vcf      \<br>
     --vardict $PATH/TO/Vardict/variants.vcf               \<br>
     --muse $PATH/TO/MuSE/variants.snv.vcf                 \<br>
-    --indelocator $PATH/TO/Indelocator/variants.indel.vcf \<br>
-    --varscan-indel $PATH/TO/Varscan/variants.indel.vcf   \<br>
+    --lofreq-snv    $PATH/TO/LoFreq/variants.snp.vcf      \<br>
+    --lofreq-indel  $PATH/TO/LoFreq/variants.indel.vcf    \<br>
+    --scalpel $PATH/TO/Scalpel/variants.indel.vcf         \<br>
     --normal-bam normal.bam                               \<br>
     --tumor-bam tumor.bam                                 \<br>
     --ada-r-script ada_model_predictor.R                  \<br>
@@ -189,13 +193,17 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <code>
     SomaticSeq.Wrapper.sh                                 \<br>
     --mutect $PATH/TO/MuTect/variants.snv.vcf             \<br>
+    --mutect2 $PATH/TO/MuTect2/variants.vcf               \<br>
+    --indelocator $PATH/TO/Indelocator/variants.indel.vcf \<br>
     --varscan-snv $PATH/TO/VarScan/variants.snv.vcf       \<br>
+    --varscan-indel $PATH/TO/Varscan/variants.indel.vcf   \<br>
     --jsm $PATH/TO/JointSNVMix/variants.snv.vcf           \<br>
     --sniper $PATH/TO/SomaticSniper/variants.snv.vcf      \<br>
     --vardict $PATH/TO/Vardict/variants.vcf               \<br>
     --muse $PATH/TO/MuSE/variants.snv.vcf                 \<br>
-    --indelocator $PATH/TO/Indelocator/variants.indel.vcf \<br>
-    --varscan-indel $PATH/TO/Varscan/variants.indel.vcf   \<br>
+    --lofreq-snv    $PATH/TO/LoFreq/variants.snp.vcf      \<br>
+    --lofreq-indel  $PATH/TO/LoFreq/variants.indel.vcf    \<br>
+    --scalpel $PATH/TO/Scalpel/variants.indel.vcf         \<br>
     --normal-bam normal.bam                               \<br>
     --tumor-bam tumor.bam                                 \<br>
     --ada-r-script ada_model_builder.R                    \<br>
@@ -218,14 +226,15 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <h4>Long options only available after v2.0.3</h4>
     <ul>
     <li><code>-M | --mutect</code>: MuTect's output VCF (Optional)</li>
+    <li><code>-I | --indelocator</code>: Indelocator's output VCF (Optional)</li>
+    <li><code>-2 | --mutect2</code>: MuTect2's output VCF (Optional)</li>
     <li><code>-V | --varscan-snv</code>: VarScan2's output SNV VCF (Optional)</li>
+    <li><code>-v | --varscan-indel</code>: VarScan2's output INDEL VCF (Optional)</li>
     <li><code>-J | --jsm</code>: JointSNVMix's variant output converted to VCF (Optional)</li>
     <li><code>-S | --sniper</code>: SomaticSniper's output VCF (Optional)</li>
     <li><code>-D | --vardict</code>: VarDict's output VCF (Optional)</li>
     <li><code>-U | --muse</code>: MuSE's output VCF (Optional)</li>
     <li><code>-L | --lofreq-snv</code>: LoFreq's output VCF (Optional)</li>
-    <li><code>-I | --indelocator</code>: Indelocator's output VCF (Optional)</li>
-    <li><code>-v | --varscan-indel</code>: VarScan2's output INDEL VCF (Optional)</li>
     <li><code>-l | --lofreq-indel</code>: LoFreq's output INDEL VCF (Optional)</li>
     <li><code>-p | --scalpel</code>: Scalpel's output VCF (Optional)</li>
     <li><code>-N | --normal-bam</code>: Normal BAM files</li>
