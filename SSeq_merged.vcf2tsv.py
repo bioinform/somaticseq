@@ -740,11 +740,18 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         if variant_id in cosmic_variants.keys():
 
                             cosmic_variant_i = cosmic_variants[variant_id]
-                            if_cosmic = 1
+                            
+                            # If designated as SNP, make it "non-cosmic" and make CNT=0.
+                            if cosmic_variant_i.get_info_value('SNP'):
+                                if_cosmic = 0
+                                num_cases = 0
+                            
+                            else:
+                                if_cosmic = 1
+                                num_cases = cosmic_variant_i.get_info_value('CNT')
+                                num_cases = num_cases if num_cases else nan
 
-                            num_cases = cosmic_variant_i.get_info_value('CNT')
-                            num_cases = num_cases if num_cases else nan
-
+                            # COSMIC ID still intact:
                             cosmicID = cosmic_variant_i.identifier.split(',')
                             for ID_i in cosmicID:
                                 my_identifiers.add( ID_i )
@@ -752,7 +759,6 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         else:
                             if_cosmic = num_cases = 0
                     
-                
                         
                     ########## ######### ######### INFO EXTRACTION FROM BAM FILES ########## ######### #########
                     # Normal BAM file:
