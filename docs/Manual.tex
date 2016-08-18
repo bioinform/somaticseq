@@ -156,33 +156,33 @@ Make sure the classifiers and the proper R script (ada\_model\_predictor.R) are 
 \begin{lstlisting}
 # The *.RData files are trained classifier from the training mode.
 SomaticSeq.Wrapper.sh \
---mutect           MuTect/variants.snp.vcf \
---mutect2          MuTect2/variants.vcf \
---indelocator      Indelocator/variants.indel.vcf \
---varscan-snv      VarScan2/variants.snp.vcf \
---varscan-indel    VarScan2/variants.indel.vcf \
---jsm              JointSNVMix2/variants.snp.vcf \
---sniper           SomaticSniper/variants.snp.vcf \
---vardict          VarDict/variants.vcf \
---muse             MuSE/variants.snp.vcf \
---lofreq-snv       LoFreq/variants.snp.vcf \
---lofreq-indel     LoFreq/variants.indel.vcf \
---scalpel          Scalpel/variants.indel.vcf \
---normal-bam       matched_normal.bam \
---tumor-bam        tumor.bam \
---ada-r-script     ada_model_predictor.R \
---genome-reference human_b37.fasta \
---cosmic           cosmic.b37.v71.vcf \
---dbsnp            dbSNP.b37.v141.vcf \
---snpeff-dir       $PATH/TO/DIR/snpSift \
---gatk             $PATH/TO/GenomeAnalysisTK.jar \
---exclusion-region ignore.bed \
---inclusion-region validated.bed
---classifier-snv   sSNV.Classifier.RData \
---classifier-indel sINDEL.Classifier.RData \
+--mutect            MuTect/variants.snp.vcf \
+--mutect2           MuTect2/variants.vcf \
+--indelocator       Indelocator/variants.indel.vcf \
+--varscan-snv       VarScan2/variants.snp.vcf \
+--varscan-indel     VarScan2/variants.indel.vcf \
+--jsm               JointSNVMix2/variants.snp.vcf \
+--sniper            SomaticSniper/variants.snp.vcf \
+--vardict           VarDict/variants.vcf \
+--muse              MuSE/variants.snp.vcf \
+--lofreq-snv        LoFreq/variants.snp.vcf \
+--lofreq-indel      LoFreq/variants.indel.vcf \
+--scalpel           Scalpel/variants.indel.vcf \
+--normal-bam        matched_normal.bam \
+--tumor-bam         tumor.bam \
+--ada-r-script      ada_model_predictor.R \
+--genome-reference  human_b37.fasta \
+--cosmic            cosmic.b37.v71.vcf \
+--dbsnp             dbSNP.b37.v141.vcf \
+--snpeff-dir        $PATH/TO/DIR/snpSift \
+--gatk              $PATH/TO/GenomeAnalysisTK.jar \
+--exclusion-region  ignore.bed \
+--inclusion-region  validated.bed
+--classifier-snv    sSNV.Classifier.RData \
+--classifier-indel  sINDEL.Classifier.RData \
 --pass-threshold    0.5 \
 --lowqual-threshold 0.1 \
---output-dir       $OUTPUT_DIR
+--output-dir        $OUTPUT_DIR
 
 \end{lstlisting}
 
@@ -255,7 +255,9 @@ echo -e '##FORMAT=<ID=RD,Number=1,Type=Integer,Description="Depth of reference-s
 echo -e '##FORMAT=<ID=AD,Number=1,Type=Integer,Description="Depth of variant-supporting bases (reads2)">' >> unsorted.vcf
 echo -e '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNORMAL\tTUMOR' >> unsorted.vcf
 
-python $PATH/TO/jsm.py classify joint_snv_mix_two genome.GRCh37.fa normal.bam tumor.bam trained.parameter.cfg /dev/stdout | awk -F "\t" 'NR!=1 && $4!="N" && $10+$11>0.95' | awk -F "\t" '{print $1 "\t" $2 "\t.\t" $3 "\t" $4 "\t.\t.\tAAAB=" $10 ";AABB=" $11 "\tRD:AD\t" $5 ":" $6 "\t" $7 ":" $8}' >> unsorted.vcf
+python $PATH/TO/jsm.py classify joint_snv_mix_two genome.GRCh37.fa normal.bam tumor.bam trained.parameter.cfg /dev/stdout |\
+awk -F "\t" 'NR!=1 && $4!="N" && $10+$11>=0.95' |\
+awk -F "\t" '{print $1 "\t" $2 "\t.\t" $3 "\t" $4 "\t.\t.\tAAAB=" $10 ";AABB=" $11 "\tRD:AD\t" $5 ":" $6 "\t" $7 ":" $8}' >> unsorted.vcf
 \end{lstlisting}
 	
 After that, you'll also want to sort the VCF file. Now, to modify that basic VCF into something that will be compatible with other VCF files under GATK CombineVariants:
@@ -580,6 +582,18 @@ Have implemented the following improvement, mostly for indels:
 
 
 
+\subsection{Version 2.2.3}
+
+\begin{itemize}
+
+  \item
+  If a COSMIC site is labeled SNP in the COSMIC VCF file, if\_cosmic and CNT will be labeled as 0. The COSMIC ID will still appear in the ID column. This will not change any results because both of those features are turned off in the training R script. 
+  
+\end{itemize}
+
+
+
+
 
 
 \section{Future development}
@@ -605,7 +619,7 @@ Have implemented the following improvement, mostly for indels:
 
 
 \section{Contact Us}
-For suggestions, bug reports, or technical support, please post in the \href{https://github.com/bioinform/somaticseq/issues}{github issues} page. The developers are alerted when issues are created there. 
+For suggestions, bug reports, or technical support, please post in the \href{https://github.com/bioinform/somaticseq/issues}{github issues} page. The developers are alerted when issues are created there. Alternatively, you may also email \href{mailto:li_tai.fang@bina.roche.com}{li\_tai.fang@bina.roche.com}. 
 
 \end{sloppypar}
 \end{document}
