@@ -589,6 +589,9 @@ Have implemented the following improvement, mostly for indels:
   \item
   If a COSMIC site is labeled SNP in the COSMIC VCF file, if\_cosmic and CNT will be labeled as 0. The COSMIC ID will still appear in the ID column. This will not change any results because both of those features are turned off in the training R script. 
   
+  \item
+  Fixed a bug: if JointSNVMix2 is not included, the values should be ``NaN'' instead of 0's. This is to keep consistency with how we handle all other callers. 
+  
 \end{itemize}
 
 

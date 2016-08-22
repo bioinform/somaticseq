@@ -532,7 +532,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         
                     num_callers += jointsnvmix2_classification
                 else:
-                    jointsnvmix2_classification = score_jointsnvmix2 = 0
+                    jointsnvmix2_classification = score_jointsnvmix2 = nan
 
                 
                 #################### Collect SomaticSniper ####################:
@@ -741,10 +741,10 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                             cosmic_variant_i = cosmic_variants[variant_id]
                             
-                            # If designated as SNP, make it "non-cosmic" and make CNT=0.
+                            # If designated as SNP, make it "non-cosmic" and make CNT=nan.
                             if cosmic_variant_i.get_info_value('SNP'):
                                 if_cosmic = 0
-                                num_cases = 0
+                                num_cases = nan
                             
                             else:
                                 if_cosmic = 1
