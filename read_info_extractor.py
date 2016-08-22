@@ -523,35 +523,3 @@ def mutect2_minED(vcf_object):
         minED = nan
     
     return minED
-
-
-
-# CAPP-Seq stuff:
-def capp_duplex_depth(vcf_object):
-    du_depth = vcf_object.get_info_value('DUPLEXDP')
-    if du_depth:
-        return int(du_depth)
-    else:
-        return nan
-    
-    
-def capp_duplex_supports(vcf_object):
-    du_supports = vcf_object.get_info_value('DUPLEXALTDP')
-    if du_supports:
-        return int(du_supports)
-    else:
-        return nan
-
-def capp_gene_error_density(vcf_object):
-    nged = vcf_object.get_info_value('NGED')
-    if nged:
-        return float( nged )
-    else:
-        return nan
-
-def capp_num_bgsamples(vcf_object):
-    smaf = vcf_object.get_info_value('SMAF')
-    if smaf:
-        return len( smaf.split(',') )
-    else:
-        return nan
