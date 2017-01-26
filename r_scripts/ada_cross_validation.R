@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 ### To start, set the input filenames in "Main (entry point)" section.
 
 require("ada")
