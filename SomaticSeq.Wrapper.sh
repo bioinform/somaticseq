@@ -338,7 +338,7 @@ then
 		fi
 	done
 
-	java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 6 --setKey null --genotypemergeoption UNSORTED $mergesnp --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
+	java -Xmx4g -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 6 --setKey null --genotypemergeoption UNSORTED $mergesnp --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
 	files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* $files_to_delete"
 
 
@@ -478,7 +478,7 @@ then
 		fi
 	done
 
-	java -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 6 --setKey null --genotypemergeoption UNSORTED $mergeindel --out ${merged_dir}/CombineVariants_MVJSD.indel.vcf
+	java -Xmx4g -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 6 --setKey null --genotypemergeoption UNSORTED $mergeindel --out ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 	files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* $files_to_delete"
 
 

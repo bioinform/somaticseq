@@ -13,11 +13,15 @@ if (!(1 %in% train_data$TrueVariant_or_False && 0 %in% train_data$TrueVariant_or
 stop("In training mode, there must be both true positives and false positives in the call set.")
 }
 
-train_data <- train_data[,-c(1, 2, 3, 4, 5)]
+# train_data <- train_data[,-c(1, 2, 3, 4, 5)]
 
-train_data[,'REF'] <- NULL
-train_data[,'ALT'] <- NULL
-train_data[,'if_COSMIC'] <- NULL
+# Do not use these for training
+train_data[,'CHROM']      <- NULL
+train_data[,'POS']        <- NULL
+train_data[,'ID']         <- NULL
+train_data[,'REF']        <- NULL
+train_data[,'ALT']        <- NULL
+train_data[,'if_COSMIC']  <- NULL
 train_data[,'COSMIC_CNT'] <- NULL
 
 train_data$SOR <- as.numeric(train_data$SOR)
