@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o:M:m:I:V:v:J:S:D:U:L:l:p:g:c:d:s:G:T:N:C:x:R:e:i:z:Z:k: --long output-dir:,mutect:,mutect2:,indelocator:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,genome-reference:,cosmic:,dbsnp:,snpeff-dir:,gatk:,tumor-bam:,normal-bam:,classifier-snv:,classifier-indel:,ada-r-script:,exclusion-region:,inclusion-region:,truth-indel:,truth-snv:,pass-threshold:,lowqual-threshold:,keep-intermediates: -n 'SomaticSeq.Wrapper.sh'  -- "$@"`
+OPTS=`getopt -o o:M:m:I:V:v:J:S:D:U:L:l:p:g:c:d:s:G:T:N:C:x:R:e:i:z:Z:k: --long output-dir:,mutect:,mutect2:,indelocator:,strelka-snv:,strelka-indel:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,genome-reference:,cosmic:,dbsnp:,snpeff-dir:,gatk:,tumor-bam:,normal-bam:,classifier-snv:,classifier-indel:,ada-r-script:,exclusion-region:,inclusion-region:,truth-indel:,truth-snv:,pass-threshold:,lowqual-threshold:,keep-intermediates: -n 'SomaticSeq.Wrapper.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -37,6 +37,18 @@ while true; do
 			case "$2" in
 				"") shift 2 ;;
 				*)  mutect2_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		--strelka-snv )
+			case "$2" in
+				"") shift 2 ;;
+				*)  strelka_snv_vcf=$2 ; shift 2 ;;
+			esac ;;
+
+		--strelka-indel )
+			case "$2" in
+				"") shift 2 ;;
+				*)  strelka_indel_vcf=$2 ; shift 2 ;;
 			esac ;;
 
 		-I | --indelocator )
@@ -249,6 +261,7 @@ if [[ -r $mutect2_vcf ]]; then
 	files_to_delete="${merged_dir}/mutect.snp.vcf* ${merged_dir}/mutect.indel.vcf* $files_to_delete"
 fi
 
+
 # SomaticSniper:
 if [[ -r $sniper_vcf ]]; then
 	$MYDIR/modify_VJSD.py -method SomaticSniper -infile ${sniper_vcf} -outfile ${merged_dir}/somaticsniper.vcf
@@ -327,18 +340,18 @@ fi
 
 
 #################### SNV ####################
-if [[ -r ${merged_dir}/mutect.snp.vcf || -r ${merged_dir}/somaticsniper.vcf || -r ${merged_dir}/jsm.vcf || -r ${merged_dir}/varscan2.snp.vcf || -r ${merged_dir}/muse.vcf || -r ${merged_dir}/snp.vardict.vcf || -r ${lofreq_vcf} ]]
+if [[ -r ${merged_dir}/mutect.snp.vcf || -r ${strelka_snv_vcf} || -r ${merged_dir}/somaticsniper.vcf || -r ${merged_dir}/jsm.vcf || -r ${merged_dir}/varscan2.snp.vcf || -r ${merged_dir}/muse.vcf || -r ${merged_dir}/snp.vardict.vcf || -r ${lofreq_vcf} ]]
 then
 
 	mergesnp=''
-	for vcf in ${merged_dir}/snp.vardict.vcf ${merged_dir}/varscan2.snp.vcf ${merged_dir}/somaticsniper.vcf ${merged_dir}/mutect.snp.vcf ${merged_dir}/jsm.vcf ${merged_dir}/muse.vcf ${lofreq_vcf}
+	for vcf in ${merged_dir}/mutect.snp.vcf ${merged_dir}/varscan2.snp.vcf ${merged_dir}/jsm.vcf ${merged_dir}/somaticsniper.vcf ${merged_dir}/snp.vardict.vcf ${merged_dir}/muse.vcf ${lofreq_vcf} ${strelka_snv_vcf}
 	do
 		if [[ -r $vcf ]]; then
 			mergesnp="$mergesnp --variant $vcf"
 		fi
 	done
 
-	java -Xmx4g -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 6 --setKey null --genotypemergeoption UNSORTED $mergesnp --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
+	java -Xmx8g -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 6 --setKey null --genotypemergeoption UNSORTED $mergesnp --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
 	files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* $files_to_delete"
 
 
@@ -351,6 +364,15 @@ then
 	else
 		mutect_input=''
 		tool_mutect=''
+	fi
+
+
+	if [[ -r ${strelka_snv_vcf} ]]; then
+		strelka_input="-strelka ${strelka_snv_vcf}"
+		tool_strelka="Strelka"
+	else
+		strelka_input=''
+		tool_strelka=''
 	fi
 
 
@@ -435,6 +457,7 @@ then
 	$cosmic_input \
 	$mutect_input \
 	$varscan_input \
+	$strelka_input \
 	$jsm_input \
 	$sniper_input \
 	$vardict_input \
@@ -450,7 +473,7 @@ then
 	# If a classifier is used, assume predictor.R, and do the prediction routine:
 	if [[ -r ${snpclassifier} ]] && [[ -r ${ada_r_script} ]]; then
 		R --no-save --args "$snpclassifier" "${merged_dir}/Ensemble.sSNV.tsv" "${merged_dir}/Trained.sSNV.tsv" < "$ada_r_script"
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass $pass_threshold -low $lowqual_threshold -all -phred -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass $pass_threshold -low $lowqual_threshold -all -phred -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq $tool_strelka
 
 	# If ground truth is here, assume builder.R, and build a classifier
 	elif [[ -r ${snpgroundtruth} ]] && [[ -r ${ada_r_script} ]]; then
@@ -458,7 +481,7 @@ then
 
 	# If no training and no classification, then make VCF by majority vote consensus:
 	else
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sSNV.tsv -vcf ${merged_dir}/Untrained.sSNV.vcf -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq -all
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sSNV.tsv -vcf ${merged_dir}/Untrained.sSNV.vcf -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq $tool_strelka -all
 	fi
 
 fi
@@ -467,18 +490,18 @@ fi
 
 
 #################### INDEL ####################
-if [[ -r ${merged_dir}/mutect.indel.vcf || -r ${merged_dir}/varscan2.indel.vcf || -r ${merged_dir}/indel.vardict.vcf || -r ${lofreq_indel_vcf} || ${merged_dir}/indelocator.vcf || $scalpel_vcf ]]
+if [[ -r ${merged_dir}/mutect.indel.vcf || -r $strelka_indel_vcf || -r ${merged_dir}/varscan2.indel.vcf || -r ${merged_dir}/indel.vardict.vcf || -r ${lofreq_indel_vcf} || ${merged_dir}/indelocator.vcf || $scalpel_vcf ]]
 then
 
 	mergeindel=''
-	for vcf in ${merged_dir}/mutect.indel.vcf ${merged_dir}/indel.vardict.vcf ${merged_dir}/varscan2.indel.vcf ${merged_dir}/mutect.indel.vcf ${lofreq_indel_vcf} ${merged_dir}/indelocator.vcf $scalpel_vcf
+	for vcf in ${merged_dir}/mutect.indel.vcf ${strelka_indel_vcf} ${merged_dir}/indel.vardict.vcf ${merged_dir}/varscan2.indel.vcf ${lofreq_indel_vcf} ${merged_dir}/indelocator.vcf $scalpel_vcf
 	do
 		if [[ -r $vcf ]]; then
 			mergeindel="$mergeindel --variant $vcf"
 		fi
 	done
 
-	java -Xmx4g -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 6 --setKey null --genotypemergeoption UNSORTED $mergeindel --out ${merged_dir}/CombineVariants_MVJSD.indel.vcf
+	java -Xmx8g -jar ${gatk} -T CombineVariants -R ${hg_ref} -nt 6 --setKey null --genotypemergeoption UNSORTED $mergeindel --out ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 	files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* $files_to_delete"
 
 
@@ -492,6 +515,15 @@ then
 	else
 		indelocator_input=''
 		tool_indelocator=''
+	fi
+
+
+	if [[ -r ${strelka_indel_vcf} ]]; then
+		strelka_input="-strelka ${strelka_indel_vcf}"
+		tool_strelka="Strelka"
+	else
+		strelka_input=''
+		tool_strelka=''
 	fi
 
 
@@ -556,6 +588,7 @@ then
 	$dbsnp_input \
 	$cosmic_input \
 	$indelocator_input \
+	$strelka_input \
 	$varscan_input \
 	$vardict_input \
 	$lofreq_input \
@@ -570,7 +603,7 @@ then
 	# If a classifier is used, use it:
 	if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]; then
 		R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/Trained.sINDEL.tsv" < "$ada_r_script"
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass $pass_threshold -low $lowqual_threshold -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass $pass_threshold -low $lowqual_threshold -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka
 
 	# If ground truth is here, assume builder.R, and build a classifier
 	elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]; then
@@ -578,7 +611,7 @@ then
 
 	# If no training and no classification, then make VCF by majority vote consensus:
 	else
-		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sINDEL.tsv -vcf ${merged_dir}/Untrained.sINDEL.vcf -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel -all
+		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sINDEL.tsv -vcf ${merged_dir}/Untrained.sINDEL.vcf -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka -all
 	fi
 
 fi
