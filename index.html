@@ -178,6 +178,8 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     --lofreq-snv    $PATH/TO/LoFreq/variants.snp.vcf      \<br>
     --lofreq-indel  $PATH/TO/LoFreq/variants.indel.vcf    \<br>
     --scalpel $PATH/TO/Scalpel/variants.indel.vcf         \<br>
+    --strelka-snv $PATH/TO/Strelka/variants.snv.vcf       \<br>
+    --strelka-indel $PATH/TO/Strelka/variants.indel.vcf   \<br>
     --normal-bam normal.bam                               \<br>
     --tumor-bam tumor.bam                                 \<br>
     --ada-r-script ada_model_predictor.R                  \<br>
@@ -215,6 +217,8 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     --lofreq-snv    $PATH/TO/LoFreq/variants.snp.vcf      \<br>
     --lofreq-indel  $PATH/TO/LoFreq/variants.indel.vcf    \<br>
     --scalpel $PATH/TO/Scalpel/variants.indel.vcf         \<br>
+    --strelka-snv $PATH/TO/Strelka/variants.snv.vcf       \<br>
+    --strelka-indel $PATH/TO/Strelka/variants.indel.vcf   \<br>
     --normal-bam normal.bam                               \<br>
     --tumor-bam tumor.bam                                 \<br>
     --ada-r-script ada_model_builder.R                    \<br>
@@ -248,6 +252,8 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <li><code>-L | --lofreq-snv</code>: LoFreq's output VCF (Optional)</li>
     <li><code>-l | --lofreq-indel</code>: LoFreq's output INDEL VCF (Optional)</li>
     <li><code>-p | --scalpel</code>: Scalpel's output VCF (Optional)</li>
+    <li><code>--strelka-snv</code>: Strelka2's SNV VCF (Optional)</li>
+    <li><code>--strelka-indel</code>: Strelka2's INDEL VCF (Optional)</li>
     <li><code>-N | --normal-bam</code>: Normal BAM files</li>
     <li><code>-T | --tumor-bam</code>: Tumor BAM files</li>
     <li><code>-R | --ada-r-script</code>: Ada script in R. (Optional. If not provided, SomaticSeq will not attempt to train or predict. If -C and -x are provided, this script is assumed to be predictor.R. If -Z and -z are provided, this script is assumed to be builder.R).</li>
@@ -287,6 +293,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <li>MuSE:          <a href="http://dx.doi.org/10.1186/s13059-016-1029-6" target=_blank>Fan Y, Xi L, Hughes DS, et al. MuSE: accounting for tumor heterogeneity using a sample-specific error model improves sensitivity and specificity in mutation calling from sequencing data. Genome Biol. 2016;17(1):178.</a></li>
     <li>LoFreq:        <a href="http://dx.doi.org/10.1093/nar/gks918" target=_blank>Wilm A, Aw PP, Bertrand D, et al. LoFreq: a sequence-quality aware, ultra-sensitive variant caller for uncovering cell-population heterogeneity from high-throughput sequencing datasets. Nucleic Acids Res. 2012;40(22):11189-201.</a>
     <li>Scalpel:       <a href="http://dx.doi.org/10.1038/nmeth.3069" target=_blank>Narzisi G, O'rawe JA, Iossifov I, et al. Accurate de novo and transmitted indel detection in exome-capture data using microassembly. Nat Methods. 2014;11(10):1033-6.</a>
+    <li>Strelka2:      <a href="http://dx.doi.org/10.1093/bioinformatics/bts271" target=_blank>Saunders CT, Wong WS, Swamy S, Becq J, Murray LJ, Cheetham RK. Strelka: accurate somatic small-variant calling from sequenced tumor-normal sample pairs. Bioinformatics. 2012;28(14):1811-7.</a>
     </ul>
 
 
