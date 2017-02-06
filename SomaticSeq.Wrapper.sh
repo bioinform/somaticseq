@@ -472,12 +472,12 @@ then
 
 	# If a classifier is used, assume predictor.R, and do the prediction routine:
 	if [[ -r ${snpclassifier} ]] && [[ -r ${ada_r_script} ]]; then
-		R --no-save --args "$snpclassifier" "${merged_dir}/Ensemble.sSNV.tsv" "${merged_dir}/Trained.sSNV.tsv" < "$ada_r_script"
+		"$ada_r_script" "$snpclassifier" "${merged_dir}/Ensemble.sSNV.tsv" "${merged_dir}/Trained.sSNV.tsv"
 		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass $pass_threshold -low $lowqual_threshold -all -phred -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq $tool_strelka
 
 	# If ground truth is here, assume builder.R, and build a classifier
 	elif [[ -r ${snpgroundtruth} ]] && [[ -r ${ada_r_script} ]]; then
-		R --no-save --args "${merged_dir}/Ensemble.sSNV.tsv" < ${ada_r_script}
+		${ada_r_script} "${merged_dir}/Ensemble.sSNV.tsv"
 
 	# If no training and no classification, then make VCF by majority vote consensus:
 	else
@@ -602,12 +602,12 @@ then
 
 	# If a classifier is used, use it:
 	if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]; then
-		R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/Trained.sINDEL.tsv" < "$ada_r_script"
+		${ada_r_script} "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/Trained.sINDEL.tsv"
 		$MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass $pass_threshold -low $lowqual_threshold -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka
 
 	# If ground truth is here, assume builder.R, and build a classifier
 	elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]; then
-		R --no-save --args "${merged_dir}/Ensemble.sINDEL.tsv" < ${ada_r_script}
+		${ada_r_script} "${merged_dir}/Ensemble.sINDEL.tsv"
 
 	# If no training and no classification, then make VCF by majority vote consensus:
 	else
