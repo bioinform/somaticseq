@@ -129,6 +129,8 @@ SomaticSeq.Wrapper.sh \
 --lofreq-snv        LoFreq/variants.snp.vcf \
 --lofreq-indel      LoFreq/variants.indel.vcf \
 --scalpel           Scalpel/variants.indel.vcf \
+--strelka-snv       Strelka/variants.snv.vcf \
+--strelka-indel     Strelka/variants.indel.vcf \
 --normal-bam        matched_normal.bam \
 --tumor-bam         tumor.bam \
 --ada-r-script      ada_model_builder.R \
@@ -168,6 +170,8 @@ SomaticSeq.Wrapper.sh \
 --lofreq-snv        LoFreq/variants.snp.vcf \
 --lofreq-indel      LoFreq/variants.indel.vcf \
 --scalpel           Scalpel/variants.indel.vcf \
+--strelka-snv       Strelka/variants.snv.vcf \
+--strelka-indel     Strelka/variants.indel.vcf \
 --normal-bam        matched_normal.bam \
 --tumor-bam         tumor.bam \
 --ada-r-script      ada_model_predictor.R \
@@ -352,7 +356,7 @@ This script works for all VCF files. It extracts information from BAM files as w
 	
 \begin{lstlisting}
 # SNV
-SSeq_merged.vcf2tsv.py -ref genome.GRCh37.fa -myvcf somatic.snp.processed.vcf -truth Ground.truth.snp.vcf -mutect MuTect/variants.snp.vcf.gz -varscan VarScan2/variants.snp.vcf -jsm JSM2/variants.vcf -sniper SomaticSniper/variants.vcf -vardict VarDict/snp.variants.vcf -muse MuSE/variants.vcf -lofreq LoFreq/variants.snp.vcf -dedup -tbam tumor.bam -nbam normal.bam -outfile Ensemble.sSNV.tsv
+SSeq_merged.vcf2tsv.py -ref genome.GRCh37.fa -myvcf somatic.snp.processed.vcf -truth Ground.truth.snp.vcf -mutect MuTect/variants.snp.vcf.gz -varscan VarScan2/variants.snp.vcf -jsm JSM2/variants.vcf -sniper SomaticSniper/variants.vcf -vardict VarDict/snp.variants.vcf -muse MuSE/variants.vcf -lofreq LoFreq/variants.snp.vcf -strelka Strelka/variants.snp.vcf -dedup -tbam tumor.bam -nbam normal.bam -outfile Ensemble.sSNV.tsv
 \end{lstlisting}
 
 
@@ -360,7 +364,7 @@ That was for SNV, and indel is almost the same thing. After version 2.1, we have
 
 \begin{lstlisting}
 # INDEL:
-SSeq_merged.vcf2tsv.py -ref genome.GRCh37.fa -myvcf somatic.indel.processed.vcf -truth Ground.truth.indel.vcf -varscan VarScan2/variants.snp.vcf -vardict VarDict/indel.variants.vcf -lofreq LoFreq/variants.indel.vcf -scalpel Scalpel/variants.indel.vcf -tbam tumor.bam -nbam normal.bam -dedup -outfile Ensemble.sINDEL.tsv
+SSeq_merged.vcf2tsv.py -ref genome.GRCh37.fa -myvcf somatic.indel.processed.vcf -truth Ground.truth.indel.vcf -varscan VarScan2/variants.snp.vcf -vardict VarDict/indel.variants.vcf -lofreq LoFreq/variants.indel.vcf -scalpel Scalpel/variants.indel.vcf -strelka Strelka/variants.indel.vcf -tbam tumor.bam -nbam normal.bam -dedup -outfile Ensemble.sINDEL.tsv
 \end{lstlisting}
 
 
@@ -386,6 +390,7 @@ All the options for SSeq\_merged.vcf2tsv.py are listed here. They can also be di
   -muse        VCF file from MuSE
   -lofreq      VCF file from LoFreq
   -scalpel     VCF file from Scalpel
+  -strelka     VCF file from Strelka
   -dedup       A flag to consider only primary reads
   -minMQ       Minimum mapping quality for reads to be considered (Default = 1)
   -minBQ       Minimum base quality for reads to be considered (Default = 5)
@@ -415,8 +420,8 @@ You can use Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv files either for model tra
 Model training:
 \begin{lstlisting}
 # Training:
-R --no-save --args Ensemble.sSNV.tsv   < ada_model_builder.R
-R --no-save --args Ensemble.sINDEL.tsv < ada_model_builder.R
+r_script/ada_model_builder.R Ensemble.sSNV.tsv
+r_script/ada_model_builder.R Ensemble.sINDEL.tsv
 \end{lstlisting}
 	
 Ensemble.sSNV.tsv.Classifier.RData and Ensemble.sINDEL.tsv.Classifier.RData will be created from model training.
@@ -426,8 +431,8 @@ Mutation prediction:
 	
 \begin{lstlisting}
 # Mutation prediction:
-R --no-save --args Ensemble.sSNV.tsv.Classifier.RData   Ensemble.sSNV.tsv   Trained.sSNV.tsv   < ada_model_predictor.R
-R --no-save --args Ensemble.sINDEL.tsv.Classifier.RData Ensemble.sINDEL.tsv Trained.sINDEL.tsv < ada_model_predictor.R
+r_script/ada_model_predictor.R Ensemble.sSNV.tsv.Classifier.RData   Ensemble.sSNV.tsv   Trained.sSNV.tsv
+r_script/ada_model_predictor.R Ensemble.sINDEL.tsv.Classifier.RData Ensemble.sINDEL.tsv Trained.sINDEL.tsv
 \end{lstlisting}
 
 	
@@ -439,9 +444,9 @@ After mutation prediction, if you feel like it, you may convert Trained.sSNV.tsv
 # Use -all to include REJECT calls in the VCF file
 # Use -phred to convert probability values (between 0 to 1) into Phred scale in the QUAL column in the VCF file
 
-SSeq_tsv2vcf.py -tsv Trained.sSNV.tsv   -vcf Trained.sSNV.vcf   -pass 0.7 -low 0.1 -tools CGA VarScan2 JointSNVMix2 SomaticSniper VarDict MuSE LoFreq -all -phred
+SSeq_tsv2vcf.py -tsv Trained.sSNV.tsv   -vcf Trained.sSNV.vcf   -pass 0.7 -low 0.1 -tools CGA VarScan2 JointSNVMix2 SomaticSniper VarDict MuSE LoFreq Strelka -all -phred
 
-SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0.1 -tools CGA VarScan2 VarDict LoFreq Scalpel -all -phred
+SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0.1 -tools CGA VarScan2 VarDict LoFreq Scalpel Strelka -all -phred
 \end{lstlisting}
 
 
@@ -499,7 +504,8 @@ Have implemented the following improvement, mostly for indels:
   SSeq\_merged.vcf2tsv.py can annotate dbSNP and COSMIC information directly if BED file or a list of chromosome coordinates are used as input in lieu of an annotated VCF file. 
 
   \item
-  Consolidated feature sets, e.g., removed some redundant feature sets coming from different resources.
+  Consolidated feature sets, e.g., removed some redunda
+  Fixed a bug: if JointSNVMix2 is not included, the values should be ``NaN'' instead of 0's. This is to keep consistency with how we handle all other callersnt feature sets coming from different resources.
 \end{itemize}
 
 
@@ -585,6 +591,9 @@ Have implemented the following improvement, mostly for indels:
 \subsection{Version 2.2.3}
 
 \begin{itemize}
+
+  \item
+  Incorporated Strelka2 since it's now GPL v3. 
 
   \item
   If a COSMIC site is labeled SNP in the COSMIC VCF file, if\_cosmic and CNT will be labeled as 0. The COSMIC ID will still appear in the ID column. This will not change any results because both of those features are turned off in the training R script. 
