@@ -39,6 +39,7 @@ parser.add_argument('-dbsnp',     '--dbsnp-vcf',              type=str,   help='
 parser.add_argument('-cosmic',    '--cosmic-vcf',             type=str,   help='COSMIC VCF: do not use if input VCF is annotated',   required=False, default=None)
 
 parser.add_argument('-mutect',  '--mutect-vcf',               type=str,   help='MuTect VCF',        required=False, default=None)
+parser.add_argument('-strelka', '--strelka-vcf',              type=str,   help='Strelka VCF',       required=False, default=None)
 parser.add_argument('-sniper',  '--somaticsniper-vcf',        type=str,   help='SomaticSniper VCF', required=False, default=None)
 parser.add_argument('-varscan', '--varscan-vcf',              type=str,   help='VarScan2 VCF',      required=False, default=None)
 parser.add_argument('-jsm',     '--jsm-vcf',                  type=str,   help='JointSNVMix2 VCF',  required=False, default=None)
@@ -50,8 +51,8 @@ parser.add_argument('-scalpel', '--scalpel-vcf',              type=str,   help='
 parser.add_argument('-ref',     '--genome-reference',         type=str,   help='.fasta.fai file to get the contigs', required=True, default=None)
 parser.add_argument('-dedup',   '--deduplicate',     action='store_true', help='Do not consider duplicate reads from BAM files. Default is to count everything', required=False, default=False)
 
-parser.add_argument('-minMQ',     '--minimum-mapping-quality',  type=float, help='Minimum mapping quality below which is considered poor', required=False, default=1)
-parser.add_argument('-minBQ',     '--minimum-base-quality',     type=float, help='Minimum base quality below which is considered poor', required=False, default=5)
+parser.add_argument('-minMQ',     '--minimum-mapping-quality',type=float, help='Minimum mapping quality below which is considered poor', required=False, default=1)
+parser.add_argument('-minBQ',     '--minimum-base-quality',   type=float, help='Minimum base quality below which is considered poor', required=False, default=5)
 parser.add_argument('-mincaller', '--minimum-num-callers',    type=float, help='Minimum number of tools to be considered', required=False, default=0)
 
 parser.add_argument('-scale',      '--p-scale',               type=str,   help='phred, fraction, or none', required=False, default=None)
@@ -73,6 +74,7 @@ truth     = args.ground_truth_vcf
 cosmic    = args.cosmic_vcf
 dbsnp     = args.dbsnp_vcf
 mutect    = args.mutect_vcf
+strelka   = args.strelka_vcf
 sniper    = args.somaticsniper_vcf
 varscan   = args.varscan_vcf
 jsm       = args.jsm_vcf
@@ -147,6 +149,7 @@ out_header = \
 {REF}\t\
 {ALT}\t\
 {if_MuTect}\t\
+{if_Strelka}\t\
 {if_VarScan2}\t\
 {if_JointSNVMix2}\t\
 {if_SomaticSniper}\t\
@@ -154,6 +157,9 @@ out_header = \
 {if_LoFreq}\t\
 {if_Scalpel}\t\
 {MuSE_Tier}\t\
+{Strelka_Score}\t\
+{Strelka_QSS}\t\
+{Strelka_TQSS}\t\
 {VarScan2_Score}\t\
 {SNVMix2_Score}\t\
 {Sniper_Score}\t\
@@ -277,6 +283,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         mutect_line = mutect.readline().rstrip()
         while mutect_line.startswith('#'):
             mutect_line = mutect.readline().rstrip()
+
+    if strelka:
+        strelka = genome.open_textfile(strelka)
+        strelka_line = strelka.readline().rstrip()
+        while strelka_line.startswith('#'):
+            strelka_line = strelka.readline().rstrip()
     
     if sniper:
         sniper = genome.open_textfile(sniper)
@@ -422,6 +434,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             
             #################################### Find the same coordinate in those VCF files ####################################
             if args.mutect_vcf:        got_mutect,  mutect_variants,  mutect_line  = genome.find_vcf_at_coordinate(my_coordinate, mutect_line,  mutect,  chrom_seq)
+            if args.strelka_vcf:       got_strelka, strelka_variants, strelka_line = genome.find_vcf_at_coordinate(my_coordinate, strelka_line, strelka, chrom_seq)
             if args.varscan_vcf:       got_varscan, varscan_variants, varscan_line = genome.find_vcf_at_coordinate(my_coordinate, varscan_line, varscan, chrom_seq)
             if args.jsm_vcf:           got_jsm,     jsm_variants,     jsm_line     = genome.find_vcf_at_coordinate(my_coordinate, jsm_line,     jsm,     chrom_seq)
             if args.somaticsniper_vcf: got_sniper,  sniper_variants,  sniper_line  = genome.find_vcf_at_coordinate(my_coordinate, sniper_line,  sniper,  chrom_seq)
@@ -486,6 +499,27 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     rpa = nlod = tlod = tandem = ecnt = hcnt = maxED = minED = nan
 
 
+                #################### Collect Strelka ####################:
+                if args.strelka_vcf:
+                    
+                    if variant_id in strelka_variants:
+                        
+                        strelka_variant_i = strelka_variants[variant_id]
+                        strelka_classification = 1 if 'PASS' in strelka_variant_i.filters else 0
+                        somatic_evs = strelka_variant_i.get_info_value('SomaticEVS')
+                        qss = strelka_variant_i.get_info_value('QSS')
+                        tqss = strelka_variant_i.get_info_value('TQSS')
+                        
+                    else:
+                        strelka_classification = 0
+                        somatic_evs = qss = tqss = nan
+                        
+                else:
+                    strelka_classification = nan
+                    somatic_evs = qss = tqss = nan
+                        
+                
+                
                 #################### Collect VarScan ####################:
                 if args.varscan_vcf:
 
@@ -1125,6 +1159,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     REF                     = ref_base,                                               \
                     ALT                     = first_alt,                                              \
                     if_MuTect               = mutect_classification,                                  \
+                    if_Strelka              = strelka_classification,                                 \
                     if_VarScan2             = varscan_classification,                                 \
                     if_JointSNVMix2         = jointsnvmix2_classification,                            \
                     if_SomaticSniper        = sniper_classification,                                  \
@@ -1132,6 +1167,9 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     if_LoFreq               = lofreq_classification,                                  \
                     if_Scalpel              = scalpel_classification,                                 \
                     MuSE_Tier               = muse_classification,                                    \
+                    Strelka_Score           = somatic_evs,                                            \
+                    Strelka_QSS             = qss,                                                    \
+                    Strelka_TQSS            = tqss,                                                   \
                     VarScan2_Score          = rescale(score_varscan2,      'phred', p_scale, 1001),   \
                     SNVMix2_Score           = rescale(score_jointsnvmix2,  'phred', p_scale, 1001),   \
                     Sniper_Score            = rescale(score_somaticsniper, 'phred', p_scale, 1001),   \
@@ -1231,5 +1269,5 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             my_line = my_sites.readline().rstrip()
         
     ##########  Close all open files if they were opened  ##########
-    opened_files = (ref_fa, nbam, tbam, truth, cosmic, dbsnp, mutect, sniper, varscan, jsm, vardict, muse, lofreq)
+    opened_files = (ref_fa, nbam, tbam, truth, cosmic, dbsnp, mutect, strelka, sniper, varscan, jsm, vardict, muse, lofreq, scalpel)
     [opened_file.close() for opened_file in opened_files if opened_file]

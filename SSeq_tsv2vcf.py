@@ -11,7 +11,7 @@ parser.add_argument('-hom',   '--hom-threshold',             type=float, help='T
 parser.add_argument('-het',   '--het-threshold',             type=float, help='The VAF to be labeled 0/1 in GT', required=False, default=0.05)
 parser.add_argument('-N',     '--normal-sample-name',        type=str,   help='Normal Sample Name', required=False, default='NORMAL')
 parser.add_argument('-T',     '--tumor-sample-name',         type=str,   help='Tumor Sample Name', required=False, default='TUMOR')
-parser.add_argument('-tools', '--individual-mutation-tools', type=str,   help='A list of all tools: have to match the annotated tool name in the input vcf files', nargs='*', required=False, default=('CGA', 'VarScan2', 'JointSNVMix2', 'SomaticSniper', 'VarDict', 'MuSE', 'LoFreq', 'Scalpel') )
+parser.add_argument('-tools', '--individual-mutation-tools', type=str,   help='A list of all tools used. Possible values are CGA (for MuTect), VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and/or Strelka', nargs='*', required=True)
 
 parser.add_argument('-all',   '--emit-all',    action='store_true', help='Flag it to print out everything', required=False)
 parser.add_argument('-phred', '--phred-scale', action='store_true', help='Flag it to print out Phred scale QUAL (proper VCF format but more annoying to filter)', required=False)
@@ -56,7 +56,7 @@ tools_code = {'CGA':           'M',
               'MuSE':          'U',
               'LoFreq':        'L',
               'Scalpel':       'P',
-              'CAPP':          'C'}
+              'Strelka':       'K'}
 
 
 mvjsdu = ''
@@ -144,7 +144,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     if 'MuSE_Tier'        in vars(): toolcode2index['U'] = MuSE_Tier
     if 'if_LoFreq'        in vars(): toolcode2index['L'] = if_LoFreq
     if 'if_Scalpel'       in vars(): toolcode2index['P'] = if_Scalpel
-    if 'if_CAPP'          in vars(): toolcode2index['C'] = if_CAPP
+    if 'if_Strelka'       in vars(): toolcode2index['K'] = if_Strelka
                           
     
     # Create vcf headers:
