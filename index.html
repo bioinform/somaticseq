@@ -277,45 +277,6 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     </ul>
 
 
-
-    <h3>Command-line options for SomaticSeq.Wrapper.sh:</h3>
-    <h4>Long options only available after v2.0.3</h4>
-    <ul>
-    <li><code>--mutect</code>: MuTect's output VCF (Optional)</li>
-    <li><code>--indelocator</code>: Indelocator's output VCF (Optional)</li>
-    <li><code>--mutect2</code>: MuTect2's output VCF (Optional)</li>
-    <li><code>--varscan-snv</code>: VarScan2's output SNV VCF (Optional)</li>
-    <li><code>--varscan-indel</code>: VarScan2's output INDEL VCF (Optional)</li>
-    <li><code>--jsm</code>: JointSNVMix's variant output converted to VCF (Optional)</li>
-    <li><code>--sniper</code>: SomaticSniper's output VCF (Optional)</li>
-    <li><code>--vardict</code>: VarDict's output VCF (Optional)</li>
-    <li><code>--muse</code>: MuSE's output VCF (Optional)</li>
-    <li><code>--lofreq-snv</code>: LoFreq's output VCF (Optional)</li>
-    <li><code>--lofreq-indel</code>: LoFreq's output INDEL VCF (Optional)</li>
-    <li><code>--scalpel</code>: Scalpel's output VCF (Optional)</li>
-    <li><code>--strelka-snv</code>: Strelka2's SNV VCF (Optional)</li>
-    <li><code>--strelka-indel</code>: Strelka2's INDEL VCF (Optional)</li>
-    <li><code>--normal-bam</code>: Normal BAM files</li>
-    <li><code>--tumor-bam</code>: Tumor BAM files</li>
-    <li><code>--ada-r-script</code>: Ada script in R. (Optional. If not provided, SomaticSeq will not attempt to train or predict. If --classifier-snv and/or --classifier-indel are provided, this script is assumed to be predictor.R. If --truth-snv and/or --truth-indel are provided, this script is assumed to be builder.R).</li>
-    <li><code>--classifier-snv</code>: Trained model/classifier for SNV, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
-    <li><code>--classifier-indel</code>: Trained model/classifier for INDEL, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
-    <li><code>--genome-reference</code>: Genome reference FASTA file</li>
-    <li><code>--cosmic</code>: COSMIC VCF file</li>
-    <li><code>--dbsnp</code>: dbSNP VCF file</li>
-    <li><code>--gatk</code>: GATK's java executable file</li>
-    <li><code>--inclusion-region</code>: Only include those regions in analysis</li>
-    <li><code>--exclusion-region</code>: Regions to toss out in the final VCF files (Optional)</li>
-    <li><code>--truth-snv</code>: A VCF file containing true sSNVs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
-    <li><code>--truth-indel</code>: A VCF file containing true sINDELs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
-    <li><code>--output-dir</code>: Output directory (make sure it exists)</li>
-    <li><code>--keep-intermediates</code>: [0|1], whether to keep intermediate files for debugging. [Optional. Default = 0]</li>
-    <li><code>--pass-threshold</code>: Probability value above which a call will be labeled as PASS. (Default = 0.5. Optional. Available after v2.2.2)</li>
-    <li><code>--lowqual-threshold</code>: Probability value above which (but below the PASS threshold) a call will be labeled as LowQual. (Default = 0.1. Optional. Available after v2.2.2)</li>
-    </ul>
-
-
-
     <h3>Contact Us</h3>
     Please report bugs and suggestions to the <a href="https://github.com/bioinform/somaticseq/issues" target=_blank>report issues</a> page. The developers will be notified immediately. 
     Alternatively, you may email <a href="mailto:li_tai.fang@bina.roche.com">li_tai.fang@bina.roche.com</a>.
