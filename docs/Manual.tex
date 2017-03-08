@@ -95,7 +95,7 @@ Optional: Free GATK (We use GATK CombineVariants to merge VCF files. You may do 
 Optional: dbSNP and COSMIC files in VCF format (if you want to use these features as a part of the training).
 
 \item
-At least one of MuTect/Indelocator, MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, and/or Scalpel. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
+At least one of MuTect/Indelocator, MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and Strelka2. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
 
 \end{itemize}
 
@@ -593,13 +593,16 @@ Have implemented the following improvement, mostly for indels:
 \begin{itemize}
 
   \item
-  Incorporated Strelka2 since it's now GPL v3. 
-
-  \item
-  If a COSMIC site is labeled SNP in the COSMIC VCF file, if\_cosmic and CNT will be labeled as 0. The COSMIC ID will still appear in the ID column. This will not change any results because both of those features are turned off in the training R script. 
+  Incorporated Strelka2 since it's now GPLv3.
   
   \item
-  Fixed a bug: if JointSNVMix2 is not included, the values should be ``NaN'' instead of 0's. This is to keep consistency with how we handle all other callers. 
+  Added another R script (ada\_model\_builder\_ntChange.R) that uses nucleotide substitution pattern as a feature. Limited experiences have shown us that it improves the accuracy, but it's not heavily tested yet. 
+
+  \item
+  If a COSMIC site is labeled SNP in the COSMIC VCF file, if\_cosmic and CNT will be labeled as 0. The COSMIC ID will still appear in the ID column. This will not change any results because both of those features are turned off in the training R script.
+  
+  \item
+  Fixed a bug: if JointSNVMix2 is not included, the values should be ``NaN'' instead of 0's. This is to keep consistency with how we handle all other callers.
   
 \end{itemize}
 
@@ -631,7 +634,7 @@ Have implemented the following improvement, mostly for indels:
 
 
 \section{Contact Us}
-For suggestions, bug reports, or technical support, please post in the \href{https://github.com/bioinform/somaticseq/issues}{github issues} page. The developers are alerted when issues are created there. Alternatively, you may also email \href{mailto:li_tai.fang@bina.roche.com}{li\_tai.fang@bina.roche.com}. 
+For suggestions, bug reports, or technical support, please post in \href{https://github.com/bioinform/somaticseq/issues}{https://github.com/bioinform/somaticseq/issues}. The developers are alerted when issues are created there. Alternatively, you may also email \href{mailto:li_tai.fang@roche.com}{li\_tai.fang@roche.com}. 
 
 \end{sloppypar}
 \end{document}
