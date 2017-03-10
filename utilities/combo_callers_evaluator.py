@@ -35,6 +35,9 @@ with open(vcf) as vcf:
     while line_i.startswith('#'):
         line_i = vcf.readline().rstrip()
         
+        
+    print('#ToolCombo\tTruePositiveCalls\tAllCalls')
+    
     while line_i:
         
         vcf_i   = genome.Vcf_line( line_i )
@@ -58,5 +61,5 @@ with open(vcf) as vcf:
 
 
 for i in sorted(all_combos):
-    print( ''.join(i) + '\t' + str(all_combos[i][1]) + '\t' +  str(all_combos[i][1]) )
+    print( ''.join(i) + '\t' + str(all_combos[i][1]) + '\t' +  str(all_combos[i][0]) )
     
