@@ -24,7 +24,7 @@ all_combos = {}
 for i in range(1, len(tool_code)+1 ):
     combo_gen = itertools.combinations( tool_code, i)
     for j in combo_gen:
-        all_combos[j]=0
+        all_combos[j]=[0,0]
         
         
 
@@ -48,11 +48,14 @@ with open(vcf) as vcf:
                 
                 for all_combos_i in all_combos:
                     if tool_code_i in all_combos_i:
-                        all_combos[ all_combos_i ] += 1
+                        all_combos[ all_combos_i ][0] += 1
+                        
+                        if 'TruePositive' in vcf_i.identifier:
+                            all_combos[ all_combos_i ][1] += 1
         
         line_i = vcf.readline().rstrip()
 
 
 for i in sorted(all_combos):
-    print( ''.join(i) + '\t' + str(all_combos[i]) )
+    print( ''.join(i) + '\t' + str(all_combos[i][1]) + '\t' +  str(all_combos[i][1]) )
     
