@@ -42,20 +42,17 @@ with open(vcf) as vcf:
         tool_i  = combo_i.split(',')
         tool_i  = [ int(i) for i in tool_i ]
         
-        for tool_code_i, tool_called_i in zip(tool_code, tool_i):
-            
-            if tool_called_i == 1:
+        current_call_set = set()
+        for tool_code_j, tool_j in zip(tool_code, tool_i):
+            if tool_j == 1:
+                current_call_set.add(tool_code_j)
                 
-                for all_combos_i in all_combos:
-                    
-                    if tool_code_i in all_combos_i:
-                        all_combos[ all_combos_i ][0] += 1
-                        
-                        if 'TruePositive' in vcf_i.identifier:
-                            all_combos[ all_combos_i ][1] += 1
-                            
-                        break
-        
+        for combo_j in all_combos
+            if set.intersection( set(combo_j), current_call_set ):
+                all_combos[combo_j][0] += 1
+                
+                if 'TruePositive' in vcf_i.identifier:
+                    all_combos[combo_j][1] += 1
         
         line_i = vcf.readline().rstrip()
 
