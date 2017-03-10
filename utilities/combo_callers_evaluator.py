@@ -12,7 +12,7 @@ import genomic_file_handlers as genome
 # argparse Stuff
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-vcf', '--input-vcf',    type=str, help='SomaticSeq VCF file', required=True, default=None)
-parser.add_argument('-combo', '--combo-code', type=str, help='E.g., MVJSDULK' required=True, default='MVJSDULK')
+parser.add_argument('-combo', '--combo-code', type=str, help='E.g., MVJSDULK', required=True, default='MVJSDULK')
 
 args  = parser.parse_args()
 vcf   = args.input_vcf
