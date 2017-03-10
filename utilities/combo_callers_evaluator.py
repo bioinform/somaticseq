@@ -53,7 +53,6 @@ with open(vcf) as vcf:
                         
                         if 'TruePositive' in vcf_i.identifier:
                             all_combos[ all_combos_i ][1] += 1
-                            break
                             
                         break
         
