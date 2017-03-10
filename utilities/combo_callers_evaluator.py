@@ -47,11 +47,16 @@ with open(vcf) as vcf:
             if tool_called_i == 1:
                 
                 for all_combos_i in all_combos:
+                    
                     if tool_code_i in all_combos_i:
                         all_combos[ all_combos_i ][0] += 1
                         
                         if 'TruePositive' in vcf_i.identifier:
                             all_combos[ all_combos_i ][1] += 1
+                            break
+                            
+                        break
+        
         
         line_i = vcf.readline().rstrip()
 
