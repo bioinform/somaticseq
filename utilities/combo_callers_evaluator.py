@@ -30,10 +30,10 @@ for i in range(1, len(tool_code)+1 ):
 
 with open(vcf) as vcf:
     
-    line_i = vcf.readline.rstrip()
+    line_i = vcf.readline().rstrip()
     
     while line_i.startswith('#'):
-        line_i = vcf.readline.rstrip()
+        line_i = vcf.readline().rstrip()
         
     while line_i:
         
@@ -50,7 +50,7 @@ with open(vcf) as vcf:
                     if tool_code_i in all_combos_i:
                         all_combos[ all_combos_i ] += 1
         
-        line_i = vcf.readline.rstrip()
+        line_i = vcf.readline().rstrip()
 
 
 for i in sorted(all_combos):
