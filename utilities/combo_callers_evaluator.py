@@ -47,7 +47,7 @@ with open(vcf) as vcf:
             if tool_j == 1:
                 current_call_set.add(tool_code_j)
                 
-        for combo_j in all_combos
+        for combo_j in all_combos:
             if set.intersection( set(combo_j), current_call_set ):
                 all_combos[combo_j][0] += 1
                 
