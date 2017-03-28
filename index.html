@@ -183,7 +183,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <li><code>--strelka-indel</code>: Strelka2's INDEL VCF (Optional)</li>
     <li><code>--normal-bam</code>: Normal BAM files</li>
     <li><code>--tumor-bam</code>: Tumor BAM files</li>
-    <li><code>--ada-r-script</code>: Ada script in R. (Optional. If not provided, SomaticSeq will not attempt to train or predict. If --classifier-snv and/or --classifier-indel are provided, this script is assumed to be predictor.R. If --truth-snv and/or --truth-indel are provided, this script is assumed to be builder.R).</li>
+    <li><code>--ada-r-script</code>: Ada script in R, located in somaticseq/r_scripts (Optional. If not provided, SomaticSeq will not attempt to train or predict. If --classifier-snv and/or --classifier-indel are provided, this script is assumed to be predictor.R. If --truth-snv and/or --truth-indel are provided, this script is assumed to be builder.R).</li>
     <li><code>--classifier-snv</code>: Trained model/classifier for SNV, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
     <li><code>--classifier-indel</code>: Trained model/classifier for INDEL, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
     <li><code>--genome-reference</code>: Genome reference FASTA file</li>
@@ -262,7 +262,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     --strelka-indel $PATH/TO/Strelka/variants.indel.vcf   \<br>
     --normal-bam normal.bam                               \<br>
     --tumor-bam tumor.bam                                 \<br>
-    --ada-r-script ada_model_builder.R                    \<br>
+    --ada-r-script $PATH/ada_model_builder_ntChange.R     \<br>
     --genome-reference human_b37.fasta                    \<br>
     --cosmic cosmic.b37.v71.vcf                           \<br>
     --dbsnp dbSNP.b37.v141.vcf                            \<br>
