@@ -723,7 +723,14 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     if variant_id in scalpel_variants:
                         
                         scalpel_variant_i = scalpel_variants[ variant_id ]
-                        scalpel_classification = 1 if scalpel_variant_i.filters == 'PASS' else 0.5
+                        
+                        if scalpel_variant_i.get_info_value('SOMATIC'):
+                            if scalpel_variant_i.filters == 'PASS':
+                                scalpel_classification = 1
+                            else:
+                                scalpel_classification = 0.5
+                        else:
+                            scalpel_classification = 0
 
                         # If ref_base, first_alt, and indel_length unknown, get it here:
                         if not ref_base:         ref_base = scalpel_variant_i.refbase
