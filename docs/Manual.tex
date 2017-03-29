@@ -311,7 +311,14 @@ modify_VJSD.py -method MuSE -infile input.vcf -outfile output.vcf
 
 % LoFreq
 \item
-LoFreq does not require modification. It has no sample columns anyway. 
+LoFreq and Scalpel do not require modification. LoFreq has no sample columns anyway. 
+
+
+\item
+Strelka's INDEL VCF clashes with Scalple's VCF during GATK CombineVariants, for reasons we haven't bothered to figure out. We just removed the sample columns for Strelka's INDEL to solve the problem during variant merging. 
+\begin{lstlisting}
+gunzip -c somatic.indel.vcf.gz | awk -F "\t" '{ if ($0 !~ /^##/) print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" $8; else print $0}' OFS="\t" > strelka.indel.truncated.vcf
+\end{lstlisting}
 
 
 % GATK CombineVariants
@@ -606,6 +613,16 @@ Have implemented the following improvement, mostly for indels:
   
 \end{itemize}
 
+
+
+\subsection{Version 2.2.4}
+
+\begin{itemize}
+
+  \item
+  Resolved a bug in v2.2.3 where the VCF files of Strelka INDEL and Scalpel clash on GATK CombineVariants, by outputting a temporary VCF file for Strelka INDEL without the sample columns.
+
+\end{itemize}
 
 
 

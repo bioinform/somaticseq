@@ -225,12 +225,6 @@ then
 fi
 
 
-#--- LOCATION OF PROGRAMS ------
-snpEff_b37="    java -jar ${snpeff_dir}/snpEff.jar  GRCh37.75"
-snpSift_dbsnp=" java -jar ${snpeff_dir}/SnpSift.jar annotate ${dbsnp}"
-snpSift_cosmic="java -jar ${snpeff_dir}/SnpSift.jar annotate ${cosmic}"
-
-
 files_to_delete=''
 #####     #####     #####     #####     #####     #####     #####     #####
 # Modify the output of each tools into something that can be merged with GATK CombineVariants, just to be able to combine all the variant calls.
@@ -323,6 +317,16 @@ if [[ -r $lofreq_indel_vcf ]]; then
 	fi
 fi
 
+# Strelka: this is so that Strelka INDEL VCF does not clash with Scalpel, for reasons I haven't yet figured out. 
+if [[ -r $strelka_indel_vcf ]]; then
+	if [[ $strelka_indel_vcf == *.gz ]]; then
+		gunzip -c $strelka_indel_vcf | awk -F "\t" '{ if ($0 !~ /^##/) print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" $8; else print $0}' OFS="\t" > ${merged_dir}/strelka.indel.truncated.vcf
+	else
+		cat $strelka_indel_vcf       | awk -F "\t" '{ if ($0 !~ /^##/) print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" $8; else print $0}' OFS="\t" > ${merged_dir}/strelka.indel.truncated.vcf
+	fi
+	files_to_delete="${merged_dir}/strelka.indel.truncated.vcf* $files_to_delete"
+fi
+
 # dbSNP
 if [[ -r ${dbsnp} ]]; then
 	dbsnp_input="-dbsnp ${dbsnp}"
@@ -336,7 +340,6 @@ if [[ -r ${cosmic} ]]; then
 else
 	cosmic_input=''
 fi
-
 
 
 #################### SNV ####################
@@ -490,11 +493,11 @@ fi
 
 
 #################### INDEL ####################
-if [[ -r ${merged_dir}/mutect.indel.vcf || -r $strelka_indel_vcf || -r ${merged_dir}/varscan2.indel.vcf || -r ${merged_dir}/indel.vardict.vcf || -r ${lofreq_indel_vcf} || ${merged_dir}/indelocator.vcf || $scalpel_vcf ]]
+if [[ -r ${merged_dir}/mutect.indel.vcf || -r ${merged_dir}/strelka.indel.truncated.vcf || -r ${merged_dir}/varscan2.indel.vcf || -r ${merged_dir}/indel.vardict.vcf || -r ${lofreq_indel_vcf} || ${merged_dir}/indelocator.vcf || $scalpel_vcf ]]
 then
 
 	mergeindel=''
-	for vcf in ${merged_dir}/mutect.indel.vcf ${strelka_indel_vcf} ${merged_dir}/indel.vardict.vcf ${merged_dir}/varscan2.indel.vcf ${lofreq_indel_vcf} ${merged_dir}/indelocator.vcf $scalpel_vcf
+	for vcf in ${merged_dir}/mutect.indel.vcf ${merged_dir}/strelka.indel.truncated.vcf ${merged_dir}/indel.vardict.vcf ${merged_dir}/varscan2.indel.vcf ${lofreq_indel_vcf} ${merged_dir}/indelocator.vcf $scalpel_vcf
 	do
 		if [[ -r $vcf ]]; then
 			mergeindel="$mergeindel --variant $vcf"
