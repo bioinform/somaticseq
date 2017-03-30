@@ -56,8 +56,7 @@ tools_code = {'CGA':           'M',
               'MuSE':          'U',
               'LoFreq':        'L',
               'Scalpel':       'P',
-              'Strelka':       'K',
-              'CAPP':          'C'}
+              'Strelka':       'K'}
 
 
 mvjsdu = ''
@@ -146,7 +145,6 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     if 'if_LoFreq'        in vars(): toolcode2index['L'] = if_LoFreq
     if 'if_Scalpel'       in vars(): toolcode2index['P'] = if_Scalpel
     if 'if_Strelka'       in vars(): toolcode2index['K'] = if_Strelka
-    if 'if_CAPP'          in vars(): toolcode2index['C'] = if_CAPP
                           
     
     # Create vcf headers:
