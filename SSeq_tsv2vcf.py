@@ -156,7 +156,11 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     vcf.write('##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Somatic mutation in primary">\n')
     vcf.write('##INFO=<ID={COMBO},Number={NUM},Type=Integer,Description="Calling decision of the {NUM} algorithms: {TOOL_STRING}">\n'.format(COMBO=mvjsdu, NUM=total_num_tools, TOOL_STRING=tool_string) )
     vcf.write('##INFO=<ID=NUM_TOOLS,Number=1,Type=Float,Description="Number of tools called it Somatic">\n')
-
+    vcf.write('##INFO=<ID=WHITELIST,Number=0,Type=Flag,Description="The call is a whitelist variant">\n')
+    
+    if single_mode:
+        vcf.write('##INFO=<ID=AF,Number=1,Type=Float,Description="Variant Allele Fraction">\n')
+    
     vcf.write('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
     vcf.write('##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="ref forward, ref reverse, alt forward, alt reverse">\n')
     vcf.write('##FORMAT=<ID=CD4,Number=4,Type=Integer,Description="ref concordant, ref discordant, alt concordant, alt discordant">\n')
@@ -310,7 +314,13 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
 
         # Add VAF to info string if and only if there is one single sample in the VCF sample
         if single_mode:
-            info_string = info_string + ';VAF={}'.format(vaf)
+            info_string = info_string + ';AF={}'.format(vaf)
+            
+        
+        # If annotated as whitelist, add the flag:
+        if 'if_Whitelist' in vars():
+            if tsv_item[if_Whitelist] == '1':
+                info_string = info_string + ';WHITELIST'
 
 
         tumor_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{MQ0}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=t_ref_mq, altMQ=t_alt_mq, refBQ=t_ref_bq, altBQ=t_alt_bq, refNM=t_ref_nm, altNM=t_alt_nm, fetSB=t_sb, fetCD=t_cd, zMQ=t_mqb, zBQ=t_bqb, MQ0=t_MQ0, VAF=vaf)
