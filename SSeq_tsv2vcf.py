@@ -145,7 +145,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     if 'MuSE_Tier'        in vars(): toolcode2index['U'] = MuSE_Tier
     if 'if_LoFreq'        in vars(): toolcode2index['L'] = if_LoFreq
     if 'if_Scalpel'       in vars(): toolcode2index['P'] = if_Scalpel
-    if 'if_Strelka'       in vars(): toolcode2index['P'] = if_Strelka
+    if 'if_Strelka'       in vars(): toolcode2index['K'] = if_Strelka
     if 'if_CAPP'          in vars(): toolcode2index['C'] = if_CAPP
                           
     
