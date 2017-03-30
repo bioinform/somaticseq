@@ -621,6 +621,9 @@ Have implemented the following improvement, mostly for indels:
 
   \item
   Resolved a bug in v2.2.3 where the VCF files of Strelka INDEL and Scalpel clash on GATK CombineVariants, by outputting a temporary VCF file for Strelka INDEL without the sample columns.
+  
+  \item
+  Caller classification: consider if\_Scalpel = 1 only if there is a SOMATIC flag in its INFO. 
 
 \end{itemize}
 
