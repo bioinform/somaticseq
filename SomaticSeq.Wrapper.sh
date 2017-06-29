@@ -219,6 +219,7 @@ while true; do
 			case "$2" in
 				"") shift 2 ;;
 				*)  normal_name=$2 ; shift 2 ;;
+			esac ;;
 
 		-k | --keep-intermediates )
 			 case "$2" in
