@@ -363,17 +363,19 @@ if [[ -r ${merged_dir}/mutect.snp.vcf || -r ${strelka_snv_vcf} || -r ${merged_di
 then
 
 	mergesnp=''
+	all_snp=''
 	for vcf in ${merged_dir}/mutect.snp.vcf ${merged_dir}/varscan2.snp.vcf ${merged_dir}/jsm.vcf ${merged_dir}/somaticsniper.vcf ${merged_dir}/snp.vardict.vcf ${merged_dir}/muse.vcf ${lofreq_vcf} ${strelka_snv_vcf}
 	do
 		if [[ -r $vcf ]]; then
 			mergesnp="$mergesnp --variant $vcf"
+			all_snp="$all_snp $vcf"
 		fi
 	done
 
 	if [[ -r ${gatk} ]]; then
 		java -Xmx8g -jar ${gatk} -T CombineVariants -R ${hg_ref} --setKey null --genotypemergeoption UNSORTED $mergesnp --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
 	else
-		cat $mergesnp | egrep -v '^#'  | awk -F "\t" '{print $1 "\t" $2 "\t.\t" $4 "\t" $5}' | sort | uniq | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" "." "\t" "PASS" "\t" "."}' | cat <(echo -e '##fileformat=VCFv4.1\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO') - | $MYDIR/vcfsorter.pl ${hg_dict} - > ${merged_dir}/CombineVariants_MVJSD.snp.vcf
+		cat $all_snp | egrep -v '^#'  | awk -F "\t" '{print $1 "\t" $2 "\t.\t" $4 "\t" $5}' | sort | uniq | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" "." "\t" "PASS" "\t" "."}' | cat <(echo -e '##fileformat=VCFv4.1\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO') - | $MYDIR/vcfsorter.pl ${hg_dict} - > ${merged_dir}/CombineVariants_MVJSD.snp.vcf
 	fi
 
 	files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* $files_to_delete"
@@ -518,17 +520,19 @@ if [[ -r ${merged_dir}/mutect.indel.vcf || -r ${merged_dir}/strelka.indel.trunca
 then
 
 	mergeindel=''
+	all_indel=''
 	for vcf in ${merged_dir}/mutect.indel.vcf ${merged_dir}/strelka.indel.truncated.vcf ${merged_dir}/indel.vardict.vcf ${merged_dir}/varscan2.indel.vcf ${lofreq_indel_vcf} ${merged_dir}/indelocator.vcf $scalpel_vcf
 	do
 		if [[ -r $vcf ]]; then
 			mergeindel="$mergeindel --variant $vcf"
+			all_indel="$all_indel $vcf"
 		fi
 	done
 
 	if [[ -r ${gatk} ]]; then
 		java -Xmx8g -jar ${gatk} -T CombineVariants -R ${hg_ref} --setKey null --genotypemergeoption UNSORTED $mergeindel --out ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 	else
-		cat $mergeindel | egrep -v '^#'  | awk -F "\t" '{print $1 "\t" $2 "\t.\t" $4 "\t" $5}' | sort | uniq | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" "." "\t" "PASS" "\t" "."}' | cat <(echo -e '##fileformat=VCFv4.1\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO') - | $MYDIR/vcfsorter.pl ${hg_dict} - > ${merged_dir}/CombineVariants_MVJSD.indel.vcf
+		cat $all_indel | egrep -v '^#'  | awk -F "\t" '{print $1 "\t" $2 "\t.\t" $4 "\t" $5}' | sort | uniq | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" "." "\t" "PASS" "\t" "."}' | cat <(echo -e '##fileformat=VCFv4.1\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO') - | $MYDIR/vcfsorter.pl ${hg_dict} - > ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 	fi
 
 	files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* $files_to_delete"
