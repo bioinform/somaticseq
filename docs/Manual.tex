@@ -89,7 +89,7 @@ R, plus the ada package in R.
 BEDTools (if there is an inclusion and/or an exclusion region file)
 
 \item
-Optional: Free GATK (We use GATK CombineVariants to merge VCF files. You may do it other ways.)
+Optional: Free GATK version 3. You can use GATK CombineVariants to merge VCF files if the jar file is provided to --gatk. Otherwise, the sorting is done by the vcfsort.pl script written by German Gaston Leparc. 
 
 \item
 Optional: dbSNP and COSMIC files in VCF format (if you want to use these features as a part of the training).
@@ -99,6 +99,32 @@ At least one of MuTect/Indelocator, MuTect2, VarScan2, JointSNVMix, SomaticSnipe
 
 \end{itemize}
 
+
+\subsection{Docker repos}
+
+\begin{itemize}
+
+  \item SomaticSeq is dockerized at https://hub.docker.com/r/lethalfang/somaticseq/.
+
+  \item MuTect2: https://hub.docker.com/r/broadinstitute/gatk3/
+
+  \item VarScan2 (untested): https://hub.docker.com/r/jeltje/varscan2/
+
+  \item JointSNVMix2: https://hub.docker.com/r/lethalfang/jointsnvmix2/
+
+  \item SomaticSniper: https://hub.docker.com/r/lethalfang/somaticsniper/
+
+  \item VarDict: https://hub.docker.com/r/lethalfang/vardictjava/
+
+  \item MuSE: https://hub.docker.com/r/marghoob/muse/
+
+  \item LoFreq: https://hub.docker.com/r/marghoob/lofreq/
+
+  \item Scalpel: https://hub.docker.com/r/lethalfang/scalpel/
+
+  \item Strelka2: https://hub.docker.com/r/lethalfang/strelka/
+
+\end{itemize}
 
 
 \section{To use SomaticSeq.Wrapper.sh}
@@ -628,6 +654,18 @@ Have implemented the following improvement, mostly for indels:
 \end{itemize}
 
 
+\subsection{Version 2.2.5}
+
+\begin{itemize}
+  
+  \item
+  Added a dockerfile. Docker repo at https://hub.docker.com/r/lethalfang/somaticseq/. 
+  
+  \item
+  Ability to use vcfsort.pl instead of GATK CombineVariants to merge VCF files.
+
+\end{itemize}
+
 
 
 
@@ -637,10 +675,7 @@ Have implemented the following improvement, mostly for indels:
 
   \item
   Develop a version for deep sequencing cfDNA/ctDNA.
-  
-  \item
-  Dockerize SomaticSeq
-  
+    
 \end{itemize}
 
 
