@@ -105,8 +105,10 @@ At least one of MuTect/Indelocator, MuTect2, VarScan2, JointSNVMix, SomaticSnipe
 \begin{itemize}
 
   \item SomaticSeq is dockerized at https://hub.docker.com/r/lethalfang/somaticseq/.
+  
+  \item MuTect (untested): https://hub.docker.com/r/aarjunrao/mutect/
 
-  \item MuTect2: https://hub.docker.com/r/broadinstitute/gatk3/
+  \item MuTect2: https://hub.docker.com/r/broadinstitute/gatk3/ (Currently incompatible with GATK4 beta's MuTect2)
 
   \item VarScan2 (untested): https://hub.docker.com/r/jeltje/varscan2/
 
@@ -663,6 +665,16 @@ Have implemented the following improvement, mostly for indels:
   
   \item
   Ability to use vcfsort.pl instead of GATK CombineVariants to merge VCF files.
+
+\end{itemize}
+
+
+\subsection{Version 2.2.6}
+
+\begin{itemize}
+  
+  \item
+  To be made compatible with latest MuTect2 from GATK4.
 
 \end{itemize}
 
