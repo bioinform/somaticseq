@@ -54,7 +54,7 @@ else:
             
         while re.match(r'track|browser|#', line_i):
             
-            line_i = merged_regions.readline().rstrip()
+            line_i = bedin.readline().rstrip()
         
         
         while line_i:
