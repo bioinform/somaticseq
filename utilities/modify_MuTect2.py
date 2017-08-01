@@ -87,13 +87,13 @@ with genome.open_textfile(infile) as vcf_in, open(snv_out, 'w') as snv_out, open
                                 
                 split_infos = [ '{}={}'.format(info_variable, info_value[ith_base]) for info_variable, info_value in zip(info_to_split, measures) if info_value != None ]
                 
-                still_infos = [ '{}={}'.format(info_variable, info_value) for info_variable, info_value in zip(info_to_keep, still_measures) if info_value != None ]
+                still_infos = [ '{}={}'.format(info_variable, info_value) for info_variable, info_value in zip(info_to_keep, still_measures) if info_value != False ]
                 
                 split_infos.extend(still_infos)
                 
                 info_string = ';'.join( split_infos )
                 
-                new_line = '\t'.join(( vcf_i.chromosome, vcf_i.identifier, vcf_i.refbase, altbase_i, vcf_i.qual, vcf_i.filters, info_string, vcf_i.field, vcf_i.samples[0], vcf_i.samples[1] ))
+                new_line = '\t'.join(( vcf_i.chromosome, str(vcf_i.position), vcf_i.identifier, vcf_i.refbase, altbase_i, vcf_i.qual, vcf_i.filters, info_string, vcf_i.field, vcf_i.samples[0], vcf_i.samples[1] ))
                 
                 if len(vcf_i.refbase) == 1 and len(altbase_i) == 1:
                     snv_out.write( new_line + '\n' )
