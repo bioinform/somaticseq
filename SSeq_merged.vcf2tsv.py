@@ -472,15 +472,10 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         mutect_classification = 1 if (mutect_variant_i.get_info_value('SOMATIC') or 'PASS' in mutect_variant_i.filters) else 0
                         
                         # MuTect2 has some useful information:
-                        rpa    = mutect2_RPA(mutect_variant_i)
                         nlod   = mutect2_nlod(mutect_variant_i)
                         tlod   = mutect2_tlod(mutect_variant_i)
                         tandem = mutect2_STR(mutect_variant_i)
                         ecnt   = mutect2_ECNT(mutect_variant_i)
-                        hcnt   = mutect2_HCNT(mutect_variant_i)
-                        maxED  = mutect2_maxED(mutect_variant_i)
-                        minED  = mutect2_minED(mutect_variant_i)
-                        rpa    = sum(rpa)/len(rpa)
                         
                         # If ref_base, first_alt, and indel_length unknown, get it here:
                         if not ref_base:         ref_base = mutect_variant_i.refbase
@@ -490,13 +485,13 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     else:
                         # Not called by mutect
                         mutect_classification = 0
-                        rpa = nlod = tlod = tandem = ecnt = hcnt = maxED = minED = nan
+                        nlod = tlod = tandem = ecnt = nan
 
                     num_callers += mutect_classification
                 else:
                     # Assign a bunch of NaN's
                     mutect_classification = nan
-                    rpa = nlod = tlod = tandem = ecnt = hcnt = maxED = minED = nan
+                    nlod = tlod = tandem = ecnt = nan
 
 
                 #################### Collect Strelka ####################:
@@ -1218,14 +1213,10 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     nBAM_ALT_InDel_3bp      = n_alt_indel_3bp,                                        \
                     nBAM_ALT_InDel_2bp      = n_alt_indel_2bp,                                        \
                     nBAM_ALT_InDel_1bp      = n_alt_indel_1bp,                                        \
-                    M2_RPA                  = rpa,                                                    \
                     M2_NLOD                 = nlod,                                                   \
                     M2_TLOD                 = tlod,                                                   \
                     M2_STR                  = tandem,                                                 \
                     M2_ECNT                 = ecnt,                                                   \
-                    M2_HCNT                 = hcnt,                                                   \
-                    M2_MAXED                = maxED,                                                  \
-                    M2_MINED                = minED,                                                  \
                     SOR                     = sor,                                                    \
                     MSI                     = msi,                                                    \
                     MSILEN                  = msilen,                                                 \
