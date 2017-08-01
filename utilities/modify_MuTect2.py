@@ -97,7 +97,7 @@ with genome.open_textfile(infile) as vcf_in, open(snv_out, 'w') as snv_out, open
                 if GT0 != '0/0' or GT0 != '0/1':
                     sample_0 = re.sub(r'^0/[2-9]', '0/1', vcf_i.samples[0])
                 
-                GT1 = vcf_i.GT1('GT', idx=1)
+                GT1 = vcf_i.get_sample_value('GT', idx=1)
                 if GT1 != '0/0' or GT0 != '0/1':
                     sample_1 = re.sub(r'^0/[2-9]', '0/1', vcf_i.samples[1])
                 
