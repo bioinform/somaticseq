@@ -93,7 +93,16 @@ with genome.open_textfile(infile) as vcf_in, open(snv_out, 'w') as snv_out, open
                 
                 info_string = ';'.join( split_infos )
                 
-                new_line = '\t'.join(( vcf_i.chromosome, str(vcf_i.position), vcf_i.identifier, vcf_i.refbase, altbase_i, vcf_i.qual, vcf_i.filters, info_string, vcf_i.field, vcf_i.samples[0], vcf_i.samples[1] ))
+                GT0 = vcf_i.get_sample_value('GT', idx=0)
+                if GT0 != '0/0' or GT0 != '0/1':
+                    sample_0 = re.sub(r'^0/[2-9]', '0/1', vcf_i.samples[0])
+                
+                GT1 = vcf_i.GT1('GT', idx=1)
+                if GT1 != '0/0' or GT0 != '0/1':
+                    sample_1 = re.sub(r'^0/[2-9]', '0/1', vcf_i.samples[1)
+                
+                
+                new_line = '\t'.join(( vcf_i.chromosome, str(vcf_i.position), vcf_i.identifier, vcf_i.refbase, altbase_i, vcf_i.qual, vcf_i.filters, info_string, vcf_i.field, sample_0, sample_1 ))
                 
                 if len(vcf_i.refbase) == 1 and len(altbase_i) == 1:
                     snv_out.write( new_line + '\n' )
