@@ -201,14 +201,10 @@ out_header = \
 {nBAM_ALT_InDel_3bp}\t\
 {nBAM_ALT_InDel_2bp}\t\
 {nBAM_ALT_InDel_1bp}\t\
-{M2_RPA}\t\
 {M2_NLOD}\t\
 {M2_TLOD}\t\
 {M2_STR}\t\
 {M2_ECNT}\t\
-{M2_HCNT}\t\
-{M2_MAXED}\t\
-{M2_MINED}\t\
 {SOR}\t\
 {MSI}\t\
 {MSILEN}\t\
