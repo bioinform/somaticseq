@@ -23,7 +23,7 @@ infile = args.input_vcf
 outfile = args.output_vcf
 
 
-with genome.open_textfile(infile) as vcf_in, open(outfile) as vcf_out:
+with genome.open_textfile(infile) as vcf_in, open(outfile, 'w') as vcf_out:
     
     line_i = vcf_in.readline().rstrip()
     
