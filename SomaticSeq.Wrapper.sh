@@ -3,15 +3,12 @@
 
 set -e
 
-OPTS=`getopt -o o:M:m:I:V:v:J:S:D:U:L:l:p:g:c:d:s:G:T:N:C:x:R:e:i:z:Z:k: --long output-dir:,mutect:,mutect2:,indelocator:,strelka-snv:,strelka-indel:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,genome-reference:,cosmic:,dbsnp:,snpeff-dir:,gatk:,tumor-bam:,normal-bam:,classifier-snv:,classifier-indel:,ada-r-script:,exclusion-region:,inclusion-region:,truth-indel:,truth-snv:,pass-threshold:,lowqual-threshold:,tumor-sample-name:,normal-sample-name:,keep-intermediates: -n 'SomaticSeq.Wrapper.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,mutect:,mutect2:,indelocator:,strelka-snv:,strelka-indel:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,genome-reference:,cosmic:,dbsnp:,gatk:,tumor-bam:,normal-bam:,classifier-snv:,classifier-indel:,ada-r-script:,exclusion-region:,inclusion-region:,truth-indel:,truth-snv:,pass-threshold:,lowqual-threshold:,tumor-sample-name:,normal-sample-name:,keep-intermediates: -n 'SomaticSeq.Wrapper.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
 echo "$OPTS"
 eval set -- "$OPTS"
-
-
-PATH=/net/kodiak/volumes/lake/shared/opt/python3/bin:/home/ltfang/apps/bedtools-2.23.0/bin/:$PATH
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
@@ -29,13 +26,13 @@ while true; do
                 *)  merged_dir=$2 ; shift 2 ;;
             esac ;;
 
-        -M | --mutect )
+        --mutect )
             case "$2" in
                 "") shift 2 ;;
                 *)  mutect_vcf=$2 ; shift 2 ;;
             esac ;;
 
-        -m | --mutect2 )
+        --mutect2 )
             case "$2" in
                 "") shift 2 ;;
                 *)  mutect2_vcf=$2 ; shift 2 ;;
@@ -53,145 +50,139 @@ while true; do
                 *)  strelka_indel_vcf=$2 ; shift 2 ;;
             esac ;;
 
-        -I | --indelocator )
+        --indelocator )
             case "$2" in
                 "") shift 2 ;;
                 *)  indelocator_vcf=$2 ; shift 2 ;;
             esac ;;
 
-        -V | --varscan-snv )
+        --varscan-snv )
             case "$2" in
                 "") shift 2 ;;
                 *)  varscan_vcf=$2 ; shift 2 ;;
             esac ;;
 
-        -v | --varscan-indel )
+        --varscan-indel )
             case "$2" in
                 "") shift 2 ;;
                 *)  varscan_indel_vcf=$2 ; shift 2 ;;
             esac ;;
 
-        -J | --jsm )
+        --jsm )
             case "$2" in
                 "") shift 2 ;;
                 *)  jsm_vcf=$2 ; shift 2 ;;
             esac ;;
 
-        -S | --sniper )
+        --sniper )
             case "$2" in
                 "") shift 2 ;;
                 *)  sniper_vcf=$2 ; shift 2 ;;
             esac ;;
 
-        -D | --vardict )
+        --vardict )
             case "$2" in
                 "") shift 2 ;;
                 *)  vardict_vcf=$2 ; shift 2 ;;
             esac ;;
 
-        -U | --muse )
+        --muse )
             case "$2" in
                 "") shift 2 ;;
                 *)  muse_vcf=$2 ; shift 2 ;;
             esac ;;
 
-        -L | --lofreq-snv )
+        --lofreq-snv )
             case "$2" in
                 "") shift 2 ;;
                 *)  lofreq_vcf=$2 ; shift 2 ;;
             esac ;;
 
-        -l | --lofreq-indel )
+        --lofreq-indel )
             case "$2" in
                 "") shift 2 ;;
                 *)  lofreq_indel_vcf=$2 ; shift 2 ;;
             esac ;;
 
-        -p | --scalpel )
+        --scalpel )
             case "$2" in
                 "") shift 2 ;;
                 *)  scalpel_vcf=$2 ; shift 2 ;;
             esac ;;
 
-        -g | --genome-reference )
+        --genome-reference )
             case "$2" in
                 "") shift 2 ;;
                 *)  hg_ref=$2 ; shift 2 ;;
             esac ;;
 
-        -c | --cosmic )
+        --cosmic )
             case "$2" in
                 "") shift 2 ;;
                 *)  cosmic=$2 ; shift 2 ;;
             esac ;;
 
-        -d | --dbsnp )
+        --dbsnp )
             case "$2" in
                 "") shift 2 ;;
                 *)  dbsnp=$2 ; shift 2 ;;
             esac ;;
 
-        -s | --snpeff-dir )
-            case "$2" in
-                "") shift 2 ;;
-                *)  snpeff_dir=$2 ; shift 2 ;;
-            esac ;;
-
-        -G | --gatk )
+        --gatk )
             case "$2" in
                 "") shift 2 ;;
                 *)  gatk=$2 ; shift 2 ;;
             esac ;;
 
-        -T | --tumor-bam )
+        --tumor-bam )
             case "$2" in
                 "") shift 2 ;;
                 *)  tbam=$2 ; shift 2 ;;
             esac ;;
 
-        -N | --normal-bam )
+        --normal-bam )
             case "$2" in
                 "") shift 2 ;;
                 *)  nbam=$2 ; shift 2 ;;
             esac ;;
 
-        -C | --classifier-snv )
+        --classifier-snv )
             case "$2" in
                 "") shift 2 ;;
                 *)  snpclassifier=$2 ; shift 2 ;;
             esac ;;
 
-        -x | --classifier-indel )
+        --classifier-indel )
             case "$2" in
                 "") shift 2 ;;
                 *)  indelclassifier=$2 ; shift 2 ;;
             esac ;;
 
-        -R | --ada-r-script )
+        --ada-r-script )
             case "$2" in
                 "") shift 2 ;;
                 *)  ada_r_script=$2 ; shift 2 ;;
             esac ;;
 
-        -e | --exclusion-region )
+        --exclusion-region )
             case "$2" in
                 "") shift 2 ;;
                 *)  masked_region=$2 ; shift 2 ;;
             esac ;;
 
-        -i | --inclusion-region )
+        --inclusion-region )
             case "$2" in
                 "") shift 2 ;;
                 *)  inclusion_region=$2 ; shift 2 ;;
             esac ;;
 
-        -z | --truth-indel )
+        --truth-indel )
             case "$2" in
                 "") shift 2 ;;
                 *)  indelgroundtruth=$2 ; shift 2 ;;
             esac ;;
 
-        -Z | --truth-snv )
+        --truth-snv )
             case "$2" in
                 "") shift 2 ;;
                 *)  snpgroundtruth=$2 ; shift 2 ;;
@@ -221,19 +212,18 @@ while true; do
                 *)  normal_name=$2 ; shift 2 ;;
             esac ;;
 
-        -k | --keep-intermediates )
+        --keep-intermediates )
              case "$2" in
                 "") shift 2 ;;
                 *)  keep_intermediates=$2 ; shift 2 ;;
             esac ;;
 
         -- ) shift; break ;;
-
         * ) break ;;
     esac
 done
 
-hg_dict=${hg_ref/\.fa*/}.dict
+hg_dict=${hg_ref%\.fa*/}.dict
 
 if ! [[ -d ${merged_dir} ]];
 then
