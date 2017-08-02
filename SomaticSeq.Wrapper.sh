@@ -237,45 +237,45 @@ files_to_delete=''
 # MuTect
 if [[ -r $mutect_vcf ]]; then
     $MYDIR/utilities/modify_MuTect.py -type snp -infile ${mutect_vcf} -outfile ${merged_dir}/mutect.snp.vcf -nbam ${nbam} -tbam ${tbam}
-    files_to_delete="${merged_dir}/mutect.snp.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/mutect.snp.vcf ${merged_dir}/mutect.snp.vcf.idx $files_to_delete"
 fi
 
 # If INDEL:
 # Indelocator:
 if [[ -r $indelocator_vcf ]]; then
     $MYDIR/utilities/modify_MuTect.py -type indel -infile ${indelocator_vcf} -outfile ${merged_dir}/indelocator.vcf -nbam ${nbam} -tbam ${tbam}
-    files_to_delete="${merged_dir}/indelocator.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/indelocator.vcf ${merged_dir}/indelocator.vcf.idx $files_to_delete"
 fi
 
 # MuTect2
 if [[ -r $mutect2_vcf ]]; then
     $MYDIR/utilities/modify_MuTect2.py -infile $mutect2_vcf -snv ${merged_dir}/mutect.snp.vcf -indel ${merged_dir}/mutect.indel.vcf
-    files_to_delete="${merged_dir}/mutect.snp.vcf* ${merged_dir}/mutect.indel.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/mutect.snp.vcf ${merged_dir}/mutect.snp.vcf.idx ${merged_dir}/mutect.indel.vcf ${merged_dir}/mutect.indel.vcf.idx $files_to_delete"
 fi
 
 
 # SomaticSniper:
 if [[ -r $sniper_vcf ]]; then
     $MYDIR/utilities/modify_VJSD.py -method SomaticSniper -infile ${sniper_vcf} -outfile ${merged_dir}/somaticsniper.vcf
-    files_to_delete="${merged_dir}/somaticsniper.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/somaticsniper.vcf ${merged_dir}/somaticsniper.vcf.idx $files_to_delete"
 fi
 
 # JointSNVMix2:
 if [[ -r $jsm_vcf ]] ; then
     $MYDIR/utilities/modify_VJSD.py -method JointSNVMix2  -infile ${jsm_vcf} -outfile ${merged_dir}/jsm.vcf
-    files_to_delete="${merged_dir}/jsm.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/jsm.vcf ${merged_dir}/jsm.vcf.idx $files_to_delete"
 fi
 
 # VarScan2:
 if [[ -r $varscan_vcf ]]; then
     $MYDIR/utilities/modify_VJSD.py -method VarScan2 -infile ${varscan_vcf} -outfile ${merged_dir}/varscan2.snp.vcf
-    files_to_delete="${merged_dir}/varscan2.snp.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/varscan2.snp.vcf ${merged_dir}/varscan2.snp.vcf.idx $files_to_delete"
 fi
 
 # MuSE:
 if [[ -r $muse_vcf ]]; then
     $MYDIR/utilities/modify_VJSD.py -method MuSE  -infile ${muse_vcf} -outfile ${merged_dir}/muse.vcf
-    files_to_delete="${merged_dir}/muse.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/muse.vcf ${merged_dir}/muse.vcf.idx $files_to_delete"
 fi
 
 # LoFreq:
@@ -284,21 +284,21 @@ if [[ -r $lofreq_vcf ]]; then
     if [ ${lofreq_vcf: -3} == ".gz" ]; then
         gunzip -c $lofreq_vcf > ${merged_dir}/lofreq.snv.vcf
         lofreq_vcf="${merged_dir}/lofreq.snv.vcf"
-        files_to_delete="${merged_dir}/lofreq.snv.vcf* $files_to_delete"
+        files_to_delete="${merged_dir}/lofreq.snv.vcf ${merged_dir}/lofreq.snv.vcf.idx $files_to_delete"
     fi
 fi
 
 # VarScan2:
 if [[ -r $varscan_indel_vcf ]]; then
     $MYDIR/utilities/modify_VJSD.py -method VarScan2 -infile ${varscan_indel_vcf} -outfile ${merged_dir}/varscan2.indel.vcf
-    files_to_delete="${merged_dir}/varscan2.indel.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/varscan2.indel.vcf ${merged_dir}/varscan2.indel.vcf.idx $files_to_delete"
 fi
 
 # VarDict:
 # Does both SNV and INDEL
 if [[ -r $vardict_vcf ]]; then
     $MYDIR/utilities/modify_VJSD.py -method VarDict -infile ${vardict_vcf} -outfile ${merged_dir}/vardict.vcf -filter paired
-    files_to_delete="${merged_dir}/snp.vardict.vcf* ${merged_dir}/indel.vardict.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/snp.vardict.vcf ${merged_dir}/snp.vardict.vcf.idx ${merged_dir}/indel.vardict.vcf ${merged_dir}/indel.vardict.vcf.idx $files_to_delete"
 fi
 
 # LoFreq:
@@ -307,7 +307,7 @@ if [[ -r $lofreq_indel_vcf ]]; then
     if [ ${lofreq_indel_vcf: -3} == ".gz" ]; then
         gunzip -c $lofreq_indel_vcf > ${merged_dir}/lofreq.indel.vcf
         lofreq_indel_vcf="${merged_dir}/lofreq.indel.vcf"
-        files_to_delete="${merged_dir}/lofreq.indel.vcf* $files_to_delete"
+        files_to_delete="${merged_dir}/lofreq.indel.vcf ${merged_dir}/lofreq.indel.vcf.idx $files_to_delete"
     fi
 fi
 
@@ -318,7 +318,7 @@ if [[ -r $strelka_indel_vcf ]]; then
     else
         cat $strelka_indel_vcf       | awk -F "\t" '{ if ($0 !~ /^##/) print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" $8; else print $0}' OFS="\t" > ${merged_dir}/strelka.indel.truncated.vcf
     fi
-    files_to_delete="${merged_dir}/strelka.indel.truncated.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/strelka.indel.truncated.vcf ${merged_dir}/strelka.indel.truncated.vcf.idx $files_to_delete"
 fi
 
 # dbSNP
@@ -356,7 +356,7 @@ then
         cat $all_snp | egrep -v '^#'  | awk -F "\t" '{print $1 "\t" $2 "\t.\t" $4 "\t" $5}' | sort | uniq | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" "." "\t" "PASS" "\t" "."}' | cat <(echo -e '##fileformat=VCFv4.1\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO') - | $MYDIR/utilities/vcfsorter.pl ${hg_dict} - > ${merged_dir}/CombineVariants_MVJSD.snp.vcf
     fi
 
-    files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf.idx $files_to_delete"
 
 
     if [[ -r ${merged_dir}/mutect.snp.vcf ]]; then
@@ -513,7 +513,7 @@ then
         cat $all_indel | egrep -v '^#'  | awk -F "\t" '{print $1 "\t" $2 "\t.\t" $4 "\t" $5}' | sort | uniq | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" "." "\t" "PASS" "\t" "."}' | cat <(echo -e '##fileformat=VCFv4.1\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO') - | $MYDIR/utilities/vcfsorter.pl ${hg_dict} - > ${merged_dir}/CombineVariants_MVJSD.indel.vcf
     fi
 
-    files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf.idx $files_to_delete"
 
 
     ## MuTect2 will take precedence over Indelocator
@@ -628,6 +628,17 @@ then
 fi
 
 # Clean up intermediate files if wants to
-if [ $keep_intermediates == 0 ]; then
-    rm ${files_to_delete}
+if [ $keep_intermediates == 0 ]
+then
+
+    for file in ${files_to_delete}
+    do
+
+        if [[ -e $file ]]
+        then
+            rm $file
+        fi
+
+    done
+
 fi
