@@ -150,6 +150,8 @@ while true; do
 
 done
 
+VERSION='2.3.0'
+
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 logdir=${outdir}/logs
 mkdir -p ${logdir}
@@ -157,7 +159,7 @@ chmod a+w ${outdir}
 
 cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
 
-docker run -v /:/mnt -i lethalfang/somaticseq:2.3.0-beta \
+docker run -v /:/mnt -i lethalfang/somaticseq:${VERSION} \
 /opt/somaticseq/utilities/split_Bed_into_equal_regions.py \
 -infile /mnt/${outdir}/genome.bed -num $threads -outfiles /mnt/${outdir}/bed
 

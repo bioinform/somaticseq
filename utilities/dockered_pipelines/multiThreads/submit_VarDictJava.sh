@@ -72,12 +72,14 @@ while true; do
 
 done
 
+VERSION='2.3.0'
+
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
 vardict_script=${outdir}/logs/vardict_${timestamp}.cmd
 
-docker run -v /:/mnt -i lethalfang/somaticseq:2.3.0-beta \
+docker run -v /:/mnt -i lethalfang/somaticseq:${VERSION} \
 /opt/somaticseq/utilities/split_mergedBed.py \
 -infile /mnt/${SELECTOR} -outfile /mnt/${outdir}/split_regions.bed
 
