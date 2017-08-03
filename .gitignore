@@ -1,3 +1,4 @@
 *.pyc
 .DS_Store
 test.sh
+submit_MuTect.sh
