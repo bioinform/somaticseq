@@ -106,9 +106,7 @@ At least one of MuTect/Indelocator, MuTect2, VarScan2, JointSNVMix, SomaticSnipe
 
   \item SomaticSeq is dockerized at https://hub.docker.com/r/lethalfang/somaticseq/.
   
-  \item MuTect (untested): https://hub.docker.com/r/aarjunrao/mutect/
-
-  \item MuTect2: https://hub.docker.com/r/broadinstitute/gatk
+  \item MuTect2 (tested with GATK:4.beta.3): https://hub.docker.com/r/broadinstitute/gatk
 
   \item VarScan2 (untested): https://hub.docker.com/r/jeltje/varscan2/
 
@@ -225,8 +223,6 @@ If both MuTect2 and MuTect/Indelocator VCF files are provided, the script is wri
 \subsection{To classify based on simple majority vote}
 
 Same as the command previously, but not including the R script or the ground truth files. Without those information, SomaticSeq will fall back into a simple majority vote.
-
-
 
 
 
@@ -684,6 +680,9 @@ Have implemented the following improvement, mostly for indels:
   
   \item
   Removed long options for the SomaticSeq.Wrapper.sh script because it's more readable this way.
+  
+  \item
+  Added a script to add ``GT'' field to Strelka's VCF output before merging it with other VCF files. That was what caused GATK CombineVariants errors mentioned in v2.2.4's release notes. 
 
 \end{itemize}
 
