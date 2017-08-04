@@ -8,9 +8,9 @@
 
 * --output-dir /ABSOLUTE/PATH/TO/output_results (Required)
 
-* --selector /ABSOLUTE/PATH/TO/capture_region.bed (Required)
-
 * --dbsnp /ABSOLUTE/PATH/TO/dbsnp.vcf (Required)
+
+* --selector /ABSOLUTE/PATH/TO/capture_region.bed (Optional. Will assume whole genome without it.)
 
 * --action qsub (The command preceding the .cmd scripts. Defauilt is echo)
 
@@ -32,7 +32,7 @@
 
 * --somaticseq (Optional. This script always be echo'ed, as it should not be submitted until all the callers above complete).
 
-Parallelization (i.e., splitting) is not turned on for SomaticSniper because 1) it's manageable on a singe thread, and 2) it doesn't support partial processing with BED file, so it may not be worth the time to split the BAM.
+Parallelization (i.e., splitting) is not turned on for SomaticSniper because 1) it's manageable on a single thread, and 2) it doesn't support partial processing with BED file, so it may not be worth the time to split the BAM.
 
 JointSNVMix2 is not recommended because memory requirement.
 
