@@ -148,7 +148,6 @@ VERSION='2.3.0'
 
 logdir=${outdir}/logs
 mkdir -p ${logdir}
-chmod a+w ${outdir}
 
 sseq_script=${outdir}/logs/sseq_${timestamp}.cmd
 
@@ -198,7 +197,7 @@ echo "" >> $sseq_script
 echo "docker pull lethalfang/somaticseq:${VERSION}" >> $sseq_script
 echo "" >> $sseq_script
 
-echo "docker run -v /:/mnt -i lethalfang/somaticseq:${VERSION} \\" >> $sseq_script
+echo "docker run -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \\" >> $sseq_script
 echo "/opt/somaticseq/SomaticSeq.Wrapper.sh \\" >> $sseq_script
 echo "--output-dir       /mnt/${outdir} \\" >> $sseq_script
 echo "--genome-reference /mnt/${HUMAN_REFERENCE} \\" >> $sseq_script

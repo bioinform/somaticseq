@@ -153,8 +153,6 @@ timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-chmod a+w ${outdir}
-
 if [[ $mutect -eq 1 ]]
 then
     $MYDIR/submit_MuTect.sh \
