@@ -254,6 +254,17 @@ modify_MuTect.py -infile input.vcf -outfile output.vcf -nbam normal.bam -tbam tu
 modify_MuTect.py -infile input.vcf -outfile output.vcf -nsm NormalSampleName -tsm TumorSampleName
 \end{lstlisting}
 
+
+% MuTect 2 (from GATK 4)
+\item
+For MuTect2, this script will split multi-allelic records into one variant per line in the VCF file. This is to make thing easier for the SSeq\_merged.vcf2tsv.py script later. 
+
+\begin{lstlisting}
+# Based on the sample name you supply:
+modify_MuTect2.py -infile MuTect2.Filtered.vcf -snv mutect.snp.vcf -indel mutect.indel.vcf
+\end{lstlisting}
+
+
 % VarScan2
 \item
 Modify VarScan's output VCF files to be rigorously concordant to VCF format standard, and to attach the tag 'VarScan2' to somatic calls. 
@@ -261,7 +272,7 @@ Modify VarScan's output VCF files to be rigorously concordant to VCF format stan
 # Do it for both the SNV and indel
 modify_VJSD.py -method VarScan2 -infile input.vcf -outfile output.vcf
 \end{lstlisting}
-	
+
 
 % JointSNVMix2
 \item
@@ -273,7 +284,6 @@ awk -F "\t" 'NR!=1 && $4!="N" && $10+$11>=0.95'
 	
 # This awk one-liner converts the text file into a basic VCF file
 awk -F "\t" '{print $1 "\t" $2 "\t.\t" $3 "\t" $4 "\t.\t.\tAAAB=" $10 ";AABB=" $11 "\tRD:AD\t" $5 ":" $6 "\t" $7 ":" $8}'
-
 
 ## The actual commands we've used in our workflow:
 echo -e '##fileformat=VCFv4.1' > unsorted.vcf
@@ -338,10 +348,12 @@ modify_VJSD.py -method MuSE -infile input.vcf -outfile output.vcf
 LoFreq and Scalpel do not require modification. LoFreq has no sample columns anyway. 
 
 
+% Strelka
 \item
-Strelka's INDEL VCF clashes with Scalple's VCF during GATK CombineVariants, for reasons we haven't bothered to figure out. We just removed the sample columns for Strelka's INDEL to solve the problem during variant merging. 
+Add ``GT'' field to sample columns to make it compatible with GATK CombineVariants.
+
 \begin{lstlisting}
-gunzip -c somatic.indel.vcf.gz | awk -F "\t" '{ if ($0 !~ /^##/) print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" $8; else print $0}' OFS="\t" > strelka.indel.truncated.vcf
+modify_Strelka.py -infile somatic.snvs.vcf.gz -outfile stralka.snv.vcf
 \end{lstlisting}
 
 
@@ -683,6 +695,9 @@ Have implemented the following improvement, mostly for indels:
   
   \item
   Added a script to add ``GT'' field to Strelka's VCF output before merging it with other VCF files. That was what caused GATK CombineVariants errors mentioned in v2.2.4's release notes. 
+  
+  \item
+  Added a bunch of scripts at utilities/dockered\_pipelines that can be used to submit (requiring Sun Grid Engine or equivalent) dockerized pipeline to a computing cluster. 
 
 \end{itemize}
 
