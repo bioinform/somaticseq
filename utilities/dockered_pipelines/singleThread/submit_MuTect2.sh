@@ -117,14 +117,14 @@ if [[ $tumor_name ]]
 then
     echo "tumor_name=${tumor_name}" >> $mutect2_script
 else
-    echo "tumor_name=\`docker run -v /:/mnt -i -u $UID lethalfang/samtools:0.1.19 samtools view -H /mnt/${tumor_bam} | egrep -w '^@RG' | egrep -o 'SM:.+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//'\`" >> $mutect2_script
+    echo "tumor_name=\`docker run -v /:/mnt -i -u $UID lethalfang/samtools:0.1.19 samtools view -H /mnt/${tumor_bam} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//'\`" >> $mutect2_script
 fi
 
 if [[ $normal_name ]]
 then
     echo "normal_name=${normal_name}" >> $mutect2_script
 else
-    echo "normal_name=\`docker run -v /:/mnt -i -u $UID lethalfang/samtools:0.1.19 samtools view -H /mnt/${normal_bam} | egrep -w '^@RG' | egrep -o 'SM:.+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//'\`" >> $mutect2_script
+    echo "normal_name=\`docker run -v /:/mnt -i -u $UID lethalfang/samtools:0.1.19 samtools view -H /mnt/${normal_bam} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//'\`" >> $mutect2_script
     echo "" >> $mutect2_script
 fi
 
