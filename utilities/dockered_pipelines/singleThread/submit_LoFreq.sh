@@ -92,7 +92,7 @@ echo "" >> $lofreq_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $lofreq_script
 echo "" >> $lofreq_script
 
-echo "docker run -v /:/mnt -i marghoob/lofreq:2.1.2 \\" >> $lofreq_script
+echo "docker run -v /:/mnt -u $UID -i marghoob/lofreq:2.1.2 \\" >> $lofreq_script
 echo "lofreq somatic \\" >> $lofreq_script
 echo "-t /mnt/${tumor_bam} \\" >> $lofreq_script
 echo "-n /mnt/${normal_bam} \\" >> $lofreq_script

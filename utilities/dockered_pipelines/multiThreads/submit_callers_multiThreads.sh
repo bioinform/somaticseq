@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,dbsnp:,cosmic:,action:,threads:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_callers_multiThreads.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,dbsnp:,cosmic:,action:,threads:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_callers_multiThreads.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -55,6 +55,12 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *)  HUMAN_REFERENCE=$2 ; shift 2 ;;
+        esac ;;
+
+    --selector )
+        case "$2" in
+            "") shift 2 ;;
+            *)  SELECTOR=$2 ; shift 2 ;;
         esac ;;
 
     --dbsnp )
@@ -155,11 +161,15 @@ VERSION='2.3.0'
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 logdir=${outdir}/logs
 mkdir -p ${logdir}
-chmod a+w ${outdir}
 
-cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
+if [[ $SELECTOR ]]
+then
+    cp $SELECTOR ${outdir}/genome.bed
+else
+    cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
+fi
 
-docker run -v /:/mnt -i lethalfang/somaticseq:${VERSION} \
+docker run -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \
 /opt/somaticseq/utilities/split_Bed_into_equal_regions.py \
 -infile /mnt/${outdir}/genome.bed -num $threads -outfiles /mnt/${outdir}/bed
 
@@ -196,7 +206,6 @@ while [[ $ith_thread -le $threads ]]
 do
 
     mkdir -p ${outdir}/${ith_thread}
-    chmod a+w ${outdir}/${ith_thread}
     mv ${outdir}/${ith_thread}.bed ${outdir}/${ith_thread}
 
 
@@ -335,7 +344,7 @@ do
         if [[ $ada_r_script ]];     then ada_r_script_text="--ada-r-script /mnt/${ada_r_script}"            ; fi
 
         if [[ ${dbsnp} ]];          then dbsnp_input="--dbsnp ${dbsnp}"                                     ; fi
-        if [[ ${cosmic} ]];      	then cosmic_input="--cosmic ${cosmic}"                                  ; fi
+        if [[ ${cosmic} ]];         then cosmic_input="--cosmic ${cosmic}"                                  ; fi
     
         $MYDIR/submit_SomaticSeq.sh \
         --normal-bam ${normal_bam} \
