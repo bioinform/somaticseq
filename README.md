@@ -7,4 +7,4 @@
 * For a quick description of SomaticSeq, you may watch this 8-minute video:
   [![SomaticSeq Video](SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")
 
-* Since v2.3.0, we have included run scripts for the somatic mutation callers in this repo, for [single-thread jobs](utilities/dockered_pipelines/singleThread) and [multi-thread jobs](utilities/dockered_pipelines/multiThreads). 
+* Since v2.3.0, we have included run scripts for dockerized somatic mutation callers, for [single-thread jobs](utilities/dockered_pipelines/singleThread) and [multi-thread jobs](utilities/dockered_pipelines/multiThreads).
