@@ -85,7 +85,7 @@ echo "" >> $lofreq_script
 echo "#$ -o ${logdir}" >> $lofreq_script
 echo "#$ -e ${logdir}" >> $lofreq_script
 echo "#$ -S /bin/bash" >> $lofreq_script
-echo '#$ -l h_vmem=8G' >> $lofreq_script
+echo '#$ -l h_vmem=12G' >> $lofreq_script
 echo 'set -e' >> $lofreq_script
 echo "" >> $lofreq_script
 
