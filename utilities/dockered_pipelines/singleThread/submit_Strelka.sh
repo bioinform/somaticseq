@@ -80,7 +80,7 @@ echo "" >> $streka_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $streka_script
 echo "" >> $streka_script
 
-echo "docker run -v /:/mnt -u $UID -i lethalfang/strelka:2.7.1 \\" >> $streka_script
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/strelka:2.7.1 \\" >> $streka_script
 echo "/opt/strelka2/bin/configureStrelkaSomaticWorkflow.py \\" >> $streka_script
 echo "--tumorBam=/mnt/${tumor_bam} \\" >> $streka_script
 echo "--normalBam=/mnt/${normal_bam} \\" >> $streka_script
@@ -90,7 +90,7 @@ echo "--exome \\" >> $streka_script
 echo "--runDir=/mnt/${outdir}/${outvcf%\.vcf}" >> $streka_script
 echo "" >> $streka_script
 
-echo "docker run -v /:/mnt -u $UID -i lethalfang/strelka:2.7.1 \\" >> $streka_script
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/strelka:2.7.1 \\" >> $streka_script
 echo "/mnt/${outdir}/${outvcf%\.vcf}/runWorkflow.py -m local -j 1" >> $streka_script
 
 echo "" >> $streka_script
