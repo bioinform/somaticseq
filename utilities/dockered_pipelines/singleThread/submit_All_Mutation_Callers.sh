@@ -293,7 +293,7 @@ then
     if [[ $classifier_snv ]];   then classifier_snv_text="--classifier_snv /mnt/${classifier_snv}"      ; fi
     if [[ $classifier_indel ]]; then classifier_indel_text="--classifier_indel /mnt/${classifier_indel}"; fi
     if [[ $truth_snv ]];        then truth_snv_text="--truth-snv /mnt/${truth_snv}"                     ; fi
-    if [[ $truth_indel ]];      then truth_indel_text="--truth-indel /mnt/${truth_dinel}"               ; fi
+    if [[ $truth_indel ]];      then truth_indel_text="--truth-indel /mnt/${truth_indel}"               ; fi
 
     if [[ ${SELECTOR} ]];       then selector_input="--selector ${SELECTOR}"                            ; fi
     if [[ ${dbsnp} ]];          then dbsnp_input="--dbsnp ${dbsnp}"                                     ; fi
