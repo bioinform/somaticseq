@@ -181,8 +181,8 @@ if [[ $strelka_snv_vcf ]];   then strelka_snv_text="--strelka-snv /mnt/${strelka
 if [[ $strelka_indel_vcf ]]; then strelka_indel_text="--strelka-indel /mnt/${strelka_indel_vcf}"; fi
 
 # SomaticSeq modes:
-if [[ $classifier_snv ]];   then classifier_snv_text="--classifier_snv /mnt/${classifier_snv}";       fi
-if [[ $classifier_indel ]]; then classifier_indel_text="--classifier_indel /mnt/${classifier_indel}"; fi
+if [[ $classifier_snv ]];   then classifier_snv_text="--classifier_snv ${classifier_snv}";       fi
+if [[ $classifier_indel ]]; then classifier_indel_text="--classifier_indel ${classifier_indel}"; fi
 if [[ $truth_snv ]];        then truth_snv_text="--truth-snv ${truth_snv}"                     ; fi
 if [[ $truth_indel ]];      then truth_indel_text="--truth-indel ${truth_indel}"               ; fi
 if [[ $ada_r_script ]];     then ada_r_script_text="--ada-r-script ${ada_r_script}"            ; fi
