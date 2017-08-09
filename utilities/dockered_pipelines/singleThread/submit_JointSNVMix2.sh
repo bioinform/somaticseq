@@ -93,7 +93,7 @@ echo "" >> $jsm_script
 
 selector_text=''
 #if [[ -r $SELECTOR ]]; then
-    #echo "docker run -v /:/mnt -u $UID -i lethalfang/somaticseq:2.2.5 /opt/somaticseq/split_mergedBed.py \\" >> $jsm_script
+    #echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/somaticseq:2.3.0 /opt/somaticseq/utilities/split_mergedBed.py \\" >> $jsm_script
     #echo "-infile /mnt/${SELECTOR} \\" >> $jsm_script
     #echo "-outfile /dev/stdout \\" >> $jsm_script
     #echo "-overlap 0 -length 1 | awk -F \"\t\" '{print \$1 \" \" \$2}' \\" >> $jsm_script
@@ -106,7 +106,7 @@ selector_text=''
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $jsm_script
 echo "" >> $jsm_script
 
-echo "docker run -v /:/mnt -u $UID -i lethalfang/jointsnvmix2:0.7.5 \\" >> $jsm_script
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/jointsnvmix2:0.7.5 \\" >> $jsm_script
 echo "/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py train joint_snv_mix_two \\" >> $jsm_script
 echo "--convergence_threshold $convergence_threshold \\" >> $jsm_script
 echo "--skip_size $skip_size \\" >> $jsm_script
@@ -126,7 +126,7 @@ echo "echo -e '##FORMAT=<ID=AD,Number=1,Type=Integer,Description=\"Depth of vari
 echo "echo -e '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNORMAL\tTUMOR' >> ${outdir}/${outvcf}" >> $jsm_script
 echo "" >> $jsm_script
 
-echo "docker run -v /:/mnt -u $UID -i lethalfang/jointsnvmix2:0.7.5 \\"  >> $jsm_script
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/jointsnvmix2:0.7.5 \\"  >> $jsm_script
 echo "/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py classify joint_snv_mix_two \\" >> $jsm_script
 echo "$selector_text \\" >> $jsm_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $jsm_script
@@ -135,7 +135,7 @@ echo "/mnt/${tumor_bam} \\" >> $jsm_script
 echo "/mnt/${outdir}/jsm.parameter.cfg \\" >> $jsm_script
 echo "/dev/stdout | awk -F \"\t\" 'NR!=1 && \$4!=\"N\" && \$10+\$11>=0.95' | \\" >> $jsm_script
 echo "awk -F \"\t\" '{print \$1 \"\t\" \$2 \"\t.\t\" \$3 \"\t\" \$4 \"\t.\t.\tAAAB=\" \$10 \";AABB=\" \$11 \"\tRD:AD\t\" \$5 \":\" \$6 \"\t\" \$7 \":\" \$8}' \\" >> $jsm_script
-echo "| docker run -v /:/mnt -u $UID -i lethalfang/jointsnvmix2:0.7.5 \\" >> $jsm_script
+echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/jointsnvmix2:0.7.5 \\" >> $jsm_script
 echo "/opt/vcfsorter.pl /mnt/${HUMAN_REFERENCE%\.fa*}.dict - >> ${outdir}/${outvcf}" >> $jsm_script
 
 echo "" >> $jsm_script
