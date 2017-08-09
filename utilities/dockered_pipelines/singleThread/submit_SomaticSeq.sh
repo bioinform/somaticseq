@@ -43,7 +43,7 @@ while true; do
         esac ;;
 
     --selector )
-	case "$2" in
+    case "$2" in
             "") shift 2 ;;
             *)  SELECTOR=$2 ; shift 2 ;;
         esac ;;
@@ -223,7 +223,7 @@ echo "" >> $sseq_script
 echo "#$ -o ${logdir}" >> $sseq_script
 echo "#$ -e ${logdir}" >> $sseq_script
 echo "#$ -S /bin/bash" >> $sseq_script
-echo '#$ -l h_vmem=5G' >> $sseq_script
+#echo '#$ -l h_vmem=5G' >> $sseq_script  # Machine learning may require a lot more than 5GB of memory
 echo 'set -e' >> $sseq_script
 echo "" >> $sseq_script
 
