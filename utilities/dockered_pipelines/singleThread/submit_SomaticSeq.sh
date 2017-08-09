@@ -214,7 +214,7 @@ if [[ $strelka_indel_vcf ]]; then strelka_indel_text="--strelka-indel /mnt/${str
 if [[ $classifier_snv ]];   then classifier_snv_text="--classifier_snv /mnt/${classifier_snv}";       fi
 if [[ $classifier_indel ]]; then classifier_indel_text="--classifier_indel /mnt/${classifier_indel}"; fi
 if [[ $truth_snv ]];        then truth_snv_text="--truth-snv ${truth_snv}"                     ; fi
-if [[ $truth_indel ]];      then truth_indel_text="--truth-indel ${truth_dinel}"               ; fi
+if [[ $truth_indel ]];      then truth_indel_text="--truth-indel ${truth_indel}"               ; fi
 if [[ $ada_r_script ]];     then ada_r_script_text="--ada-r-script ${ada_r_script}"            ; fi
 
 echo "#!/bin/bash" > $sseq_script
