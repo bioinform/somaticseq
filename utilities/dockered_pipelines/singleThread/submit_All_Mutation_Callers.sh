@@ -294,11 +294,18 @@ then
     if [[ $classifier_indel ]]; then classifier_indel_text="--classifier_indel /mnt/${classifier_indel}"; fi
     if [[ $truth_snv ]];        then truth_snv_text="--truth-snv /mnt/${truth_snv}"                     ; fi
     if [[ $truth_indel ]];      then truth_indel_text="--truth-indel /mnt/${truth_dinel}"               ; fi
-    if [[ $ada_r_script ]];     then ada_r_script_text="--ada-r-script /mnt/${ada_r_script}"            ; fi
 
     if [[ ${SELECTOR} ]];       then selector_input="--selector ${SELECTOR}"                            ; fi
     if [[ ${dbsnp} ]];          then dbsnp_input="--dbsnp ${dbsnp}"                                     ; fi
-    if [[ ${cosmic} ]];      	then cosmic_input="--cosmic ${cosmic}"                                  ; fi
+    if [[ ${cosmic} ]];         then cosmic_input="--cosmic ${cosmic}"                                  ; fi
+
+    if [[ $ada_r_script ]]; then
+        ada_r_script_text="--ada-r-script /mnt/${ada_r_script}"
+    elif [[ $truth_snv || $truth_indel ]]; then
+        ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_builder_ntChange.R"
+    elif [[ $classifier_snv || $classifier_indel ]]; then
+        ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"
+    fi
 
     $MYDIR/submit_SomaticSeq.sh \
     --normal-bam ${normal_bam} \
@@ -320,11 +327,11 @@ then
     $scalpel_input \
     $strelka_snv_input \
     $strelka_indel_input \
-    $classifier_snv \
-    $classifier_indel \
-    $truth_snv \
-    $truth_indel \
-    $ada_r_script \
+    $classifier_snv_text \
+    $classifier_indel_text \
+    $truth_snv_text \
+    $truth_indel_text \
+    $ada_r_script_text \
     --action echo
 
 fi
