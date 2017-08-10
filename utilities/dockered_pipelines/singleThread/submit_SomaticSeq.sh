@@ -174,7 +174,7 @@ while true; do
 
 done
 
-VERSION='2.3.0'
+VERSION='2.3.1'
 
 logdir=${outdir}/logs
 mkdir -p ${logdir}
