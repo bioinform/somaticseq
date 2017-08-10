@@ -33,7 +33,7 @@ $PATH/TO/somaticseq/utilities/pipelines/singleThread/submit_All_Mutation_Callers
 * --strelka (optional)
 * --somaticseq (Optional. This script is echo'ed, as it should not be submitted until all the callers above complete).
 
-**What does that command do:**
+**What does that command do**
 * For each flag such as --mutect2, --jointsnvmix2, ...., --strelka, a run script ending with .cmd will be created in /ABSOLUTE/PATH/TO/RESULTS/logs. By default, these .cmd scripts will just be created with their file path will be printed on screen. However, if you do --action qsub," then these scripts will be submitted via the qsub command. The default command is "echo."
   * Each of these .cmd script correspond to a mutation caller you specified. They all use docker images.
   * We may improve their functionalities in the future to allow more tunable parameters. For the initial releases, POC and reproducibility take precedence. 
