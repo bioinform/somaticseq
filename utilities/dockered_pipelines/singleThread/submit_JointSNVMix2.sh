@@ -106,7 +106,7 @@ selector_text=''
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $jsm_script
 echo "" >> $jsm_script
 
-echo "docker run -v /:/mnt -u $UID -i lethalfang/jointsnvmix2:0.7.5 \\" >> $jsm_script
+echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/jointsnvmix2:0.7.5 \\" >> $jsm_script
 echo "/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py train joint_snv_mix_two \\" >> $jsm_script
 echo "--convergence_threshold $convergence_threshold \\" >> $jsm_script
 echo "--skip_size $skip_size \\" >> $jsm_script
