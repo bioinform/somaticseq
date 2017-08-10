@@ -31,8 +31,6 @@ $PATH/TO/somaticseq/utilities/pipelines/multiThread/submit_callers_multiThreads.
 
 Parallelization (i.e., splitting) is not turned on for SomaticSniper because 1) it's manageable on a single thread, and 2) it doesn't support partial processing with BED file, so it may not be worth the time to split the BAM.
 
-JointSNVMix2 is not recommended because memory requirement.
-
 After specifying the reference fasta (must have extensions of .fa or fasta), it must also include the .dict and .fa.fai (or .fasta.fai) files in the same directory.
 
 When specifying /ABSOLUTE/PATH/TO/dbsnp.vcf, there also needs to be dbsnp.vcf.idx, dbsnp.vcf.gz, and dbsnp.vcf.gz.tbi present at the same directory because MuSE and LoFreq are expecting them.
@@ -40,3 +38,5 @@ When specifying /ABSOLUTE/PATH/TO/dbsnp.vcf, there also needs to be dbsnp.vcf.id
 There is no public docker image for MuTect v1 because we don't have distribution rights.
 
 **Known issue**
+* Running JointSNVMix2 for WGS is discouraged because of memory requirement. The only way we know to parallelize it is to split the BAM files, which is a cumbersome process and hogs disk spaces.
+* If supplying an optional BED file for whole exome sequencing, this parallelization won't work for Strelka. Strelka doesn't take BED file directly, but has a series of command line parameters specifying the regions. If the input BED file has too many lines, the command generated for Strelka will have too many arguments for regions, and the program will fail. For WGS, however, the region is grabbed from the .fa.fai file, and alternative and decoy contigs are excluded, so there aren't many arguments in this case.
