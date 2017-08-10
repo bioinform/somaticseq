@@ -37,3 +37,18 @@ After specifying the reference fasta (must have extensions of .fa or fasta), it 
 When specifying /ABSOLUTE/PATH/TO/dbsnp.vcf, there also needs to be dbsnp.vcf.idx, dbsnp.vcf.gz, and dbsnp.vcf.gz.tbi present at the same directory because MuSE and LoFreq are expecting them.
 
 There is no public docker image for MuTect v1 because we don't have distribution rights.
+
+**Example Command**
+
+```
+$PATH/TO/somaticseq/utilities/pipelines/singleThread/submit_All_Mutation_Callers.sh \
+--normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
+--tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-dir      /ABSOLUTE/PATH/TO/RESULTS \
+--selector        /ABSOLUTE/PATH/TO/Exome_Capture.GRCh38.bed \
+--dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--action          qsub \
+--mutect2 --jointsnvmix2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+
+```
