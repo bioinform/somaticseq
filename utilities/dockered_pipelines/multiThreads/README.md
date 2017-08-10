@@ -1,3 +1,16 @@
+**Example Command**
+```
+$PATH/TO/somaticseq/utilities/pipelines/multiThread/submit_callers_multiThreads.sh \
+--normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
+--tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-dir      /ABSOLUTE/PATH/TO/RESULTS \
+--dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--threads         36 \
+--action          qsub \
+--mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+```
+
 **submit_callers_multiThreads.sh** can submit dockered job. The following options:
 
 * --normal-bam /ABSOLUTE/PATH/TO/normal_sample.bam (Required)
@@ -12,9 +25,9 @@
 
 * --selector /ABSOLUTE/PATH/TO/capture_region.bed (Optional. Will assume whole genome without it.)
 
-* --action qsub (The command preceding the .cmd scripts. Defauilt is echo)
+* --action qsub (Optional: the command preceding the .cmd scripts. Default is echo)
 
-* --threads 36 (Evenly split the genome into 36 BED files. Default = 12).
+* --threads 36 (Optional: evenly split the genome into 36 BED files. Default = 12).
 
 * --mutect2 (optional)
 

@@ -26,7 +26,7 @@ $PATH/TO/somaticseq/utilities/pipelines/singleThread/submit_All_Mutation_Callers
 
 * --dbsnp /ABSOLUTE/PATH/TO/dbsnp.vcf (Required)
 
-* --action qsub (The command preceding the .cmd scripts. Defauilt is echo)
+* --action qsub (Optional: the command preceding the .cmd scripts. Default is echo)
 
 * --mutect2 (optional)
 
@@ -44,7 +44,7 @@ $PATH/TO/somaticseq/utilities/pipelines/singleThread/submit_All_Mutation_Callers
 
 * --strelka (optional)
 
-* --somaticseq (Optional. This script always be echo'ed, as it should not be submitted until all the callers above complete).
+* --somaticseq (Optional. This script is echo'ed, as it should not be submitted until all the callers above complete).
 
 After specifying the reference fasta (must have extensions of .fa or fasta), it must also include the .dict and .fa.fai (or .fasta.fai) files in the same directory.
 
