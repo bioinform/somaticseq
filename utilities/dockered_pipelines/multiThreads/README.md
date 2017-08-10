@@ -34,6 +34,7 @@ $PATH/TO/somaticseq/utilities/pipelines/multiThread/submit_callers_multiThreads.
 * --somaticseq (Optional. This script always be echo'ed, as it should not be submitted until all the callers above complete).
 
 **What does that command do**
+
 It's very similar to the single-threaded WES solution, except the job will be split evenly based on genomic lengths. 
 * If you specified "--threads 36," then 36 BED files will be created. Each BED file represents 1/36 of the total base pairs in the human genome (obtained from the .fa.fai file, but only including 1, 2, 3, ..., MT, or chr1, chr2, ..., chrM contigs). They are named 1.bed, 2.bed, ..., 36.bed, and will be created into /ABSOLUTE/PATH/TO/RESULTS/1, /ABSOLUTE/PATH/TO/RESULTS/2, ..., /ABSOLUTE/PATH/TO/RESULTS/36. You may, of course, specify any number. The default is 12.
 * For each mutation callers you specify (with the exception of SomaticSniper), a script will be created into /ABSOLUTE/PATH/TO/RESULTS/1/logs, /ABSOLUTE/PATH/TO/RESULTS/2/logs, etc., with partial BAM input.  Again, they will be automatically submitted if you do --action qsub."
