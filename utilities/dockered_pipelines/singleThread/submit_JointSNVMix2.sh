@@ -93,7 +93,7 @@ echo "" >> $jsm_script
 
 selector_text=''
 #if [[ -r $SELECTOR ]]; then
-    #echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/somaticseq:2.3.0 /opt/somaticseq/utilities/split_mergedBed.py \\" >> $jsm_script
+    #echo "docker run -v /:/mnt -u $UID -i lethalfang/somaticseq:2.3.0 /opt/somaticseq/utilities/split_mergedBed.py \\" >> $jsm_script
     #echo "-infile /mnt/${SELECTOR} \\" >> $jsm_script
     #echo "-outfile /dev/stdout \\" >> $jsm_script
     #echo "-overlap 0 -length 1 | awk -F \"\t\" '{print \$1 \" \" \$2}' \\" >> $jsm_script
@@ -106,7 +106,7 @@ selector_text=''
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $jsm_script
 echo "" >> $jsm_script
 
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/jointsnvmix2:0.7.5 \\" >> $jsm_script
+echo "docker run -v /:/mnt -u $UID -i lethalfang/jointsnvmix2:0.7.5 \\" >> $jsm_script
 echo "/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py train joint_snv_mix_two \\" >> $jsm_script
 echo "--convergence_threshold $convergence_threshold \\" >> $jsm_script
 echo "--skip_size $skip_size \\" >> $jsm_script

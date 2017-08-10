@@ -94,7 +94,7 @@ echo "" >> $jsm_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $jsm_script
 echo "" >> $jsm_script
 
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/jointsnvmix2:0.7.5 \\" >> $jsm_script
+echo "docker run -v /:/mnt -u $UID -i lethalfang/jointsnvmix2:0.7.5 \\" >> $jsm_script
 echo "/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py train joint_snv_mix_two \\" >> $jsm_script
 echo "--convergence_threshold $convergence_threshold \\" >> $jsm_script
 echo "--skip_size $skip_size \\" >> $jsm_script
@@ -131,7 +131,7 @@ then
     echo "i=1" >> $jsm_script
     echo "while [[ \$i -le $split ]]" >> $jsm_script
     echo "do" >> $jsm_script
-    echo "    docker run -v /:/mnt -u $UID --rm -i lethalfang/somaticseq:base-1.0 bedtools intersect -a /mnt/${outdir}/${outvcf} -b /mnt/${outdir}/\${i}/\${i}.bed -header | uniq >  ${outdir}/\${i}/${outvcf}" >> $jsm_script
+    echo "    docker run -v /:/mnt -u $UID -i lethalfang/somaticseq:base-1.0 bedtools intersect -a /mnt/${outdir}/${outvcf} -b /mnt/${outdir}/\${i}/\${i}.bed -header | uniq >  ${outdir}/\${i}/${outvcf}" >> $jsm_script
     echo "    i=\$(( \$i + 1 ))" >> $jsm_script
     echo "done" >> $jsm_script
 fi
