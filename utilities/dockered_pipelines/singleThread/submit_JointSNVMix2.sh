@@ -126,7 +126,7 @@ echo "echo -e '##FORMAT=<ID=AD,Number=1,Type=Integer,Description=\"Depth of vari
 echo "echo -e '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNORMAL\tTUMOR' >> ${outdir}/${outvcf}" >> $jsm_script
 echo "" >> $jsm_script
 
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/jointsnvmix2:0.7.5 \\"  >> $jsm_script
+echo "docker run -v /:/mnt --rm -i lethalfang/jointsnvmix2:0.7.5 \\"  >> $jsm_script
 echo "/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py classify joint_snv_mix_two \\" >> $jsm_script
 echo "$selector_text \\" >> $jsm_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $jsm_script
