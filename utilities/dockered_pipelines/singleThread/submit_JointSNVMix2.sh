@@ -135,7 +135,7 @@ echo "/mnt/${tumor_bam} \\" >> $jsm_script
 echo "/mnt/${outdir}/jsm.parameter.cfg \\" >> $jsm_script
 echo "/dev/stdout | awk -F \"\t\" 'NR!=1 && \$4!=\"N\" && \$10+\$11>=0.95' | \\" >> $jsm_script
 echo "awk -F \"\t\" '{print \$1 \"\t\" \$2 \"\t.\t\" \$3 \"\t\" \$4 \"\t.\t.\tAAAB=\" \$10 \";AABB=\" \$11 \"\tRD:AD\t\" \$5 \":\" \$6 \"\t\" \$7 \":\" \$8}' \\" >> $jsm_script
-echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/bedtools:2.25.0-1 \\" >> $jsm_script
+echo "| docker run -v /:/mnt -u $UID -i lethalfang/bedtools:2.25.0-1 \\" >> $jsm_script
 echo "bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai >> ${outdir}/${outvcf}" >> $jsm_script
 
 
