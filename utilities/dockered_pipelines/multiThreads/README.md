@@ -1,43 +1,42 @@
-**submit_callers_multiThreads.sh** can submit dockered job. The following options:
+**Example Command**
+```
+$PATH/TO/somaticseq/utilities/pipelines/multiThread/submit_callers_multiThreads.sh \
+--normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
+--tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-dir      /ABSOLUTE/PATH/TO/RESULTS \
+--dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--threads         36 \
+--action          qsub \
+--mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+```
 
+**submit_callers_multiThreads.sh** can submit parallelized dockered job. It works better for WGS. The following options:
 * --normal-bam /ABSOLUTE/PATH/TO/normal_sample.bam (Required)
-
 * --tumor-bam /ABSOLUTE/PATH/TO/tumor_sample.bam (Required)
-
 * --human-reference /ABSOLUTE/PATH/TO/human_reference.fa (Required)
-
 * --output-dir /ABSOLUTE/PATH/TO/output_results (Required)
-
 * --dbsnp /ABSOLUTE/PATH/TO/dbsnp.vcf (Required)
-
 * --selector /ABSOLUTE/PATH/TO/capture_region.bed (Optional. Will assume whole genome without it.)
-
-* --action qsub (The command preceding the .cmd scripts. Defauilt is echo)
-
-* --threads 36 (Evenly split the genome into 36 BED files. Default = 12).
-
+* --action qsub (Optional: the command preceding the .cmd scripts. Default is echo)
+* --threads 36 (Optional: evenly split the genome into 36 BED files. Default = 12).
 * --mutect2 (optional)
-
 * --somaticsniper (optional)
-
 * --vardict (optional)
-
 * --muse (optional)
-
 * --lofreq (optional)
-
 * --scalpel (optional)
-
 * --strelka (optional)
-
 * --somaticseq (Optional. This script always be echo'ed, as it should not be submitted until all the callers above complete).
 
 Parallelization (i.e., splitting) is not turned on for SomaticSniper because 1) it's manageable on a single thread, and 2) it doesn't support partial processing with BED file, so it may not be worth the time to split the BAM.
-
-JointSNVMix2 is not recommended because memory requirement.
 
 After specifying the reference fasta (must have extensions of .fa or fasta), it must also include the .dict and .fa.fai (or .fasta.fai) files in the same directory.
 
 When specifying /ABSOLUTE/PATH/TO/dbsnp.vcf, there also needs to be dbsnp.vcf.idx, dbsnp.vcf.gz, and dbsnp.vcf.gz.tbi present at the same directory because MuSE and LoFreq are expecting them.
 
 There is no public docker image for MuTect v1 because we don't have distribution rights.
+
+**Known issue**
+* Running JointSNVMix2 for WGS is discouraged because of memory requirement. The only way we know to parallelize it is to split the BAM files, which is a cumbersome process and hogs disk spaces.
+* If supplying an optional BED file for whole exome sequencing, this parallelization won't work for Strelka. Strelka doesn't take BED file directly, but has a series of command line parameters specifying the regions. If the input BED file has too many lines, the command generated for Strelka will have too many arguments for regions, and the program will fail. For WGS (i.e., when no BED file is specified), the region is grabbed from the .fa.fai file, and alternative and decoy contigs are excluded, so there aren't many arguments in this case.
