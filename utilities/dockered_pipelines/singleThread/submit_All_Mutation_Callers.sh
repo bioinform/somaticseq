@@ -290,8 +290,8 @@ fi
 if [[ $somaticseq -eq 1 ]]
 then
     # SomaticSeq modes:
-    if [[ $classifier_snv ]];   then classifier_snv_text="--classifier_snv /mnt/${classifier_snv}"      ; fi
-    if [[ $classifier_indel ]]; then classifier_indel_text="--classifier_indel /mnt/${classifier_indel}"; fi
+    if [[ $classifier_snv ]];   then classifier_snv_text="--classifier-snv /mnt/${classifier_snv}"      ; fi
+    if [[ $classifier_indel ]]; then classifier_indel_text="--classifier-indel /mnt/${classifier_indel}"; fi
     if [[ $truth_snv ]];        then truth_snv_text="--truth-snv /mnt/${truth_snv}"                     ; fi
     if [[ $truth_indel ]];      then truth_indel_text="--truth-indel /mnt/${truth_indel}"               ; fi
 
