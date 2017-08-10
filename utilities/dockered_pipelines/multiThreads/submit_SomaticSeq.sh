@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,tumor-bam:,normal-bam:,human-reference:,selector:,dbsnp:,cosmic:,action:,mutect:,indelocator:,mutect2:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,strelka-snv:,strelka-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,tumor-bam:,normal-bam:,human-reference:,selector:,dbsnp:,cosmic:,action:,mutect:,indelocator:,mutect2:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,strelka-snv:,strelka-indel:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -136,6 +136,36 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *)  scalpel_vcf=$2 ; shift 2 ;;
+        esac ;;
+
+    --ada-r-script )
+        case "$2" in
+            "") shift 2 ;;
+            *)  ada_r_script=$2 ; shift 2 ;;
+        esac ;;
+        
+    --classifier-snv )
+        case "$2" in
+            "") shift 2 ;;
+            *)  classifier_snv=$2 ; shift 2 ;;
+        esac ;;
+        
+    --classifier-indel )
+        case "$2" in
+            "") shift 2 ;;
+            *)  classifier_indel=$2 ; shift 2 ;;
+        esac ;;
+        
+    --truth-snv )
+        case "$2" in
+            "") shift 2 ;;
+            *)  truth_snv=$2 ; shift 2 ;;
+        esac ;;
+        
+    --truth-indel )
+        case "$2" in
+            "") shift 2 ;;
+            *)  truth_indel=$2 ; shift 2 ;;
         esac ;;
 
     -- ) shift; break ;;
