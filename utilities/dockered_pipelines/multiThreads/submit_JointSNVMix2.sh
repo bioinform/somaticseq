@@ -84,6 +84,9 @@ mkdir -p ${logdir}
 
 jsm_script=${outdir}/logs/jsm2_${timestamp}.cmd
 
+echo "#!/bin/bash" > $jsm_script
+echo "" >> $jsm_script
+
 echo "#$ -o ${logdir}" > $jsm_script
 echo "#$ -e ${logdir}" >> $jsm_script
 echo "#$ -S /bin/bash" >> $jsm_script
