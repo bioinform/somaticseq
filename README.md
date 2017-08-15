@@ -6,7 +6,7 @@
 <b>Dockers</b>
 * We have created a docker repo for SomaticSeq: https://hub.docker.com/r/lethalfang/somaticseq/.
 * Since v2.3.0, we have also included some run script generators for the dockerized somatic mutation callers that we have incorporated, 
-for [single-thread jobs](utilities/dockered_pipelines/singleThread) (e.g., for targeted sequencing) and [multi-thread jobs](utilities/dockered_pipelines/multiThreads) (e.g., for whole genome sequencing).
+for [single-thread jobs](utilities/dockered_pipelines/singleThread) (e.g., for targeted sequencing) and [multi-thread jobs](utilities/dockered_pipelines/multiThreads) (e.g., for whole genome sequencing). The documentation for those scripts are in Section 4 of the [User's Manual](docs/Manual.pdf "Documentation").
 
 <b>For a quick description of SomaticSeq, you may watch this 8-minute video:</b>
   [![SomaticSeq Video](SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")

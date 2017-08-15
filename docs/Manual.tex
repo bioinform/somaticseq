@@ -80,7 +80,7 @@ SomaticSeq.Wrapper.sh is a bash script that calls a series of scripts to combine
 \begin{itemize}
 
 \item
-Python 3, plus regex, pysam, numpy, and scipy libraries. All the .py scripts are written in Python 3 (Yes, Python 3. I deserve brownie points from Python developers).
+Python 3, plus regex, pysam, numpy, and scipy libraries. All the .py scripts are written in Python 3.
 
 \item
 R, plus the ada package in R.
@@ -89,18 +89,20 @@ R, plus the ada package in R.
 BEDTools (if there is an inclusion and/or an exclusion region file)
 
 \item
-Optional: Free GATK version 3. You can use GATK CombineVariants to merge VCF files if the jar file is provided to --gatk. Otherwise, the sorting is done by the vcfsort.pl script written by German Gaston Leparc. 
+Optional: Free GATK version 3. You can use GATK CombineVariants to merge VCF files if the jar file is provided to \texttt{--}gatk. Otherwise, the sorting is done by the vcfsort.pl script written by German Gaston Leparc. 
 
 \item
 Optional: dbSNP and COSMIC files in VCF format (if you want to use these features as a part of the training).
 
 \item
-At least one of MuTect/Indelocator, MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and Strelka2. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
+At least one of MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and/or Strelka2. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
 
 \end{itemize}
 
 
 \subsection{Docker repos}
+
+SomaticSeq and (almost) all the somatic mutation callers we have incorporated are now dockerized. The exception is VarScans because we do not have distribution rights. 
 
 \begin{itemize}
 
@@ -129,7 +131,7 @@ At least one of MuTect/Indelocator, MuTect2, VarScan2, JointSNVMix, SomaticSnipe
 
 \section{To use SomaticSeq.Wrapper.sh}
 
-The SomaticSeq.Wrapper.sh is a wrapper script that calls a series of programs and procedures. It can be easily run if all the dependencies are met. Some optional parameters are hard-coded as defaults, but can be easily edited by advanced users. In the next section, we also described the workflow in more detail, so you are not dependent on this wrapper script. You can either modify this wrapper script or create your own workflow. 
+The SomaticSeq.Wrapper.sh is a wrapper script that calls a series of programs and procedures \textbf{after} you have run your individual somatic mutation callers. In the next section, we will describe the workflow in more detail, so you may not be dependent on this wrapper script. You can either modify this wrapper script or create your own workflow. 
 
 
 \subsection{To train data set into a classifier}
@@ -223,7 +225,6 @@ If both MuTect2 and MuTect/Indelocator VCF files are provided, the script is wri
 \subsection{To classify based on simple majority vote}
 
 Same as the command previously, but not including the R script or the ground truth files. Without those information, SomaticSeq will fall back into a simple majority vote.
-
 
 
 
@@ -413,7 +414,7 @@ SSeq_merged.vcf2tsv.py -ref genome.GRCh37.fa -myvcf somatic.indel.processed.vcf 
 
 At the end of this, Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv are created. 
 
-All the options for SSeq\_merged.vcf2tsv.py are listed here. They can also be displayed by running SSeq\_merged.vcf2tsv.py --help.
+All the options for SSeq\_merged.vcf2tsv.py are listed here. They can also be displayed by running SSeq\_merged.vcf2tsv.py \texttt{--}help.
 
 \begin{lstlisting}
 
@@ -493,6 +494,123 @@ SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0
 \end{lstlisting}
 
 
+
+\section{To run the dockerized Somatic Mutation Callers incorporated in our workflow}
+
+For your convenience, we have created a couple of scripts that can generate run script for the dockerized somatic mutation callers. 
+
+\subsection{Requirements}
+
+\begin{itemize}
+
+  \item Have internet connection, and able to pull and run docker images from docker.io
+
+  \item Have cluster management system such as Sun Grid Engine, so that the "qsub" command is valid
+
+\end{itemize}
+
+
+\subsection{Single thread scripts (best for WES or Targeted Sequencing)}
+
+\begin{itemize}
+  \item Location: somaticseq/utilities/dockered\_pipelines/singleThread
+\end{itemize}
+
+\begin{lstlisting}
+# Example command to submit the run scripts for each of the following somatic mutation callers
+somaticseq/utilities/pipelines/singleThread/submit_All_Mutation_Callers.sh \
+--normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
+--tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-dir      /ABSOLUTE/PATH/TO/RESULTS \
+--selector        /ABSOLUTE/PATH/TO/Exome_Capture.GRCh38.bed \
+--dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--action          qsub \
+--mutect2 --jointsnvmix2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+\end{lstlisting}
+
+
+\subsection{What does that command do}
+
+\begin{itemize}
+  \item
+  For each flag such as \texttt{--}mutect2, \texttt{--}jointsnvmix2, ...., \texttt{--}strelka, a run script ending with .cmd will be created in /ABSOLUTE/PATH/TO/RESULTS/logs. By default, these .cmd scripts will only be created, and their file path will be printed on screen. However, if you do ``\texttt{--}action qsub'', then these scripts will be submitted via the qsub command. The default action is ``echo.''
+
+    \begin{itemize}
+    \item Each of these .cmd script correspond to a mutation caller you specified. They all use docker images.
+    \item We may improve their functionalities in the future to allow more tunable parameters. For the initial releases, POC and reproducibility take precedence.
+    \end{itemize}
+  
+  \item
+  If you do ``\texttt{--}somaticseq,'' the somaticseq script will be created in /ABSOLUTE/PATH/TO/RESULTS/SomaticSeq/logs. However, it will not be submitted until you manually do so after each of these mutation callers is finished running. 
+      
+    \begin{itemize}
+    \item   
+     In the future, we may create more sophisticated solution that will automatically solves these dependencies. For the initial release, we'll focus on stability and reproducibility. 
+    \end{itemize}
+  
+  \item
+  Due to the way those run scripts are written, the Sun Grid Engine's standard error log will record the time the task completes (i.e., Done at 2017/10/30 29:03:02), and it will only do so when the task is completed successfully. It can be a quick way to check if a task is done, but looking at the final line of the standard error log file. 
+
+\end{itemize}
+
+
+
+
+\subsection{Multi-thread scripts (best for WGS)}
+
+\begin{itemize}
+  \item Location: somaticseq/utilities/dockered\_pipelines/multiThread
+\end{itemize}
+
+\begin{lstlisting}
+# Submitting mutation caller jobs by splitting each job into 36 even regions.
+$PATH/TO/somaticseq/utilities/dockered_pipelines/multiThread/submit_callers_multiThreads.sh \
+--normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
+--tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-dir      /ABSOLUTE/PATH/TO/RESULTS \
+--dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--threads         36 \
+--action          qsub \
+--mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+\end{lstlisting}
+
+
+\subsection{What does that command do}
+It's very similar to the single-threaded WES solution, except the job will be split evenly based on genomic lengths.
+
+\begin{itemize}
+  \item
+  If you specified ``\texttt{--}threads 36,'' then 36 BED files will be created. Each BED file represents 1/36 of the total base pairs in the human genome (obtained from the .fa.fai file, but only including 1, 2, 3, ..., MT, or chr1, chr2, ..., chrM contigs). They are named 1.bed, 2.bed, ..., 36.bed, and will be created into /ABSOLUTE/PATH/TO/RESULTS/1, /ABSOLUTE/PATH/TO/RESULTS/2, ..., /ABSOLUTE/PATH/TO/RESULTS/36. You may, of course, specify any number. The default is 12.
+
+  \item
+  For each mutation callers you specify (with the exception of SomaticSniper), a script will be created into /ABSOLUTE/PATH/TO/RESULTS/1/logs, /ABSOLUTE/PATH/TO/RESULTS/2/logs, etc., with partial BAM input. Again, they will be automatically submitted if you do ``\texttt{--}action qsub.''
+  
+  \item
+  Because SomaticSniper does not support partial BAM input (one would have to manually split the BAMs in order to parallelize SomaticSniper this way), the above mentioned procedure is not applied to SomaticSniper. Instead, a single-threaded script will be created (and potentially qsub'ed) into /ABSOLUTE/PATH/TO/RESULTS/logs.
+
+    \begin{itemize}
+    \item However, because SomaticSniper is by far the fastest tool there, single-thread is doable even for WGS. Even single-threaded SomaticSniper will likely finish before parallelized Scalpel. When I benchmarked the DREAM Challenge Stage 3 by splitting it into 120 regions, Scalpel took 10 hours and 10 minutes to complete 1/120 of the data. SomaticSniper took a little under 5 hours for the whole thing.
+
+    \item After SomaticSniper finishes, the result VCF files will be split into each of the /ABSOLUTE/PATH/TO/RESULTS/1, /ABSOLUTE/PATH/TO/RESULTS/2, etc.
+    \end{itemize}
+
+
+  \item
+  JointSNVMix2 also does not support partial BAM input. Unlike SomaticSniper, it's slow and takes massive amount of memory. It's not a good idea to run JointSNVMix2 on a WGS data. The only way to do so is to manually split the BAM files and run each separately. We may do so in the future, but JointSNVMix2 is a 5-year old that's no longer being supported, so we probably won't bother.
+
+  \item
+  Like the single-threaded case, a SomaticSeq run script will also be created for each partition like /ABSOLUTE/PATH/TO/RESULTS/1/SomaticSeq/logs, but will not be submitted until you do so manually.
+
+      
+    \begin{itemize}
+    \item   
+    For simplicity, you may wait until all the mutation calling is done, then run a command like "find /ABSOLUTE/PATH/TO/RESULTS -name 'somaticseq*.cmd' -exec qsub {} \;"
+
+    \end{itemize}
+
+\end{itemize}
 
 
 
@@ -625,7 +743,7 @@ Have implemented the following improvement, mostly for indels:
   Got around an occasional unexplained issue in then ada package were the SOR is sometimes categorized as type, by forcing it to be numeric. 
   
   \item
-  Defaults PASS score from 0.7 to 0.5, and make them tunable in the SomaticSeq.Wrapper.sh script (--pass-threshold and --lowqual-threshold). 
+  Defaults PASS score from 0.7 to 0.5, and make them tunable in the SomaticSeq.Wrapper.sh script (\texttt{--}pass-threshold and \texttt{--}lowqual-threshold). 
   
 \end{itemize}
 
