@@ -102,7 +102,7 @@ At least one of MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix2, SomaticSnipe
 
 \subsection{Docker repos}
 
-SomaticSeq and (almost) all the somatic mutation callers we have incorporated are now dockerized. The exception is VarScans because we do not have distribution rights. 
+SomaticSeq and (almost) all the somatic mutation callers we have incorporated are now dockerized. The exception is VarScan2 because we do not have distribution rights. 
 
 \begin{itemize}
 
@@ -518,7 +518,7 @@ For your convenience, we have created a couple of scripts that can generate run 
 
 \begin{lstlisting}
 # Example command to submit the run scripts for each of the following somatic mutation callers
-somaticseq/utilities/pipelines/singleThread/submit_All_Mutation_Callers.sh \
+utilities/dockered_pipelines/singleThread/submit_All_Mutation_Callers.sh \
 --normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
@@ -530,7 +530,7 @@ somaticseq/utilities/pipelines/singleThread/submit_All_Mutation_Callers.sh \
 \end{lstlisting}
 
 
-\subsection{What does that command do}
+\subsubsection{What does that command do}
 
 \begin{itemize}
   \item
@@ -565,7 +565,7 @@ somaticseq/utilities/pipelines/singleThread/submit_All_Mutation_Callers.sh \
 
 \begin{lstlisting}
 # Submitting mutation caller jobs by splitting each job into 36 even regions.
-$PATH/TO/somaticseq/utilities/dockered_pipelines/multiThread/submit_callers_multiThreads.sh \
+utilities/dockered_pipelines/multiThreads/submit_callers_multiThreads.sh \
 --normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
@@ -577,7 +577,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/multiThread/submit_callers_mult
 \end{lstlisting}
 
 
-\subsection{What does that command do}
+\subsubsection{What does that command do}
 It's very similar to the single-threaded WES solution, except the job will be split evenly based on genomic lengths.
 
 \begin{itemize}

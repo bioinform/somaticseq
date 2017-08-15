@@ -2,6 +2,13 @@
 * Detailed documentation is included in the package. It's located in [docs/Manual.pdf](docs/Manual.pdf "Documentation").
 * Open-access publication in Genome Biology can be found [here](http://dx.doi.org/10.1186/s13059-015-0758-2 "SomaticSeq paper").
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page.
+* Note: Do not worry if Python throws a warning like the following. This is to tell you that scipy was attempting a statistical test with empty data. That's usually due to the fact that normal BAM file has no variant reads at that given position. That is why lots of values are NaN for the normal.
+```
+\begin{lstlisting}
+RuntimeWarning: invalid value encountered in double_scalars
+  z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
+\end{lstlisting}
+```
 
 <b>Dockers</b>
 * We have created a docker repo for SomaticSeq: https://hub.docker.com/r/lethalfang/somaticseq/.
