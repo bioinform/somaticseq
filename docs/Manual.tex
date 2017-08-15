@@ -495,7 +495,7 @@ SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0
 
 
 
-\section{To run the dockerized Somatic Mutation Callers incorporated in our workflow}
+\section{To run the dockerized somatic mutation callers}
 
 For your convenience, we have created a couple of scripts that can generate run script for the dockerized somatic mutation callers. 
 
@@ -550,7 +550,7 @@ utilities/dockered_pipelines/singleThread/submit_All_Mutation_Callers.sh \
     \end{itemize}
   
   \item
-  Due to the way those run scripts are written, the Sun Grid Engine's standard error log will record the time the task completes (i.e., Done at 2017/10/30 29:03:02), and it will only do so when the task is completed successfully. It can be a quick way to check if a task is done, but looking at the final line of the standard error log file. 
+  Due to the way those run scripts are written, the Sun Grid Engine's standard error log will record the time the task completes (i.e., Done at 2017/10/30 29:03:02), and it will only do so when the task is completed with an exit code of 0. It can be a quick way to check if a task is done, by looking at the final line of the standard error log file.
 
 \end{itemize}
 
@@ -606,7 +606,10 @@ It's very similar to the single-threaded WES solution, except the job will be sp
       
     \begin{itemize}
     \item   
-    For simplicity, you may wait until all the mutation calling is done, then run a command like "find /ABSOLUTE/PATH/TO/RESULTS -name 'somaticseq*.cmd' -exec qsub {} \;"
+    For simplicity, you may wait until all the mutation calling is done, then run a command like 
+    \begin{lstlisting}
+find /ABSOLUTE/PATH/TO/RESULTS -name 'somaticseq*.cmd' -exec qsub {} \;
+    \end{lstlisting}
 
     \end{itemize}
 
