@@ -105,7 +105,7 @@ echo "> /mnt/${outdir}/scalpel/scalpel.vcf\"" >> $scalpel_script
 echo "" >> $scalpel_script
 
 echo "cat ${outdir}/scalpel/scalpel.vcf |\\" >> $scalpel_script
-echo "docker run -v /:/mnt -u $UID -i lethalfang/scalpel:0.5.3 /opt/vcfsorter.pl /mnt/${HUMAN_REFERENCE%\.fa*}.dict - \\" >> $scalpel_script
+echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/scalpel:0.5.3 /opt/vcfsorter.pl /mnt/${HUMAN_REFERENCE%\.fa*}.dict - \\" >> $scalpel_script
 echo "> ${outdir}/${outvcf}" >> $scalpel_script
 
 echo "" >> $scalpel_script

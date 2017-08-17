@@ -169,7 +169,7 @@ else
     cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
 fi
 
-docker run -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \
+docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \
 /opt/somaticseq/utilities/split_Bed_into_equal_regions.py \
 -infile /mnt/${outdir}/genome.bed -num $threads -outfiles /mnt/${outdir}/bed
 
