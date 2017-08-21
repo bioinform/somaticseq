@@ -236,12 +236,7 @@ then
     files_to_delete="${outdir}/Designated.Tumor.bam ${outdir}/Designated.Tumor.bam.bai $files_to_delete"
     bam_file_for_spikein="${outdir}/Designated.Tumor.bam"
 
-# If NOT, the QNAME-sorted BAM file will be be properly sorted and used for spike in. 
-elif [[ $merge_bam ]]
-then
-    bam_file_for_spikein="${bam_file_to_be_split}"
-
-# If did not even merge, then just use the input BAM file without modification
+# If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. 
 else
     bam_file_for_spikein="${in_tumor}"
 fi
