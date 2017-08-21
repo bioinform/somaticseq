@@ -57,7 +57,7 @@ mkdir -p ${logdir}
 
 if [[ ${out_script_name} ]]
 then
-    out_script="${logdir}/${out_script_name}"
+    out_script="${out_script_name}"
 else
     out_script="${logdir}/sort.qname.${timestamp}.cmd"    
 fi
