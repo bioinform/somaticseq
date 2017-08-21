@@ -185,6 +185,7 @@ echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
 
+# If TRUE, two bam files will be merged, sorted by QNAMES. 
 if [[ $merge_bam ]]
 then
     $MYDIR/MergeTN.sh \
@@ -195,16 +196,25 @@ then
     --out-SM     BamSurgeon \
     --out-script $out_script
     
-    bam_file_to_be_split="${outdir}/TNMerged.bam"
-    files_to_delete="${bam_file_to_be_split} ${bam_file_to_be_split}.bai $files_to_delete"
+    bam_file_to_be_split="${outdir}/TNMerged.sortQNAME.bam"
     
+    files_to_delete="${bam_file_to_be_split} ${bam_file_to_be_split}.bai $files_to_delete"
+
+# IF NOT, just sort the "in_tumor" by QNAMES, but only if it needs to be split. 
 elif [[ $split_bam ]]
-then
-    bam_file_to_be_split=$in_tumor
+
+    $MYDIR/SortByReadName.sh \
+    --output-dir ${outdir} \
+    --bam-in     ${in_tumor} \
+    --bam-out    sortQNAME.bam \
+    --out-script $out_script
+    
+    bam_file_to_be_split="${outdir}/sortQNAME.bam"
+
 fi
 
 
-
+# If TRUE, the QNAME-sorted BAM file will be split, then the two BAM files will be properly sorted and indexed. So that the designated tumor can be used for spike in. 
 if [[ $split_bam ]]
 then
 
@@ -225,6 +235,13 @@ then
     
     files_to_delete="${outdir}/Designated.Tumor.bam ${outdir}/Designated.Tumor.bam.bai $files_to_delete"
     bam_file_for_spikein="${outdir}/Designated.Tumor.bam"
+
+# If NOT, the QNAME-sorted BAM file will be be properly sorted and used for spike in. 
+elif [[ $merge_bam ]]
+then
+    bam_file_for_spikein="${bam_file_to_be_split}"
+
+# If did not even merge, then just use the input BAM file without modification
 else
     bam_file_for_spikein="${in_tumor}"
 fi

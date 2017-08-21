@@ -87,6 +87,7 @@ fi
 echo "" >> $out_script
 
 
+# Merge the 2 BAM files
 echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-1 \\" >> $out_script
 echo "java -Xmx6g -jar /usr/local/picard-tools-1.131/picard.jar MergeSamFiles \\" >> $out_script
 echo "I=/mnt/${nbam} \\" >> $out_script
@@ -96,6 +97,7 @@ echo "CREATE_INDEX=true \\" >> $out_script
 echo "O=/mnt/${outdir}/unheadered.${outbam}" >> $out_script
 echo "" >> $out_script
 
+# Uniform sample and read group names in the merged file
 echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-1 \\" >> $out_script
 echo "java -Xmx6g -jar /usr/local/picard-tools-1.131/picard.jar AddOrReplaceReadGroups \\" >> $out_script
 echo "I=/mnt/${outdir}/unheadered.${outbam} \\" >> $out_script
@@ -108,5 +110,16 @@ echo "CREATE_INDEX=true \\" >> $out_script
 echo "O=/mnt/${outdir}/${outbam}" >> $out_script
 echo "" >> $out_script
 
+# Remove temp files
 echo "mv ${outdir}/${outbam%.bam}.bai ${outdir}/${outbam}.bai" >> $out_script
 echo "rm ${outdir}/unheadered.${outbam} ${outdir}/unheadered.${outbam%.bam}.bai" >> $out_script
+
+
+# Sort the output merged BAM file by QNAMES:
+sorted_by_name=${outbam%.bam}.sortQNAME.bam
+
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "samtools sort -n -m 4G \\" >> $out_script
+echo "-o /mnt/${outdir}/${sorted_by_name} \\" >> $out_script
+echo "/mnt/${outdir}/${outbam} \\" >> $out_script
+echo "" >> $out_script

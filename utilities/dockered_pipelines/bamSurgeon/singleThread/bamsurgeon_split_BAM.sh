@@ -117,6 +117,7 @@ then
     echo "" >> $out_script
     echo "rm ${need_clean_bam}" >> $out_script
     echo "" >> $out_script
+    
 else
     echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 \\" >> $out_script
     echo "samtools sort -n -m 4G \\" >> $out_script
