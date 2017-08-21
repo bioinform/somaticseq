@@ -80,5 +80,5 @@ echo "" >> $out_script
 echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 \\" >> $out_script
 echo "samtools sort -n \\" >> $out_script
 echo "-o /mnt/${outdir}/${outbam} \\" >> $out_script
-echo "-b /mnt/${inbam} \\" >> $out_script
+echo "/mnt/${inbam} \\" >> $out_script
 echo "" >> $out_script
