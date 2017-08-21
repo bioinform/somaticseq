@@ -98,39 +98,29 @@ fi
 echo "" >> $out_script
 
 # To split a BAM file, first you must sort by name:
-sorted_by_name=${inbam%.bam}.sortQNAME.bam
-
 if [[ $clean_bam -eq 1 ]];
 then
-    need_clean_bam=${inbam%.bam}.needClean.bam
-
-    echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 \\" >> $out_script
-    echo "samtools sort -n -m 4G \\" >> $out_script
-    echo "-o /mnt/${need_clean_bam} \\" >> $out_script
-    echo "/mnt/${inbam} \\" >> $out_script
-    echo "" >> $out_script
+    clean_bam=${inbam%.bam}.Clean.bam
 
     echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-1 \\" >> $out_script
     echo "remove_reads_with_many_qnames_or_bad_CIGAR.py \\" >> $out_script
-    echo "-bamin /mnt/${need_clean_bam} \\" >> $out_script
-    echo "-bamout /mnt/${sorted_by_name}" >> $out_script
+    echo "-bamin /mnt/${inbam} \\" >> $out_script
+    echo "-bamout /mnt/${clean_bam}" >> $out_script
     echo "" >> $out_script
     echo "rm ${need_clean_bam}" >> $out_script
     echo "" >> $out_script
     
+    bam_to_split="${clean_bam}"
 else
-    echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 \\" >> $out_script
-    echo "samtools sort -n -m 4G \\" >> $out_script
-    echo "-o /mnt/${sorted_by_name} \\" >> $out_script
-    echo "/mnt/${inbam} \\" >> $out_script
-    echo "" >> $out_script
+
+    bam_to_split="{inbam}"
 fi
 
 
 # Then you can split
 echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-1 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/bamsplit.py \\" >> $out_script
-echo "-b /mnt/${sorted_by_name} \\" >> $out_script
+echo "-b /mnt/${bam_to_split} \\" >> $out_script
 echo "--proportion ${proportion} \\" >> $out_script
 echo "--seed ${seed}" >> $out_script
 echo "" >> $out_script
