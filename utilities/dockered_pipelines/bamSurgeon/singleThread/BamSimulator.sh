@@ -202,7 +202,7 @@ then
 
 # IF NOT, just sort the "in_tumor" by QNAMES, but only if it needs to be split. 
 elif [[ $split_bam ]]
-
+then
     $MYDIR/SortByReadName.sh \
     --output-dir ${outdir} \
     --bam-in     ${in_tumor} \
