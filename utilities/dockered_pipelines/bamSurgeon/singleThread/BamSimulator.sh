@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,merge-bam,split-bam,clean-bam -n 'bamsurgeon_addsnvs.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,action:,merge-bam,split-bam,clean-bam -n 'bamsurgeon_addsnvs.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -13,7 +13,7 @@ eval set -- "$OPTS"
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
-
+action=echo
 seed=$( date +"%Y" )
 min_depth=5
 max_dpeth=2000
@@ -129,6 +129,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  out_script_name=$2 ; shift 2 ;;
+            esac ;;
+
+        --action )
+            case "$2" in
+                "") shift 2 ;;
+                *)  action=$2 ; shift 2 ;;
             esac ;;
 
         --seed )
@@ -281,3 +287,6 @@ echo "mv ${final_tumor_bam}.bai ${outdir}/${out_tumor}.bai" >> $out_script
 
 echo "" >> $out_script
 echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
+
+
+${action} $out_script
