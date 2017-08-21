@@ -126,8 +126,8 @@ echo "--seed ${seed}" >> $out_script
 echo "" >> $out_script
 
 # The two split BAMs then need to be sorted
-pick1_old=${sorted_by_name%.bam}.pick1.bam
-pick2_old=${sorted_by_name%.bam}.pick2.bam
+pick1_old=${bam_to_split%.bam}.pick1.bam
+pick2_old=${bam_to_split%.bam}.pick2.bam
 
 echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} -o /mnt/${outdir}/${outbam1} /mnt/${pick1_old}" >> $out_script
 echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam1}" >> $out_script
