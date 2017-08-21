@@ -113,7 +113,7 @@ then
     bam_to_split="${clean_bam}"
 else
 
-    bam_to_split="{inbam}"
+    bam_to_split="${inbam}"
 fi
 
 
