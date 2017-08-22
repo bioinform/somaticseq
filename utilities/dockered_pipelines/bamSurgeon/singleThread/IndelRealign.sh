@@ -107,3 +107,10 @@ echo "-I /mnt/${tbam} \\" >> $out_script
 echo "-I /mnt/${nbam} \\" >> $out_script
 echo "-targetIntervals /mnt/${outdir}/T.N.intervals \\" >> $out_script
 echo "-nWayOut .JointRealigned.bam" >> $out_script
+echo "" >> $out_script
+
+realigned_normal=${nbam%.bam}.JointRealigned.bam
+realigned_tumor=${tbam%.bam}.JointRealigned.bam
+
+echo "mv ${realigned_normal%.bam}.bai ${realigned_normal}.bai" >> $out_script
+echo "mv ${realigned_tumor%.bam}.bai ${realigned_tumor}.bai" >> $out_script
