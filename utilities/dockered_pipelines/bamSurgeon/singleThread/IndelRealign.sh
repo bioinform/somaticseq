@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,tumor-bam:,normal-bam:,genome-reference:,out-script:,standalone -n 'IndelRealign.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,tumor-bam:,normal-bam:,genome-reference:,selector;,out-script:,standalone -n 'IndelRealign.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -40,6 +40,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  HUMAN_REFERENCE=$2 ; shift 2 ;;
+            esac ;;
+
+        --selector )
+            case "$2" in
+                "") shift 2 ;;
+                *)  SELECTOR=$2 ; shift 2 ;;
             esac ;;
 
         --out-script )
@@ -79,16 +85,22 @@ fi
 
 echo "" >> $out_script
 
+if [[ $SELECTOR ]]
+then
+    selector_input="-L /mnt/${SELECTOR}"
+fi
 
 echo "docker run --rm -v /:/mnt -u $UID -i broadinstitute/gatk3:3.7-0 java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T RealignerTargetCreator \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${tbam} \\" >> $out_script
 echo "-I /mnt/${nbam} \\" >> $out_script
+echo "$selector_input \\" >> $out_script
 echo "-o /mnt/${outdir}/T.N.intervals" >> $out_script
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID -i broadinstitute/gatk3:3.7-0 java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID -w /mnt/${outdir} -i broadinstitute/gatk3:3.7-0 \\" >> $out_script
+echo "java -Xmx8g -jar /usr/GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T IndelRealigner \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${tbam} \\" >> $out_script

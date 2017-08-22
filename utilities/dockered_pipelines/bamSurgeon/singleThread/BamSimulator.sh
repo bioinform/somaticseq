@@ -308,6 +308,7 @@ then
     --normal-bam ${outdir}/${out_normal} \
     --genome-reference ${HUMAN_REFERENCE} \
     --output-dir ${outdir} \
+    --selector ${SELECTOR} \
     --out-script $out_script
 fi
 
