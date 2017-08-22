@@ -45,7 +45,7 @@ The following options:
 * --merge-bam Flag to merge the tumor and normal bam file input
 * --split-bam Flag to split BAM file for tumor and normal
 * --clean-bam Flag to go through the BAM file and remove reads where more than 2 identical read names are present. This was necessary for some BAM files downloaded from TCGA.
-* --indel-realign Conduct GATK Joint Indel Realignment on the two output BAM files. Instead of syntheticNormal.bam and syntheticTumor.bam, the final BAM files will be syntheticNormal.JointRealigned.bam and syntheticTumor.JointRealigned.bam.
+* --indel-realign Conduct GATK Joint Indel Realignment on the two output BAM files. Instead of syntheticNormal.bam and syntheticTumor.bam, the final BAM files will be **syntheticNormal.JointRealigned.bam** and **syntheticTumor.JointRealigned.bam**.
 * --seed Random seed. Pick any integer for reproducibility purposes. 
 * --action The command preceding the run script created into /ABSOLUTE/PATH/TO/BamSurgeoned_SAMPLES/logs. "qsub" is to submit the script in SGE system. Default = echo
 
