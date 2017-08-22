@@ -18,7 +18,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSurgeon/singleThread/BamSimu
 --min-vaf           0.05 \
 --max-vaf           0.5 \
 --min-variant-reads 1 \
---output-dir        /ABSOLUTE/PATH/TO/BamSurgeoned_SAMPLES \
+--output-dir        /ABSOLUTE/PATH/TO/trainingSet \
 --action            qsub
 --merge-bam --split-bam --indel-realign
 ```
