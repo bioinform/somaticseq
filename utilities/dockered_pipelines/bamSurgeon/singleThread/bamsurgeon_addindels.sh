@@ -167,7 +167,7 @@ echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:2.3.1 \\" >> $o
 echo "java -jar /opt/GATK/GenomeAnalysisTK.jar -T LeftAlignAndTrimVariants \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--variant /mnt/${outdir}/synthetic_indels.vcf \\" >> $out_script
-echo "| egrep -v '^[0-9]+ variants|^INFO' > ${outdir}/synthetic_indels.leftAlign.vcf"
+echo "| egrep -v '^[0-9]+ variants|^INFO' > ${outdir}/synthetic_indels.leftAlign.vcf" >> $out_script
 echo "" >> $out_script
 
 echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 \\" >> $out_script
