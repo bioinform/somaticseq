@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,action:,merge-bam,split-bam,clean-bam,indel-realign -n 'bamsurgeon_addsnvs.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,action:,merge-bam,split-bam,clean-bam,indel-realign, -n 'BamSimulator.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
