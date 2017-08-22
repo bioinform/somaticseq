@@ -49,5 +49,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSurgeon/singleThread/BamSimu
 
 This is a workflow created using [BAMSurgeon](https://github.com/adamewing/bamsurgeon). The command demonstrated above will merge the normal and tumor BAM files into a single BAM file, and then randomly split the merged BAM file into two BAM files. One of which is designated normal, and one of which is designated tumor. Real somatic mutations in the original tumor will be randomly split into both files, and can be considered germline variants or tummor-normal contamiation. Synthetic mutations will then be spiked into the designated tumor to create "real" mutations.
 
+The ground truth for the simulation will be synthetic_snvs.vcf, synthetic_indels.vcf, and synthetic_svs.vcf. 
+
 <b>A schematic of the simulation procedure</b>
   ![Onkoinsight Simulation](onkoinsight_sim.png)
