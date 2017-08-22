@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,action:,merge-bam,split-bam,clean-bam -n 'bamsurgeon_addsnvs.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,action:,merge-bam,split-bam,clean-bam,indel-realign -n 'bamsurgeon_addsnvs.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -152,6 +152,9 @@ while true; do
         --clean-bam )
             clean_bam=1 ; shift ;;
 
+        --indel-realign )
+            indel_realign=1 ; shift ;;
+
         -- ) shift; break ;;
         * ) break ;;
     esac
@@ -296,6 +299,18 @@ fi
 echo "" >> $out_script
 echo "mv ${final_tumor_bam} ${outdir}/${out_tumor}" >> $out_script
 echo "mv ${final_tumor_bam}.bai ${outdir}/${out_tumor}.bai" >> $out_script
+echo "" >> $out_script
+
+if [[ $indel_realign ]]
+then
+    $MYDIR/IndelRealign.sh \
+    --tumor-bam ${outdir}/${out_tumor} \
+    --normal-bam ${outdir}/${out_normal} \
+    --genome-reference ${HUMAN_REFERENCE} \
+    --output-dir ${outdir} \
+    --out-script $out_script
+fi
+
 
 echo "" >> $out_script
 echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
