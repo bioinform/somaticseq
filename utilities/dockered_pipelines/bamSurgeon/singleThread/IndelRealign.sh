@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,tumor-bam:,normal-bam:,genome-reference:,standalone -n 'IndelRealign.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,tumor-bam:,normal-bam:,genome-reference:,out-script:,standalone -n 'IndelRealign.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
