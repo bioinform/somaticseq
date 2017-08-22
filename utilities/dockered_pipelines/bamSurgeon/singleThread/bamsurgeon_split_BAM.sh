@@ -107,7 +107,7 @@ then
     echo "-bamin /mnt/${inbam} \\" >> $out_script
     echo "-bamout /mnt/${clean_bam}" >> $out_script
     echo "" >> $out_script
-    echo "rm ${need_clean_bam}" >> $out_script
+    echo "rm ${inbam}" >> $out_script
     echo "" >> $out_script
     
     bam_to_split="${clean_bam}"
