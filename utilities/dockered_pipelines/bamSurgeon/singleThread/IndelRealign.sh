@@ -86,7 +86,7 @@ echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${tbam} \\" >> $out_script
 echo "-I /mnt/${nbam} \\" >> $out_script
 echo "-o /mnt/${outdir}/T.N.intervals" >> $out_script
-echo ""
+echo "" >> $out_script
 
 echo "docker run --rm -u $UID -i broadinstitute/gatk3:3.8-0 java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T IndelRealigner \\" >> $out_script
