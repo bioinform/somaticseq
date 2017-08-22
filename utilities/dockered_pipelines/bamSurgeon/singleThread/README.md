@@ -8,16 +8,16 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSurgeon/singleThread/BamSimu
 --genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
 --selector          /ABSOLUTE/PATH/TO/Exome_Capture.GRCh38.bed \
 --tumor-bam-in      /ABSOLUTE/PATH/TO/Tumor_Sample.bam \
---normal-bam-in     /ABSOLUTE/PATH/TO/normal_sample.bam \
+--normal-bam-in     /ABSOLUTE/PATH/TO/Normal_Sample.bam \
 --tumor-bam-out     syntheticTumor.bam \
 --normal-bam-out    syntheticNormal.bam \
 --split-proportion  0.5 \
---num-snvs          250 \
+--num-snvs          300 \
 --num-indels        100 \
 --num-svs           50 \
 --min-vaf           0.05 \
 --max-vaf           0.5 \
---min-variant-reads 2 \
+--min-variant-reads 1 \
 --output-dir        /ABSOLUTE/PATH/TO/BamSurgeoned_SAMPLES \
 --action            qsub
 --merge-bam --split-bam --indel-realign
