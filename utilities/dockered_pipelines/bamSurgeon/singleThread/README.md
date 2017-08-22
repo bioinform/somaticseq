@@ -19,6 +19,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSurgeon/singleThread/BamSimu
 --max-vaf           0.5 \
 --min-variant-reads 2 \
 --output-dir        /ABSOLUTE/PATH/TO/BamSurgeoned_SAMPLES \
+--action            qsub
 --merge-bam --split-bam
 ```
 
@@ -45,7 +46,7 @@ The following options:
 * --split-bam Flag to split BAM file for tumor and normal
 * --clean-bam Flag to go through the BAM file and remove reads where more than 2 identical read names are present. This was necessary for some BAM files downloaded from TCGA.
 * --seed Random seed. Pick any integer. 
-* --action The command preceding the run script created into /ABSOLUTE/PATH/TO/BamSurgeoned_SAMPLES/logs. Default = echo
+* --action The command preceding the run script created into /ABSOLUTE/PATH/TO/BamSurgeoned_SAMPLES/logs. "qsub" is to submit the script in SGE system. Default = echo
 
 **What does that command do**
 
