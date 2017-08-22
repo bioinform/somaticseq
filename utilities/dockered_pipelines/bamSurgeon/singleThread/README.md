@@ -1,6 +1,6 @@
 **Requirement**
-* Have internet connection, and able to pull and run docker images from https://docker.io
-* Cluster management system with valid "qsub" command
+* Have internet connection, and able to pull and run docker images from Docker Hub, as we have dockerized the entire BAMSurgeon workflow. 
+* **Recommended**: Have cluster management system with valid "qsub" command, such as Sun Grid Engine (SGE).
 
 **Example Command**
 ```
@@ -44,7 +44,7 @@ The following options:
 * --output-dir Output directory
 * --merge-bam Flag to merge the tumor and normal bam file input
 * --split-bam Flag to split BAM file for tumor and normal
-* --clean-bam Flag to go through the BAM file and remove reads where more than 2 identical read names are present. This was necessary for some BAM files downloaded from TCGA.
+* --clean-bam Flag to go through the BAM file and remove reads where more than 2 identical read names are present. This was necessary for some BAM files downloaded from TCGA. However, a proper pair-end BAM file should not have the same read name appearing more than twice.
 * --indel-realign Conduct GATK Joint Indel Realignment on the two output BAM files. Instead of syntheticNormal.bam and syntheticTumor.bam, the final BAM files will be **syntheticNormal.JointRealigned.bam** and **syntheticTumor.JointRealigned.bam**.
 * --seed Random seed. Pick any integer for reproducibility purposes. 
 * --action The command preceding the run script created into /ABSOLUTE/PATH/TO/BamSurgeoned_SAMPLES/logs. "qsub" is to submit the script in SGE system. Default = echo
