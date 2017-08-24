@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,action:,merge-bam,split-bam,clean-bam,indel-realign, -n 'BamSimulator.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,action:,merge-bam,split-bam,clean-bam,indel-realign,keep-intermediates -n 'BamSimulator.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -155,6 +155,9 @@ while true; do
         --indel-realign )
             indel_realign=1 ; shift ;;
 
+        --keep-intermediates )
+            keep_intermediates=1 ; shift ;;
+
         -- ) shift; break ;;
         * ) break ;;
     esac
@@ -213,6 +216,8 @@ then
     --out-script $out_script
     
     bam_file_to_be_split="${outdir}/sortQNAME.bam"
+    
+    files_to_delete="${bam_file_to_be_split} ${bam_file_to_be_split}.bai $files_to_delete"
 
 fi
 
@@ -236,9 +241,10 @@ then
     --seed $seed \
     $clean_bam_input \
     --out-script $out_script
-    
-    files_to_delete="${outdir}/Designated.Tumor.bam ${outdir}/Designated.Tumor.bam.bai $files_to_delete"
+
     bam_file_for_spikein="${outdir}/Designated.Tumor.bam"
+
+    files_to_delete="${bam_file_to_be_split%.bam}.pick1.bam ${bam_file_to_be_split%.bam}.pick2.bam $files_to_delete"
 
 # If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. 
 else
@@ -315,6 +321,14 @@ fi
 
 
 echo "" >> $out_script
+
+if [[ $keep-intermediates ]]
+then
+    echo "for file in $files_to_delete; do" >> $out_script
+    echo "rm \$file" >> $out_script
+    echo "done" >> $out_script
+fi
+
 echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 
 
