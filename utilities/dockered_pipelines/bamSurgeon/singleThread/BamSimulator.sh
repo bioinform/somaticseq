@@ -233,6 +233,7 @@ then
     --bam-out1 ${out_normal} \
     --bam-out2 Designated.Tumor.bam \
     --split-proportion ${proportion} \
+    --seed $seed \
     $clean_bam_input \
     --out-script $out_script
     
