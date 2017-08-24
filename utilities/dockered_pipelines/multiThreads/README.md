@@ -53,4 +53,3 @@ It's very similar to the single-threaded WES solution, except the job will be sp
 
 **Known Issues**
 * Running JointSNVMix2 for WGS is discouraged because of memory requirement. The only way we know to parallelize it is to split the BAM files, which is a cumbersome process and hogs disk spaces.
-* If supplying an optional BED file for whole exome sequencing, this parallelization won't work for Strelka. Strelka doesn't take BED file directly, but has a series of command line parameters specifying the regions. If the input BED file has too many lines, the command generated for Strelka will have too many arguments for regions, and the program will fail. For WGS (i.e., when no BED file is specified), the region is grabbed from the .fa.fai file, and alternative and decoy contigs are excluded, so there aren't many arguments in this case.
