@@ -42,12 +42,6 @@ while true; do
             *)  normal_bam=$2 ; shift 2 ;;
         esac ;;
 
-    --selector )
-        case "$2" in
-            "") shift 2 ;;
-            *) SELECTOR=$2 ; shift 2 ;;
-        esac ;;
-
     --human-reference )
         case "$2" in
             "") shift 2 ;;
@@ -86,33 +80,17 @@ echo "" >> $streka_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $streka_script
 echo "" >> $streka_script
 
-
-selector_basename=`basename ${SELECTOR}`
-if [[ -r ${SELECTOR}.gz && -r ${SELECTOR}.gz.tbi ]]
-then
-    input_BED=${SELECTOR}.gz
-    
-else
-    echo "cat ${SELECTOR} | docker run -v /:/mnt -u $UID --rm -i lethalfang/tabix:1.2.1 bgzip > /mnt/${outdir}/${selector_basename}.gz" >> $streka_script
-    echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/tabix:1.2.1 tabix /mnt/${outdir}/${selector_basename}.gz" >> $streka_script
-    echo "" >> $streka_script
-    
-    input_BED=${outdir}/${selector_basename}.gz
-fi
-
-
-echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/strelka:2.8.2 \\" >> $streka_script
-echo "/opt/strelka/bin/configureStrelkaSomaticWorkflow.py \\" >> $streka_script
+echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/strelka:2.7.1 \\" >> $streka_script
+echo "/opt/strelka2/bin/configureStrelkaSomaticWorkflow.py \\" >> $streka_script
 echo "--tumorBam=/mnt/${tumor_bam} \\" >> $streka_script
 echo "--normalBam=/mnt/${normal_bam} \\" >> $streka_script
 echo "--referenceFasta=/mnt/${HUMAN_REFERENCE}  \\" >> $streka_script
 echo "--callMemMb=4096 \\" >> $streka_script
 echo "--exome \\" >> $streka_script
-echo "--callRegions=/mnt/${input_BED} \\" >> $streka_script
 echo "--runDir=/mnt/${outdir}/${outvcf%\.vcf}" >> $streka_script
 echo "" >> $streka_script
 
-echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/strelka:2.8.2 \\" >> $streka_script
+echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/strelka:2.7.1 \\" >> $streka_script
 echo "/mnt/${outdir}/${outvcf%\.vcf}/runWorkflow.py -m local -j 1" >> $streka_script
 
 echo "" >> $streka_script

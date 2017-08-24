@@ -71,9 +71,10 @@ vcf_prefix=${outvcf%\.vcf}
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-if [[ ${SELECTOR} ]]; then
+if [[ ${SELECTOR} &&  `cat ${SELECTOR} | wc -l` -gt 50 ]]; then
     region_txt=`cat ${SELECTOR} | awk -F "\t" '{print "--region=" $1 ":" $2+1 "-" $3}' | tr '\n' '\ '`
 fi
+
 
 strelka_script=${outdir}/logs/strelka_${timestamp}.cmd
 
@@ -90,17 +91,33 @@ echo "" >> $strelka_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $strelka_script
 echo "" >> $strelka_script
 
-echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/strelka:2.7.1 \\" >> $strelka_script
-echo "/opt/strelka2/bin/configureStrelkaSomaticWorkflow.py \\" >> $strelka_script
+
+selector_basename=`basename ${SELECTOR}`
+if [[ -r ${SELECTOR}.gz && -r ${SELECTOR}.gz.tbi ]]
+then
+    input_BED=${SELECTOR}.gz
+    
+else
+    echo "cat ${SELECTOR} | docker run -v /:/mnt -u $UID --rm -i lethalfang/tabix:1.2.1 bgzip > /mnt/${outdir}/${selector_basename}.gz" >> $streka_script
+    echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/tabix:1.2.1 tabix /mnt/${outdir}/${selector_basename}.gz" >> $streka_script
+    echo "" >> $streka_script
+    
+    input_BED=${outdir}/${selector_basename}.gz
+fi
+
+
+echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/strelka:2.8.2 \\" >> $strelka_script
+echo "/opt/strelka/bin/configureStrelkaSomaticWorkflow.py \\" >> $strelka_script
 echo "--tumorBam=/mnt/${tumor_bam} \\" >> $strelka_script
 echo "--normalBam=/mnt/${normal_bam} \\" >> $strelka_script
 echo "--referenceFasta=/mnt/${HUMAN_REFERENCE}  \\" >> $strelka_script
 echo "--callMemMb=4096 \\" >> $strelka_script
 echo "$region_txt \\" >> $strelka_script
+echo "--callRegions=/mnt/${input_BED} \\" >> $streka_script
 echo "--runDir=/mnt/${outdir}/${outvcf%\.vcf}" >> $strelka_script
 echo "" >> $strelka_script
 
-echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/strelka:2.7.1 \\" >> $strelka_script
+echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/strelka:2.8.2 \\" >> $strelka_script
 echo "/mnt/${outdir}/${outvcf%\.vcf}/runWorkflow.py -m local -j 1" >> $strelka_script
 
 echo "" >> $strelka_script
