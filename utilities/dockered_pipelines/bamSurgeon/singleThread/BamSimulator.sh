@@ -204,7 +204,7 @@ then
     
     bam_file_to_be_split="${outdir}/TNMerged.sortQNAME.bam"
     
-    files_to_delete="${outdir}/TNMerged.bam ${bam_file_to_be_split} ${bam_file_to_be_split}.bai $files_to_delete"
+    files_to_delete="${outdir}/TNMerged.bam ${bam_file_to_be_split} $files_to_delete"
 
 # IF NOT, just sort the "in_tumor" by QNAMES, but only if it needs to be split. 
 elif [[ $split_bam ]]
@@ -324,8 +324,9 @@ echo "" >> $out_script
 
 if [[ $keep-intermediates ]]
 then
-    echo "for file in $files_to_delete; do" >> $out_script
-    echo "rm \$file" >> $out_script
+    echo "for file in $files_to_delete" >> $out_script
+    echo "do" >> $out_script
+    echo "    rm \$file" >> $out_script
     echo "done" >> $out_script
 fi
 
