@@ -113,6 +113,7 @@ echo "" >> $out_script
 # Remove temp files
 echo "mv ${outdir}/${outbam%.bam}.bai ${outdir}/${outbam}.bai" >> $out_script
 echo "rm ${outdir}/unheadered.${outbam} ${outdir}/unheadered.${outbam%.bam}.bai" >> $out_script
+echo "" >> $out_script
 
 
 # Sort the output merged BAM file by QNAMES:
