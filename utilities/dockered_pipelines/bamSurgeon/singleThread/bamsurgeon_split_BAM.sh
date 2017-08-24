@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out1:,bam-out2:,bam-in:,split-proportion:,out-script:,clean-bam,standalone -n 'bamsurgeon_split_BAM.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out1:,bam-out2:,bam-in:,split-proportion:,seed:,out-script:,clean-bam,standalone -n 'bamsurgeon_split_BAM.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -52,6 +52,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  proportion=$2 ; shift 2 ;;
+            esac ;;
+
+        --seed )
+            case "$2" in
+                "") shift 2 ;;
+                *)  seed=$2 ; shift 2 ;;
             esac ;;
 
         --out-script )
