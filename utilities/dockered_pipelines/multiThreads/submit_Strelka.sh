@@ -113,7 +113,7 @@ echo "--normalBam=/mnt/${normal_bam} \\" >> $strelka_script
 echo "--referenceFasta=/mnt/${HUMAN_REFERENCE}  \\" >> $strelka_script
 echo "--callMemMb=4096 \\" >> $strelka_script
 echo "$region_txt \\" >> $strelka_script
-echo "--callRegions=/mnt/${input_BED} \\" >> $streka_script
+echo "--callRegions=/mnt/${input_BED} \\" >> $strelka_script
 echo "--runDir=/mnt/${outdir}/${outvcf%\.vcf}" >> $strelka_script
 echo "" >> $strelka_script
 
