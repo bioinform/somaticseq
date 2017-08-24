@@ -98,9 +98,9 @@ then
     input_BED=${SELECTOR}.gz
     
 else
-    echo "cat ${SELECTOR} | docker run -v /:/mnt -u $UID --rm -i lethalfang/tabix:1.2.1 bgzip > /mnt/${outdir}/${selector_basename}.gz" >> $streka_script
-    echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/tabix:1.2.1 tabix /mnt/${outdir}/${selector_basename}.gz" >> $streka_script
-    echo "" >> $streka_script
+    echo "cat ${SELECTOR} | docker run -v /:/mnt -u $UID --rm -i lethalfang/tabix:1.2.1 bgzip > /mnt/${outdir}/${selector_basename}.gz" >> $strelka_script
+    echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/tabix:1.2.1 tabix /mnt/${outdir}/${selector_basename}.gz" >> $strelka_script
+    echo "" >> $strelka_script
     
     input_BED=${outdir}/${selector_basename}.gz
 fi
