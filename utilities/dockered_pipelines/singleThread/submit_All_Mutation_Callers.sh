@@ -278,6 +278,7 @@ then
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
+    --selector ${SELECTOR} \
     --out-vcf Strelka.vcf \
     --human-reference ${HUMAN_REFERENCE} \
     --action $action
