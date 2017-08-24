@@ -71,7 +71,7 @@ vcf_prefix=${outvcf%\.vcf}
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-if [[ ${SELECTOR} &&  `cat ${SELECTOR} | wc -l` -gt 50 ]]; then
+if [[ ${SELECTOR} &&  `cat ${SELECTOR} | wc -l` -lt 50 ]]; then
     region_txt=`cat ${SELECTOR} | awk -F "\t" '{print "--region=" $1 ":" $2+1 "-" $3}' | tr '\n' '\ '`
 fi
 
