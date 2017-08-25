@@ -386,7 +386,7 @@ do
     
     echo "" >> $out_script
     
-    if [[ $keep-intermediates ]]
+    if [[ ! $keep_intermediates ]]
     then
         echo "for file in $files_to_delete" >> $out_script
         echo "do" >> $out_script
