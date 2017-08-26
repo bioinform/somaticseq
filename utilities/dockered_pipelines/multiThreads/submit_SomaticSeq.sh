@@ -256,8 +256,8 @@ echo "--normal-bam       /mnt/${normal_bam} \\" >> $sseq_script
 echo "$mutect_text \\" >> $sseq_script
 echo "$indelocator_text \\" >> $sseq_script
 echo "$mutect2_text \\" >> $sseq_script
-echo "$varscan_snv_vcf \\" >> $sseq_script
-echo "$varscan_indel_vcf \\" >> $sseq_script
+echo "$varscan_snv_text \\" >> $sseq_script
+echo "$varscan_indel_text \\" >> $sseq_script
 echo "$jsm_text \\" >> $sseq_script
 echo "$sniper_text \\" >> $sseq_script
 echo "$vardict_text \\" >> $sseq_script
