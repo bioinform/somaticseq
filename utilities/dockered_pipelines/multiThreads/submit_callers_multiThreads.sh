@@ -250,7 +250,7 @@ do
         --dbsnp ${dbsnp} \
         --action $action
     
-        mutect2_input="--mutect2 ${outdir}/MuTect2.vcf"
+        mutect2_input="--mutect2 ${outdir}/${ith_thread}/MuTect2.vcf"
     fi
         
 
@@ -265,8 +265,8 @@ do
         --human-reference ${HUMAN_REFERENCE} \
         --action $action
     
-        varscan_snv_input="--varscan-snv ${outdir}/VarScan2.snp.vcf"
-        varscan_indel_input="--varscan-indel ${outdir}/VarScan2.indel.vcf"
+        varscan_snv_input="--varscan-snv ${outdir}/${ith_thread}/VarScan2.snp.vcf"
+        varscan_indel_input="--varscan-indel ${outdir}/${ith_thread}/VarScan2.indel.vcf"
     fi
 
 
