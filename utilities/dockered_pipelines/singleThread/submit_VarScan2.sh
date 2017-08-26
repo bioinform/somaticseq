@@ -96,7 +96,7 @@ echo "" >> $varscan2_script
 
 echo "docker run --rm -u $UID -v /:/mnt -i lethalfang/samtools:0.1.19 \\" >> $varscan2_script
 echo "samtools mpileup \\" >> $varscan2_script
-echo "-B -q 25 -Q 20 -f $selector_text \\" >> $varscan2_script
+echo "-B -q 25 -Q 20 $selector_text -f \\" >> $varscan2_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $varscan2_script
 echo "/mnt/${normal_bam} \\" >> $varscan2_script
 echo "> ${outdir}/normal.pileup" >> $varscan2_script
@@ -105,7 +105,7 @@ echo "" >> $varscan2_script
 
 echo "docker run --rm -u $UID -v /:/mnt -i lethalfang/samtools:0.1.19 \\" >> $varscan2_script
 echo "samtools mpileup \\" >> $varscan2_script
-echo "-B -q 25 -Q 20 -f $selector_text \\" >> $varscan2_script
+echo "-B -q 25 -Q 20 $selector_text -f \\" >> $varscan2_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $varscan2_script
 echo "/mnt/${tumor_bam} \\" >> $varscan2_script
 echo "> ${outdir}/tumor.pileup" >> $varscan2_script
