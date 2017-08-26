@@ -156,7 +156,7 @@ while true; do
 
 done
 
-VERSION='latest'
+VERSION='2.3.2'
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 logdir=${outdir}/logs
