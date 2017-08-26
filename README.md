@@ -16,4 +16,4 @@ The documentation for those scripts are in Section 4 of the [User's Manual](docs
 * We have also prototyped pipelines to generate training set out of your own sequencing data using [BAMSurgeon](https://github.com/adamewing/bamsurgeon) pipeline, for [single-thread](utilities/dockered_pipelines/bamSurgeon/singleThread) and [multi-thread](utilities/dockered_pipelines/bamSurgeon/multiThreads) jobs.
 
 <b>For a quick description of SomaticSeq, you may watch this 8-minute video:</b>
-  [![SomaticSeq Video](SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")
+  [![SomaticSeq Video](docs/SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")
