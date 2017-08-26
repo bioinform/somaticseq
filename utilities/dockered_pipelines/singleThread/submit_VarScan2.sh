@@ -108,15 +108,20 @@ echo "samtools mpileup \\" >> $varscan2_script
 echo "-B -q 25 -Q 20 -f $selector_text \\" >> $varscan2_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $varscan2_script
 echo "/mnt/${tumor_bam} \\" >> $varscan2_script
-echo "> ${outdir}/normal.pileup" >> $varscan2_script
+echo "> ${outdir}/tumor.pileup" >> $varscan2_script
 
 echo "" >> $varscan2_script
 
 
 echo "docker run --rm -u $UID -v /:/mnt -i djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
 echo "java -Xmx8g -jar VarScan2.3.7.jar \\" >> $varscan2_script
-echo "/mnt/${outdir}/VarScan2 --output-vcf 1" >> $varscan2_script
+echo "/mnt/${outdir}/normal.pileup \\" >> $varscan2_script
+echo "/mnt/${outdir}/tumor.pileup \\" >> $varscan2_script
+echo "/mnt/${outdir}/${outvcf%.vcf} --output-vcf 1" >> $varscan2_script
 
+echo "" >> $varscan2_script
 
+echo "rm ${outdir}/normal.pileup" >> $varscan2_script
+echo "rm ${outdir}/tumor.pileup" >> $varscan2_script
 
 ${action} $varscan2_script
