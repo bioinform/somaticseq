@@ -4,7 +4,7 @@
 
 **Example Command**
 ```
-$PATH/TO/somaticseq/utilities/pipelines/singleThread/submit_All_Mutation_Callers.sh \
+$PATH/TO/somaticseq/utilities/pipelines/singleThread/submit_callers_singleThread.sh \
 --normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
@@ -15,7 +15,7 @@ $PATH/TO/somaticseq/utilities/pipelines/singleThread/submit_All_Mutation_Callers
 --mutect2 --jointsnvmix2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
 ```
 
-**submit_All_Mutation_Callers.sh** creates run scripts for dockered jobs. The following options:
+**submit_callers_singleThread.sh** creates run scripts for dockered jobs. The following options:
 * --normal-bam /ABSOLUTE/PATH/TO/normal_sample.bam (Required)
 * --tumor-bam /ABSOLUTE/PATH/TO/tumor_sample.bam (Required)
 * --human-reference /ABSOLUTE/PATH/TO/human_reference.fa (Required)
