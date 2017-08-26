@@ -72,6 +72,8 @@ while true; do
 
 done
 
+VERSION='2.3.1'
+
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
@@ -90,12 +92,28 @@ echo "" >> $vardict_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $vardict_script
 echo "" >> $vardict_script
 
+
+total_bases=`cat ${SELECTOR} | awk -F "\t" '{print $3-$2}' | awk '{ sum += $1 } END { print sum }'`
+num_lines=`cat ${SELECTOR} | wc -l`
+
+input_bed=${SELECTOR}
+if [[ $(( $total_bases / $num_lines )) -gt 50000 ]]
+then
+    echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \\" >> $vardict_script
+    echo "/opt/somaticseq/utilities/split_mergedBed.py \\" >> $vardict_script
+    echo "-infile /mnt/${SELECTOR} -outfile /mnt/${outdir}/split_regions.bed" >> $vardict_script
+    echo "" >> $vardict_script
+    
+    input_bed="${outdir}/split_regions.bed"
+fi
+
+
 echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/vardictjava:1.5.1 \\" >> $vardict_script
 echo "/opt/VarDict-1.5.1/bin/VarDict \\" >> $vardict_script
 echo "-G /mnt/${HUMAN_REFERENCE} \\" >> $vardict_script
 echo "-f $VAF -h \\" >> $vardict_script
 echo "-b '/mnt/${tumor_bam}|/mnt/${normal_bam}' \\" >> $vardict_script
-echo "-Q 1 -c 1 -S 2 -E 3 -g 4 /mnt/${SELECTOR} \\" >> $vardict_script
+echo "-Q 1 -c 1 -S 2 -E 3 -g 4 /mnt/${input_bed} \\" >> $vardict_script
 echo "> ${outdir}/${timestamp}.var \\" >> $vardict_script
 echo "" >> $vardict_script
 

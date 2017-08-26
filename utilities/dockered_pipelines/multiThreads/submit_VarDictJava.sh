@@ -79,10 +79,6 @@ mkdir -p ${logdir}
 
 vardict_script=${outdir}/logs/vardict_${timestamp}.cmd
 
-docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \
-/opt/somaticseq/utilities/split_mergedBed.py \
--infile /mnt/${SELECTOR} -outfile /mnt/${outdir}/split_regions.bed
-
 echo "#!/bin/bash" > $vardict_script
 echo "" >> $vardict_script
 
@@ -95,6 +91,13 @@ echo "" >> $vardict_script
 
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $vardict_script
 echo "" >> $vardict_script
+
+
+echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \\" >> $vardict_script
+echo "/opt/somaticseq/utilities/split_mergedBed.py \\" >> $vardict_script
+echo "-infile /mnt/${SELECTOR} -outfile /mnt/${outdir}/split_regions.bed" >> $vardict_script
+echo "" >> $vardict_script
+
 
 echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/vardictjava:1.5.1 \\" >> $vardict_script
 echo "/opt/VarDict-1.5.1/bin/VarDict \\" >> $vardict_script
