@@ -176,7 +176,7 @@ hg_dict=${HUMAN_REFERENCE%\.fa*}.dict
 
 
 
-VERSION='2.3.1'
+VERSION='latest'
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 logdir=${outdir}/logs
