@@ -146,7 +146,6 @@ while true; do
     -- ) shift; break ;;
     * ) break ;;
     esac
-
 done
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
@@ -169,7 +168,6 @@ then
     indelocator_input="--indelocator ${outdir}/Indel.MuTect.vcf"
 fi
 
-
 if [[ $mutect2 -eq 1 ]]
 then
     $MYDIR/submit_MuTect2.sh \
@@ -185,6 +183,20 @@ then
     mutect2_input="--mutect2 ${outdir}/MuTect2.vcf"
 fi
 
+if [[ $varscan2 -eq 1 ]]
+then
+    $MYDIR/submit_VarScan2.sh \
+    --normal-bam ${normal_bam} \
+    --tumor-bam ${tumor_bam} \
+    --out-dir ${outdir} \
+    --out-vcf VarScan2.vcf \
+    --selector ${SELECTOR} \
+    --human-reference ${HUMAN_REFERENCE} \
+    --action $action
+
+    varscan_snv_input="--varscan-snv ${outdir}/VarScan2.snp.vcf"
+    varscan_indel_input="--varscan-indel ${outdir}/VarScan2.indel.vcf"
+fi
 
 if [[ $jointsnvmix2 -eq 1 ]]
 then
@@ -319,6 +331,8 @@ then
     $mutect_input \
     $indelocator_input \
     $mutect2_input \
+    $varscan_snv_input \
+    $varscan_indel_input \
     $jsm_input \
     $sniper_input \
     $vardict_input \

@@ -253,6 +253,23 @@ do
         mutect2_input="--mutect2 ${outdir}/MuTect2.vcf"
     fi
         
+
+    if [[ $varscan2 -eq 1 ]]
+    then
+        $MYDIR/submit_VarScan2.sh \
+        --normal-bam ${normal_bam} \
+        --tumor-bam ${tumor_bam} \
+        --out-dir ${outdir}/${ith_thread} \
+        --out-vcf VarScan2.vcf \
+        --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
+        --human-reference ${HUMAN_REFERENCE} \
+        --action $action
+    
+        varscan_snv_input="--varscan-snv ${outdir}/VarScan2.snp.vcf"
+        varscan_indel_input="--varscan-indel ${outdir}/VarScan2.indel.vcf"
+    fi
+
+
         
     if [[ $vardict -eq 1 ]]
     then
@@ -364,6 +381,8 @@ do
         $mutect_input \
         $indelocator_input \
         $mutect2_input \
+        $varscan_snv_input \
+        $varscan_indel_input \
         $jsm_input \
         $sniper_input \
         $vardict_input \

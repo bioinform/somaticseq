@@ -80,7 +80,6 @@ if [[ -r $SELECTOR ]]; then
     selector_text="-l /mnt/${SELECTOR}"
 fi
 
-
 echo "#!/bin/bash" > $varscan2_script
 echo "" >> $varscan2_script
 
@@ -112,12 +111,25 @@ echo "> ${outdir}/tumor.pileup" >> $varscan2_script
 
 echo "" >> $varscan2_script
 
-
 echo "docker run --rm -u $UID -v /:/mnt -i djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
-echo "java -Xmx8g -jar VarScan2.3.7.jar \\" >> $varscan2_script
+echo "java -Xmx8g -jar VarScan2.3.7.jar somatic \\" >> $varscan2_script
 echo "/mnt/${outdir}/normal.pileup \\" >> $varscan2_script
 echo "/mnt/${outdir}/tumor.pileup \\" >> $varscan2_script
 echo "/mnt/${outdir}/${outvcf%.vcf} --output-vcf 1" >> $varscan2_script
+
+echo "" >> $varscan2_script
+
+echo "docker run --rm -u $UID -v /:/mnt -i djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
+echo "java -Xmx8g -jar VarScan2.3.7.jar processSomatic \\" >> $varscan2_script
+echo "/mnt/${outdir}/${outvcf%.vcf}.snp.vcf" >> $varscan2_script
+
+echo "" >> $varscan2_script
+
+echo "docker run --rm -u $UID -v /:/mnt -i djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
+echo "java -Xmx8g -jar VarScan2.3.7.jar somaticFilter \\" >> $varscan2_script
+echo "/mnt/${outdir}/${outvcf%.vcf}.snp.Somatic.hc.vcf \\" >> $varscan2_script
+echo "-indel-file /mnt/${outdir}/${outvcf%.vcf}.indel.vcf \\" >> $varscan2_script
+echo "-output-file /mnt/${outdir}/${outvcf%.vcf}.snp.Somatic.hc.filter.vcf" >> $varscan2_script
 
 echo "" >> $varscan2_script
 
