@@ -286,6 +286,7 @@ $MYDIR/bamsurgeon_addindels.sh \
 --seed $seed \
 --out-script $out_script
 
+files_to_delete="$files_to_delete ${outdir}/snvs.added.bam ${outdir}/snvs.added.bam.bai"
 final_tumor_bam=${outdir}/snvs.indels.added.bam
 
 if [[ $num_svs -gt 0 ]]
@@ -299,7 +300,7 @@ then
     --svs ${outdir}/random_sSV.bed \
     --seed $seed \
     --out-script $out_script
-    
+        
     final_tumor_bam=${outdir}/snvs.indels.svs.added.bam
 fi
 
@@ -331,6 +332,5 @@ then
 fi
 
 echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
-
 
 ${action} $out_script

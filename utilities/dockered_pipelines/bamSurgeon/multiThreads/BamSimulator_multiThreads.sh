@@ -194,8 +194,6 @@ docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \
 -infile /mnt/${outdir}/genome.bed -num $threads -outfiles /mnt/${outdir}/bed
 
 
-
-
 ith_thread=1
 while [[ $ith_thread -le $threads ]]
 do
@@ -254,8 +252,6 @@ do
     fi
     
     in_normal="${ith_outdir}/${ith_thread}.normal.bam"
-    
-    
     
     # If TRUE, two bam files will be merged, sorted by QNAMES. 
     if [[ $merge_bam ]]
@@ -351,6 +347,7 @@ do
     --seed $seed \
     --out-script $out_script
     
+    files_to_delete="$files_to_delete ${ith_outdir}/snvs.added.bam ${ith_outdir}/snvs.added.bam.bai"
     final_tumor_bam=${ith_outdir}/snvs.indels.added.bam
     
     if [[ $num_svs -gt 0 ]]
@@ -364,7 +361,7 @@ do
         --svs ${ith_outdir}/random_sSV.bed \
         --seed $seed \
         --out-script $out_script
-        
+                
         final_tumor_bam=${ith_outdir}/snvs.indels.svs.added.bam
     fi
     
@@ -397,7 +394,6 @@ do
     echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
     
     ${action} $out_script
-
 
     ith_thread=$(( $ith_thread + 1))
 
