@@ -135,5 +135,8 @@ echo "" >> $varscan2_script
 
 echo "rm ${outdir}/normal.pileup" >> $varscan2_script
 echo "rm ${outdir}/tumor.pileup" >> $varscan2_script
+echo "" >> $varscan2_script
+
+echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $varscan2_script
 
 ${action} $varscan2_script
