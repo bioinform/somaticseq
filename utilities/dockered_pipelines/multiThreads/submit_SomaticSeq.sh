@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,tumor-bam:,normal-bam:,human-reference:,selector:,dbsnp:,cosmic:,action:,mutect:,indelocator:,mutect2:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,strelka-snv:,strelka-indel:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,tumor-bam:,normal-bam:,human-reference:,selector:,dbsnp:,cosmic:,action:,mutect:,indelocator:,mutect2:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,strelka-snv:,strelka-indel:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -45,7 +45,7 @@ while true; do
     --selector )
         case "$2" in
             "") shift 2 ;;
-            *) SELECTOR=$2 ; shift 2 ;;
+            *)  SELECTOR=$2 ; shift 2 ;;
         esac ;;
 
     --dbsnp )
@@ -72,28 +72,28 @@ while true; do
             *)  mutect_vcf=$2 ; shift 2 ;;
         esac ;;
 
+    --indelocator )
+        case "$2" in
+            "") shift 2 ;;
+            *)  indelocator_vcf=$2 ; shift 2 ;;
+        esac ;;
+
     --mutect2 )
         case "$2" in
             "") shift 2 ;;
             *)  mutect2_vcf=$2 ; shift 2 ;;
         esac ;;
 
-    --strelka-snv )
+    --varscan-snv )
         case "$2" in
             "") shift 2 ;;
-            *)  strelka_snv_vcf=$2 ; shift 2 ;
+            *)  varscan_snv_vcf=$2 ; shift 2 ;;
         esac ;;
 
-    --strelka-indel )
+    --varscan-indel )
         case "$2" in
             "") shift 2 ;;
-            *)  strelka_indel_vcf=$2 ; shift 2 ;;
-        esac ;;
-
-    --indelocator )
-        case "$2" in
-            "") shift 2 ;;
-            *)  indelocator_vcf=$2 ; shift 2 ;;
+            *)  varscan_indel_vcf=$2 ; shift 2 ;;
         esac ;;
 
     --jsm )
@@ -136,6 +136,18 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *)  scalpel_vcf=$2 ; shift 2 ;;
+        esac ;;
+
+    --strelka-snv )
+        case "$2" in
+            "") shift 2 ;;
+            *)  strelka_snv_vcf=$2 ; shift 2 ;
+        esac ;;
+
+    --strelka-indel )
+        case "$2" in
+            "") shift 2 ;;
+            *)  strelka_indel_vcf=$2 ; shift 2 ;;
         esac ;;
 
     --ada-r-script )
@@ -200,6 +212,8 @@ fi
 if [[ $mutect_vcf ]];        then mutect_text="--mutect /mnt/${mutect_vcf}";                      fi
 if [[ $indelocator_vcf ]];   then indelocator_text="--indelocator /mnt/${indelocator_vcf}";       fi
 if [[ $mutect2_vcf ]];       then mutect2_text="--mutect2 /mnt/${mutect2_vcf}";                   fi
+if [[ $varscan_snv_vcf ]];   then varscan_snv_text="--varscan-snv /mnt/${varscan_snv_vcf}";       fi
+if [[ $varscan_indel_vcf ]]; then varscan_indel_text="--varscan-indel /mnt/${varscan_indel_vcf}"; fi
 if [[ $jsm_vcf ]];           then jsm_text="--jsm /mnt/${jsm_vcf}";                               fi
 if [[ $sniper_vcf ]];        then sniper_text="--sniper /mnt/${sniper_vcf}";                      fi
 if [[ $vardict_vcf ]];       then vardict_text="--vardict /mnt/${vardict_vcf}";                   fi
@@ -242,6 +256,8 @@ echo "--normal-bam       /mnt/${normal_bam} \\" >> $sseq_script
 echo "$mutect_text \\" >> $sseq_script
 echo "$indelocator_text \\" >> $sseq_script
 echo "$mutect2_text \\" >> $sseq_script
+echo "$varscan_snv_vcf \\" >> $sseq_script
+echo "$varscan_indel_vcf \\" >> $sseq_script
 echo "$jsm_text \\" >> $sseq_script
 echo "$sniper_text \\" >> $sseq_script
 echo "$vardict_text \\" >> $sseq_script
