@@ -110,7 +110,7 @@ SomaticSeq and (almost) all the somatic mutation callers we have incorporated ar
   
   \item MuTect2 (tested with GATK:4.beta.3): https://hub.docker.com/r/broadinstitute/gatk
 
-  \item VarScan2 (untested): https://hub.docker.com/r/jeltje/varscan2/
+  \item VarScan2 (untested): https://hub.docker.com/r/djordjeklisic/sbg-varscan2/
 
   \item JointSNVMix2: https://hub.docker.com/r/lethalfang/jointsnvmix2/
 
@@ -619,6 +619,25 @@ find /ABSOLUTE/PATH/TO/RESULTS -name 'somaticseq*.cmd' -exec qsub {} \;
 
 
 
+\section{Use BAMSurgeon to create training set}
+
+For your convenience, we have created a couple of scripts that can generate the pipeline script to create training data using BAMSurgon at somaticseq/utilities/dockered\_pipelines/bamSurgeon. Descriptions and example commands can be found in the README there. 
+
+\subsection{Requirements}
+
+\begin{itemize}
+
+  \item Have internet connection, and able to pull and run docker images from docker.io
+
+  \item Have cluster management system such as Sun Grid Engine, so that the "qsub" command is valid
+
+\end{itemize}
+
+
+
+
+
+
 \section{Release Notes}
 
 Make sure training and prediction use the same version. Otherwise the prediction is not valid. 
@@ -825,7 +844,6 @@ Have implemented the following improvement, mostly for indels:
 
 \subsection{Version 2.3.1}
 
-
 \begin{itemize}
 
   \item
@@ -834,6 +852,15 @@ Have implemented the following improvement, mostly for indels:
 \end{itemize}
 
 
+
+\subsection{Version 2.3.2}
+
+\begin{itemize}
+
+  \item
+  Added dockerized BAMSurgeon pipeline generator at utilities/dockered\_pipelines/bamSurgeon
+
+\end{itemize}
 
 
 
