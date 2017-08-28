@@ -139,5 +139,21 @@ echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 samtools so
 echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam1}" >> $out_script
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} -o /mnt/${outdir}/${outbam2} /mnt/${pick2_old}" >> $out_script
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam2}" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} -o /mnt/${outdir}/oldHeader.${outbam2} /mnt/${pick2_old}" >> $out_script
+echo "" >> $out_script
+
+# Uniform sample and read group names in the merged file
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-1 \\" >> $out_script
+echo "java -Xmx6g -jar /usr/local/picard-tools-1.131/picard.jar AddOrReplaceReadGroups \\" >> $out_script
+echo "I=/mnt/${outdir}/oldHeader.${outbam2} \\" >> $out_script
+echo "RGID=BAMSurgeon \\" >> $out_script
+echo "RGLB=TNMerged \\" >> $out_script
+echo "RGPL=illumina \\" >> $out_script
+echo "RGPU=BAMSurgeon \\" >> $out_script
+echo "RGSM=tumorDesignate \\" >> $out_script
+echo "CREATE_INDEX=true \\" >> $out_script
+echo "O=/mnt/${outdir}/${outbam2}" >> $out_script
+echo "" >> $out_script
+
+echo "mv ${outdir}/${outbam2%.bam}.bai ${outdir}/${outbam2%.bam}.bam.bai" >> $out_script
+echo "rm ${outdir}/oldHeader.${outbam2}" >> $out_script
