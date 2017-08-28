@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,dbsnp:,cosmic:,action:,threads:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_callers_multiThreads.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,dbsnp:,cosmic:,action:,somaticseq-action:,threads:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_callers_multiThreads.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -17,6 +17,9 @@ timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 tumor_name='TUMOR'
 normal_name='NORMAL'
 action='echo'
+somaticseq_action='echo'
+somaticseq_dir='SomaticSeq'
+
 threads=12
 
 while true; do
@@ -26,6 +29,12 @@ while true; do
             "") shift 2 ;;
             *)  outdir=$2 ; shift 2 ;;
     esac ;;
+
+    --somaticseq-dir )
+        case "$2" in
+            "") shift 2 ;;
+            *)  somaticseq_dir=$2 ; shift 2 ;;
+        esac ;;
 
     --tumor-bam )
         case "$2" in
@@ -80,7 +89,13 @@ while true; do
             "") shift 2 ;;
             *)  action=$2 ; shift 2 ;;
         esac ;;
-
+        
+    --somaticseq-action )
+        case "$2" in
+            "") shift 2 ;;
+            *)  somaticseq_action=$2 ; shift 2 ;;
+        esac ;;
+        
     --threads )
         case "$2" in
             "") shift 2 ;;
@@ -373,7 +388,7 @@ do
         $MYDIR/submit_SomaticSeq.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
-        --out-dir ${outdir}/${ith_thread}/SomaticSeq \
+        --out-dir ${outdir}/${ith_thread}/${somaticseq_dir} \
         --human-reference ${HUMAN_REFERENCE} \
         $dbsnp_input \
         $cosmic_input \
@@ -397,7 +412,7 @@ do
         $truth_snv_text \
         $truth_indel_text \
         $ada_r_script_text \
-        --action echo
+        --action ${somaticseq_action}
     fi
         
     ith_thread=$(( $ith_thread + 1))
