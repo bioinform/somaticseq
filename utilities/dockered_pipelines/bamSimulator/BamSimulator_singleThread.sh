@@ -194,7 +194,7 @@ echo "" >> $out_script
 # If TRUE, two bam files will be merged, sorted by QNAMES. 
 if [[ $merge_bam ]]
 then
-    $MYDIR/MergeTN.sh \
+    $MYDIR/bamSurgeon/MergeTN.sh \
     --tumor-bam  ${in_tumor} \
     --normal-bam ${in_normal} \
     --output-dir ${outdir} \
@@ -209,7 +209,7 @@ then
 # IF NOT, just sort the "in_tumor" by QNAMES, but only if it needs to be split. 
 elif [[ $split_bam ]]
 then
-    $MYDIR/SortByReadName.sh \
+    $MYDIR/bamSurgeon/SortByReadName.sh \
     --output-dir ${outdir} \
     --bam-in     ${in_tumor} \
     --bam-out    sortQNAME.bam \
@@ -231,7 +231,7 @@ then
         clean_bam_input='--clean-bam'
     fi
     
-    $MYDIR/bamsurgeon_split_BAM.sh \
+    $MYDIR/bamSurgeon/bamsurgeon_split_BAM.sh \
     --genome-reference ${HUMAN_REFERENCE} \
     --output-dir ${outdir} \
     --bam-in ${bam_file_to_be_split} \
@@ -260,7 +260,7 @@ fi
 
 
 
-$MYDIR/bamsurgeon_random_sites.sh \
+$MYDIR/bamSurgeon/bamsurgeon_random_sites.sh \
 --output-dir ${outdir} \
 --genome-reference ${HUMAN_REFERENCE} \
 --selector ${SELECTOR} \
@@ -269,7 +269,7 @@ $MYDIR/bamsurgeon_random_sites.sh \
 --out-script $out_script
 
 
-$MYDIR/bamsurgeon_addsnvs.sh \
+$MYDIR/bamSurgeon/bamsurgeon_addsnvs.sh \
 --output-dir ${outdir} \
 --genome-reference ${HUMAN_REFERENCE} \
 --bam-in ${bam_file_for_spikein} \
@@ -281,7 +281,7 @@ $MYDIR/bamsurgeon_addsnvs.sh \
 --seed $seed \
 --out-script $out_script
 
-$MYDIR/bamsurgeon_addindels.sh \
+$MYDIR/bamSurgeon/bamsurgeon_addindels.sh \
 --output-dir ${outdir} \
 --genome-reference ${HUMAN_REFERENCE} \
 --bam-in ${outdir}/snvs.added.bam  \
@@ -298,7 +298,7 @@ final_tumor_bam=${outdir}/snvs.indels.added.bam
 
 if [[ $num_svs -gt 0 ]]
 then
-    $MYDIR/bamsurgeon_addsvs.sh \
+    $MYDIR/bamSurgeon/bamsurgeon_addsvs.sh \
     --output-dir ${outdir} \
     --genome-reference ${HUMAN_REFERENCE} \
     --bam-in ${outdir}/snvs.indels.added.bam \
@@ -318,7 +318,7 @@ echo "" >> $out_script
 
 if [[ $indel_realign ]]
 then
-    $MYDIR/IndelRealign.sh \
+    $MYDIR/bamSurgeon/IndelRealign.sh \
     --tumor-bam ${outdir}/${out_tumor} \
     --normal-bam ${outdir}/${out_normal} \
     --genome-reference ${HUMAN_REFERENCE} \
