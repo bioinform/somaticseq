@@ -220,7 +220,6 @@ then
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
     --out-vcf JointSNVMix2.vcf \
-    --selector ${SELECTOR} \
     --human-reference ${HUMAN_REFERENCE} \
     --action $action
 
