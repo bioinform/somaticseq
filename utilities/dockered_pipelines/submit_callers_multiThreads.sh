@@ -192,7 +192,7 @@ docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \
 # JSM is outdated and doesn't support partial BAM input....
 if [[ $jointsnvmix2 -eq 1 ]]
 then
-    $MYDIR/submit_JointSNVMix2.sh \
+    $MYDIR/mutation_callers/submit_JointSNVMix2.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
@@ -205,7 +205,7 @@ fi
 # SomaticSniper is very fast, so no need to parallelize
 if [[ $somaticsniper -eq 1 ]]
 then
-    $MYDIR/submit_SomaticSniper.sh \
+    $MYDIR/mutation_callers/submit_SomaticSniper.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
@@ -238,7 +238,7 @@ do
     
     if [[ $mutect -eq 1 ]]
     then
-        $MYDIR/submit_MuTect.sh \
+        $MYDIR/mutation_callers/submit_MuTect.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
         --out-dir ${outdir}/${ith_thread} \
@@ -255,7 +255,7 @@ do
 
     if [[ $mutect2 -eq 1 ]]
     then
-        $MYDIR/submit_MuTect2.sh \
+        $MYDIR/mutation_callers/submit_MuTect2.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
         --out-dir ${outdir}/${ith_thread} \
@@ -271,7 +271,7 @@ do
 
     if [[ $varscan2 -eq 1 ]]
     then
-        $MYDIR/submit_VarScan2.sh \
+        $MYDIR/mutation_callers/submit_VarScan2.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
         --out-dir ${outdir}/${ith_thread} \
@@ -288,7 +288,7 @@ do
         
     if [[ $vardict -eq 1 ]]
     then
-        $MYDIR/submit_VarDictJava.sh \
+        $MYDIR/mutation_callers/submit_VarDictJava.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
         --out-dir ${outdir}/${ith_thread} \
@@ -303,7 +303,7 @@ do
     
     if [[ $muse -eq 1 ]]
     then
-        $MYDIR/submit_MuSE.sh \
+        $MYDIR/mutation_callers/submit_MuSE.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
         --out-dir ${outdir}/${ith_thread} \
@@ -319,7 +319,7 @@ do
     
     if [[ $lofreq -eq 1 ]]
     then
-        $MYDIR/submit_LoFreq.sh \
+        $MYDIR/mutation_callers/submit_LoFreq.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
         --out-dir ${outdir}/${ith_thread} \
@@ -336,7 +336,7 @@ do
     
     if [[ $scalpel -eq 1 ]]
     then
-        $MYDIR/submit_Scalpel.sh \
+        $MYDIR/mutation_callers/submit_Scalpel.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
         --out-dir ${outdir}/${ith_thread} \
@@ -351,7 +351,7 @@ do
       
     if [[ $strelka -eq 1 ]]
     then
-        $MYDIR/submit_Strelka.sh \
+        $MYDIR/mutation_callers/submit_Strelka.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
         --out-dir ${outdir}/${ith_thread} \
@@ -385,7 +385,7 @@ do
             ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"
         fi
         
-        $MYDIR/submit_SomaticSeq.sh \
+        $MYDIR/mutation_callers/submit_SomaticSeq.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
         --out-dir ${outdir}/${ith_thread}/${somaticseq_dir} \

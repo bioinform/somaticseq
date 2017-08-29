@@ -98,7 +98,7 @@ echo "" >> $sniper_script
 echo "#$ -o ${logdir}" >> $sniper_script
 echo "#$ -e ${logdir}" >> $sniper_script
 echo "#$ -S /bin/bash" >> $sniper_script
-echo '#$ -l h_vmem=8G' >> $sniper_script
+echo '#$ -l h_vmem=6G' >> $sniper_script
 echo 'set -e' >> $sniper_script
 echo "" >> $sniper_script
 

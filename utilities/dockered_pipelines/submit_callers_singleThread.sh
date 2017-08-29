@@ -169,7 +169,7 @@ mkdir -p ${logdir}
 
 if [[ $mutect -eq 1 ]]
 then
-    $MYDIR/submit_MuTect.sh \
+    $MYDIR/mutation_callers/submit_MuTect.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
@@ -185,7 +185,7 @@ fi
 
 if [[ $mutect2 -eq 1 ]]
 then
-    $MYDIR/submit_MuTect2.sh \
+    $MYDIR/mutation_callers/submit_MuTect2.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
@@ -200,7 +200,7 @@ fi
 
 if [[ $varscan2 -eq 1 ]]
 then
-    $MYDIR/submit_VarScan2.sh \
+    $MYDIR/mutation_callers/submit_VarScan2.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
@@ -215,7 +215,7 @@ fi
 
 if [[ $jointsnvmix2 -eq 1 ]]
 then
-    $MYDIR/submit_JointSNVMix2.sh \
+    $MYDIR/mutation_callers/submit_JointSNVMix2.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
@@ -229,7 +229,7 @@ fi
 
 if [[ $somaticsniper -eq 1 ]]
 then
-    $MYDIR/submit_SomaticSniper.sh \
+    $MYDIR/mutation_callers/submit_SomaticSniper.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
@@ -242,7 +242,7 @@ fi
 
 if [[ $vardict -eq 1 ]]
 then
-    $MYDIR/submit_VarDictJava.sh \
+    $MYDIR/mutation_callers/submit_VarDictJava.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
@@ -256,7 +256,7 @@ fi
 
 if [[ $muse -eq 1 ]]
 then
-    $MYDIR/submit_MuSE.sh \
+    $MYDIR/mutation_callers/submit_MuSE.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
@@ -271,7 +271,7 @@ fi
 
 if [[ $lofreq -eq 1 ]]
 then
-    $MYDIR/submit_LoFreq.sh \
+    $MYDIR/mutation_callers/submit_LoFreq.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
@@ -287,7 +287,7 @@ fi
 
 if [[ $scalpel -eq 1 ]]
 then
-    $MYDIR/submit_Scalpel.sh \
+    $MYDIR/mutation_callers/submit_Scalpel.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
@@ -301,13 +301,14 @@ fi
 
 if [[ $strelka -eq 1 ]]
 then
-    $MYDIR/submit_Strelka.sh \
+    $MYDIR/mutation_callers/submit_Strelka.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir} \
     --selector ${SELECTOR} \
     --out-vcf Strelka.vcf \
     --human-reference ${HUMAN_REFERENCE} \
+    --exome \
     --action $action
 
     strelka_snv_input="--strelka-snv ${outdir}/Strelka/results/variants/somatic.snvs.vcf.gz"
@@ -335,7 +336,7 @@ then
         ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"
     fi
 
-    $MYDIR/submit_SomaticSeq.sh \
+    $MYDIR/mutation_callers/submit_SomaticSeq.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir}/${somaticseq_dir} \

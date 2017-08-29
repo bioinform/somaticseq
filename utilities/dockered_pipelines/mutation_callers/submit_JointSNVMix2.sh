@@ -90,7 +90,7 @@ echo "" >> $jsm_script
 echo "#$ -o ${logdir}" > $jsm_script
 echo "#$ -e ${logdir}" >> $jsm_script
 echo "#$ -S /bin/bash" >> $jsm_script
-echo '#$ -l h_vmem=20G' >> $jsm_script
+echo '#$ -l h_vmem=16G' >> $jsm_script
 echo 'set -e' >> $jsm_script
 echo "" >> $jsm_script
 

@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,action: -n 'submit_Strelka.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,action:,exome -n 'submit_Strelka.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -13,7 +13,6 @@ eval set -- "$OPTS"
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
-VAF=0.05
 action=echo
 
 while true; do
@@ -42,23 +41,30 @@ while true; do
             *)  normal_bam=$2 ; shift 2 ;;
         esac ;;
 
-    --selector )
-        case "$2" in
-            "") shift 2 ;;
-            *) SELECTOR=$2 ; shift 2 ;;
-        esac ;;
-
     --human-reference )
         case "$2" in
             "") shift 2 ;;
             *)  HUMAN_REFERENCE=$2 ; shift 2 ;;
         esac ;;
 
+    --selector )
+        case "$2" in
+            "") shift 2 ;;
+            *) SELECTOR=$2 ; shift 2 ;;
+        esac ;;
+        
     --action )
         case "$2" in
             "") shift 2 ;;
             *) action=$2 ; shift 2 ;;
         esac ;;
+        
+    --exome )
+        case "$2" in
+            "") shift 2 ;;
+            *)  if_exome=$2 ; shift 2 ;;
+        esac ;;
+
 
     -- ) shift; break ;;
     * ) break ;;
@@ -70,6 +76,11 @@ vcf_prefix=${outvcf%\.vcf}
 
 logdir=${outdir}/logs
 mkdir -p ${logdir}
+
+if [[ ${SELECTOR} &&  `cat ${SELECTOR} | wc -l` -lt 50 ]]; then
+    region_txt=`cat ${SELECTOR} | awk -F "\t" '{print "--region=" $1 ":" $2+1 "-" $3}' | tr '\n' '\ '`
+fi
+
 
 strelka_script=${outdir}/logs/strelka_${timestamp}.cmd
 
@@ -100,6 +111,10 @@ else
     input_BED=${outdir}/${selector_basename}.gz
 fi
 
+if [[ $if_exome ]]
+then
+    exome='--exome'
+fi
 
 echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/strelka:2.8.2 \\" >> $strelka_script
 echo "/opt/strelka/bin/configureStrelkaSomaticWorkflow.py \\" >> $strelka_script
@@ -107,9 +122,11 @@ echo "--tumorBam=/mnt/${tumor_bam} \\" >> $strelka_script
 echo "--normalBam=/mnt/${normal_bam} \\" >> $strelka_script
 echo "--referenceFasta=/mnt/${HUMAN_REFERENCE}  \\" >> $strelka_script
 echo "--callMemMb=4096 \\" >> $strelka_script
-echo "--exome \\" >> $strelka_script
+echo "$region_txt \\" >> $strelka_script
 echo "--callRegions=/mnt/${input_BED} \\" >> $strelka_script
+echo "${exome} \\" >> $strelka_script
 echo "--runDir=/mnt/${outdir}/${outvcf%\.vcf}" >> $strelka_script
+
 echo "" >> $strelka_script
 
 echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/strelka:2.8.2 \\" >> $strelka_script
