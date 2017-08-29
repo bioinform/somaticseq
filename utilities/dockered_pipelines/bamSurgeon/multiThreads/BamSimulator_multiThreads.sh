@@ -306,7 +306,14 @@ do
     
         bam_file_for_spikein="${ith_outdir}/Designated.Tumor.bam"
     
-        files_to_delete="${bam_file_to_be_split%.bam}.pick1.bam ${bam_file_to_be_split%.bam}.pick2.bam $files_to_delete"
+        if [[ $clean_bam ]]
+        then
+            clean_bam=${bam_file_to_be_split%.bam}.Clean.bam
+            files_to_delete="${clean_bam%.bam}.pick1.bam ${clean_bam%.bam}.pick2.bam $files_to_delete"
+            
+        else
+            files_to_delete="${bam_file_to_be_split%.bam}.pick1.bam ${bam_file_to_be_split%.bam}.pick2.bam $files_to_delete"
+        fi
     
     # If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. 
     else
