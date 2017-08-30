@@ -82,4 +82,4 @@ Synthetic mutations will then be spiked into the designated tumor to create "rea
 This is the approach described in our [2017 AACR Abstract](http://dx.doi.org/10.1158/1538-7445.AM2017-386). 
 
 <b>A schematic of the simulation procedure</b>
-  ![Onkoinsight Simulation](../onkoinsight_sim.png)
+  ![Onkoinsight Simulation](onkoinsight_sim.png)
