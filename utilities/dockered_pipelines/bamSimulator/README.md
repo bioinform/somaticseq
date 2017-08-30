@@ -2,9 +2,9 @@
 * Have internet connection, and able to pull and run docker images from Docker Hub, as we have dockerized the entire BAMSurgeon workflow. 
 * **Recommended**: Have cluster management system with valid "qsub" command, such as Sun Grid Engine (SGE).
 
-**Example Command**
+**Example Command for single-thread jobs**
 ```
-$PATH/TO/somaticseq/utilities/dockered_pipelines/bamSurgeon/singleThread/BamSimulator.sh \
+$PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_singleThread.sh \
 --genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
 --selector          /ABSOLUTE/PATH/TO/Exome_Capture.GRCh38.bed \
 --tumor-bam-in      /ABSOLUTE/PATH/TO/Tumor_Sample.bam \
@@ -23,7 +23,29 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSurgeon/singleThread/BamSimu
 --merge-bam --split-bam --indel-realign
 ```
 
-**BamSimulator.sh** creates two semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**, **synthetic_indels.vcf**, and **synthetic_svs.vcf**.
+**Example Command for multi-thread jobs**
+```
+$PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multiThreads.sh \
+--genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
+--selector          /ABSOLUTE/PATH/TO/Exome_Capture.GRCh38.bed \
+--tumor-bam-in      /ABSOLUTE/PATH/TO/Tumor_Sample.bam \
+--normal-bam-in     /ABSOLUTE/PATH/TO/Normal_Sample.bam \
+--tumor-bam-out     syntheticTumor.bam \
+--normal-bam-out    syntheticNormal.bam \
+--split-proportion  0.5 \
+--num-snvs          300 \
+--num-indels        100 \
+--num-svs           50 \
+--min-vaf           0.05 \
+--max-vaf           0.5 \
+--min-variant-reads 1 \
+--output-dir        /ABSOLUTE/PATH/TO/trainingSet \
+--threads           12 \
+--action            qsub
+--merge-bam --split-bam --indel-realign
+```
+
+**BamSimulator_.sh** creates two semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**, **synthetic_indels.vcf**, and **synthetic_svs.vcf**.
 
 The following options:
 * --genome-reference /ABSOLUTE/PATH/TO/human_reference.fa (Required)
@@ -46,7 +68,8 @@ The following options:
 * --split-bam Flag to split BAM file for tumor and normal
 * --clean-bam Flag to go through the BAM file and remove reads where more than 2 identical read names are present. This was necessary for some BAM files downloaded from TCGA. However, a proper pair-end BAM file should not have the same read name appearing more than twice.
 * --indel-realign Conduct GATK Joint Indel Realignment on the two output BAM files. Instead of syntheticNormal.bam and syntheticTumor.bam, the final BAM files will be **syntheticNormal.JointRealigned.bam** and **syntheticTumor.JointRealigned.bam**.
-* --seed Random seed. Pick any integer for reproducibility purposes. 
+* --seed Random seed. Pick any integer for reproducibility purposes.
+* --threads Split the BAM files evenly in N regions, then process each (pair) of sub-BAM files in parallel. 
 * --action The command preceding the run script created into /ABSOLUTE/PATH/TO/BamSurgeoned_SAMPLES/logs. "qsub" is to submit the script in SGE system. Default = echo
 
 **What does that command do**

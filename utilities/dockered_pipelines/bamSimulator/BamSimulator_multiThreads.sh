@@ -231,7 +231,7 @@ do
     
     
     # Split the BAM files to the ith region:
-    $MYDIR/split_BAM_by_BED.sh \
+    $MYDIR/bamSurgeon/split_BAM_by_BED.sh \
     --output-dir ${ith_outdir} \
     --bam-in ${in_tumor_whole} \
     --bam-out ${ith_thread}.tumor.bam \
@@ -243,7 +243,7 @@ do
     # Split for normal
     if [[ $in_normal_whole ]]
     then
-        $MYDIR/split_BAM_by_BED.sh \
+        $MYDIR/bamSurgeon/split_BAM_by_BED.sh \
         --output-dir ${ith_outdir} \
         --bam-in ${in_normal_whole} \
         --bam-out ${ith_thread}.normal.bam \
@@ -256,7 +256,7 @@ do
     # If TRUE, two bam files will be merged, sorted by QNAMES. 
     if [[ $merge_bam ]]
     then
-        $MYDIR/MergeTN.sh \
+        $MYDIR/bamSurgeon/MergeTN.sh \
         --tumor-bam  ${in_tumor} \
         --normal-bam ${in_normal} \
         --output-dir ${ith_outdir} \
@@ -271,7 +271,7 @@ do
     # IF NOT, just sort the "in_tumor" by QNAMES, but only if it needs to be split. 
     elif [[ $split_bam ]]
     then
-        $MYDIR/SortByReadName.sh \
+        $MYDIR/bamSurgeon/SortByReadName.sh \
         --output-dir ${ith_outdir} \
         --bam-in     ${in_tumor} \
         --bam-out    sortQNAME.bam \
@@ -293,7 +293,7 @@ do
             clean_bam_input='--clean-bam'
         fi
         
-        $MYDIR/bamsurgeon_split_BAM.sh \
+        $MYDIR/bamSurgeon/bamsurgeon_split_BAM.sh \
         --genome-reference ${HUMAN_REFERENCE} \
         --output-dir ${ith_outdir} \
         --bam-in ${bam_file_to_be_split} \
@@ -321,7 +321,7 @@ do
     fi
     
     
-    $MYDIR/bamsurgeon_random_sites.sh \
+    $MYDIR/bamSurgeon/bamsurgeon_random_sites.sh \
     --output-dir ${ith_outdir} \
     --genome-reference ${HUMAN_REFERENCE} \
     --selector ${SELECTOR} \
@@ -330,7 +330,7 @@ do
     --out-script $out_script
     
     
-    $MYDIR/bamsurgeon_addsnvs.sh \
+    $MYDIR/bamSurgeon/bamsurgeon_addsnvs.sh \
     --output-dir ${ith_outdir} \
     --genome-reference ${HUMAN_REFERENCE} \
     --bam-in ${bam_file_for_spikein} \
@@ -342,7 +342,7 @@ do
     --seed $seed \
     --out-script $out_script
     
-    $MYDIR/bamsurgeon_addindels.sh \
+    $MYDIR/bamSurgeon/bamsurgeon_addindels.sh \
     --output-dir ${ith_outdir} \
     --genome-reference ${HUMAN_REFERENCE} \
     --bam-in ${ith_outdir}/snvs.added.bam  \
@@ -359,7 +359,7 @@ do
     
     if [[ $num_svs -gt 0 ]]
     then
-        $MYDIR/bamsurgeon_addsvs.sh \
+        $MYDIR/bamSurgeon/bamsurgeon_addsvs.sh \
         --output-dir ${ith_outdir} \
         --genome-reference ${HUMAN_REFERENCE} \
         --bam-in ${ith_outdir}/snvs.indels.added.bam \
@@ -379,7 +379,7 @@ do
     
     if [[ $indel_realign ]]
     then
-        $MYDIR/IndelRealign.sh \
+        $MYDIR/bamSurgeon/IndelRealign.sh \
         --tumor-bam ${ith_outdir}/${out_tumor} \
         --normal-bam ${ith_outdir}/${out_normal} \
         --genome-reference ${HUMAN_REFERENCE} \

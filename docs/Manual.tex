@@ -499,22 +499,23 @@ SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0
 
 For your convenience, we have created a couple of scripts that can generate run script for the dockerized somatic mutation callers. 
 
+\subsection{Location}
+
+  \begin{itemize}
+    \item somaticseq/utilities/dockered\_pipelines/
+  \end{itemize}
+
 \subsection{Requirements}
 
-\begin{itemize}
-
-  \item Have internet connection, and able to pull and run docker images from docker.io
-
-  \item Have cluster management system such as Sun Grid Engine, so that the "qsub" command is valid
-
-\end{itemize}
+  \begin{itemize}
+    \item Have internet connection, and able to pull and run docker images from docker.io
+    \item Have cluster management system such as Sun Grid Engine, so that the "qsub" command is valid
+  \end{itemize}
 
 
-\subsection{Single thread scripts (best for WES or Targeted Sequencing)}
+\subsection{Example commands}
 
-\begin{itemize}
-  \item Location: somaticseq/utilities/dockered\_pipelines/singleThread
-\end{itemize}
+For single-threaded jobs, best suited for whole exome sequencing or less. 
 
 \begin{lstlisting}
 # Example command to submit the run scripts for each of the following somatic mutation callers
@@ -530,7 +531,24 @@ utilities/dockered_pipelines/singleThread/submit_callers_singleThread.sh \
 \end{lstlisting}
 
 
-\subsubsection{What does that command do}
+For multi-threaded jobs, best suited for whole genome sequencing. 
+
+\begin{lstlisting}
+# Submitting mutation caller jobs by splitting each job into 36 even regions.
+utilities/dockered_pipelines/multiThreads/submit_callers_multiThreads.sh \
+--normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
+--tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-dir      /ABSOLUTE/PATH/TO/RESULTS \
+--dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--threads         36 \
+--action          qsub \
+--mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+\end{lstlisting}
+
+
+
+\subsubsection{What does the single-threaded command do}
 
 \begin{itemize}
   \item
@@ -556,28 +574,7 @@ utilities/dockered_pipelines/singleThread/submit_callers_singleThread.sh \
 
 
 
-
-\subsection{Multi-thread scripts (best for WGS)}
-
-\begin{itemize}
-  \item Location: somaticseq/utilities/dockered\_pipelines/multiThread
-\end{itemize}
-
-\begin{lstlisting}
-# Submitting mutation caller jobs by splitting each job into 36 even regions.
-utilities/dockered_pipelines/multiThreads/submit_callers_multiThreads.sh \
---normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
---tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
---human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
---output-dir      /ABSOLUTE/PATH/TO/RESULTS \
---dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
---threads         36 \
---action          qsub \
---mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
-\end{lstlisting}
-
-
-\subsubsection{What does that command do}
+\subsubsection{What does the multi-threaded command do}
 It's very similar to the single-threaded WES solution, except the job will be split evenly based on genomic lengths.
 
 \begin{itemize}
@@ -621,7 +618,7 @@ find /ABSOLUTE/PATH/TO/RESULTS -name 'somaticseq*.cmd' -exec qsub {} \;
 
 \section{Use BAMSurgeon to create training set}
 
-For your convenience, we have created a couple of scripts that can generate the pipeline script to create training data using BAMSurgon at somaticseq/utilities/dockered\_pipelines/bamSurgeon. Descriptions and example commands can be found in the README there. 
+For your convenience, we have created a couple of wrapper scripts that can generate the run script to create training data using BAMSurgon at somaticseq/utilities/dockered\_pipelines/bamSimulator. Descriptions and example commands can be found in the README there. 
 
 \subsection{Requirements}
 
@@ -632,7 +629,6 @@ For your convenience, we have created a couple of scripts that can generate the 
   \item Have cluster management system such as Sun Grid Engine, so that the "qsub" command is valid
 
 \end{itemize}
-
 
 
 
@@ -847,7 +843,10 @@ Have implemented the following improvement, mostly for indels:
 \begin{itemize}
 
   \item
-  Improve the automated run script generator at utilities/dockered\_pipelines
+  Improve the automated run script generator at utilities/dockered\_pipelines.
+  
+  \item
+  No change to SomaticSeq algorithm
 
 \end{itemize}
 
@@ -861,9 +860,21 @@ Have implemented the following improvement, mostly for indels:
   Added run script generators for dockerized BAMSurgeon pipelines at utilities/dockered\_pipelines/bamSurgeon
   
   \item
-  Added an error message to r\_scripts/ada\_model\_builder\_ntChange.R when TrueVariants\_or\_False don't have both 0's and 1's. 
+  Added an error message to r\_scripts/ada\_model\_builder\_ntChange.R when TrueVariants\_or\_False don't have both 0's and 1's. Other than this warning message change, no other change to SomaticSeq algorithm.  
 
 \end{itemize}
+
+
+\subsection{Version 2.4.0}
+
+\begin{itemize}
+
+  \item
+  Restructured the utilities scripts. 
+
+\end{itemize}
+
+
 
 
 

@@ -2,9 +2,9 @@
 * Have internet connection, and able to pull and run docker images from Docker Hub.
 * **Recommended**: Have cluster management system with valid "qsub" command, such as Sun Grid Engine (SGE).
 
-**Example Command**
+**Example Command for multi-thread jobs**
 ```
-$PATH/TO/somaticseq/utilities/pipelines/multiThread/submit_callers_multiThreads.sh \
+$PATH/TO/somaticseq/utilities/pipelines/submit_callers_multiThreads.sh \
 --normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
@@ -13,6 +13,18 @@ $PATH/TO/somaticseq/utilities/pipelines/multiThread/submit_callers_multiThreads.
 --threads         36 \
 --action          qsub \
 --mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+```
+
+**Example Command for multi-thread jobs**
+```
+$PATH/TO/somaticseq/utilities/pipelines/submit_callers_singleThreads.sh \
+--normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
+--tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-dir      /ABSOLUTE/PATH/TO/RESULTS \
+--dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--action          qsub \
+--mutect2 --jointsnvmix2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
 ```
 
 **submit_callers_multiThreads.sh** can submit parallelized dockered job. It works better for WGS. The following options:
@@ -25,6 +37,8 @@ $PATH/TO/somaticseq/utilities/pipelines/multiThread/submit_callers_multiThreads.
 * --action qsub (Optional: the command preceding the .cmd scripts. Default is echo)
 * --threads 36 (Optional: evenly split the genome into 36 BED files. Default = 12).
 * --mutect2 (optional)
+* --varscan2 (optional)
+* --jointsnvmix2 (optional)
 * --somaticsniper (optional)
 * --vardict (optional)
 * --muse (optional)
