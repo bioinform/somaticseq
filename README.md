@@ -1,5 +1,5 @@
 <b>SomaticSeq: An ensemble approach to accurately detect somatic mutations</b>
-* Detailed documentation is included in the package. It's located in [docs/Manual.pdf](docs/Manual.pdf "User Manual").
+* Detailed documentation is included in the package. It's located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). Quick guide can be found [here](http://bioinform.github.io/somaticseq/).
 * Open-access publication in [Genome Biology](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page.
 * Note: Do not worry if Python throws the following warning. This occurs when scipy attempts a statistical test with empty data. This is expected when there is no variant read in the matched normal, resulting in NaN in the output.
