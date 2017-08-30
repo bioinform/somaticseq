@@ -107,6 +107,8 @@ echo "#$ -o ${logdir}" >> $mutect2_script
 echo "#$ -e ${logdir}" >> $mutect2_script
 echo "#$ -S /bin/bash" >> $mutect2_script
 echo '#$ -l h_vmem=10G' >> $mutect2_script
+echo '#$ -pe smp 4' >> $mutect2_script
+
 echo 'set -e' >> $mutect2_script
 echo "" >> $mutect2_script
 
