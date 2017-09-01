@@ -315,9 +315,10 @@ do
             files_to_delete="${bam_file_to_be_split%.bam}.pick1.bam ${bam_file_to_be_split%.bam}.pick2.bam $files_to_delete"
         fi
     
-    # If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. 
+    # If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. Without splitting, the original normal is the output normal
     else
         bam_file_for_spikein="${in_tumor}"
+        out_normal=${in_normal}
     fi
     
     
