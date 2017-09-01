@@ -256,8 +256,8 @@ then
 # If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. Without splitting, the original normal is the output normal
 else
     bam_file_for_spikein="${in_tumor}"
-    ln -s ${in_normal}     /mnt/${outdir}/${out_normal}
-    ln -s ${in_normal}.bai /mnt/${outdir}/${out_normal}.bai
+    ln -s /mnt/${in_normal}     ${outdir}/${out_normal}
+    ln -s /mnt/${in_normal}.bai ${outdir}/${out_normal}.bai
 fi
 
 
