@@ -276,15 +276,8 @@ else
         bam_file_to_be_split="${outdir}/Sorted.bam"
         files_to_delete="${outdir}/qnameSorted.bam ${outdir}/Cleaned.bam ${outdir}/Sorted.bam ${outdir}/Sorted.bam.bai $files_to_delete"
     fi
-
-# If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. Without splitting, the original normal is the output normal
-else
-=======
     
->>>>>>> 2e53e1f3fcaad787c8d537b06f7e042ecf5fb832
     bam_file_for_spikein="${in_tumor}"
-    ln -s /mnt/${in_normal}     ${outdir}/${out_normal}
-    ln -s /mnt/${in_normal}.bai ${outdir}/${out_normal}.bai
 fi
 
 
