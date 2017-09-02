@@ -278,6 +278,8 @@ else
     fi
     
     bam_file_for_spikein="${in_tumor}"
+    ln -s /mnt/${in_normal}     ${outdir}/${out_normal}
+    ln -s /mnt/${in_normal}.bai ${outdir}/${out_normal}.bai
 fi
 
 
