@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,tumor-bam:,normal-bam:,bam-out:,out-script:,standalone -n 'MergeTN.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,bam-out:,bam-in:,out-script:,standalone -n 'SortByReadName.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -14,8 +14,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 
-keep_intermediates=0
-outSM='TN_Merged'
+seed=$( date +"%Y" )
 
 while true; do
     case "$1" in
@@ -24,23 +23,17 @@ while true; do
                 "") shift 2 ;;
                 *)  outdir=$2 ; shift 2 ;;
             esac ;;
-            
+
+        --bam-in )
+            case "$2" in
+                "") shift 2 ;;
+                *)  inbam=$2 ; shift 2 ;;
+            esac ;;
+
         --bam-out )
             case "$2" in
                 "") shift 2 ;;
                 *)  outbam=$2 ; shift 2 ;;
-            esac ;;
-
-        --tumor-bam )
-            case "$2" in
-                "") shift 2 ;;
-                *)  tbam=$2 ; shift 2 ;;
-            esac ;;
-
-        --normal-bam )
-            case "$2" in
-                "") shift 2 ;;
-                *)  nbam=$2 ; shift 2 ;;
             esac ;;
 
         --out-script )
@@ -57,14 +50,11 @@ while true; do
     esac
 done
 
-logdir=${outdir}/logs
-mkdir -p ${logdir}
-
 if [[ ${out_script_name} ]]
 then
     out_script="${out_script_name}"
 else
-    out_script="${logdir}/mergeBams.${timestamp}.cmd"    
+    out_script="${logdir}/cleanBam.${timestamp}.cmd"    
 fi
 
 if [[ $standalone ]]
@@ -74,22 +64,15 @@ then
     echo "#$ -o ${logdir}" >> $out_script
     echo "#$ -e ${logdir}" >> $out_script
     echo "#$ -S /bin/bash" >> $out_script
-    echo '#$ -l h_vmem=8G' >> $out_script
+    echo '#$ -l h_vmem=4G' >> $out_script
     echo 'set -e' >> $out_script
 fi
 
 echo "" >> $out_script
 
-# Merge the 2 BAM files
+# To split a BAM file, first you must sort by name:
 echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
-echo "java -Xmx6g -jar /usr/local/picard-tools-1.131/picard.jar MergeSamFiles \\" >> $out_script
-echo "I=/mnt/${nbam} \\" >> $out_script
-echo "I=/mnt/${tbam} \\" >> $out_script
-echo "ASSUME_SORTED=true \\" >> $out_script
-echo "CREATE_INDEX=true \\" >> $out_script
-echo "O=/mnt/${outdir}/${outbam}" >> $out_script
-echo "" >> $out_script
-
-# Remove temp files
-echo "mv ${outdir}/${outbam%.bam}.bai ${outdir}/${outbam}.bai" >> $out_script
+echo "/usr/local/bamsurgeon/scripts/remove_reads_with_many_qnames_or_bad_CIGAR.py \\" >> $out_script
+echo "-bamin /mnt/${inbam} \\" >> $out_script
+echo "-bamout /mnt/${outdir}/${outbam}" >> $out_script
 echo "" >> $out_script

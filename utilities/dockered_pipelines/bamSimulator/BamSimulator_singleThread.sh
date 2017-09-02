@@ -199,26 +199,10 @@ then
     --normal-bam ${in_normal} \
     --output-dir ${outdir} \
     --bam-out    TNMerged.bam \
-    --out-SM     BamSurgeon \
     --out-script $out_script
     
-    bam_file_to_be_split="${outdir}/TNMerged.sortQNAME.bam"
-    
-    files_to_delete="${outdir}/TNMerged.bam ${bam_file_to_be_split} $files_to_delete"
-
-# IF NOT, just sort the "in_tumor" by QNAMES, but only if it needs to be split. 
-elif [[ $split_bam ]]
-then
-    $MYDIR/bamSurgeon/SortByReadName.sh \
-    --output-dir ${outdir} \
-    --bam-in     ${in_tumor} \
-    --bam-out    sortQNAME.bam \
-    --out-script $out_script
-    
-    bam_file_to_be_split="${outdir}/sortQNAME.bam"
-    
-    files_to_delete="${bam_file_to_be_split} ${bam_file_to_be_split}.bai $files_to_delete"
-
+    bam_file_to_be_split="${outdir}/TNMerged.bam"
+    files_to_delete="${outdir}/TNMerged.bam $files_to_delete"
 fi
 
 
@@ -228,8 +212,28 @@ then
 
     if [[ $clean_bam ]]
     then
-        clean_bam_input='--clean-bam'
+        $MYDIR/SortByReadName.sh \
+        --output-dir ${outdir} \
+        --bam-in ${outdir}/TNMerged.bam \
+        --bam-out qnameSorted.bam \
+        --out-script $out_script
+        
+        $MYDIR/cleanBam.sh \
+        --output-dir ${outdir} \
+        --bam-in ${outdir}/qnameSorted.bam \
+        --bam-out Cleaned.bam \
+        --out-script $out_script
+        
+        $MYDIR/SortByCoordinate.sh \
+        --output-dir ${outdir} \
+        --bam-in ${outdir}/Cleaned.bam \
+        --bam-out Sorted.bam \
+        --out-script $out_script
+        
+        bam_file_to_be_split="${outdir}/Sorted.bam"
+        files_to_delete="${outdir}/qnameSorted.bam ${outdir}/Cleaned.bam ${outdir}/Sorted.bam ${outdir}/Sorted.bam.bai $files_to_delete"
     fi
+    
     
     $MYDIR/bamSurgeon/bamsurgeon_split_BAM.sh \
     --genome-reference ${HUMAN_REFERENCE} \
@@ -239,22 +243,46 @@ then
     --bam-out2 Designated.Tumor.bam \
     --split-proportion ${proportion} \
     --seed $seed \
-    $clean_bam_input \
     --out-script $out_script
 
     bam_file_for_spikein="${outdir}/Designated.Tumor.bam"
     
+    files_to_delete="${outdir}/Designated.Tumor.bam ${outdir}/Designated.Tumor.bam.bai $files_to_delete"
+    
+# If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. 
+else
+    # Unless it needs to be cleaned:
+    
     if [[ $clean_bam ]]
     then
-        clean_bam=${bam_file_to_be_split%.bam}.Clean.bam
-        files_to_delete="${clean_bam%.bam}.pick1.bam ${clean_bam%.bam}.pick2.bam $files_to_delete"
+        $MYDIR/SortByReadName.sh \
+        --output-dir ${outdir} \
+        --bam-in ${in_tumor} \
+        --bam-out qnameSorted.bam \
+        --out-script $out_script
         
-    else
-        files_to_delete="${bam_file_to_be_split%.bam}.pick1.bam ${bam_file_to_be_split%.bam}.pick2.bam $files_to_delete"
+        $MYDIR/cleanBam.sh \
+        --output-dir ${outdir} \
+        --bam-in ${outdir}/qnameSorted.bam \
+        --bam-out Cleaned.bam \
+        --out-script $out_script
+        
+        $MYDIR/SortByCoordinate.sh \
+        --output-dir ${outdir} \
+        --bam-in ${outdir}/Cleaned.bam \
+        --bam-out Sorted.bam \
+        --out-script $out_script
+        
+        bam_file_to_be_split="${outdir}/Sorted.bam"
+        files_to_delete="${outdir}/qnameSorted.bam ${outdir}/Cleaned.bam ${outdir}/Sorted.bam ${outdir}/Sorted.bam.bai $files_to_delete"
     fi
+<<<<<<< HEAD
 
 # If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. Without splitting, the original normal is the output normal
 else
+=======
+    
+>>>>>>> 2e53e1f3fcaad787c8d537b06f7e042ecf5fb832
     bam_file_for_spikein="${in_tumor}"
     ln -s /mnt/${in_normal}     ${outdir}/${out_normal}
     ln -s /mnt/${in_normal}.bai ${outdir}/${out_normal}.bai
@@ -283,6 +311,7 @@ $MYDIR/bamSurgeon/bamsurgeon_addsnvs.sh \
 --seed $seed \
 --out-script $out_script
 
+
 $MYDIR/bamSurgeon/bamsurgeon_addindels.sh \
 --output-dir ${outdir} \
 --genome-reference ${HUMAN_REFERENCE} \
@@ -298,6 +327,7 @@ $MYDIR/bamSurgeon/bamsurgeon_addindels.sh \
 files_to_delete="$files_to_delete ${outdir}/snvs.added.bam ${outdir}/snvs.added.bam.bai"
 final_tumor_bam=${outdir}/snvs.indels.added.bam
 
+
 if [[ $num_svs -gt 0 ]]
 then
     $MYDIR/bamSurgeon/bamsurgeon_addsvs.sh \
@@ -312,6 +342,7 @@ then
         
     final_tumor_bam=${outdir}/snvs.indels.svs.added.bam
 fi
+
 
 echo "" >> $out_script
 echo "mv ${final_tumor_bam} ${outdir}/${out_tumor}" >> $out_script
