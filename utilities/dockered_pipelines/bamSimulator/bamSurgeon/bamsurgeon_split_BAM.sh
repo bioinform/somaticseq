@@ -107,7 +107,7 @@ echo "" >> $out_script
 # Then you can split
 echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/sortedBamSplit.py \\" >> $out_script
-echo "--bam /mnt/${bam_to_split} \\" >> $out_script
+echo "--bam /mnt/${inbam} \\" >> $out_script
 echo "--proportion ${proportion} \\" >> $out_script
 echo "--pick1 /mnt/${outdir}/${outbam1} \\" >> $out_script
 echo "--pick2 /mnt/${outdir}/${outbam2} \\" >> $out_script
