@@ -212,19 +212,19 @@ then
 
     if [[ $clean_bam ]]
     then
-        $MYDIR/SortByReadName.sh \
+        $MYDIR/bamSurgeon/SortByReadName.sh \
         --output-dir ${outdir} \
         --bam-in ${outdir}/TNMerged.bam \
         --bam-out qnameSorted.bam \
         --out-script $out_script
         
-        $MYDIR/cleanBam.sh \
+        $MYDIR/bamSurgeon/cleanBam.sh \
         --output-dir ${outdir} \
         --bam-in ${outdir}/qnameSorted.bam \
         --bam-out Cleaned.bam \
         --out-script $out_script
         
-        $MYDIR/SortByCoordinate.sh \
+        $MYDIR/bamSurgeon/SortByCoordinate.sh \
         --output-dir ${outdir} \
         --bam-in ${outdir}/Cleaned.bam \
         --bam-out Sorted.bam \
@@ -255,19 +255,19 @@ else
     
     if [[ $clean_bam ]]
     then
-        $MYDIR/SortByReadName.sh \
+        $MYDIR/bamSurgeon/SortByReadName.sh \
         --output-dir ${outdir} \
         --bam-in ${in_tumor} \
         --bam-out qnameSorted.bam \
         --out-script $out_script
         
-        $MYDIR/cleanBam.sh \
+        $MYDIR/bamSurgeon/cleanBam.sh \
         --output-dir ${outdir} \
         --bam-in ${outdir}/qnameSorted.bam \
         --bam-out Cleaned.bam \
         --out-script $out_script
         
-        $MYDIR/SortByCoordinate.sh \
+        $MYDIR/bamSurgeon/SortByCoordinate.sh \
         --output-dir ${outdir} \
         --bam-in ${outdir}/Cleaned.bam \
         --bam-out Sorted.bam \
