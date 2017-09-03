@@ -34,7 +34,7 @@ while true; do
         -o | --output-dir )
             case "$2" in
                 "") shift 2 ;;
-                *)  outdir=$2 ; shift 2 ;;
+                *)  parent_outdir=$2 ; shift 2 ;;
             esac ;;
             
         --genome-reference )
@@ -173,52 +173,49 @@ done
 
 hg_dict=${HUMAN_REFERENCE%\.fa*}.dict
 
-
-
-
 VERSION='latest'
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
-logdir=${outdir}/logs
-mkdir -p ${logdir}
+parent_logdir=${parent_outdir}/logs
+mkdir -p ${parent_logdir}
 
 if [[ $SELECTOR ]]
 then
-    cp $SELECTOR ${outdir}/genome.bed
+    cp $SELECTOR ${parent_outdir}/genome.bed
 else
-    cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
+    cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${parent_outdir}/genome.bed
 fi
 
 docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \
 /opt/somaticseq/utilities/split_Bed_into_equal_regions.py \
--infile /mnt/${outdir}/genome.bed -num $threads -outfiles /mnt/${outdir}/bed
+-infile /mnt/${parent_outdir}/genome.bed -num $threads -outfiles /mnt/${parent_outdir}/bed
 
 
 ith_thread=1
 while [[ $ith_thread -le $threads ]]
 do
 
-    ith_outdir="${outdir}/${ith_thread}"
-    ith_logdir="${ith_outdir}/logs"
+    outdir="${parent_outdir}/${ith_thread}"
+    logdir="${outdir}/logs"
 
-    mkdir -p ${ith_logdir}
+    mkdir -p ${outdir}
     
-    mv ${outdir}/${ith_thread}.bed ${ith_outdir}
+    mv ${parent_outdir}/${ith_thread}.bed ${outdir}
     
-    ith_selector="${ith_outdir}/${ith_thread}.bed"
+    ith_selector="${outdir}/${ith_thread}.bed"
     
     if [[ ${out_script_name} ]]
     then
-        out_script="${ith_logdir}/${out_script_name}"
+        out_script="${logdir}/${out_script_name}"
     else
-        out_script="${ith_logdir}/BamSimulator.${timestamp}.cmd"    
+        out_script="${logdir}/BamSimulator.${timestamp}.cmd"    
     fi
     
     echo "#!/bin/bash" > $out_script
     echo "" >> $out_script
     
-    echo "#$ -o ${ith_logdir}" >> $out_script
-    echo "#$ -e ${ith_logdir}" >> $out_script
+    echo "#$ -o ${logdir}" >> $out_script
+    echo "#$ -e ${logdir}" >> $out_script
     echo "#$ -S /bin/bash" >> $out_script
     echo '#$ -l h_vmem=12G' >> $out_script
     echo 'set -e' >> $out_script
@@ -232,26 +229,26 @@ do
     
     # Split the BAM files to the ith region:
     $MYDIR/bamSurgeon/split_BAM_by_BED.sh \
-    --output-dir ${ith_outdir} \
+    --output-dir ${outdir} \
     --bam-in ${in_tumor_whole} \
     --bam-out ${ith_thread}.tumor.bam \
     --selector ${ith_selector} \
     --out-script $out_script
     
-    in_tumor="${ith_outdir}/${ith_thread}.tumor.bam"
+    in_tumor="${outdir}/${ith_thread}.tumor.bam"
     
     # Split for normal
     if [[ $in_normal_whole ]]
     then
         $MYDIR/bamSurgeon/split_BAM_by_BED.sh \
-        --output-dir ${ith_outdir} \
+        --output-dir ${outdir} \
         --bam-in ${in_normal_whole} \
         --bam-out ${ith_thread}.normal.bam \
         --selector ${ith_selector} \
         --out-script $out_script
     fi
     
-    in_normal="${ith_outdir}/${ith_thread}.normal.bam"
+    in_normal="${outdir}/${ith_thread}.normal.bam"
     
     # If TRUE, two bam files will be merged, sorted by QNAMES. 
     if [[ $merge_bam ]]
@@ -259,28 +256,12 @@ do
         $MYDIR/bamSurgeon/MergeTN.sh \
         --tumor-bam  ${in_tumor} \
         --normal-bam ${in_normal} \
-        --output-dir ${ith_outdir} \
+        --output-dir ${outdir} \
         --bam-out    TNMerged.bam \
-        --out-SM     BamSurgeon \
         --out-script $out_script
         
-        bam_file_to_be_split="${ith_outdir}/TNMerged.sortQNAME.bam"
-        
-        files_to_delete="${ith_outdir}/TNMerged.bam ${bam_file_to_be_split} $files_to_delete"
-    
-    # IF NOT, just sort the "in_tumor" by QNAMES, but only if it needs to be split. 
-    elif [[ $split_bam ]]
-    then
-        $MYDIR/bamSurgeon/SortByReadName.sh \
-        --output-dir ${ith_outdir} \
-        --bam-in     ${in_tumor} \
-        --bam-out    sortQNAME.bam \
-        --out-script $out_script
-        
-        bam_file_to_be_split="${ith_outdir}/sortQNAME.bam"
-        
-        files_to_delete="${bam_file_to_be_split} ${bam_file_to_be_split}.bai $files_to_delete"
-    
+        bam_file_to_be_split="${outdir}/TNMerged.bam"
+        files_to_delete="${outdir}/TNMerged.bam $files_to_delete"
     fi
     
     
@@ -290,41 +271,79 @@ do
     
         if [[ $clean_bam ]]
         then
-            clean_bam_input='--clean-bam'
+
+            $MYDIR/SortByReadName.sh \
+            --output-dir ${outdir} \
+            --bam-in ${outdir}/TNMerged.bam \
+            --bam-out qnameSorted.bam \
+            --out-script $out_script
+            
+            $MYDIR/cleanBam.sh \
+            --output-dir ${outdir} \
+            --bam-in ${outdir}/qnameSorted.bam \
+            --bam-out Cleaned.bam \
+            --out-script $out_script
+            
+            $MYDIR/SortByCoordinate.sh \
+            --output-dir ${outdir} \
+            --bam-in ${outdir}/Cleaned.bam \
+            --bam-out Sorted.bam \
+            --out-script $out_script
+            
+            bam_file_to_be_split="${outdir}/Sorted.bam"
+            files_to_delete="${outdir}/qnameSorted.bam ${outdir}/Cleaned.bam ${outdir}/Sorted.bam ${outdir}/Sorted.bam.bai $files_to_delete"
+
         fi
         
         $MYDIR/bamSurgeon/bamsurgeon_split_BAM.sh \
         --genome-reference ${HUMAN_REFERENCE} \
-        --output-dir ${ith_outdir} \
+        --output-dir ${outdir} \
         --bam-in ${bam_file_to_be_split} \
         --bam-out1 ${out_normal} \
         --bam-out2 Designated.Tumor.bam \
         --split-proportion ${proportion} \
         --seed $seed \
-        $clean_bam_input \
         --out-script $out_script
     
-        bam_file_for_spikein="${ith_outdir}/Designated.Tumor.bam"
-    
-        if [[ $clean_bam ]]
-        then
-            clean_bam=${bam_file_to_be_split%.bam}.Clean.bam
-            files_to_delete="${clean_bam%.bam}.pick1.bam ${clean_bam%.bam}.pick2.bam $files_to_delete"
-            
-        else
-            files_to_delete="${bam_file_to_be_split%.bam}.pick1.bam ${bam_file_to_be_split%.bam}.pick2.bam $files_to_delete"
-        fi
+        bam_file_for_spikein="${outdir}/Designated.Tumor.bam"
+        files_to_delete="${outdir}/Designated.Tumor.bam ${outdir}/Designated.Tumor.bam.bai $files_to_delete"
     
     # If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. Without splitting, the original normal is the output normal
     else
+    
+        # Unless it needs to be cleaned:
+        if [[ $clean_bam ]]
+        then
+            $MYDIR/SortByReadName.sh \
+            --output-dir ${outdir} \
+            --bam-in ${in_tumor} \
+            --bam-out qnameSorted.bam \
+            --out-script $out_script
+            
+            $MYDIR/cleanBam.sh \
+            --output-dir ${outdir} \
+            --bam-in ${outdir}/qnameSorted.bam \
+            --bam-out Cleaned.bam \
+            --out-script $out_script
+            
+            $MYDIR/SortByCoordinate.sh \
+            --output-dir ${outdir} \
+            --bam-in ${outdir}/Cleaned.bam \
+            --bam-out Sorted.bam \
+            --out-script $out_script
+            
+            bam_file_to_be_split="${outdir}/Sorted.bam"
+            files_to_delete="${outdir}/qnameSorted.bam ${outdir}/Cleaned.bam ${outdir}/Sorted.bam ${outdir}/Sorted.bam.bai $files_to_delete"
+        fi
+        
         bam_file_for_spikein="${in_tumor}"
         ln -s /mnt/${in_normal}     ${outdir}/${out_normal}
         ln -s /mnt/${in_normal}.bai ${outdir}/${out_normal}.bai
     fi
-    
-    
+
+
     $MYDIR/bamSurgeon/bamsurgeon_random_sites.sh \
-    --output-dir ${ith_outdir} \
+    --output-dir ${outdir} \
     --genome-reference ${HUMAN_REFERENCE} \
     --selector ${SELECTOR} \
     --num-snvs ${num_snvs} --num-indels ${num_indels} --num-svs ${num_svs} \
@@ -333,62 +352,66 @@ do
     
     
     $MYDIR/bamSurgeon/bamsurgeon_addsnvs.sh \
-    --output-dir ${ith_outdir} \
+    --output-dir ${outdir} \
     --genome-reference ${HUMAN_REFERENCE} \
     --bam-in ${bam_file_for_spikein} \
     --bam-out snvs.added.bam \
-    --snvs ${ith_outdir}/random_sSNV.bed \
-    --cnv-file ${ith_outdir}/sorted.cnvfile.bed.gz \
+    --snvs ${outdir}/random_sSNV.bed \
+    --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
     --min-vaf ${min_vaf} --max-vaf ${min_vaf} \
     --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
     --seed $seed \
     --out-script $out_script
+    
     
     $MYDIR/bamSurgeon/bamsurgeon_addindels.sh \
-    --output-dir ${ith_outdir} \
+    --output-dir ${outdir} \
     --genome-reference ${HUMAN_REFERENCE} \
-    --bam-in ${ith_outdir}/snvs.added.bam  \
+    --bam-in ${outdir}/snvs.added.bam  \
     --bam-out snvs.indels.added.bam \
-    --indels ${ith_outdir}/random_sINDEL.bed \
-    --cnv-file ${ith_outdir}/sorted.cnvfile.bed.gz \
+    --indels ${outdir}/random_sINDEL.bed \
+    --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
     --min-vaf ${min_vaf} --max-vaf ${min_vaf} \
     --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
     --seed $seed \
     --out-script $out_script
     
-    files_to_delete="$files_to_delete ${ith_outdir}/snvs.added.bam ${ith_outdir}/snvs.added.bam.bai"
-    final_tumor_bam=${ith_outdir}/snvs.indels.added.bam
+    files_to_delete="$files_to_delete ${outdir}/snvs.added.bam ${outdir}/snvs.added.bam.bai"
+    final_tumor_bam=${outdir}/snvs.indels.added.bam
+    
     
     if [[ $num_svs -gt 0 ]]
     then
         $MYDIR/bamSurgeon/bamsurgeon_addsvs.sh \
-        --output-dir ${ith_outdir} \
+        --output-dir ${outdir} \
         --genome-reference ${HUMAN_REFERENCE} \
-        --bam-in ${ith_outdir}/snvs.indels.added.bam \
+        --bam-in ${outdir}/snvs.indels.added.bam \
         --bam-out snvs.indels.svs.added.bam \
-        --cnv-file ${ith_outdir}/sorted.cnvfile.bed.gz \
-        --svs ${ith_outdir}/random_sSV.bed \
+        --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
+        --svs ${outdir}/random_sSV.bed \
         --seed $seed \
         --out-script $out_script
-                
-        final_tumor_bam=${ith_outdir}/snvs.indels.svs.added.bam
+            
+        final_tumor_bam=${outdir}/snvs.indels.svs.added.bam
     fi
     
+    
     echo "" >> $out_script
-    echo "mv ${final_tumor_bam} ${ith_outdir}/${out_tumor}" >> $out_script
-    echo "mv ${final_tumor_bam}.bai ${ith_outdir}/${out_tumor}.bai" >> $out_script
+    echo "mv ${final_tumor_bam} ${outdir}/${out_tumor}" >> $out_script
+    echo "mv ${final_tumor_bam}.bai ${outdir}/${out_tumor}.bai" >> $out_script
     echo "" >> $out_script
     
     if [[ $indel_realign ]]
     then
         $MYDIR/bamSurgeon/IndelRealign.sh \
-        --tumor-bam ${ith_outdir}/${out_tumor} \
-        --normal-bam ${ith_outdir}/${out_normal} \
+        --tumor-bam ${outdir}/${out_tumor} \
+        --normal-bam ${outdir}/${out_normal} \
         --genome-reference ${HUMAN_REFERENCE} \
-        --output-dir ${ith_outdir} \
+        --output-dir ${outdir} \
         --selector ${SELECTOR} \
         --out-script $out_script
     fi
+    
     
     echo "" >> $out_script
     
@@ -401,8 +424,7 @@ do
     fi
     
     echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
-    
-    ${action} $out_script
+
 
     ith_thread=$(( $ith_thread + 1))
 
