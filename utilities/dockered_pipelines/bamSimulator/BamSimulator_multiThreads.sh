@@ -273,6 +273,8 @@ do
     if [[ $split_bam ]]
     then
     
+        bam_file_to_be_split=${in_tumor}
+        
         if [[ $clean_bam ]]
         then
 
