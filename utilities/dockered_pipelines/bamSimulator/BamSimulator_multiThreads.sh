@@ -254,6 +254,10 @@ do
     
     in_normal="${outdir}/${ith_thread}.normal.bam"
     
+    # By default, the input tumor gets to be added until instructed otherwise:
+    bam_file_to_be_split=${in_tumor}
+    bam_file_for_spikein=${in_tumor}
+
     # If TRUE, two bam files will be merged, sorted by QNAMES. 
     if [[ $merge_bam ]]
     then
@@ -272,9 +276,7 @@ do
     # If TRUE, the QNAME-sorted BAM file will be split, then the two BAM files will be properly sorted and indexed. So that the designated tumor can be used for spike in. 
     if [[ $split_bam ]]
     then
-    
-        bam_file_to_be_split=${in_tumor}
-        
+            
         if [[ $clean_bam ]]
         then
 

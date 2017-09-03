@@ -190,6 +190,9 @@ files_to_delete=''
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
+# By default, the input tumor gets to be added until instructed otherwise:
+bam_file_to_be_split=${in_tumor}
+bam_file_for_spikein=${in_tumor}
 
 # If TRUE, two bam files will be merged, sorted by QNAMES. 
 if [[ $merge_bam ]]
