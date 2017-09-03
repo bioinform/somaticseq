@@ -173,6 +173,10 @@ done
 
 hg_dict=${HUMAN_REFERENCE%\.fa*}.dict
 
+per_thread_snvs=$(( $num_snvs / $threads ))
+per_thread_indels=$(( $num_indels / $threads ))
+per_thread_svs=$(( $num_svs / $threads ))
+
 VERSION='latest'
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
@@ -346,7 +350,7 @@ do
     --output-dir ${outdir} \
     --genome-reference ${HUMAN_REFERENCE} \
     --selector ${SELECTOR} \
-    --num-snvs ${num_snvs} --num-indels ${num_indels} --num-svs ${num_svs} \
+    --num-snvs ${per_thread_snvs} --num-indels ${per_thread_indels} --num-svs ${per_thread_svs} \
     --min-vaf ${min_vaf} --max-vaf ${max_vaf} --seed $seed \
     --out-script $out_script
     
