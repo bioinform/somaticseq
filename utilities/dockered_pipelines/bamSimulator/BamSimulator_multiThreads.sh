@@ -202,7 +202,7 @@ do
     outdir="${parent_outdir}/${ith_thread}"
     logdir="${outdir}/logs"
 
-    mkdir -p ${outdir}
+    mkdir -p ${logdir}
     
     mv ${parent_outdir}/${ith_thread}.bed ${outdir}
     
