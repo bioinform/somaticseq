@@ -429,6 +429,7 @@ do
     
     echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 
+    ${action} $out_script
 
     ith_thread=$(( $ith_thread + 1))
 
