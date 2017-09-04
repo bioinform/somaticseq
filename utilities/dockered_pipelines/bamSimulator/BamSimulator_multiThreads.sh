@@ -353,7 +353,7 @@ do
     $MYDIR/bamSurgeon/bamsurgeon_random_sites.sh \
     --output-dir ${outdir} \
     --genome-reference ${HUMAN_REFERENCE} \
-    --selector ${SELECTOR} \
+    --selector ${ith_selector} \
     --num-snvs ${per_thread_snvs} --num-indels ${per_thread_indels} --num-svs ${per_thread_svs} \
     --min-vaf ${min_vaf} --max-vaf ${max_vaf} --seed $seed \
     --out-script $out_script
@@ -416,7 +416,7 @@ do
         --normal-bam ${outdir}/${out_normal} \
         --genome-reference ${HUMAN_REFERENCE} \
         --output-dir ${outdir} \
-        --selector ${SELECTOR} \
+        --selector ${ith_selector} \
         --out-script $out_script
     fi
     
