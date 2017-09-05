@@ -71,7 +71,6 @@ with genome.open_textfile(infile) as vcf_in, open(outfile, 'w') as vcf_out:
     # This line will be #CHROM:
     header = line_i.split('\t')
     sample_index = header.index(sample) - 9
-    print(sample_index)
     
     # This will be the first variant line:
     line_i = vcf_in.readline().rstrip()
@@ -94,9 +93,9 @@ with genome.open_textfile(infile) as vcf_in, open(outfile, 'w') as vcf_out:
             zBQ   = float( vcf_i.get_sample_value('zBQ',   sample_index) )
             MQ0   = int(   vcf_i.get_sample_value('MQ0',   sample_index) )
             VAF   = float( vcf_i.get_sample_value('VAF',   sample_index) )
-        
-            dp4 = vcf_i.get_sample_value('DP4')
-            dp4 = dp4.split(',')
+            DP4   =        vcf_i.get_sample_value('DP4',   sample_index)
+            
+            dp4 = DP4.split(',')
             ref_for, ref_rev, alt_for, alt_rev = int(dp4[0]), int(dp4[1]), int(dp4[2]), int(dp4[3])
             DP = ref_for + ref_rev + alt_for + alt_rev
             varDP = alt_for + alt_rev
