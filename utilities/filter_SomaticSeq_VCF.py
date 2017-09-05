@@ -78,10 +78,7 @@ with genome.open_textfile(infile) as vcf_in, open(outfile, 'w') as vcf_out:
     while line_i:
         
         vcf_i = genome.Vcf_line( line_i )
-        
-        print(vcf_i)
-        print(vcf_i.vcf_line)
-        
+                
         if vcf_i.filters == 'PASS':
         
             refMQ = float( vcf_i.get_sample_value('refMQ', sample_index) )
