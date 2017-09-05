@@ -112,8 +112,8 @@ with genome.open_textfile(infile) as vcf_in, open(outfile, 'w') as vcf_out:
                 vcf_item[6] = 'LowQual'
                 vcf_i.vcf_line='\t'.join( vcf_item )
                 
-                #print( '\t'.join((vcf_i.chromosome, str(vcf_i.position), str(varDP), vcf_i.get_sample_value('DP4') )), end=': ', file=sys.stderr )
-                #print( i_fails, file=sys.stderr )
+                print( '\t'.join( (vcf_i.chromosome, str(vcf_i.position) )), end=': ', file=sys.stderr )
+                print( i_fails, file=sys.stderr )
                 
         vcf_out.write( vcf_i.vcf_line + '\n' )
         
