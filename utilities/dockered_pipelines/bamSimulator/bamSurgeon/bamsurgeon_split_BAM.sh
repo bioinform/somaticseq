@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out1:,bam-out2:,bam-in:,split-proportion:,seed:,out-script:,clean-bam,standalone -n 'bamsurgeon_split_BAM.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out1:,bam-out2:,bam-in:,split-proportion:,down-sample:,seed:,out-script:,clean-bam,standalone -n 'bamsurgeon_split_BAM.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -15,6 +15,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 seed=$( date +"%Y" )
 proportion=0.5
+down_sample=1
 
 while true; do
     case "$1" in
@@ -52,6 +53,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  proportion=$2 ; shift 2 ;;
+            esac ;;
+
+        --down-sample )
+            case "$2" in
+                "") shift 2 ;;
+                *)  down_sample=$2 ; shift 2 ;;
             esac ;;
 
         --seed )
@@ -109,6 +116,7 @@ echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-2 \\" >> 
 echo "/usr/local/bamsurgeon/scripts/sortedBamSplit.py \\" >> $out_script
 echo "--bam /mnt/${inbam} \\" >> $out_script
 echo "--proportion ${proportion} \\" >> $out_script
+echo "--down-sample ${down_sample} \\" >> $out_script
 echo "--pick1 /mnt/${outdir}/${outbam1} \\" >> $out_script
 echo "--pick2 /mnt/${outdir}/${outbam2} \\" >> $out_script
 echo "--supplementary \\" >> $out_script

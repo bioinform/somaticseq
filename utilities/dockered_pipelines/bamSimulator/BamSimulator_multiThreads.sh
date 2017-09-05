@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,action:,threads:,merge-bam,split-bam,clean-bam,indel-realign,keep-intermediates -n 'BamSimulator.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,down-sample:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,action:,threads:,merge-bam,split-bam,clean-bam,indel-realign,keep-intermediates -n 'BamSimulator.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -26,6 +26,7 @@ max_vaf=0.5
 min_depth=10
 max_depth=2000
 min_var_reads=1
+down_sample=1
 
 threads=12
 
@@ -77,6 +78,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  proportion=$2 ; shift 2 ;;
+            esac ;;
+
+        --down-sample )
+            case "$2" in
+                "") shift 2 ;;
+                *)  down_sample=$2 ; shift 2 ;;
             esac ;;
 
         --num-snvs )
@@ -310,6 +317,7 @@ do
         --bam-out1 ${out_normal} \
         --bam-out2 Designated.Tumor.bam \
         --split-proportion ${proportion} \
+        --down-sample ${down_sample} \
         --seed $seed \
         --out-script $out_script
     
