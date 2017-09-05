@@ -75,8 +75,9 @@ with genome.open_textfile(infile) as vcf_in, open(outfile, 'w') as vcf_out:
     # This will be the first variant line:
     line_i = vcf_in.readline().rstrip()
     
+    print(line_i)
     while line_i:
-
+        
         vcf_i = genome.Vcf_line( line_i )
         
         if vcf_i.filter == 'PASS':
