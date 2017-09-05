@@ -100,15 +100,20 @@ with genome.open_textfile(infile) as vcf_in, open(outfile, 'w') as vcf_out:
             DP = ref_for + ref_rev + alt_for + alt_rev
             varDP = alt_for + alt_rev
             
-            num_fails = ( refMQ < min_refMQ ) + ( altMQ < min_altMQ ) + ( refBQ < min_refBQ ) + ( altBQ < min_altBQ ) + \
-                        ( refNM > max_refNM ) + ( altNM > max_altNM ) + ( fetSB > max_fetSB ) + ( fetCD > max_fetSB ) + \
-                        ( abs(zMQ) > max_zMQ ) + ( abs(zBQ) > max_zBQ ) + ( MQ0 > max_MQ0 ) + ( VAF < min_VAF ) + \
-                        ( DP < min_DP ) + ( varDP < min_varDP )
+            i_fails = ( refMQ < min_refMQ ), ( altMQ < min_altMQ ), ( refBQ < min_refBQ ), ( altBQ < min_altBQ ) + \
+                        ( refNM > max_refNM ), ( altNM > max_altNM ), ( fetSB > max_fetSB ), ( fetCD > max_fetSB ), \
+                        ( abs(zMQ) > max_zMQ ), ( abs(zBQ) > max_zBQ ), ( MQ0 > max_MQ0 ), ( VAF < min_VAF ), \
+                        ( DP < min_DP ), ( varDP < min_varDP )
+            
+            num_tails = sum( i_fails )
             
             if num_fails >= args.num_fails:
                 vcf_item = vcf_i.vcf_line.split('\t')
                 vcf_item[6] = 'LowQual'
                 vcf_i.vcf_line='\t'.join( vcf_item )
+                
+                print( vcf_i.chromosome, end='', file=sys.stderr )
+                print( i_fails, file=sys.stderr )
                 
         vcf_out.write( vcf_i.vcf_line + '\n' )
         
