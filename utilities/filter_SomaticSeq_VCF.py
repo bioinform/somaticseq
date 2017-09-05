@@ -37,9 +37,9 @@ parser.add_argument('-fails', '--num-fails', type=int, help='number of fails to 
 # Parse the arguments:
 args = parser.parse_args()
 
-infile     = args.input_vcf
-indel_out  = args.output_vcf
-sample     = args.sample
+infile    = args.input_vcf
+outfile   = args.output_vcf
+sample    = args.sample
 
 min_refMQ = args.min_refMQ
 min_altMQ = args.min_altMQ
