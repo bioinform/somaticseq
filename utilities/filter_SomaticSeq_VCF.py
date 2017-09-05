@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument('-infile',  '--input-vcf',  type=str, help='Input VCF file', required=True)
 parser.add_argument('-outfile', '--output-vcf', type=str, help='Output VCF file', required=True)
 
-parser.add_argument('-sample', '--sample', nargs='*', type=str, help='Samples', Default='TUMOR')
+parser.add_argument('-sample', '--sample', nargs='*', type=str, help='Samples', default='TUMOR')
 
 parser.add_argument('-refMQ', '--min-refMQ', type=float, help='refMQ', default=40)
 parser.add_argument('-altMQ', '--min-altMQ', type=float, help='altMQ', default=40)
