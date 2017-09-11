@@ -247,6 +247,7 @@ do
     --out-script $out_script
     
     in_tumor="${outdir}/${ith_thread}.tumor.bam"
+    files_to_delete="${outdir}/${ith_thread}.tumor.bam ${outdir}/${ith_thread}.tumor.bam.bai $files_to_delete"
     
     # Split for normal
     if [[ $in_normal_whole ]]
@@ -257,6 +258,8 @@ do
         --bam-out ${ith_thread}.normal.bam \
         --selector ${ith_selector} \
         --out-script $out_script
+        
+        files_to_delete="${outdir}/${ith_thread}.normal.bam ${outdir}/${ith_thread}.normal.bam.bai $files_to_delete"
     fi
     
     in_normal="${outdir}/${ith_thread}.normal.bam"
@@ -409,6 +412,7 @@ do
         --out-script $out_script
             
         final_tumor_bam=${outdir}/snvs.indels.svs.added.bam
+        files_to_delete="$files_to_delete ${outdir}/snvs.indels.added.bam ${outdir}/snvs.indels.added.bam.bai"
     fi
     
     

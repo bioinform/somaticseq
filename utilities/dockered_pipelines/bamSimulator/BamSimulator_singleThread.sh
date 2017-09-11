@@ -346,6 +346,7 @@ then
     --out-script $out_script
         
     final_tumor_bam=${outdir}/snvs.indels.svs.added.bam
+    files_to_delete="$files_to_delete ${outdir}/snvs.indels.added.bam ${outdir}/snvs.indels.added.bam.bai"
 fi
 
 
