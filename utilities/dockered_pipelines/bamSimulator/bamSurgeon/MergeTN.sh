@@ -3,11 +3,11 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,tumor-bam:,normal-bam:,bam-out:,out-SM:,out-script:,standalone -n 'MergeTN.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,tumor-bam:,normal-bam:,bam-out:,out-script:,standalone -n 'MergeTN.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
-echo "$OPTS"
+#echo "$OPTS"
 eval set -- "$OPTS"
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
@@ -29,12 +29,6 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  outbam=$2 ; shift 2 ;;
-            esac ;;
-
-        --out-SM )
-            case "$2" in
-                "") shift 2 ;;
-                *)  outSM=$2 ; shift 2 ;;
             esac ;;
 
         --tumor-bam )
@@ -86,41 +80,16 @@ fi
 
 echo "" >> $out_script
 
-
 # Merge the 2 BAM files
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-1 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
 echo "java -Xmx6g -jar /usr/local/picard-tools-1.131/picard.jar MergeSamFiles \\" >> $out_script
 echo "I=/mnt/${nbam} \\" >> $out_script
 echo "I=/mnt/${tbam} \\" >> $out_script
 echo "ASSUME_SORTED=true \\" >> $out_script
-echo "CREATE_INDEX=true \\" >> $out_script
-echo "O=/mnt/${outdir}/unheadered.${outbam}" >> $out_script
-echo "" >> $out_script
-
-# Uniform sample and read group names in the merged file
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-1 \\" >> $out_script
-echo "java -Xmx6g -jar /usr/local/picard-tools-1.131/picard.jar AddOrReplaceReadGroups \\" >> $out_script
-echo "I=/mnt/${outdir}/unheadered.${outbam} \\" >> $out_script
-echo "RGID=BAMSurgeon \\" >> $out_script
-echo "RGLB=TNMerged \\" >> $out_script
-echo "RGPL=illumina \\" >> $out_script
-echo "RGPU=BAMSurgeon \\" >> $out_script
-echo "RGSM=${outSM} \\" >> $out_script
 echo "CREATE_INDEX=true \\" >> $out_script
 echo "O=/mnt/${outdir}/${outbam}" >> $out_script
 echo "" >> $out_script
 
 # Remove temp files
 echo "mv ${outdir}/${outbam%.bam}.bai ${outdir}/${outbam}.bai" >> $out_script
-echo "rm ${outdir}/unheadered.${outbam} ${outdir}/unheadered.${outbam%.bam}.bai" >> $out_script
-echo "" >> $out_script
-
-
-# Sort the output merged BAM file by QNAMES:
-sorted_by_name=${outbam%.bam}.sortQNAME.bam
-
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 \\" >> $out_script
-echo "samtools sort -n -m 4G \\" >> $out_script
-echo "-o /mnt/${outdir}/${sorted_by_name} \\" >> $out_script
-echo "/mnt/${outdir}/${outbam} \\" >> $out_script
 echo "" >> $out_script

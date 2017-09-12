@@ -870,7 +870,16 @@ Have implemented the following improvement, mostly for indels:
 \begin{itemize}
 
   \item
-  Restructured the utilities scripts. 
+  Restructured the utilities scripts.
+  
+  \item
+  Added the utilities/filter\_SomaticSeq\_VCF.py script that ``demotes'' PASS calls to LowQual based on a set of tunable hard filters.
+  
+  \item
+  BamSurgeon scripts invokes modified BamSurgeon script that splits a BAM file without the need to sort by read name. This works if the BAM files have proper read names, i.e., 2 and only 2 identical read names for each paired-end reads.
+  
+  \item
+  No change to SomaticSeq algorithm
 
 \end{itemize}
 

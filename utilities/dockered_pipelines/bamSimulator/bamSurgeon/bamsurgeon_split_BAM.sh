@@ -3,11 +3,11 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out1:,bam-out2:,bam-in:,split-proportion:,seed:,out-script:,clean-bam,standalone -n 'bamsurgeon_split_BAM.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out1:,bam-out2:,bam-in:,split-proportion:,down-sample:,seed:,out-script:,clean-bam,standalone -n 'bamsurgeon_split_BAM.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
-echo "$OPTS"
+#echo "$OPTS"
 eval set -- "$OPTS"
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
@@ -15,6 +15,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 seed=$( date +"%Y" )
 proportion=0.5
+down_sample=1
 
 while true; do
     case "$1" in
@@ -52,6 +53,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  proportion=$2 ; shift 2 ;;
+            esac ;;
+
+        --down-sample )
+            case "$2" in
+                "") shift 2 ;;
+                *)  down_sample=$2 ; shift 2 ;;
             esac ;;
 
         --seed )
@@ -103,57 +110,20 @@ fi
 
 echo "" >> $out_script
 
-# To split a BAM file, first you must sort by name:
-if [[ $clean_bam -eq 1 ]];
-then
-    clean_bam=${inbam%.bam}.Clean.bam
-
-    echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-1 \\" >> $out_script
-    echo "remove_reads_with_many_qnames_or_bad_CIGAR.py \\" >> $out_script
-    echo "-bamin /mnt/${inbam} \\" >> $out_script
-    echo "-bamout /mnt/${clean_bam}" >> $out_script
-    echo "" >> $out_script
-    #echo "rm ${inbam}" >> $out_script
-    echo "" >> $out_script
-    
-    bam_to_split="${clean_bam}"
-else
-
-    bam_to_split="${inbam}"
-fi
-
 
 # Then you can split
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-1 \\" >> $out_script
-echo "/usr/local/bamsurgeon/scripts/bamsplit.py \\" >> $out_script
-echo "-b /mnt/${bam_to_split} \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
+echo "/usr/local/bamsurgeon/scripts/sortedBamSplit.py \\" >> $out_script
+echo "--bam /mnt/${inbam} \\" >> $out_script
 echo "--proportion ${proportion} \\" >> $out_script
+echo "--downsample ${down_sample} \\" >> $out_script
+echo "--pick1 /mnt/${outdir}/${outbam1} \\" >> $out_script
+echo "--pick2 /mnt/${outdir}/${outbam2} \\" >> $out_script
+echo "--supplementary \\" >> $out_script
+echo "--secondary \\" >> $out_script
 echo "--seed ${seed}" >> $out_script
 echo "" >> $out_script
 
-# The two split BAMs then need to be sorted
-pick1_old=${bam_to_split%.bam}.pick1.bam
-pick2_old=${bam_to_split%.bam}.pick2.bam
-
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} -o /mnt/${outdir}/${outbam1} /mnt/${pick1_old}" >> $out_script
 echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam1}" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam2}" >> $out_script
 echo "" >> $out_script
-
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} -o /mnt/${outdir}/oldHeader.${outbam2} /mnt/${pick2_old}" >> $out_script
-echo "" >> $out_script
-
-# Uniform sample and read group names in the merged file
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-1 \\" >> $out_script
-echo "java -Xmx6g -jar /usr/local/picard-tools-1.131/picard.jar AddOrReplaceReadGroups \\" >> $out_script
-echo "I=/mnt/${outdir}/oldHeader.${outbam2} \\" >> $out_script
-echo "RGID=BAMSurgeon \\" >> $out_script
-echo "RGLB=TNMerged \\" >> $out_script
-echo "RGPL=illumina \\" >> $out_script
-echo "RGPU=BAMSurgeon \\" >> $out_script
-echo "RGSM=tumorDesignate \\" >> $out_script
-echo "CREATE_INDEX=true \\" >> $out_script
-echo "O=/mnt/${outdir}/${outbam2}" >> $out_script
-echo "" >> $out_script
-
-echo "mv ${outdir}/${outbam2%.bam}.bai ${outdir}/${outbam2%.bam}.bam.bai" >> $out_script
-echo "rm ${outdir}/oldHeader.${outbam2}" >> $out_script

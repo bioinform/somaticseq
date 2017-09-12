@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,bam-in:,bam-out:,selector:,out-script:,standalone -n 'split_BAM_by_BED.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,bam-out:,bam-in:,out-script:,standalone -n 'SortByReadName.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -14,6 +14,8 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 
+seed=$( date +"%Y" )
+
 while true; do
     case "$1" in
         -o | --output-dir )
@@ -21,7 +23,7 @@ while true; do
                 "") shift 2 ;;
                 *)  outdir=$2 ; shift 2 ;;
             esac ;;
-            
+
         --bam-in )
             case "$2" in
                 "") shift 2 ;;
@@ -32,12 +34,6 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  outbam=$2 ; shift 2 ;;
-            esac ;;
-
-        --selector )
-            case "$2" in
-                "") shift 2 ;;
-                *)  SELECTOR=$2 ; shift 2 ;;
             esac ;;
 
         --out-script )
@@ -54,15 +50,11 @@ while true; do
     esac
 done
 
-
-logdir=${outdir}/logs
-mkdir -p ${logdir}
-
 if [[ ${out_script_name} ]]
 then
     out_script="${out_script_name}"
 else
-    out_script="${logdir}/splitByBed.${timestamp}.cmd"    
+    out_script="${logdir}/cleanBam.${timestamp}.cmd"    
 fi
 
 if [[ $standalone ]]
@@ -78,12 +70,9 @@ fi
 
 echo "" >> $out_script
 
-
-echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/samtools:1.3.1 \\" >> $out_script
-echo "samtools view /mnt/${inbam} -L /mnt/${SELECTOR} -Sbh \\" >> $out_script
-echo "> ${outdir}/${outbam}" >> $out_script
-
+# To split a BAM file, first you must sort by name:
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
+echo "/usr/local/bamsurgeon/scripts/remove_reads_with_many_qnames_or_bad_CIGAR.py \\" >> $out_script
+echo "-bamin /mnt/${inbam} \\" >> $out_script
+echo "-bamout /mnt/${outdir}/${outbam}" >> $out_script
 echo "" >> $out_script
-
-echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/samtools:1.3.1 \\" >> $out_script
-echo "samtools index /mnt/${outdir}/${outbam}" >> $out_script

@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,bam-in:,bam-out:,selector:,out-script:,standalone -n 'split_BAM_by_BED.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,bam-out:,bam-in:,genome-reference:,out-script:,standalone -n 'SortByCoordinate.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -14,6 +14,8 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 
+seed=$( date +"%Y" )
+
 while true; do
     case "$1" in
         -o | --output-dir )
@@ -21,7 +23,7 @@ while true; do
                 "") shift 2 ;;
                 *)  outdir=$2 ; shift 2 ;;
             esac ;;
-            
+
         --bam-in )
             case "$2" in
                 "") shift 2 ;;
@@ -34,10 +36,10 @@ while true; do
                 *)  outbam=$2 ; shift 2 ;;
             esac ;;
 
-        --selector )
+        --genome-reference )
             case "$2" in
                 "") shift 2 ;;
-                *)  SELECTOR=$2 ; shift 2 ;;
+                *)  HUMAN_REFERENCE=$2 ; shift 2 ;;
             esac ;;
 
         --out-script )
@@ -54,6 +56,7 @@ while true; do
     esac
 done
 
+hg_dict=${HUMAN_REFERENCE%\.fa*}.dict
 
 logdir=${outdir}/logs
 mkdir -p ${logdir}
@@ -62,8 +65,9 @@ if [[ ${out_script_name} ]]
 then
     out_script="${out_script_name}"
 else
-    out_script="${logdir}/splitByBed.${timestamp}.cmd"    
+    out_script="${logdir}/sort.coordinates.${timestamp}.cmd"    
 fi
+
 
 if [[ $standalone ]]
 then
@@ -72,18 +76,17 @@ then
     echo "#$ -o ${logdir}" >> $out_script
     echo "#$ -e ${logdir}" >> $out_script
     echo "#$ -S /bin/bash" >> $out_script
-    echo '#$ -l h_vmem=4G' >> $out_script
+    echo '#$ -l h_vmem=8G' >> $out_script
     echo 'set -e' >> $out_script
 fi
 
-echo "" >> $out_script
-
-
-echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/samtools:1.3.1 \\" >> $out_script
-echo "samtools view /mnt/${inbam} -L /mnt/${SELECTOR} -Sbh \\" >> $out_script
-echo "> ${outdir}/${outbam}" >> $out_script
 
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
+echo "-o /mnt/${outdir}/${outbam} /mnt/${inbam}" >> $out_script
+echo "" >> $out_script
+
+echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 \\" >> $out_script
 echo "samtools index /mnt/${outdir}/${outbam}" >> $out_script
