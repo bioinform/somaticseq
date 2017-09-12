@@ -60,7 +60,7 @@ while true; do
         esac ;;
 
     --exome )
-        exome=1 ; shift ;;
+        if_exome=1 ; shift ;;
 
     -- ) shift; break ;;
     * ) break ;;
