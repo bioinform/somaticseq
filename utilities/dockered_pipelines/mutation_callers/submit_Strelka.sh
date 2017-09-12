@@ -58,13 +58,9 @@ while true; do
             "") shift 2 ;;
             *) action=$2 ; shift 2 ;;
         esac ;;
-        
-    --exome )
-        case "$2" in
-            "") shift 2 ;;
-            *)  if_exome=$2 ; shift 2 ;;
-        esac ;;
 
+    --exome )
+        exome=1 ; shift ;;
 
     -- ) shift; break ;;
     * ) break ;;
