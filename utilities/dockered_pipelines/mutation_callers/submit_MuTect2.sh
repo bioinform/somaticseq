@@ -7,7 +7,7 @@ OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,tumor-name:,n
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
-echo "$OPTS"
+#echo "$OPTS"
 eval set -- "$OPTS"
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"

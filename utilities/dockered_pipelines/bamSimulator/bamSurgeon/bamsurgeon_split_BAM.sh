@@ -7,7 +7,7 @@ OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out1:,bam-out2:,bam-
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
-echo "$OPTS"
+#echo "$OPTS"
 eval set -- "$OPTS"
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
