@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,tumor-bam:,normal-bam:,human-reference:,selector:,dbsnp:,cosmic:,action:,mutect:,indelocator:,mutect2:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,strelka-snv:,strelka-indel:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,tumor-bam:,normal-bam:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,action:,mutect:,indelocator:,mutect2:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,strelka-snv:,strelka-indel:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -46,6 +46,12 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *)  SELECTOR=$2 ; shift 2 ;;
+        esac ;;
+
+    --exclude )
+        case "$2" in
+            "") shift 2 ;;
+            *)  EXCLUSION=$2 ; shift 2 ;;
         esac ;;
 
     --dbsnp )
@@ -198,6 +204,12 @@ if [[ -r $SELECTOR ]]; then
     selector_text="--inclusion-region /mnt/${SELECTOR}"
 fi
 
+exclusion_text=''
+if [[ -r $EXCLUSION ]]; then
+    exclusion_text="--exclusion-region /mnt/${EXCLUSION}"
+fi
+
+
 dbsnp_text=''
 if [[ -r $dbsnp ]]; then
     dbsnp_text="--dbsnp /mnt/${dbsnp}"
@@ -268,6 +280,7 @@ echo "$scalpel_text \\" >> $sseq_script
 echo "$strelka_snv_text \\" >> $sseq_script
 echo "$strelka_indel_text \\" >> $sseq_script
 echo "$selector_text \\" >> $sseq_script
+echo "$exclusion_text \\" >> $sseq_script
 echo "$cosmic_text \\" >> $sseq_script
 echo "$dbsnp_text \\" >> $sseq_script
 echo "$classifier_snv_text \\" >> $sseq_script

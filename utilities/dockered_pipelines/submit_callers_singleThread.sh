@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,dbsnp:,cosmic:,action:,somaticseq-action:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'mutation_caller_script_generators.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,action:,somaticseq-action:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'mutation_caller_script_generators.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -69,6 +69,12 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *) SELECTOR=$2 ; shift 2 ;;
+        esac ;;
+
+    --exclude )
+        case "$2" in
+            "") shift 2 ;;
+            *)  EXCLUSION=$2 ; shift 2 ;;
         esac ;;
 
     --dbsnp )
@@ -326,7 +332,8 @@ then
     if [[ ${SELECTOR} ]];       then selector_input="--selector ${SELECTOR}"                            ; fi
     if [[ ${dbsnp} ]];          then dbsnp_input="--dbsnp ${dbsnp}"                                     ; fi
     if [[ ${cosmic} ]];         then cosmic_input="--cosmic ${cosmic}"                                  ; fi
-
+    if [[ ${EXCLUSION} ]];      then exclusion_text="--exclude ${EXCLUSION}"                            ; fi
+    
     if [[ $ada_r_script ]]; then
         ada_r_script_text="--ada-r-script /mnt/${ada_r_script}"
     elif [[ $truth_snv || $truth_indel ]]; then
@@ -341,6 +348,7 @@ then
     --out-dir ${outdir}/${somaticseq_dir} \
     --human-reference ${HUMAN_REFERENCE} \
     $selector_input \
+    $exclusion_text \
     $dbsnp_input \
     $cosmic_input \
     $mutect_input \

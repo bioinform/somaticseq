@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,dbsnp:,cosmic:,action:,somaticseq-action:,threads:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_callers_multiThreads.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,action:,somaticseq-action:,threads:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_callers_multiThreads.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -70,6 +70,12 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *)  SELECTOR=$2 ; shift 2 ;;
+        esac ;;
+
+    --exclude )
+        case "$2" in
+            "") shift 2 ;;
+            *)  EXCLUSION=$2 ; shift 2 ;;
         esac ;;
 
     --dbsnp )
@@ -183,6 +189,7 @@ then
 else
     cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
 fi
+    
 
 docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \
 /opt/somaticseq/utilities/split_Bed_into_equal_regions.py \
@@ -373,6 +380,7 @@ do
         if [[ $classifier_indel ]]; then classifier_indel_text="--classifier-indel /mnt/${classifier_indel}"; fi
         if [[ $truth_snv ]];        then truth_snv_text="--truth-snv /mnt/${truth_snv}"                     ; fi
         if [[ $truth_indel ]];      then truth_indel_text="--truth-indel /mnt/${truth_indel}"               ; fi
+        if [[ $EXCLUSION ]];        then exclusion_text="--exclude ${EXCLUSION}"                            ; fi
 
         if [[ ${dbsnp} ]];          then dbsnp_input="--dbsnp ${dbsnp}"                                     ; fi
         if [[ ${cosmic} ]];         then cosmic_input="--cosmic ${cosmic}"                                  ; fi
@@ -385,6 +393,7 @@ do
             ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"
         fi
         
+        
         $MYDIR/mutation_callers/submit_SomaticSeq.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
@@ -393,6 +402,7 @@ do
         $dbsnp_input \
         $cosmic_input \
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
+        $exclusion_text \
         $mutect_input \
         $indelocator_input \
         $mutect2_input \
