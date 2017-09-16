@@ -79,7 +79,7 @@ echo "" >> $scalpel_script
 echo "#$ -o ${logdir}" >> $scalpel_script
 echo "#$ -e ${logdir}" >> $scalpel_script
 echo "#$ -S /bin/bash" >> $scalpel_script
-echo '#$ -l h_vmem=12G' >> $scalpel_script
+echo '#$ -l h_vmem=14G' >> $scalpel_script
 echo 'set -e' >> $scalpel_script
 echo "" >> $scalpel_script
 
