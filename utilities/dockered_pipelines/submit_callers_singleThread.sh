@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,action:,somaticseq-action:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'mutation_caller_script_generators.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'mutation_caller_script_generators.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -19,7 +19,7 @@ normal_name='NORMAL'
 action='echo'
 somaticseq_action='echo'
 somaticseq_dir='SomaticSeq'
-
+min_vaf=0.05
 
 while true; do
     case "$1" in
@@ -87,6 +87,12 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *)  cosmic=$2 ; shift 2 ;;
+        esac ;;
+
+    --min-vaf )
+        case "$2" in
+            "") shift 2 ;;
+            *)  min_vaf=$2 ; shift 2 ;;
         esac ;;
 
     --action )
@@ -254,6 +260,7 @@ then
     --selector ${SELECTOR} \
     --out-vcf VarDict.vcf \
     --human-reference ${HUMAN_REFERENCE} \
+    --VAF ${min_vaf} \
     --action $action
 
     vardict_input="--vardict ${outdir}/VarDict.vcf"

@@ -1,6 +1,6 @@
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,action:,VAF -n 'submit_VarScan2.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,action:,VAF: -n 'submit_VarScan2.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -10,7 +10,7 @@ eval set -- "$OPTS"
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
-VAF=0.20
+VAF=0.10
 action=echo
 
 while true; do
@@ -115,7 +115,7 @@ echo "docker run --rm -u $UID -v /:/mnt --memory 8g -i djordjeklisic/sbg-varscan
 echo "java -Xmx8g -jar VarScan2.3.7.jar somatic \\" >> $varscan2_script
 echo "/mnt/${outdir}/normal.pileup \\" >> $varscan2_script
 echo "/mnt/${outdir}/tumor.pileup \\" >> $varscan2_script
-echo "/mnt/${outdir}/${outvcf%.vcf} --output-vcf 1" >> $varscan2_script
+echo "/mnt/${outdir}/${outvcf%.vcf} --output-vcf 1 --min-var-freq $VAF" >> $varscan2_script
 
 echo "" >> $varscan2_script
 
