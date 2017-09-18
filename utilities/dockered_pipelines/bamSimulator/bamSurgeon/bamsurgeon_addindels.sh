@@ -138,7 +138,7 @@ fi
 
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --workdir=/mnt/${outdir} -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g --workdir=/mnt/${outdir} -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
 echo "/usr/local/bamsurgeon/bin/addindel.py \\" >> $out_script
 echo "--snvfrac 0.1 --mutfrac 0.5 --coverdiff 0.9 --procs 1 \\" >> $out_script
 echo "--varfile /mnt/${indels} \\" >> $out_script
@@ -155,7 +155,7 @@ echo "--tagreads --force \\" >> $out_script
 echo "--aligner mem" >> $out_script
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/makevcf_indels.py \\" >> $out_script
 echo "/mnt/${outdir}/addindel_logs_unsorted.${outbam} /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/bedtools:2.26.0 \\" >> $out_script
@@ -163,17 +163,17 @@ echo "bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_scrip
 echo "> ${outdir}/synthetic_indels.vcf" >> $out_script
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:latest \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory 8g -i lethalfang/somaticseq:latest \\" >> $out_script
 echo "java -jar /opt/GATK/GenomeAnalysisTK.jar -T LeftAlignAndTrimVariants \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--variant /mnt/${outdir}/synthetic_indels.vcf \\" >> $out_script
 echo "| egrep -v '^[0-9]+ variants|^INFO' > ${outdir}/synthetic_indels.leftAlign.vcf" >> $out_script
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g -i lethalfang/samtools:1.3.1 \\" >> $out_script
 echo "samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} -o /mnt/${outdir}/${outbam} /mnt/${outdir}/unsorted.${outbam}" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm -i lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam}" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g -i lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam}" >> $out_script
 
 echo "" >> $out_script
 echo "rm ${outdir}/unsorted.${outbam}" >> $out_script

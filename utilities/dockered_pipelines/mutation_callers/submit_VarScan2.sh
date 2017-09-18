@@ -93,7 +93,7 @@ echo "" >> $varscan2_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $varscan2_script
 echo "" >> $varscan2_script
 
-echo "docker run --rm -u $UID -v /:/mnt -i lethalfang/samtools:0.1.19 \\" >> $varscan2_script
+echo "docker run --rm -u $UID -v /:/mnt --memory 8g -i lethalfang/samtools:0.1.19 \\" >> $varscan2_script
 echo "samtools mpileup \\" >> $varscan2_script
 echo "-B -q 25 -Q 20 $selector_text -f \\" >> $varscan2_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $varscan2_script
@@ -102,7 +102,7 @@ echo "> ${outdir}/normal.pileup" >> $varscan2_script
 
 echo "" >> $varscan2_script
 
-echo "docker run --rm -u $UID -v /:/mnt -i lethalfang/samtools:0.1.19 \\" >> $varscan2_script
+echo "docker run --rm -u $UID -v /:/mnt --memory 8g -i lethalfang/samtools:0.1.19 \\" >> $varscan2_script
 echo "samtools mpileup \\" >> $varscan2_script
 echo "-B -q 25 -Q 20 $selector_text -f \\" >> $varscan2_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $varscan2_script
@@ -111,7 +111,7 @@ echo "> ${outdir}/tumor.pileup" >> $varscan2_script
 
 echo "" >> $varscan2_script
 
-echo "docker run --rm -u $UID -v /:/mnt -i djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
+echo "docker run --rm -u $UID -v /:/mnt --memory 8g -i djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
 echo "java -Xmx8g -jar VarScan2.3.7.jar somatic \\" >> $varscan2_script
 echo "/mnt/${outdir}/normal.pileup \\" >> $varscan2_script
 echo "/mnt/${outdir}/tumor.pileup \\" >> $varscan2_script
@@ -119,13 +119,13 @@ echo "/mnt/${outdir}/${outvcf%.vcf} --output-vcf 1" >> $varscan2_script
 
 echo "" >> $varscan2_script
 
-echo "docker run --rm -u $UID -v /:/mnt -i djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
+echo "docker run --rm -u $UID -v /:/mnt --memory 8g -i djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
 echo "java -Xmx8g -jar VarScan2.3.7.jar processSomatic \\" >> $varscan2_script
 echo "/mnt/${outdir}/${outvcf%.vcf}.snp.vcf" >> $varscan2_script
 
 echo "" >> $varscan2_script
 
-echo "docker run --rm -u $UID -v /:/mnt -i djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
+echo "docker run --rm -u $UID -v /:/mnt --memory 8g -i djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
 echo "java -Xmx8g -jar VarScan2.3.7.jar somaticFilter \\" >> $varscan2_script
 echo "/mnt/${outdir}/${outvcf%.vcf}.snp.Somatic.hc.vcf \\" >> $varscan2_script
 echo "-indel-file /mnt/${outdir}/${outvcf%.vcf}.indel.vcf \\" >> $varscan2_script
