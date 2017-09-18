@@ -119,8 +119,6 @@ echo "--proportion ${proportion} \\" >> $out_script
 echo "--downsample ${down_sample} \\" >> $out_script
 echo "--pick1 /mnt/${outdir}/${outbam1} \\" >> $out_script
 echo "--pick2 /mnt/${outdir}/${outbam2} \\" >> $out_script
-echo "--supplementary \\" >> $out_script
-echo "--secondary \\" >> $out_script
 echo "--seed ${seed}" >> $out_script
 echo "" >> $out_script
 
