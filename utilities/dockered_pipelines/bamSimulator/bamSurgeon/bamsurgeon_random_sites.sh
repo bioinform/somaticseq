@@ -139,8 +139,7 @@ echo "--bed /mnt/${SELECTOR} \\" >> $out_script
 echo "--numpicks $num_indels \\" >> $out_script
 echo "--minvaf $min_vaf \\" >> $out_script
 echo "--maxvaf $max_vaf \\" >> $out_script
-echo "--maxlen 18 \\" >> $out_script
-echo "--avoidN indel \\" >> $out_script
+echo "--avoidN indel --maxlen 18  \\" >> $out_script
 echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/somaticseq:latest \\" >> $out_script
 echo "/opt/somaticseq/utilities/vcfsorter.pl /mnt/${hg_dict} - > ${outdir}/random_sINDEL.bed" >> $out_script
 echo "" >> $out_script
