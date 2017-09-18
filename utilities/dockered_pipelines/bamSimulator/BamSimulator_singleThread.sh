@@ -236,6 +236,7 @@ then
         
         $MYDIR/bamSurgeon/SortByCoordinate.sh \
         --output-dir ${outdir} \
+        --genome-reference ${HUMAN_REFERENCE} \
         --bam-in ${outdir}/Cleaned.bam \
         --bam-out Sorted.bam \
         --out-script $out_script
