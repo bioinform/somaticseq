@@ -90,7 +90,7 @@ then
     selector_input="-L /mnt/${SELECTOR}"
 fi
 
-echo "docker run --rm -v /:/mnt -u $UID -i broadinstitute/gatk3:3.7-0 java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory 10g -i broadinstitute/gatk3:3.7-0 java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T RealignerTargetCreator \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${tbam} \\" >> $out_script
@@ -99,7 +99,7 @@ echo "$selector_input \\" >> $out_script
 echo "-o /mnt/${outdir}/T.N.intervals" >> $out_script
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID -w /mnt/${outdir} -i broadinstitute/gatk3:3.7-0 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory 10g -w /mnt/${outdir} -i broadinstitute/gatk3:3.7-0 \\" >> $out_script
 echo "java -Xmx8g -jar /usr/GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T IndelRealigner \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
