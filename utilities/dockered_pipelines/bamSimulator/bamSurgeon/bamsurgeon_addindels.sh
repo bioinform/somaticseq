@@ -16,7 +16,7 @@ timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 
 seed=$( date +"%Y" )
 min_depth=10
-max_dpeth=2000
+max_dpeth=5000
 min_var_reads=1
 
 while true; do
