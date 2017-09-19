@@ -16,15 +16,13 @@ timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 action=echo
 seed=$( date +"%Y" )
 min_depth=5
-max_dpeth=2000
+max_depth=5000
 min_var_reads=1
 num_snvs=500
 num_indels=100
 num_svs=0
 min_vaf=0.05
 max_vaf=0.5
-min_depth=10
-max_depth=2000
 min_var_reads=1
 down_sample=1
 
@@ -304,6 +302,7 @@ do
             
             $MYDIR/bamSurgeon/SortByCoordinate.sh \
             --output-dir ${outdir} \
+            --genome-reference ${HUMAN_REFERENCE} \            
             --bam-in ${outdir}/Cleaned.bam \
             --bam-out Sorted.bam \
             --out-script $out_script
@@ -377,7 +376,7 @@ do
     --bam-out snvs.added.bam \
     --snvs ${outdir}/random_sSNV.bed \
     --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
-    --min-vaf ${min_vaf} --max-vaf ${min_vaf} \
+    --min-vaf ${min_vaf} --max-vaf ${max_vaf} \
     --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
     --seed $seed \
     --out-script $out_script
@@ -390,7 +389,7 @@ do
     --bam-out snvs.indels.added.bam \
     --indels ${outdir}/random_sINDEL.bed \
     --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
-    --min-vaf ${min_vaf} --max-vaf ${min_vaf} \
+    --min-vaf ${min_vaf} --max-vaf ${max_vaf} \
     --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
     --seed $seed \
     --out-script $out_script

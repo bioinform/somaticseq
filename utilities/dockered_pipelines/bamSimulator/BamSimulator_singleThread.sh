@@ -310,7 +310,7 @@ $MYDIR/bamSurgeon/bamsurgeon_addsnvs.sh \
 --bam-out snvs.added.bam \
 --snvs ${outdir}/random_sSNV.bed \
 --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
---min-vaf ${min_vaf} --max-vaf ${min_vaf} \
+--min-vaf ${min_vaf} --max-vaf ${max_vaf} \
 --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
 --seed $seed \
 --out-script $out_script
@@ -323,7 +323,7 @@ $MYDIR/bamSurgeon/bamsurgeon_addindels.sh \
 --bam-out snvs.indels.added.bam \
 --indels ${outdir}/random_sINDEL.bed \
 --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
---min-vaf ${min_vaf} --max-vaf ${min_vaf} \
+--min-vaf ${min_vaf} --max-vaf ${max_vaf} \
 --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
 --seed $seed \
 --out-script $out_script
