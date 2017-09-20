@@ -93,7 +93,7 @@ echo "" >> $muse_script
 echo "cat ${SELECTOR} | awk -F \"\t\" '{print \$1 \"\t\" \$2 \"\t\" \$3}' > ${outdir}/bed_3columns.bed" >> $muse_script
 echo "" >> $muse_script
 
-echo "docker run --rm -v /:/mnt -u $UID -i marghoob/muse:1.0rc_c \\" >> $muse_script
+echo "docker run --rm -v /:/mnt -u $UID -i --memory 4g marghoob/muse:1.0rc_c \\" >> $muse_script
 echo "MuSEv1.0rc_submission_c039ffa call \\" >> $muse_script
 echo "-O /mnt/${outdir}/MuSE \\" >> $muse_script
 echo "-l /mnt/${outdir}/bed_3columns.bed \\" >> $muse_script
@@ -102,7 +102,7 @@ echo "/mnt/${tumor_bam} \\" >> $muse_script
 echo "/mnt/${normal_bam}" >> $muse_script
 echo "" >> $muse_script
 
-echo "docker run --rm -v /:/mnt -u $UID -i marghoob/muse:1.0rc_c \\" >> $muse_script
+echo "docker run --rm -v /:/mnt -u $UID -i --memory 4g marghoob/muse:1.0rc_c \\" >> $muse_script
 echo "MuSEv1.0rc_submission_c039ffa sump \\" >> $muse_script
 echo "-I /mnt/${outdir}/MuSE.MuSE.txt \\" >> $muse_script
 echo "-E -O /mnt/${outdir}/${outvcf} \\" >> $muse_script
