@@ -316,17 +316,10 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
             
         vaf = '%.3g' % vaf
 
-
         # Add VAF to info string if and only if there is one single sample in the VCF sample
         if single_mode:
             info_string = info_string + ';AF={}'.format(vaf)
             
-        
-        # If annotated as whitelist, add the flag:
-        if 'if_Whitelist' in vars():
-            if tsv_item[if_Whitelist] == '1':
-                info_string = info_string + ';WHITELIST'
-
 
         tumor_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{MQ0}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=t_ref_mq, altMQ=t_alt_mq, refBQ=t_ref_bq, altBQ=t_alt_bq, refNM=t_ref_nm, altNM=t_alt_nm, fetSB=t_sb, fetCD=t_cd, zMQ=t_mqb, zBQ=t_bqb, MQ0=t_MQ0, VAF=vaf)
 
