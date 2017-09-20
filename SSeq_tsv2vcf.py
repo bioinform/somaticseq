@@ -5,10 +5,10 @@ import sys, argparse, math, gzip, os
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-tsv',   '--tsv-in',                    type=str,   help='TSV in', required=True)
 parser.add_argument('-vcf',   '--vcf-out',                   type=str,   help='VCF iut', required=True)
-parser.add_argument('-pass',  '--pass-threshold',            type=float, help='Above which is automatically PASS', required=False, default=0.7)
+parser.add_argument('-pass',  '--pass-threshold',            type=float, help='Above which is automatically PASS', required=False, default=0.5)
 parser.add_argument('-low',   '--lowqual-threshold',         type=float, help='Low quality subject to lenient filter', required=False, default=0.1)
 parser.add_argument('-hom',   '--hom-threshold',             type=float, help='The VAF to be labeled 1/1 in GT', required=False, default=0.85)
-parser.add_argument('-het',   '--het-threshold',             type=float, help='The VAF to be labeled 0/1 in GT', required=False, default=0.05)
+parser.add_argument('-het',   '--het-threshold',             type=float, help='The VAF to be labeled 0/1 in GT', required=False, default=0.01)
 parser.add_argument('-N',     '--normal-sample-name',        type=str,   help='Normal Sample Name', required=False, default='NORMAL')
 parser.add_argument('-T',     '--tumor-sample-name',         type=str,   help='Tumor Sample Name', required=False, default='TUMOR')
 parser.add_argument('-tools', '--individual-mutation-tools', type=str,   help='A list of all tools used. Possible values are CGA (for MuTect), VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and/or Strelka', nargs='*', required=True)
@@ -156,7 +156,6 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
     vcf.write('##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Somatic mutation in primary">\n')
     vcf.write('##INFO=<ID={COMBO},Number={NUM},Type=Integer,Description="Calling decision of the {NUM} algorithms: {TOOL_STRING}">\n'.format(COMBO=mvjsdu, NUM=total_num_tools, TOOL_STRING=tool_string) )
     vcf.write('##INFO=<ID=NUM_TOOLS,Number=1,Type=Float,Description="Number of tools called it Somatic">\n')
-    vcf.write('##INFO=<ID=WHITELIST,Number=0,Type=Flag,Description="The call is a whitelist variant">\n')
     
     if single_mode:
         vcf.write('##INFO=<ID=AF,Number=1,Type=Float,Description="Variant Allele Fraction">\n')
@@ -219,7 +218,13 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
             
             if_Tool = tsv_item[ toolcode2index[tool_i] ]
             
-            if if_Tool != '1':
+            if if_Tool == '1':
+                if_Tool = '1'
+            
+            elif if_Tool == 'nan':
+                if_Tool = '.'
+            
+            else:
                 if_Tool = '0'
             
             MVJS.append( if_Tool )
