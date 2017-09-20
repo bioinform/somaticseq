@@ -106,7 +106,7 @@ echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${tbam} \\" >> $out_script
 echo "-I /mnt/${nbam} \\" >> $out_script
 echo "-targetIntervals /mnt/${outdir}/T.N.intervals \\" >> $out_script
-echo "$selector_input \\" >> $out_script
+#echo "$selector_input \\" >> $out_script
 echo "-dt NONE \\" >> $out_script
 echo "--maxReadsForConsensuses 150000 \\" >> $out_script
 echo "--maxReadsInMemory 500000 \\" >> $out_script
