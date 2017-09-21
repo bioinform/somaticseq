@@ -138,7 +138,7 @@ fi
 
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --memory 8g --workdir=/mnt/${outdir} -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g --workdir=/mnt/${outdir} lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
 echo "/usr/local/bamsurgeon/bin/addsnv.py \\" >> $out_script
 echo "--snvfrac 0.1 --mutfrac 0.5 --coverdiff 0.9 --procs 1 \\" >> $out_script
 echo "--varfile /mnt/${snvs} \\" >> $out_script
@@ -155,7 +155,7 @@ echo "--ignoresnps --force --tagreads \\" >> $out_script
 echo "--aligner mem" >> $out_script
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --memory 8g -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/makevcf.py \\" >> $out_script
 echo "/mnt/${outdir}/addsnv_logs_unsorted.${outbam} \\" >> $out_script
 echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/bedtools:2.26.0 \\" >> $out_script
@@ -163,10 +163,10 @@ echo "bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_scrip
 echo "> ${outdir}/synthetic_snvs.vcf" >> $out_script
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --memory 8g -i lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g lethalfang/samtools:1.3.1 \\" >> $out_script
 echo "samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} -o /mnt/${outdir}/${outbam} /mnt/${outdir}/unsorted.${outbam}" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --memory 8g -i lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam}" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam}" >> $out_script
 
 echo "" >> $out_script
 echo "rm ${outdir}/unsorted.${outbam}" >> $out_script

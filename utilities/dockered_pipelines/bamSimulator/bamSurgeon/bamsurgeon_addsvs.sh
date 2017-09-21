@@ -104,7 +104,7 @@ fi
 
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --memory 8g --workdir=/mnt/${outdir} -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g --workdir=/mnt/${outdir} lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
 echo "/usr/local/bamsurgeon/bin/addsv.py \\" >> $out_script
 echo "--svfrac 0.1 --procs 1 \\" >> $out_script
 echo "--varfile /mnt/${svs} \\" >> $out_script
@@ -119,7 +119,7 @@ echo "--aligner mem" >> $out_script
 echo "" >> $out_script
 
 
-echo "docker run -v /:/mnt -u $UID --rm --memory 8g -i lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g lethalfang/bamsurgeon:1.0.0-2 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/makevcf_sv.py -l /mnt/${outdir}/addsv_logs_unsorted.${outbam} \\" >> $out_script
 echo "-r /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "| docker run -v /:/mnt -u $UID --rm --memory 8g -i lethalfang/bedtools:2.26.0 \\" >> $out_script
@@ -128,10 +128,10 @@ echo "> ${outdir}/synthetic_svs.vcf" >> $out_script
 echo "" >> $out_script
 
 
-echo "docker run -v /:/mnt -u $UID --rm --memory 8g -i lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g lethalfang/samtools:1.3.1 \\" >> $out_script
 echo "samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} -o /mnt/${outdir}/${outbam} /mnt/${outdir}/unsorted.${outbam}" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --memory 8g -i lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam}" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam}" >> $out_script
 
 echo "" >> $out_script
 echo "rm ${outdir}/unsorted.${outbam}" >> $out_script

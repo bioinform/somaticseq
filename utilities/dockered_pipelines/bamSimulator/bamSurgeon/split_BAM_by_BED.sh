@@ -79,11 +79,11 @@ fi
 echo "" >> $out_script
 
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 4g -i lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory 4g lethalfang/samtools:1.3.1 \\" >> $out_script
 echo "samtools view /mnt/${inbam} -L /mnt/${SELECTOR} -Sbh \\" >> $out_script
 echo "> ${outdir}/${outbam}" >> $out_script
 
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 4g -i lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory 4g lethalfang/samtools:1.3.1 \\" >> $out_script
 echo "samtools index /mnt/${outdir}/${outbam}" >> $out_script

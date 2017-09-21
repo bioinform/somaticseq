@@ -198,7 +198,7 @@ else
 fi
     
 
-docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \
+docker run --rm -v /:/mnt -u $UID lethalfang/somaticseq:${VERSION} \
 /opt/somaticseq/utilities/split_Bed_into_equal_regions.py \
 -infile /mnt/${outdir}/genome.bed -num $threads -outfiles /mnt/${outdir}/bed
 
