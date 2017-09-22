@@ -79,25 +79,22 @@ echo "" >> $scalpel_script
 echo "#$ -o ${logdir}" >> $scalpel_script
 echo "#$ -e ${logdir}" >> $scalpel_script
 echo "#$ -S /bin/bash" >> $scalpel_script
-echo '#$ -l h_vmem=14G' >> $scalpel_script
+echo '#$ -l h_vmem=16G' >> $scalpel_script
 echo 'set -e' >> $scalpel_script
 echo "" >> $scalpel_script
 
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $scalpel_script
 echo "" >> $scalpel_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 14g lethalfang/scalpel:0.5.3 \\" >> $scalpel_script
-echo "/opt/scalpel-0.5.3/scalpel-discovery --somatic \\" >> $scalpel_script
+echo "docker run --rm -v /:/mnt -u $UID --memory 16g lethalfang/scalpel:0.5.3 bash -c \\" >> $scalpel_script
+echo "\"/opt/scalpel-0.5.3/scalpel-discovery --somatic \\" >> $scalpel_script
 echo "--ref /mnt/${HUMAN_REFERENCE} \\" >> $scalpel_script
 echo "--bed /mnt/${SELECTOR} \\" >> $scalpel_script
 echo "--normal /mnt/${normal_bam} \\" >> $scalpel_script
 echo "--tumor /mnt/${tumor_bam} \\" >> $scalpel_script
 echo "--window 600 \\" >> $scalpel_script
-echo "--dir /mnt/${outdir}/scalpel" >> $scalpel_script
-echo "" >> $scalpel_script
-
-echo "docker run --rm -v /:/mnt -u $UID --memory 14g lethalfang/scalpel:0.5.3 bash -c \\" >> $scalpel_script
-echo "\"/opt/scalpel-0.5.3/scalpel-export --somatic \\" >> $scalpel_script
+echo "--dir /mnt/${outdir}/scalpel && \\" >> $scalpel_script
+echo "/opt/scalpel-0.5.3/scalpel-export --somatic \\" >> $scalpel_script
 echo "--db /mnt/${outdir}/scalpel/main/somatic.db.dir \\" >> $scalpel_script
 echo "--ref /mnt/${HUMAN_REFERENCE} \\" >> $scalpel_script
 echo "--bed /mnt/${SELECTOR} \\" >> $scalpel_script
