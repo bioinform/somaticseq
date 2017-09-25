@@ -64,9 +64,9 @@ with genome.open_textfile(infile) as vcf_in, open(outfile, 'w') as vcf_out:
     while line_i.startswith('##'):
         
         vcf_out.write( line_i + '\n' )
-                    
         line_i = vcf_in.readline().rstrip()
-        vcf_out.write( line_i + '\n' )
+    
+    vcf_out.write( line_i + '\n' )
 
     # This line will be #CHROM:
     header = line_i.split('\t')
