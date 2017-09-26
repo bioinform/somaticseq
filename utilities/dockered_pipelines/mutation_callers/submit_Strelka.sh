@@ -112,7 +112,7 @@ then
     exome='--exome'
 fi
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 6g lethalfang/strelka:2.8.2 \\" >> $strelka_script
+echo "docker run --rm -v /:/mnt -u $UID --memory 6g lethalfang/strelka:2.8.3 \\" >> $strelka_script
 echo "/opt/strelka/bin/configureStrelkaSomaticWorkflow.py \\" >> $strelka_script
 echo "--tumorBam=/mnt/${tumor_bam} \\" >> $strelka_script
 echo "--normalBam=/mnt/${normal_bam} \\" >> $strelka_script
@@ -125,7 +125,7 @@ echo "--runDir=/mnt/${outdir}/${outvcf%\.vcf}" >> $strelka_script
 
 echo "" >> $strelka_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 6g lethalfang/strelka:2.8.2 \\" >> $strelka_script
+echo "docker run --rm -v /:/mnt -u $UID --memory 6g lethalfang/strelka:2.8.3 \\" >> $strelka_script
 echo "/mnt/${outdir}/${outvcf%\.vcf}/runWorkflow.py -m local -j 1" >> $strelka_script
 
 echo "" >> $strelka_script
