@@ -20,7 +20,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_singl
 --min-variant-reads 1 \
 --output-dir        /ABSOLUTE/PATH/TO/trainingSet \
 --action            qsub
---merge-bam --split-bam --indel-realign
+--merge-bam --split-bam --clean-bam --indel-realign
 ```
 
 **Example Command for multi-thread jobs**
@@ -42,7 +42,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 --output-dir        /ABSOLUTE/PATH/TO/trainingSet \
 --threads           12 \
 --action            qsub
---merge-bam --split-bam --indel-realign
+--merge-bam --split-bam --clean-bam --indel-realign
 ```
 
 **BamSimulator_.sh** creates two semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**, **synthetic_indels.vcf**, and **synthetic_svs.vcf**.
@@ -66,7 +66,7 @@ The following options:
 * --output-dir Output directory
 * --merge-bam Flag to merge the tumor and normal bam file input
 * --split-bam Flag to split BAM file for tumor and normal
-* --clean-bam Flag to go through the BAM file and remove reads where more than 2 identical read names are present. This was necessary for some BAM files downloaded from TCGA. However, a proper pair-end BAM file should not have the same read name appearing more than twice.
+* --clean-bam Flag to go through the BAM file and remove reads where more than 2 identical read names are present. This was necessary for some BAM files downloaded from TCGA. However, a proper pair-end BAM file should not have the same read name appearing more than twice. Use this only when necessary. 
 * --indel-realign Conduct GATK Joint Indel Realignment on the two output BAM files. Instead of syntheticNormal.bam and syntheticTumor.bam, the final BAM files will be **syntheticNormal.JointRealigned.bam** and **syntheticTumor.JointRealigned.bam**.
 * --seed Random seed. Pick any integer for reproducibility purposes.
 * --threads Split the BAM files evenly in N regions, then process each (pair) of sub-BAM files in parallel. 

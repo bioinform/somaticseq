@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,action: -n 'submit_Scalpel.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,action:,two-pass -n 'submit_Scalpel.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -60,6 +60,9 @@ while true; do
             *) action=$2 ; shift 2 ;;
         esac ;;
 
+    --two-pass )
+        two_pass=1 ; shift ;;
+        
     -- ) shift; break ;;
     * ) break ;;
     esac
@@ -83,6 +86,11 @@ echo '#$ -l h_vmem=16G' >> $scalpel_script
 echo 'set -e' >> $scalpel_script
 echo "" >> $scalpel_script
 
+if [[ $two_pass ]]
+then
+    two_pass='--two-pass'
+fi
+
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $scalpel_script
 echo "" >> $scalpel_script
 
@@ -93,7 +101,7 @@ echo "--bed /mnt/${SELECTOR} \\" >> $scalpel_script
 echo "--normal /mnt/${normal_bam} \\" >> $scalpel_script
 echo "--tumor /mnt/${tumor_bam} \\" >> $scalpel_script
 echo "--window 600 \\" >> $scalpel_script
-echo "--two-pass \\" >> $scalpel_script
+echo "$two_pass \\" >> $scalpel_script
 echo "--dir /mnt/${outdir}/scalpel && \\" >> $scalpel_script
 echo "/opt/scalpel-0.5.3/scalpel-export --somatic \\" >> $scalpel_script
 echo "--db /mnt/${outdir}/scalpel/main/somatic.db.dir \\" >> $scalpel_script

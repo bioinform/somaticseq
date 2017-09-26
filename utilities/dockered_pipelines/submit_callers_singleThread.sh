@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'mutation_caller_script_generators.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel:,scalpel-two-pass -n 'mutation_caller_script_generators.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -133,6 +133,9 @@ while true; do
 
     --scalpel )
         scalpel=1 ; shift ;;
+
+    --scalpel-two-pass )
+        two_pass=1 ; shift ;;
 
     --strelka )
         strelka=1 ; shift ;;
@@ -299,6 +302,12 @@ fi
 
 if [[ $scalpel -eq 1 ]]
 then
+
+    if [[ $two_pass ]]
+    then
+        two_pass='--two-pass'
+    fi
+
     $MYDIR/mutation_callers/submit_Scalpel.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
@@ -306,6 +315,7 @@ then
     --selector ${SELECTOR} \
     --out-vcf Scalpel.vcf \
     --human-reference ${HUMAN_REFERENCE} \
+    ${two_pass} \
     --action $action
 
     scalpel_input="--scalpel ${outdir}/Scalpel.vcf"
