@@ -20,7 +20,6 @@ action='echo'
 somaticseq_action='echo'
 somaticseq_dir='SomaticSeq'
 min_vaf=0.05
-
 threads=12
 
 while true; do
@@ -187,7 +186,8 @@ while true; do
 
 done
 
-VERSION='2.4.0'
+# VERSION='2.4.0'
+VERSION=`cat ${MYDIR}/../../VERSION | sed 's/##SomaticSeq=v//'`
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 logdir=${outdir}/logs

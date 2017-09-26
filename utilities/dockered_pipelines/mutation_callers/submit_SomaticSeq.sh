@@ -192,7 +192,8 @@ while true; do
 
 done
 
-VERSION='2.4.0'
+# VERSION='2.4.0'
+VERSION=`cat ${MYDIR}/../../VERSION | sed 's/##SomaticSeq=v//'`
 
 logdir=${outdir}/logs
 mkdir -p ${logdir}
