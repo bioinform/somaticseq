@@ -260,7 +260,7 @@ echo "" >> $sseq_script
 echo "docker pull lethalfang/somaticseq:${VERSION}" >> $sseq_script
 echo "" >> $sseq_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 8g lethalfang/somaticseq:${VERSION} \\" >> $sseq_script
+echo "docker run --rm -v /:/mnt -u $UID --memory 24g lethalfang/somaticseq:${VERSION} \\" >> $sseq_script
 echo "/opt/somaticseq/SomaticSeq.Wrapper.sh \\" >> $sseq_script
 echo "--output-dir       /mnt/${outdir} \\" >> $sseq_script
 echo "--genome-reference /mnt/${HUMAN_REFERENCE} \\" >> $sseq_script

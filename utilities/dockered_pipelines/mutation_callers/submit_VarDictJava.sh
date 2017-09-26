@@ -114,7 +114,7 @@ echo "-G /mnt/${HUMAN_REFERENCE} \\" >> $vardict_script
 echo "-f $VAF -h \\" >> $vardict_script
 echo "-b '/mnt/${tumor_bam}|/mnt/${normal_bam}' \\" >> $vardict_script
 echo "-Q 1 -c 1 -S 2 -E 3 -g 4 /mnt/${input_bed} \\" >> $vardict_script
-echo "> /mnt/${outdir}/${timestamp}.var \"" >> $vardict_script
+echo "> /mnt/${outdir}/${timestamp}.var\"" >> $vardict_script
 echo "" >> $vardict_script
 
 echo "docker run --rm -v /:/mnt -u $UID --memory 4g lethalfang/vardictjava:1.5.1 \\" >> $vardict_script
