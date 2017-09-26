@@ -17,10 +17,10 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_singl
 --num-svs           50 \
 --min-vaf           0.05 \
 --max-vaf           0.5 \
---min-variant-reads 1 \
+--min-variant-reads 2 \
 --output-dir        /ABSOLUTE/PATH/TO/trainingSet \
 --action            qsub
---merge-bam --split-bam --clean-bam --indel-realign
+--merge-bam --split-bam --indel-realign
 ```
 
 **Example Command for multi-thread jobs**
@@ -38,11 +38,11 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 --num-svs           50 \
 --min-vaf           0.05 \
 --max-vaf           0.5 \
---min-variant-reads 1 \
+--min-variant-reads 2 \
 --output-dir        /ABSOLUTE/PATH/TO/trainingSet \
 --threads           12 \
 --action            qsub
---merge-bam --split-bam --clean-bam --indel-realign
+--merge-bam --split-bam --indel-realign
 ```
 
 **BamSimulator_.sh** creates two semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**, **synthetic_indels.vcf**, and **synthetic_svs.vcf**.
@@ -57,7 +57,7 @@ The following options:
 * --split-proportion The faction of total reads desginated to the normal. (Defaut = 0.5)
 * --num-snvs Number of SNVs to spike into the designated tumor
 * --num-indels Number of INDELs to spike into the designated tumor
-* --num-svs Number of SVs to spike into the designated tumor
+* --num-svs Number of SVs to spike into the designated tumor (Default = 0)
 * --min-depth Minimum depth where spike in can take place
 * --max-depth Maximum depth where spike in can take place
 * --min-vaf Minimum VAF to simulate
