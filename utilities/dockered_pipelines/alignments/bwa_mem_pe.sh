@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,fq1:,fq2:,ID:,LB:,PL:,SM:,genome-reference:,out-script:,threads:,standalone, -n 'bwa_mem_pe.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,fq1:,fq2:,ID:,LB:,PL:,SM:,genome-reference:,out-script:,out-bam:,threads:,standalone, -n 'bwa_mem_pe.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
