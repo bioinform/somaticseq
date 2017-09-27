@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,in-bam:,out-bam:,genome-reference:,dbsnp:,out-script:,standalone, -n 'jointIndelRealign.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,in-bam:,out-bam:,genome-reference:,dbsnp:,out-script:,standalone, -n 'BQSR.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -67,7 +67,7 @@ if [[ ${out_script_name} ]]
 then
     out_script="${out_script_name}"
 else
-    out_script="${logdir}/jointIndelRealign.${timestamp}.cmd"    
+    out_script="${logdir}/BQSR.${timestamp}.cmd"    
 fi
 
 
