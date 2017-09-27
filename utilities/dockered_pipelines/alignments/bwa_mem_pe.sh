@@ -133,5 +133,5 @@ echo "| samtools sort -m 4G --threads ${threads} -o /mnt/${outdir}/${outBam}\"" 
 
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 10g lethalfang/bwa:0.7.15_samtools \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID lethalfang/bwa:0.7.15_samtools \\" >> $out_script
 echo "samtools index /mnt/${outdir}/${outBam}" >> $out_script
