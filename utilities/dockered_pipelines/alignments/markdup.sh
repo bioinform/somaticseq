@@ -86,3 +86,5 @@ echo "MINIMUM_DISTANCE=1000 \\" >> $out_script
 echo "O=/mnt/${outdir}/${outBam}" >> $out_script
 
 echo "" >> $out_script
+
+echo "mv ${outdir}/${outBam%.bam}.bai ${outdir}/${outBam}.bai" >> $out_script
