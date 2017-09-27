@@ -4,7 +4,7 @@
 
 **Example Command for multi-thread jobs**
 ```
-$PATH/TO/somaticseq/utilities/pipelines/submit_callers_multiThreads.sh \
+$PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_multiThreads.sh \
 --normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
@@ -17,7 +17,7 @@ $PATH/TO/somaticseq/utilities/pipelines/submit_callers_multiThreads.sh \
 
 **Example Command for single-thread jobs**
 ```
-$PATH/TO/somaticseq/utilities/pipelines/submit_callers_singleThread.sh \
+$PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh \
 --normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
