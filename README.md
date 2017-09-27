@@ -12,7 +12,8 @@
 * We have created a docker repo for SomaticSeq: https://hub.docker.com/r/lethalfang/somaticseq/.
 * Since v2.3.0, we have also included run script generators for the dockerized somatic mutation callers that we have incorporated at [utilities/dockered_pipelines](utilities/dockered_pipelines).
 The documentation for those scripts are in Section 4 of the [User's Manual](docs/Manual.pdf "Documentation").
-* We have also included the dockerized pipeline to generate training set out of your own sequencing data based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). It is located at [utilities/dockered_pipelines/bamSimulator](utilities/dockered_pipelines/bamSimulator).
+* The dockerized pipeline to generate training set out of your own sequencing data based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). It is located at [utilities/dockered_pipelines/bamSimulator](utilities/dockered_pipelines/bamSimulator).
+* The dockerized pipeline to generate BAM files using GATK's best practices are at [utilities/dockered_pipelines/alignments](utilities/dockered_pipelines/alignments).
 
 <b>For a quick description of SomaticSeq, you may watch this 8-minute video:</b>
   [![SomaticSeq Video](docs/SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")
