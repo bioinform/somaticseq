@@ -115,7 +115,7 @@ then
     echo "#$ -e ${logdir}" >> $out_script
     echo "#$ -S /bin/bash" >> $out_script
     echo '#$ -l h_vmem=8G' >> $out_script
-    echo '#$ -pe smp ${threads}' >> $out_script
+    echo "#$ -pe smp ${threads}" >> $out_script
     echo 'set -e' >> $out_script
 fi
 
