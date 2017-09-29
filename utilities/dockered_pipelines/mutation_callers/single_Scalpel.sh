@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,human-reference:,selector:,action:,two-pass -n 'submit_Scalpel.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,human-reference:,selector:,action:,two-pass -n 'submit_Scalpel.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 

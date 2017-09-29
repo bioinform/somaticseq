@@ -99,7 +99,7 @@ echo "" >> $varscan2_script
 echo "docker run --rm -u $UID -v /:/mnt --memory 8g djordjeklisic/sbg-varscan2:v1 bash -c \\" >> $varscan2_script
 echo "\"java -Xmx6g -jar VarScan2.3.7.jar mpileup2cns \\" >> $varscan2_script
 echo "/mnt/${outdir}/tumor.pileup \\" >> $varscan2_script
-echo "--variants --min-var-freq $VAF --output-vcf 1" >> $varscan2_script
+echo "--variants --min-var-freq $VAF --output-vcf 1 \\" >> $varscan2_script
 echo "> /mnt/${outdir}/${outvcf}\"" >> $varscan2_script
 
 echo "" >> $varscan2_script
