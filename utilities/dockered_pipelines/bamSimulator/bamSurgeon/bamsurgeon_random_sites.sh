@@ -163,4 +163,4 @@ echo "> ${outdir}/sorted.cnvfile.bed" >> $out_script
 echo "" >> $out_script
 
 echo "docker run -v /:/mnt -u $UID --rm lethalfang/tabix:1.2.1 bgzip /mnt/${outdir}/sorted.cnvfile.bed" >> $out_script
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/tabix:1.2.1 tabix /mnt/${outdir}/sorted.cnvfile.bed.gz" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/tabix:1.2.1 tabix -f /mnt/${outdir}/sorted.cnvfile.bed.gz" >> $out_script

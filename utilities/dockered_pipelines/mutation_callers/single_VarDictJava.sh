@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,action:,VAF: -n 'submit_VarDictJava.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,human-reference:,selector:,action:,VAF: -n 'submit_VarDictJava.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -30,16 +30,10 @@ while true; do
             *)  outdir=$2 ; shift 2 ;;
         esac ;;
 
-    --tumor-bam )
+    --in-bam )
         case "$2" in
             "") shift 2 ;;
             *)  tumor_bam=$2 ; shift 2 ;;
-        esac ;;
-
-    --normal-bam )
-        case "$2" in
-            "") shift 2 ;;
-            *)  normal_bam=$2 ; shift 2 ;;
         esac ;;
 
     --human-reference )
@@ -112,13 +106,13 @@ echo "docker run --rm -v /:/mnt -u $UID --memory 4g lethalfang/vardictjava:1.5.1
 echo "\"/opt/VarDict-1.5.1/bin/VarDict \\" >> $vardict_script
 echo "-G /mnt/${HUMAN_REFERENCE} \\" >> $vardict_script
 echo "-f $VAF -h \\" >> $vardict_script
-echo "-b '/mnt/${tumor_bam}|/mnt/${normal_bam}' \\" >> $vardict_script
+echo "-b '/mnt/${tumor_bam}' \\" >> $vardict_script
 echo "-Q 1 -c 1 -S 2 -E 3 -g 4 /mnt/${input_bed} \\" >> $vardict_script
 echo "> /mnt/${outdir}/${timestamp}.var\"" >> $vardict_script
 echo "" >> $vardict_script
 
 echo "docker run --rm -v /:/mnt -u $UID --memory 4g lethalfang/vardictjava:1.5.1 \\" >> $vardict_script
-echo "bash -c \"cat /mnt/${outdir}/${timestamp}.var | awk 'NR!=1' | /opt/VarDict/testsomatic.R | /opt/VarDict/var2vcf_paired.pl -N 'TUMOR|NORMAL' -f $VAF \\" >> $vardict_script
+echo "bash -c \"cat /mnt/${outdir}/${timestamp}.var | awk 'NR!=1' | /opt/VarDict/teststrandbias.R | /opt/VarDict/var2vcf_valid.pl -N 'TUMOR' -f $VAF \\" >> $vardict_script
 echo "> /mnt/${outdir}/${outvcf}\"" >> $vardict_script
 
 echo "" >> $vardict_script

@@ -226,7 +226,7 @@ do
     echo "#$ -o ${logdir}" >> $out_script
     echo "#$ -e ${logdir}" >> $out_script
     echo "#$ -S /bin/bash" >> $out_script
-    echo '#$ -l h_vmem=12G' >> $out_script
+    echo '#$ -l h_vmem=14G' >> $out_script
     echo 'set -e' >> $out_script
     echo "" >> $out_script
     

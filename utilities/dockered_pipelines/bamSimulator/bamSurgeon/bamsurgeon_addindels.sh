@@ -138,7 +138,7 @@ fi
 
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --workdir=/mnt/${outdir} lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 14g --workdir=/mnt/${outdir} lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
 echo "/usr/local/bamsurgeon/bin/addindel.py \\" >> $out_script
 echo "--snvfrac 0.1 --mutfrac 0.5 --coverdiff 0.9 --procs 1 \\" >> $out_script
 echo "--varfile /mnt/${indels} \\" >> $out_script

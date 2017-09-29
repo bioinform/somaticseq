@@ -104,7 +104,7 @@ fi
 
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --workdir=/mnt/${outdir} lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 14g --workdir=/mnt/${outdir} lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
 echo "/usr/local/bamsurgeon/bin/addsv.py \\" >> $out_script
 echo "--svfrac 0.1 --procs 1 \\" >> $out_script
 echo "--varfile /mnt/${svs} \\" >> $out_script
