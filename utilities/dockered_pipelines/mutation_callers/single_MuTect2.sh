@@ -118,7 +118,6 @@ echo "java -Xmx6g -jar gatk.jar Mutect2 \\" >> $mutect2_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $mutect2_script
 echo "$selector_text \\" >> $mutect2_script
 echo "--input /mnt/${tumor_bam} \\" >> $mutect2_script
-echo "--normalSampleName \${normal_name} \\" >> $mutect2_script
 echo "--tumorSampleName \${tumor_name} \\" >> $mutect2_script
 echo "$dbsnp_text \\" >> $mutect2_script
 echo "--output /mnt/${outdir}/unfiltered.${outvcf}" >> $mutect2_script
