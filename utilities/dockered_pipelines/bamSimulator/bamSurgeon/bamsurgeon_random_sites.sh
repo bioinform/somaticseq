@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,out-script:,seed:,standalone -n 'bamsurgeon_split_BAM.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,left-beta:,right-beta:,out-script:,seed:,standalone -n 'bamsurgeon_split_BAM.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -20,6 +20,8 @@ num_indels=100
 num_svs=50
 min_vaf=0.05
 max_vaf=0.5
+left_beta=2
+right_beta=2
 
 while true; do
     case "$1" in
@@ -69,6 +71,18 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  max_vaf=$2 ; shift 2 ;;
+            esac ;;
+
+        --left-beta )
+            case "$2" in
+                "") shift 2 ;;
+                *)  left_beta=$2 ; shift 2 ;;
+            esac ;;
+
+        --right-beta )
+            case "$2" in
+                "") shift 2 ;;
+                *)  right_beta=$2 ; shift 2 ;;
             esac ;;
 
         --out-script )
@@ -126,6 +140,8 @@ echo "--bed /mnt/${SELECTOR} \\" >> $out_script
 echo "--numpicks ${num_snvs} \\" >> $out_script
 echo "--minvaf $min_vaf \\" >> $out_script
 echo "--maxvaf $max_vaf \\" >> $out_script
+echo "--vafbeta1 $left_beta \\" >> $out_script
+echo "--vafbeta2 $right_beta \\" >> $out_script
 echo "--avoidN snv \\" >> $out_script
 echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/bedtools:2.26.0 \\" >> $out_script
 echo "bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai > ${outdir}/random_sSNV.bed" >> $out_script
@@ -139,6 +155,8 @@ echo "--bed /mnt/${SELECTOR} \\" >> $out_script
 echo "--numpicks $num_indels \\" >> $out_script
 echo "--minvaf $min_vaf \\" >> $out_script
 echo "--maxvaf $max_vaf \\" >> $out_script
+echo "--vafbeta1 $left_beta \\" >> $out_script
+echo "--vafbeta2 $right_beta \\" >> $out_script
 echo "--avoidN indel --maxlen 18  \\" >> $out_script
 echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/somaticseq:latest \\" >> $out_script
 echo "/opt/somaticseq/utilities/vcfsorter.pl /mnt/${hg_dict} - > ${outdir}/random_sINDEL.bed" >> $out_script
@@ -152,6 +170,8 @@ echo "--bed /mnt/${SELECTOR} \\" >> $out_script
 echo "--numpicks $num_svs \\" >> $out_script
 echo "--minvaf $min_vaf \\" >> $out_script
 echo "--maxvaf $max_vaf \\" >> $out_script
+echo "--vafbeta1 $left_beta \\" >> $out_script
+echo "--vafbeta2 $right_beta \\" >> $out_script
 echo "sv --cnvfile /mnt/${outdir}/cnvfile.bed \\" >> $out_script
 echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/somaticseq:latest \\" >> $out_script
 echo "/opt/somaticseq/utilities/vcfsorter.pl /mnt/${hg_dict} - > ${outdir}/random_sSV.bed" >> $out_script
