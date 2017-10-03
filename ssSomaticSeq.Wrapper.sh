@@ -333,8 +333,8 @@ then
     # If a classifier is used, assume predictor.R, and do the prediction routine:
     if [[ -r ${snpclassifier} ]] && [[ -r ${ada_r_script} ]]
     then
-        R --no-save --args "$snpclassifier" "${merged_dir}/Ensemble.ssSNV.tsv" "${merged_dir}/Trained.ssSNV.tsv" < "$ada_r_script"
-        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/Trained.ssSNV.tsv -vcf ${merged_dir}/Trained.ssSNV.vcf -pass 0.5 -low 0.1 -all -phred -tools $tool_mutect $tool_varscan $tool_vardict $tool_lofreq $tool_strelka
+        R --no-save --args "$snpclassifier" "${merged_dir}/Ensemble.ssSNV.tsv" "${merged_dir}/SSeq.Classified.ssSNV.tsv" < "$ada_r_script"
+        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/SSeq.Classified.ssSNV.tsv -vcf ${merged_dir}/SSeq.Classified.ssSNV.vcf -pass 0.5 -low 0.1 -all -phred -tools $tool_mutect $tool_varscan $tool_vardict $tool_lofreq $tool_strelka
 
     # If ground truth is here, assume builder.R, and build a classifier
     elif [[ -r ${snpgroundtruth} ]] && [[ -r ${ada_r_script} ]]
@@ -343,7 +343,7 @@ then
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else
-        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/Ensemble.ssSNV.tsv -vcf ${merged_dir}/Untrained.ssSNV.vcf -tools $tool_mutect $tool_varscan $tool_vardict $tool_lofreq $tool_capp -all
+        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/Ensemble.ssSNV.tsv -vcf ${merged_dir}/Consensus.ssSNV.vcf -tools $tool_mutect $tool_varscan $tool_vardict $tool_lofreq $tool_capp -all
     fi
 
 fi
@@ -453,8 +453,8 @@ then
     # If a classifier is used, use it:
     if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]
     then
-        R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.ssINDEL.tsv" "${merged_dir}/Trained.ssINDEL.tsv" < "$ada_r_script"
-        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/Trained.ssINDEL.tsv -vcf ${merged_dir}/Trained.ssINDEL.vcf -pass 0.7 -low 0.1 -all -phred -tools $tool_lofreq $tool_varscan $tool_vardict $tool_scalpel $tool_capp
+        R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.ssINDEL.tsv" "${merged_dir}/SSeq.Classified.ssINDEL.tsv" < "$ada_r_script"
+        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/SSeq.Classified.ssINDEL.tsv -vcf ${merged_dir}/SSeq.Classified.ssINDEL.vcf -pass 0.7 -low 0.1 -all -phred -tools $tool_lofreq $tool_varscan $tool_vardict $tool_scalpel $tool_capp
 
     # If ground truth is here, assume builder.R, and build a classifier
     elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]
@@ -463,7 +463,7 @@ then
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else
-        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/Ensemble.ssINDEL.tsv -vcf ${merged_dir}/Untrained.ssINDEL.vcf -tools $tool_lofreq $tool_varscan $tool_vardict $tool_scalpel $tool_capp -all
+        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/Ensemble.ssINDEL.tsv -vcf ${merged_dir}/Consensus.ssINDEL.vcf -tools $tool_lofreq $tool_varscan $tool_vardict $tool_scalpel $tool_capp -all
     fi
 
 fi
