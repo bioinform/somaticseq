@@ -548,6 +548,9 @@ for chr_i_vcf in right_files:
                     tumor_sample  = ':'.join(tumor_sample)
                     new_format_string = ':'.join(format_field)
     
+                    # VarDict's END tag has caused problem with GATK CombineVariants. Simply get rid of it. 
+                    vcfcall.info = re.sub(r'END=[0-9]+;', '', vcfcall.info)
+    
                     if paired:
                         line_i = '\t'.join(( vcfcall.chromosome, str(vcfcall.position), vcfcall.identifier, vcfcall.refbase, vcfcall.altbase, vcfcall.qual, vcfcall.filters, vcfcall.info, new_format_string, normal_sample, tumor_sample ))
                     else:

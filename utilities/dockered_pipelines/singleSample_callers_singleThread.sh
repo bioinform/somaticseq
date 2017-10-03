@@ -158,21 +158,6 @@ timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-if [[ $mutect -eq 1 ]]
-then
-    $MYDIR/mutation_callers/submit_MuTect.sh \
-    --normal-bam ${normal_bam} \
-    --tumor-bam ${tumor_bam} \
-    --out-dir ${outdir} \
-    --out-vcf MuTect.vcf \
-    --selector ${SELECTOR} \
-    --human-reference ${HUMAN_REFERENCE} \
-    --dbsnp ${dbsnp} \
-    --action $action
-
-    mutect_input="--mutect ${outdir}/MuTect.vcf"
-    indelocator_input="--indelocator ${outdir}/Indel.MuTect.vcf"
-fi
 
 if [[ $mutect2 -eq 1 ]]
 then
@@ -198,8 +183,7 @@ then
     --human-reference ${HUMAN_REFERENCE} \
     --action $action
 
-    varscan_snv_input="--varscan-snv ${outdir}/VarScan2.snp.vcf"
-    varscan_indel_input="--varscan-indel ${outdir}/VarScan2.indel.vcf"
+    varscan_input="--varscan ${outdir}/VarScan2.vcf"
 fi
 
 
@@ -229,17 +213,12 @@ then
     --dbsnp ${dbsnp} \
     --action $action
 
-    lofreq_snv_input="--lofreq-snv ${outdir}/LoFreq.somatic_final.snvs.vcf.gz"
-    lofreq_indel_input="--lofreq-indel ${outdir}/LoFreq.somatic_final.indels.vcf.gz"
+    lofreq_input="--lofreq ${outdir}/LoFreq.vcf"
 fi
 
 if [[ $scalpel -eq 1 ]]
 then
 
-    if [[ $two_pass ]]
-    then
-        two_pass='--two-pass'
-    fi
 
     $MYDIR/mutation_callers/single_Scalpel.sh \
     --in-bam ${tumor_bam} \
@@ -247,7 +226,6 @@ then
     --selector ${SELECTOR} \
     --out-vcf Scalpel.vcf \
     --human-reference ${HUMAN_REFERENCE} \
-    ${two_pass} \
     --action $action
 
     scalpel_input="--scalpel ${outdir}/Scalpel.vcf"
@@ -264,8 +242,7 @@ then
     --exome \
     --action $action
 
-    strelka_snv_input="--strelka-snv ${outdir}/Strelka/results/variants/somatic.snvs.vcf.gz"
-    strelka_indel_input="--strelka-indel ${outdir}/Strelka/results/variants/somatic.indels.vcf.gz"
+    strelka_input="--strelka ${outdir}/Strelka/results/variants/variants.vcf.gz"
 fi
 
 
@@ -290,9 +267,8 @@ then
         ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"
     fi
 
-    $MYDIR/mutation_callers/submit_SomaticSeq.sh \
-    --normal-bam ${normal_bam} \
-    --tumor-bam ${tumor_bam} \
+    $MYDIR/mutation_callers/ssingle_SomaticSeq.sh \
+    --in-bam ${tumor_bam} \
     --out-dir ${outdir}/${somaticseq_dir} \
     --human-reference ${HUMAN_REFERENCE} \
     $selector_input \
@@ -301,14 +277,11 @@ then
     $cosmic_input \
     $mutect_input \
     $mutect2_input \
-    $varscan_snv_input \
-    $varscan_indel_input \
+    $varscan_input \
     $vardict_input \
-    $lofreq_snv_input \
-    $lofreq_indel_input \
+    $lofreq_input \
     $scalpel_input \
-    $strelka_snv_input \
-    $strelka_indel_input \
+    $strelka_input \
     $classifier_snv_text \
     $classifier_indel_text \
     $truth_snv_text \

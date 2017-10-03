@@ -902,6 +902,32 @@ Have implemented the following improvement, mostly for indels:
 
 
 
+
+\subsection{Version 2.5.0}
+
+\begin{itemize}
+
+  \item
+  In modify\_VJSD.py, get rid of VarDict's END tag (in single sample mode) because it causes problem with GATK CombineVariants. 
+  
+  \item
+  Added limited single-sample support, i.e., ssSomaticSeq.Wrapper.sh is the wrapper script. singleSample\_callers\_singleThread.sh is the wrapper script to submit single-sample mutation caller scripts.
+  
+  \item
+  Added run scripts for read alignments and post-alignment processing, i.e,. FASTQ $\rightarrow$ BAM, at utilities/dockered\_pipelines/alignments.
+  
+  \item
+  No change to tumor-normal SomaticSeq algorithm
+
+\end{itemize}
+
+
+
+
+
+
+
+
 \section{Contact Us}
 For suggestions, bug reports, or technical support, please post in \href{https://github.com/bioinform/somaticseq/issues}{https://github.com/bioinform/somaticseq/issues}. The developers are alerted when issues are created there. Alternatively, you may also email \href{mailto:li_tai.fang@roche.com}{li\_tai.fang@roche.com}. 
 
