@@ -2,7 +2,7 @@
 
 set -e
 
-OPTS=`getopt -o o: long output-dir:,mutect:,mutect2:,varscan:,vardict:,lofreq:,scalpel:,strelka:,genome-reference:,cosmic:,dbsnp:,gatk:,in-bam:,classifier-snv:,classifier-indel:,ada-r-script:,inclusion-region:,exclusion-region:,truth-indel:,truth-snv:,keep-intermediates:  -n 'ssSomaticSeq.Wrapper.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,mutect:,mutect2:,strelka:,varscan:,vardict:,lofreq:,scalpel:,genome-reference:,cosmic:,dbsnp:,gatk:,in-bam:,classifier-snv:,classifier-indel:,ada-r-script:,exclusion-region:,inclusion-region:,truth-indel:,truth-snv:,pass-threshold:,lowqual-threshold:,keep-intermediates: -n 'ssSomaticSeq.Wrapper.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
