@@ -129,15 +129,10 @@ out_header = \
 {if_MuTect}\t\
 {if_Strelka}\t\
 {if_VarScan2}\t\
-{if_JointSNVMix2}\t\
-{if_SomaticSniper}\t\
 {if_VarDict}\t\
 {if_LoFreq}\t\
 {if_Scalpel}\t\
-{MuSE_Tier}\t\
 {VarScan2_Score}\t\
-{SNVMix2_Score}\t\
-{Sniper_Score}\t\
 {if_dbsnp}\t\
 {COMMON}\t\
 {if_COSMIC}\t\
