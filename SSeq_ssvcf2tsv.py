@@ -49,20 +49,17 @@ is_vcf    = args.vcf_format
 is_bed    = args.bed_format
 is_pos    = args.positions_list
 
-bam_fn   = args.in_bam
+bam_fn    = args.in_bam
 
 truth     = args.ground_truth_vcf
 cosmic    = args.cosmic_vcf
 dbsnp     = args.dbsnp_vcf
 mutect    = args.mutect_vcf
-strelka   = args.strelka_vcf
-sniper    = args.somaticsniper_vcf
 varscan   = args.varscan_vcf
-jsm       = args.jsm_vcf
 vardict   = args.vardict_vcf
-muse      = args.muse_vcf
 lofreq    = args.lofreq_vcf
 scalpel   = args.scalpel_vcf
+strelka   = args.strelka_vcf
 
 min_mq    = args.minimum_mapping_quality
 min_bq    = args.minimum_base_quality
