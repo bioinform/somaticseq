@@ -138,7 +138,6 @@ out_header = \
 {VarScan2_Score}\t\
 {SNVMix2_Score}\t\
 {Sniper_Score}\t\
-{VarDict_Score}\t\
 {if_dbsnp}\t\
 {COMMON}\t\
 {if_COSMIC}\t\
@@ -771,7 +770,6 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     if_LoFreq               = lofreq_classification,                                  \
                     if_Scalpel              = scalpel_classification,                                 \
                     VarScan2_Score          = rescale(score_varscan2,      'phred', p_scale, 1001),   \
-                    VarDict_Score           = rescale(score_vardict,       'phred', p_scale, 1001),   \
                     if_dbsnp                = if_dbsnp,                                               \
                     COMMON                  = if_common,                                              \
                     if_COSMIC               = if_cosmic,                                              \
