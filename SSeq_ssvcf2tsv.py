@@ -17,7 +17,7 @@ input_sites.add_argument('-myvcf',  '--vcf-format',           type=str,   help='
 input_sites.add_argument('-mybed',  '--bed-format',           type=str,   help='Input file is BED formatted.', required=False, default=None)
 input_sites.add_argument('-mypos',  '--positions-list',       type=str,   help='A list of positions: tab seperating contig and positions.', required=False, default=None)
 
-parser.add_argument('-bam', '--in-bam',              type=str,   help='Tumor BAM File',    required=True, default=None)
+parser.add_argument('-bam', '--in-bam',              type=str,   help='Tumor tBAM File',    required=True, default=None)
 
 parser.add_argument('-truth',     '--ground-truth-vcf',       type=str,   help='VCF of true hits',  required=False, default=None)
 parser.add_argument('-dbsnp',     '--dbsnp-vcf',              type=str,   help='dbSNP VCF: do not use if input VCF is annotated', required=False, default=None)
@@ -31,7 +31,7 @@ parser.add_argument('-scalpel', '--scalpel-vcf',              type=str,   help='
 parser.add_argument('-strelka', '--strelka-vcf',              type=str,   help='Strelka VCF',       required=False, default=None)
 
 parser.add_argument('-ref',     '--genome-reference',         type=str,   help='.fasta.fai file to get the contigs', required=True, default=None)
-parser.add_argument('-dedup',   '--deduplicate',     action='store_true', help='Do not consider duplicate reads from BAM files. Default is to count everything', required=False, default=False)
+parser.add_argument('-dedup',   '--deduplicate',     action='store_true', help='Do not consider duplicate reads from tBAM files. Default is to count everything', required=False, default=False)
 
 parser.add_argument('-minMQ',     '--minimum-mapping-quality',type=float, help='Minimum mapping quality below which is considered poor', required=False, default=1)
 parser.add_argument('-minBQ',     '--minimum-base-quality',   type=float, help='Minimum base quality below which is considered poor', required=False, default=5)
@@ -145,38 +145,38 @@ out_header = \
 {MaxHomopolymer_Length}\t\
 {SiteHomopolymer_Length}\t\
 {T_DP}\t\
-{BAM_REF_MQ}\t\
-{BAM_ALT_MQ}\t\
-{BAM_Z_Ranksums_MQ}\t\
-{BAM_REF_BQ}\t\
-{BAM_ALT_BQ}\t\
-{BAM_Z_Ranksums_BQ}\t\
-{BAM_REF_NM}\t\
-{BAM_ALT_NM}\t\
-{BAM_NM_Diff}\t\
-{BAM_REF_Concordant}\t\
-{BAM_REF_Discordant}\t\
-{BAM_ALT_Concordant}\t\
-{BAM_ALT_Discordant}\t\
-{BAM_Concordance_FET}\t\
+{tBAM_REF_MQ}\t\
+{tBAM_ALT_MQ}\t\
+{tBAM_Z_Ranksums_MQ}\t\
+{tBAM_REF_BQ}\t\
+{tBAM_ALT_BQ}\t\
+{tBAM_Z_Ranksums_BQ}\t\
+{tBAM_REF_NM}\t\
+{tBAM_ALT_NM}\t\
+{tBAM_NM_Diff}\t\
+{tBAM_REF_Concordant}\t\
+{tBAM_REF_Discordant}\t\
+{tBAM_ALT_Concordant}\t\
+{tBAM_ALT_Discordant}\t\
+{tBAM_Concordance_FET}\t\
 {T_REF_FOR}\t\
 {T_REF_REV}\t\
 {T_ALT_FOR}\t\
 {T_ALT_REV}\t\
-{BAM_StrandBias_FET}\t\
-{BAM_Z_Ranksums_EndPos}\t\
-{BAM_REF_Clipped_Reads}\t\
-{BAM_ALT_Clipped_Reads}\t\
-{BAM_Clipping_FET}\t\
-{BAM_MQ0}\t\
-{BAM_Other_Reads}\t\
-{BAM_Poor_Reads}\t\
-{BAM_REF_InDel_3bp}\t\
-{BAM_REF_InDel_2bp}\t\
-{BAM_REF_InDel_1bp}\t\
-{BAM_ALT_InDel_3bp}\t\
-{BAM_ALT_InDel_2bp}\t\
-{BAM_ALT_InDel_1bp}\t\
+{tBAM_StrandBias_FET}\t\
+{tBAM_Z_Ranksums_EndPos}\t\
+{tBAM_REF_Clipped_Reads}\t\
+{tBAM_ALT_Clipped_Reads}\t\
+{tBAM_Clipping_FET}\t\
+{tBAM_MQ0}\t\
+{tBAM_Other_Reads}\t\
+{tBAM_Poor_Reads}\t\
+{tBAM_REF_InDel_3bp}\t\
+{tBAM_REF_InDel_2bp}\t\
+{tBAM_REF_InDel_1bp}\t\
+{tBAM_ALT_InDel_3bp}\t\
+{tBAM_ALT_InDel_2bp}\t\
+{tBAM_ALT_InDel_1bp}\t\
 {InDel_Length}\t\
 {TrueVariant_or_False}'
 
@@ -352,7 +352,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             if args.dbsnp_vcf:         got_dbsnp,   dbsnp_variants,   dbsnp_line   = genome.find_vcf_at_coordinate(my_coordinate, dbsnp_line,   dbsnp,   chrom_seq)
             if args.cosmic_vcf:        got_cosmic,  cosmic_variants,  cosmic_line  = genome.find_vcf_at_coordinate(my_coordinate, cosmic_line,  cosmic,  chrom_seq)
             
-            # Now, use pysam to look into the BAM file(s), variant by variant from the input:
+            # Now, use pysam to look into the tBAM file(s), variant by variant from the input:
             for ith_call, my_call in enumerate( variants_at_my_coordinate ):
                 
                 if is_vcf:
@@ -551,9 +551,9 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             if_cosmic = num_cases = 0
                     
                         
-                    ########## ######### ######### INFO EXTRACTION FROM BAM FILES ########## ######### #########                    
+                    ########## ######### ######### INFO EXTRACTION FROM tBAM FILES ########## ######### #########                    
                     ########################################################################################
-                    # Tumor BAM file:
+                    # Tumor tBAM file:
                     t_reads = bam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1] )
                     
                     t_ref_read_mq = []
@@ -670,7 +670,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                                 t_noise_read_count += 1
                                     
                     
-                    # Done extracting info from tumor BAM. Now tally them:
+                    # Done extracting info from tumor tBAM. Now tally them:
                     t_ref_mq        = mean(t_ref_read_mq)
                     t_alt_mq        = mean(t_alt_read_mq)
                     t_z_ranksums_mq = stats.ranksums(t_alt_read_mq, t_ref_read_mq)[0]
@@ -777,38 +777,38 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     MaxHomopolymer_Length   = homopolymer_length,                                     \
                     SiteHomopolymer_Length  = site_homopolymer_length,                                \
                     T_DP                    = T_dp,                                                   \
-                    BAM_REF_MQ             = '%g' % t_ref_mq,                                         \
-                    BAM_ALT_MQ             = '%g' % t_alt_mq,                                         \
-                    BAM_Z_Ranksums_MQ      = '%g' % t_z_ranksums_mq,                                  \
-                    BAM_REF_BQ             = '%g' % t_ref_bq,                                         \
-                    BAM_ALT_BQ             = '%g' % t_alt_bq,                                         \
-                    BAM_Z_Ranksums_BQ      = '%g' % t_z_ranksums_bq,                                  \
-                    BAM_REF_NM             = '%g' % t_ref_NM,                                         \
-                    BAM_ALT_NM             = '%g' % t_alt_NM,                                         \
-                    BAM_NM_Diff            = '%g' % t_NM_Diff,                                        \
-                    BAM_REF_Concordant     = t_ref_concordant_reads,                                  \
-                    BAM_REF_Discordant     = t_ref_discordant_reads,                                  \
-                    BAM_ALT_Concordant     = t_alt_concordant_reads,                                  \
-                    BAM_ALT_Discordant     = t_alt_discordant_reads,                                  \
-                    BAM_Concordance_FET    = rescale(t_concordance_fet, 'fraction', p_scale, 1001),   \
+                    tBAM_REF_MQ             = '%g' % t_ref_mq,                                         \
+                    tBAM_ALT_MQ             = '%g' % t_alt_mq,                                         \
+                    tBAM_Z_Ranksums_MQ      = '%g' % t_z_ranksums_mq,                                  \
+                    tBAM_REF_BQ             = '%g' % t_ref_bq,                                         \
+                    tBAM_ALT_BQ             = '%g' % t_alt_bq,                                         \
+                    tBAM_Z_Ranksums_BQ      = '%g' % t_z_ranksums_bq,                                  \
+                    tBAM_REF_NM             = '%g' % t_ref_NM,                                         \
+                    tBAM_ALT_NM             = '%g' % t_alt_NM,                                         \
+                    tBAM_NM_Diff            = '%g' % t_NM_Diff,                                        \
+                    tBAM_REF_Concordant     = t_ref_concordant_reads,                                  \
+                    tBAM_REF_Discordant     = t_ref_discordant_reads,                                  \
+                    tBAM_ALT_Concordant     = t_alt_concordant_reads,                                  \
+                    tBAM_ALT_Discordant     = t_alt_discordant_reads,                                  \
+                    tBAM_Concordance_FET    = rescale(t_concordance_fet, 'fraction', p_scale, 1001),   \
                     T_REF_FOR               = t_ref_for,                                              \
                     T_REF_REV               = t_ref_rev,                                              \
                     T_ALT_FOR               = t_alt_for,                                              \
                     T_ALT_REV               = t_alt_rev,                                              \
-                    BAM_StrandBias_FET     = rescale(t_strandbias_fet, 'fraction', p_scale, 1001),    \
-                    BAM_Z_Ranksums_EndPos  = '%g' % t_z_ranksums_endpos,                              \
-                    BAM_REF_Clipped_Reads  = t_ref_SC_reads,                                          \
-                    BAM_ALT_Clipped_Reads  = t_alt_SC_reads,                                          \
-                    BAM_Clipping_FET       = rescale(t_clipping_fet, 'fraction', p_scale, 1001),      \
-                    BAM_MQ0                = t_MQ0,                                                   \
-                    BAM_Other_Reads        = t_noise_read_count,                                      \
-                    BAM_Poor_Reads         = t_poor_read_count,                                       \
-                    BAM_REF_InDel_3bp      = t_ref_indel_3bp,                                         \
-                    BAM_REF_InDel_2bp      = t_ref_indel_2bp,                                         \
-                    BAM_REF_InDel_1bp      = t_ref_indel_1bp,                                         \
-                    BAM_ALT_InDel_3bp      = t_alt_indel_3bp,                                         \
-                    BAM_ALT_InDel_2bp      = t_alt_indel_2bp,                                         \
-                    BAM_ALT_InDel_1bp      = t_alt_indel_1bp,                                         \
+                    tBAM_StrandBias_FET     = rescale(t_strandbias_fet, 'fraction', p_scale, 1001),    \
+                    tBAM_Z_Ranksums_EndPos  = '%g' % t_z_ranksums_endpos,                              \
+                    tBAM_REF_Clipped_Reads  = t_ref_SC_reads,                                          \
+                    tBAM_ALT_Clipped_Reads  = t_alt_SC_reads,                                          \
+                    tBAM_Clipping_FET       = rescale(t_clipping_fet, 'fraction', p_scale, 1001),      \
+                    tBAM_MQ0                = t_MQ0,                                                   \
+                    tBAM_Other_Reads        = t_noise_read_count,                                      \
+                    tBAM_Poor_Reads         = t_poor_read_count,                                       \
+                    tBAM_REF_InDel_3bp      = t_ref_indel_3bp,                                         \
+                    tBAM_REF_InDel_2bp      = t_ref_indel_2bp,                                         \
+                    tBAM_REF_InDel_1bp      = t_ref_indel_1bp,                                         \
+                    tBAM_ALT_InDel_3bp      = t_alt_indel_3bp,                                         \
+                    tBAM_ALT_InDel_2bp      = t_alt_indel_2bp,                                         \
+                    tBAM_ALT_InDel_1bp      = t_alt_indel_1bp,                                         \
                     InDel_Length            = indel_length,                                           \
                     TrueVariant_or_False    = judgement )
                     

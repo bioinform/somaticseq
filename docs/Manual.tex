@@ -11,7 +11,7 @@
 \usepackage{hyperref}
 
 \usepackage{geometry}
-\geometry{letterpaper, margin=1.32in}
+\geometry{letterpaper, margin=1.0in}
 
 
 \definecolor{mygreen}{rgb}{0,0.5,0}
@@ -917,7 +917,7 @@ Have implemented the following improvement, mostly for indels:
   Added run scripts for read alignments and post-alignment processing, i.e,. FASTQ $\rightarrow$ BAM, at utilities/dockered\_pipelines/alignments.
   
   \item
-  No change to tumor-normal SomaticSeq algorithm
+  Changed the output file names from Trained.s(SNV$\vert$IINDEL).vcf and Untrained.s(SNV$\vert$INDEL).vcf to SSeq.Classified.s(SNV$\vert$IINDE).vcf and Consensus.s(SNV$\vert$IINDEL).vcf. No change to the actual tumor-normal SomaticSeq algorithm.
 
 \end{itemize}
 
