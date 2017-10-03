@@ -191,9 +191,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         
     my_line = my_sites.readline().rstrip()
     
-    nbam    = pysam.AlignmentFile(nbam_fn)
     bam    = pysam.AlignmentFile(bam_fn)
-    ref_fa  = pysam.FastaFile(ref_fa)
+    ref_fa = pysam.FastaFile(ref_fa)
     
     if truth:
         truth = genome.open_textfile(truth)
