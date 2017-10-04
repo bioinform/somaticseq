@@ -117,16 +117,15 @@ echo "echo -e '##FORMAT=<ID=AD,Number=1,Type=Integer,Description=\"Depth of vari
 echo "echo -e '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNORMAL\tTUMOR' >> ${outdir}/${outvcf}" >> $jsm_script
 echo "" >> $jsm_script
 
-echo "docker run --rm -v /:/mnt lethalfang/jointsnvmix2:0.7.5 \\"  >> $jsm_script
-echo "/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py classify joint_snv_mix_two \\" >> $jsm_script
+echo "docker run --rm -v /:/mnt -u $UID lethalfang/jointsnvmix2:0.7.5 bash -c \\"  >> $jsm_script
+echo \""/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py classify joint_snv_mix_two \\" >> $jsm_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $jsm_script
 echo "/mnt/${normal_bam} \\" >> $jsm_script
 echo "/mnt/${tumor_bam} \\" >> $jsm_script
 echo "/mnt/${outdir}/jsm.parameter.cfg \\" >> $jsm_script
-echo "/dev/stdout | awk -F \"\t\" 'NR!=1 && \$4!=\"N\" && \$10+\$11>=0.95' | \\" >> $jsm_script
-echo "awk -F \"\t\" '{print \$1 \"\t\" \$2 \"\t.\t\" \$3 \"\t\" \$4 \"\t.\t.\tAAAB=\" \$10 \";AABB=\" \$11 \"\tRD:AD\t\" \$5 \":\" \$6 \"\t\" \$7 \":\" \$8}' \\" >> $jsm_script
-echo "| docker run --rm -v /:/mnt -u $UID -i lethalfang/jointsnvmix2:0.7.5 \\" >> $jsm_script
-echo "/opt/vcfsorter.pl /mnt/${HUMAN_REFERENCE%\.fa*}.dict - >> ${outdir}/${outvcf}" >> $jsm_script
+echo "/dev/stdout | awk -F '\t' 'NR!=1 && \\\$4!=\\\"N\\\" && \\\$10+\\\$11>=0.95' | \\" >> $jsm_script
+echo "awk -F '\t' '{print \\\$1 \\\"\t\\\" \\\$2 \\\"\t.\t\\\" \\\$3 \\\"\t\\\" \\\$4 \\\"\t.\t.\tAAAB=\\\" \\\$10 \\\";AABB=\\\" \\\$11 \\\"\tRD:AD\t\\\" \\\$5 \\\":\\\" \\\$6 \\\"\t\\\" \\\$7 \\\":\\\" \\\$8}' \\" >> $jsm_script
+echo "| /opt/vcfsorter.pl /mnt/${HUMAN_REFERENCE%\.fa*}.dict - >> /mnt/${outdir}/${outvcf}\"" >> $jsm_script
 echo "" >> $jsm_script
 
 if [[ $split ]]
