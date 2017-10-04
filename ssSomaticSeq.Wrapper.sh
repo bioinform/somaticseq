@@ -161,7 +161,7 @@ fi
 # VarScan2:
 if [[ $varscan_vcf ]]; then
     cat $varscan_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /^[GCTA]$/ && $5 ~ /^[GCTA]$/' > ${merged_dir}/snp.varscan.vcf
-    cat $varscan_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ && $5 ~ /[GCTA][GCTA]/' > ${merged_dir}/indel.varscan.vcf
+    cat $varscan_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > ${merged_dir}/indel.varscan.vcf
 
     $MYDIR/utilities/modify_VJSD.py -method VarScan2 -infile ${merged_dir}/snp.varscan.vcf   -outfile ${merged_dir}/varscan2.snp.vcf
     $MYDIR/utilities/modify_VJSD.py -method VarScan2 -infile ${merged_dir}/indel.varscan.vcf -outfile ${merged_dir}/varscan2.indel.vcf
@@ -180,7 +180,7 @@ fi
 # LoFreq
 if [[ $lofreq_vcf ]]; then
     cat $lofreq_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /^[GCTA]$/ && $5 ~ /^[GCTA]$/' > ${merged_dir}/snp.lofreq.vcf
-    cat $lofreq_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ && $5 ~ /[GCTA][GCTA]/' > ${merged_dir}/indel.lofreq.vcf
+    cat $lofreq_vcf | awk -F "\t" '$0 ~ /^#/ || $4 ~ /[GCTA][GCTA]/ || $5 ~ /[GCTA][GCTA]/' > ${merged_dir}/indel.lofreq.vcf
     files_to_delete="${merged_dir}/snp.lofreq.vcf ${merged_dir}/snp.lofreq.vcf.idx ${merged_dir}/indel.lofreq.vcf ${merged_dir}/indel.lofreq.vcf.idx $files_to_delete"
 fi
 
@@ -365,18 +365,6 @@ then
     fi
         
 
-
-    ## Convert the sSNV file into TSV file, for machine learning data:
-    if [[ ${lofreq_vcf} ]]
-    then
-        lofreq_input="-lofreq ${merged_dir}/indel.lofreq.vcf"
-        tool_indelocator="LoFreq"
-    else
-        lofreq_input=''
-        tool_lofreq=''
-    fi
-
-
     if [[ ${varscan_vcf} ]]
     then
         varscan_input="-varscan ${merged_dir}/indel.varscan.vcf"
@@ -385,6 +373,7 @@ then
         varscan_input=''
         tool_varscan=''
     fi
+
 
 
     if [[ ${vardict_vcf} ]]
@@ -397,6 +386,16 @@ then
     fi
 
 
+    if [[ ${lofreq_vcf} ]]
+    then
+        lofreq_input="-lofreq ${merged_dir}/indel.lofreq.vcf"
+        tool_indelocator="LoFreq"
+    else
+        lofreq_input=''
+        tool_lofreq=''
+    fi
+
+
     if [[ ${scalpel_vcf} ]]
     then
         scalpel_input="-scalpel ${merged_dir}/scalpel.vcf"
@@ -404,6 +403,16 @@ then
     else
         scalpel_input=''
         tool_scalpel=''
+    fi
+
+
+    if [[ ${strelka_vcf} ]]
+    then
+        strelka_input="-strelka ${merged_dir}/indel.strelka.vcf"
+        strelka_scalpel="Strelka"
+    else
+        strelka_input=''
+        strelka_scalpel=''
     fi
 
 
