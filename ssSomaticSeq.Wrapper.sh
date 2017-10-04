@@ -230,7 +230,7 @@ then
     files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* $files_to_delete"
 
 
-    if [[ ${mutect_vcf} ]]
+    if [[ ${mutect2_vcf} ]]
     then
         mutect_input="-mutect ${merged_dir}/mutect.snp.vcf"
         tool_mutect="CGA"
@@ -354,6 +354,16 @@ then
     #cat $mergesnp | egrep -v '^#'  | awk -F "\t" '{print $1 "\t" $2 "\t.\t" $4 "\t" $5}' | sort | uniq | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" "." "\t" "PASS" "\t" "."}' | cat <(echo -e '##fileformat=VCFv4.1\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO') - | $MYDIR/utilities/vcfsorter.pl ${hg_dict} - > ${merged_dir}/CombineVariants_MVJSD.indel.vcf
 
     files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf* $files_to_delete"
+
+    if [[ ${mutect2_vcf} ]]
+    then
+        mutect_input="-mutect ${merged_dir}/mutect.indel.vcf"
+        tool_mutect="CGA"
+    else
+        mutect_input=''
+        tool_mutect=''
+    fi
+        
 
 
     ## Convert the sSNV file into TSV file, for machine learning data:
