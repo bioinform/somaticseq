@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,in-bam:,sample-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,mutect,mutect2,varscan2,vardict,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'singleSample_caller_singleThread.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,in-bam:,sample-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,mutect2,varscan2,vardict,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'singleSample_caller_singleThread.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -95,9 +95,6 @@ while true; do
             *)  somaticseq_action=$2 ; shift 2 ;;
         esac ;;
 
-    --mutect )
-        mutect=1 ; shift ;;
-
     --mutect2 )
         mutect2=1 ; shift ;;
 
@@ -173,6 +170,7 @@ then
     mutect2_input="--mutect2 ${outdir}/MuTect2.vcf"
 fi
 
+
 if [[ $varscan2 -eq 1 ]]
 then
     $MYDIR/mutation_callers/single_VarScan2.sh \
@@ -216,10 +214,9 @@ then
     lofreq_input="--lofreq ${outdir}/LoFreq.vcf"
 fi
 
+
 if [[ $scalpel -eq 1 ]]
 then
-
-
     $MYDIR/mutation_callers/single_Scalpel.sh \
     --in-bam ${tumor_bam} \
     --out-dir ${outdir} \
@@ -230,6 +227,7 @@ then
 
     scalpel_input="--scalpel ${outdir}/Scalpel.vcf"
 fi
+
 
 if [[ $strelka -eq 1 ]]
 then
@@ -267,7 +265,7 @@ then
         ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"
     fi
 
-    $MYDIR/mutation_callers/ssingle_SomaticSeq.sh \
+    $MYDIR/mutation_callers/single_SomaticSeq.sh \
     --in-bam ${tumor_bam} \
     --out-dir ${outdir}/${somaticseq_dir} \
     --human-reference ${HUMAN_REFERENCE} \
@@ -275,7 +273,6 @@ then
     $exclusion_text \
     $dbsnp_input \
     $cosmic_input \
-    $mutect_input \
     $mutect2_input \
     $varscan_input \
     $vardict_input \
@@ -288,5 +285,4 @@ then
     $truth_indel_text \
     $ada_r_script_text \
     --action ${somaticseq_action}
-
 fi
