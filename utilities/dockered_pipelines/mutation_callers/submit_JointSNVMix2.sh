@@ -109,7 +109,7 @@ echo "/opt/JointSNVMix-0.7.5/config/joint_params.cfg \\" >> $jsm_script
 echo "/mnt/${outdir}/jsm.parameter.cfg" >> $jsm_script
 echo "" >> $jsm_script
 
-echo "echo -e '##fileformat=VCFv4.1' > ${outdir}/JointSNVMix2.vcf" >> $jsm_script
+echo "echo -e '##fileformat=VCFv4.1' > ${outdir}/${outvcf}" >> $jsm_script
 echo "echo -e '##INFO=<ID=AAAB,Number=1,Type=Float,Description=\"Probability of Joint Genotype AA in Normal and AB in Tumor\">' >> ${outdir}/${outvcf}" >> $jsm_script
 echo "echo -e '##INFO=<ID=AABB,Number=1,Type=Float,Description=\"Probability of Joint Genotype AA in Normal and BB in Tumor\">' >> ${outdir}/${outvcf}" >> $jsm_script
 echo "echo -e '##FORMAT=<ID=RD,Number=1,Type=Integer,Description=\"Depth of reference-supporting bases (reads1)\">' >> ${outdir}/${outvcf}" >> $jsm_script
