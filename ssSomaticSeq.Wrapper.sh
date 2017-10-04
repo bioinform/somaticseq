@@ -342,7 +342,7 @@ if [[ -r ${merged_dir}/mutect.indel.vcf || -r ${merged_dir}/varscan2.indel.vcf |
 then
 
     mergeindel=''
-    for vcf in ${merged_dir}/indel.mutect.vcf ${merged_dir}/varscan2.indel.vcf ${merged_dir}/indel.vardict.vcf ${merged_dir}/indel.lofreq.vcf ${merged_dir}/scalpel.vcf ${merged_dir}/indel.strelka.vcf
+    for vcf in ${merged_dir}/mutect.indel.vcf ${merged_dir}/varscan2.indel.vcf ${merged_dir}/indel.vardict.vcf ${merged_dir}/indel.lofreq.vcf ${merged_dir}/scalpel.vcf ${merged_dir}/indel.strelka.vcf
     do
         if [[ -r $vcf ]]
         then
