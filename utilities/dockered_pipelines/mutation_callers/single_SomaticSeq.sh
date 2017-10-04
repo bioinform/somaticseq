@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,in-bam:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,action:,mutect:,mutect2:,varscan:,vardict:,lofreq-snv:,scalpel:,strelka:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,in-bam:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,action:,mutect2:,varscan:,vardict:,lofreq-snv:,scalpel:,strelka:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -64,18 +64,6 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *)  action=$2 ; shift 2 ;;
-        esac ;;
-
-    --mutect )
-        case "$2" in
-            "") shift 2 ;;
-            *)  mutect_vcf=$2 ; shift 2 ;;
-        esac ;;
-
-    --indelocator )
-        case "$2" in
-            "") shift 2 ;;
-            *)  indelocator_vcf=$2 ; shift 2 ;;
         esac ;;
 
     --mutect2 )
@@ -181,7 +169,6 @@ if [[ -r $cosmic ]]; then
 fi
 
 # VCF inputs
-if [[ $mutect_vcf ]];   then mutect_text="--mutect /mnt/${mutect_vcf}";         fi
 if [[ $mutect2_vcf ]];  then mutect2_text="--mutect2 /mnt/${mutect2_vcf}";      fi
 if [[ $varscan_vcf ]];  then varscan_snv_text="--varscan /mnt/${varscan_vcf}";  fi
 if [[ $vardict_vcf ]];  then vardict_text="--vardict /mnt/${vardict_vcf}";      fi
@@ -202,7 +189,7 @@ echo "" >> $sseq_script
 echo "#$ -o ${logdir}" >> $sseq_script
 echo "#$ -e ${logdir}" >> $sseq_script
 echo "#$ -S /bin/bash" >> $sseq_script
-#echo '#$ -l h_vmem=6G' >> $sseq_script # ML may require lots of RAM
+echo '#$ -l h_vmem=6G' >> $sseq_script # ML may require lots of RAM
 echo 'set -e' >> $sseq_script
 echo "" >> $sseq_script
 
@@ -213,11 +200,10 @@ echo "docker pull lethalfang/somaticseq:${VERSION}" >> $sseq_script
 echo "" >> $sseq_script
 
 echo "docker run --rm -v /:/mnt -u $UID --memory 24g lethalfang/somaticseq:${VERSION} \\" >> $sseq_script
-echo "/opt/somaticseq/SomaticSeq.Wrapper.sh \\" >> $sseq_script
+echo "/opt/somaticseq/ssSomaticSeq.Wrapper.sh \\" >> $sseq_script
 echo "--output-dir /mnt/${outdir} \\" >> $sseq_script
 echo "--genome-reference /mnt/${HUMAN_REFERENCE} \\" >> $sseq_script
 echo "--in-bam /mnt/${tumor_bam} \\" >> $sseq_script
-echo "$mutect_text \\" >> $sseq_script
 echo "$mutect2_text \\" >> $sseq_script
 echo "$varscan_text \\" >> $sseq_script
 echo "$vardict_text \\" >> $sseq_script

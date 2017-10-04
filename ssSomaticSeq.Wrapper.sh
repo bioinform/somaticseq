@@ -165,7 +165,7 @@ if [[ $varscan_vcf ]]; then
 
     $MYDIR/utilities/modify_VJSD.py -method VarScan2 -infile ${merged_dir}/snp.varscan.vcf   -outfile ${merged_dir}/varscan2.snp.vcf
     $MYDIR/utilities/modify_VJSD.py -method VarScan2 -infile ${merged_dir}/indel.varscan.vcf -outfile ${merged_dir}/varscan2.indel.vcf
-    files_to_delete="${merged_dir}/varscan2.snp.vcf ${merged_dir}/varscan2.snp.vcf.idx ${merged_dir}/varscan2.indel.vcf ${merged_dir}/varscan2.indel.vcf.idx $files_to_delete"
+    files_to_delete="${merged_dir}/varscan2.snp.vcf ${merged_dir}/varscan2.snp.vcf.idx ${merged_dir}/varscan2.indel.vcf ${merged_dir}/varscan2.indel.vcf.idx ${merged_dir}/snp.varscan.vcf ${merged_dir}/indel.varscan.vcf $files_to_delete"
 fi
 
 
@@ -215,7 +215,7 @@ fi
 
 
 ########## SNV ##########
-if [[ -r ${merged_dir}/mutect.snp.vcf || -r ${merged_dir}/varscan2.snp.vcf || -r ${merged_dir}/snp.vardict.vcf ||-r ${merged_dir}/snp.lofreq.vcf || -r ${merged_dir}/snv.strelka.vcf ]]
+if [[ -r ${merged_dir}/mutect.snp.vcf || -r ${merged_dir}/varscan2.snp.vcf || -r ${merged_dir}/snp.vardict.vcf || -r ${merged_dir}/snp.lofreq.vcf || -r ${merged_dir}/snv.strelka.vcf ]]
 then
 
     mergesnp=''
@@ -227,7 +227,7 @@ then
     done
 
     java -jar ${gatk} -T CombineVariants -R ${hg_ref} --setKey null --genotypemergeoption UNSORTED $mergesnp --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
-    files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf* $files_to_delete"
+    files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf.idx $files_to_delete"
 
 
     if [[ ${mutect2_vcf} ]]
@@ -331,7 +331,7 @@ then
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else
-        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/Ensemble.ssSNV.tsv -vcf ${merged_dir}/Consensus.ssSNV.vcf -tools $tool_mutect $tool_varscan $tool_vardict $tool_lofreq $tool_capp -all
+        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/Ensemble.ssSNV.tsv -vcf ${merged_dir}/Consensus.ssSNV.vcf -tools $tool_mutect $tool_varscan $tool_vardict $tool_lofreq $tool_strelka -all
     fi
 
 fi
@@ -452,7 +452,7 @@ then
     if [[ ${indelclassifier} ]] && [[ ${ada_r_script} ]]
     then
         R --no-save --args "$indelclassifier" "${merged_dir}/Ensemble.ssINDEL.tsv" "${merged_dir}/SSeq.Classified.ssINDEL.tsv" < "$ada_r_script"
-        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/SSeq.Classified.ssINDEL.tsv -vcf ${merged_dir}/SSeq.Classified.ssINDEL.vcf -pass 0.7 -low 0.1 -all -phred -tools $tool_lofreq $tool_varscan $tool_vardict $tool_scalpel $tool_capp
+        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/SSeq.Classified.ssINDEL.tsv -vcf ${merged_dir}/SSeq.Classified.ssINDEL.vcf -pass 0.5 -low 0.1 -all -phred -tools $tool_mutect $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka
 
     # If ground truth is here, assume builder.R, and build a classifier
     elif [[ ${indelgroundtruth} ]] && [[ ${ada_r_script} ]]
@@ -461,7 +461,7 @@ then
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else
-        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/Ensemble.ssINDEL.tsv -vcf ${merged_dir}/Consensus.ssINDEL.vcf -tools $tool_lofreq $tool_varscan $tool_vardict $tool_scalpel $tool_capp -all
+        $MYDIR/SSeq_tsv2vcf.py -single -tsv ${merged_dir}/Ensemble.ssINDEL.tsv -vcf ${merged_dir}/Consensus.ssINDEL.vcf -tools $tool_mutect $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka -all
     fi
 
 fi
@@ -469,5 +469,8 @@ fi
 # Clean up intermediate files
 if [ $keep_intermediates == 0 ]
 then
-    rm ${files_to_delete}
+    for file in ${files_to_delete}
+    do
+        rm $file
+    done
 fi

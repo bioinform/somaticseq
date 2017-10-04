@@ -250,7 +250,7 @@ echo "" >> $sseq_script
 echo "#$ -o ${logdir}" >> $sseq_script
 echo "#$ -e ${logdir}" >> $sseq_script
 echo "#$ -S /bin/bash" >> $sseq_script
-#echo '#$ -l h_vmem=6G' >> $sseq_script # ML may require lots of RAM
+echo '#$ -l h_vmem=6G' >> $sseq_script # ML may require lots of RAM
 echo 'set -e' >> $sseq_script
 echo "" >> $sseq_script
 
