@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,in-bam:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,action:,mutect2:,varscan:,vardict:,lofreq-snv:,scalpel:,strelka:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,in-bam:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,action:,mutect2:,varscan:,vardict:,lofreq:,scalpel:,strelka:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -170,11 +170,11 @@ fi
 
 # VCF inputs
 if [[ $mutect2_vcf ]];  then mutect2_text="--mutect2 /mnt/${mutect2_vcf}";      fi
-if [[ $varscan_vcf ]];  then varscan_snv_text="--varscan /mnt/${varscan_vcf}";  fi
+if [[ $varscan_vcf ]];  then varscan_text="--varscan /mnt/${varscan_vcf}";  fi
 if [[ $vardict_vcf ]];  then vardict_text="--vardict /mnt/${vardict_vcf}";      fi
 if [[ $lofreq_vcf ]];   then lofreq_text="--lofreq /mnt/${lofreq_vcf}";         fi
 if [[ $scalpel_vcf ]];  then scalpel_text="--scalpel /mnt/${scalpel_vcf}";      fi
-if [[ $strelka_vcf ]];  then strelka_snv_text="--strelka /mnt/${strelka_vcf}";  fi
+if [[ $strelka_vcf ]];  then strelka_text="--strelka /mnt/${strelka_vcf}";  fi
 
 # SomaticSeq modes:
 if [[ $classifier_snv ]];   then classifier_snv_text="--classifier-snv ${classifier_snv}";       fi
