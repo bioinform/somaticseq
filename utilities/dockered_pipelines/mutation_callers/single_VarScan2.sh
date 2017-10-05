@@ -122,7 +122,8 @@ echo "" >> $out_script
 
 echo "docker run --rm -u $UID -v /:/mnt --memory ${MEM}G lethalfang/samtools:0.1.19 bash -c \\" >> $out_script
 echo "\"samtools mpileup \\" >> $out_script
-echo "-B -q ${minMQ} -Q ${minBQ} ${extra_pileup_arguments} $selector_text -f \\" >> $out_scriptecho "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
+echo "-B -q ${minMQ} -Q ${minBQ} ${extra_pileup_arguments} $selector_text -f \\" >> $out_script
+echo "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "/mnt/${tumor_bam} \\" >> $out_script
 echo "> /mnt/${outdir}/tumor.pileup\"" >> $out_script
 
