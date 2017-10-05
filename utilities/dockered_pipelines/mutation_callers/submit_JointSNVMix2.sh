@@ -89,7 +89,7 @@ done
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-jsm_script=${outdir}/logs/jsm2_${timestamp}.cmd
+out_script=${outdir}/logs/jsm2_${timestamp}.cmd
 
 echo "#!/bin/bash" > $out_script
 echo "" >> $out_script

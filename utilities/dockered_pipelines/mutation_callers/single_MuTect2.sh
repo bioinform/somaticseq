@@ -88,7 +88,7 @@ done
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-mutect2_script=${outdir}/logs/mutect2_${timestamp}.cmd
+out_script=${outdir}/logs/mutect2_${timestamp}.cmd
 
 selector_text=''
 if [[ -r $SELECTOR ]]; then

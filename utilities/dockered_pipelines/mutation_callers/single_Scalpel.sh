@@ -75,7 +75,7 @@ vcf_prefix=${outvcf%\.vcf}
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-scalpel_script=${outdir}/logs/scalpel_${timestamp}.cmd
+out_script=${outdir}/logs/scalpel_${timestamp}.cmd
 
 echo "#!/bin/bash" > $out_script
 echo "" >> $out_script

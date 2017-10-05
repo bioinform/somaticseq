@@ -85,7 +85,7 @@ if [[ ${SELECTOR} &&  `cat ${SELECTOR} | wc -l` -lt 50 ]]; then
 fi
 
 
-strelka_script=${outdir}/logs/strelka_${timestamp}.cmd
+out_script=${outdir}/logs/strelka_${timestamp}.cmd
 
 echo "#!/bin/bash" > $out_script
 echo "" >> $out_script

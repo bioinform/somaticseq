@@ -205,7 +205,7 @@ VERSION=`cat ${MYDIR}/../../../VERSION | sed 's/##SomaticSeq=v//'`
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-sseq_script=${outdir}/logs/sseq_${timestamp}.cmd
+out_script=${outdir}/logs/sseq_${timestamp}.cmd
 
 selector_text=''
 if [[ -r $SELECTOR ]]; then

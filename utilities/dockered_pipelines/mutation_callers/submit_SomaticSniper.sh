@@ -97,7 +97,7 @@ done
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-sniper_script=${outdir}/logs/somaticsniper_${timestamp}.cmd
+out_script=${outdir}/logs/somaticsniper_${timestamp}.cmd
 
 echo "#!/bin/bash" > $out_script
 echo "" >> $out_script

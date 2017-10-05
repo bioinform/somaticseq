@@ -152,7 +152,7 @@ VERSION=`cat ${MYDIR}/../../../VERSION | sed 's/##SomaticSeq=v//'`
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-sseq_script=${outdir}/logs/sseq_${timestamp}.cmd
+out_script=${outdir}/logs/sseq_${timestamp}.cmd
 
 selector_text=''
 if [[ -r $SELECTOR ]]; then
@@ -176,11 +176,11 @@ if [[ -r $cosmic ]]; then
 fi
 
 # VCF inputs
-if [[ $mutect2_vcf ]];  then mutect2_text="--mutect2 /mnt/${mutect2_vcf}";      fi
+if [[ $mutect2_vcf ]];  then mutect2_text="--mutect2 /mnt/${mutect2_vcf}";  fi
 if [[ $varscan_vcf ]];  then varscan_text="--varscan /mnt/${varscan_vcf}";  fi
-if [[ $vardict_vcf ]];  then vardict_text="--vardict /mnt/${vardict_vcf}";      fi
-if [[ $lofreq_vcf ]];   then lofreq_text="--lofreq /mnt/${lofreq_vcf}";         fi
-if [[ $scalpel_vcf ]];  then scalpel_text="--scalpel /mnt/${scalpel_vcf}";      fi
+if [[ $vardict_vcf ]];  then vardict_text="--vardict /mnt/${vardict_vcf}";  fi
+if [[ $lofreq_vcf ]];   then lofreq_text="--lofreq /mnt/${lofreq_vcf}";     fi
+if [[ $scalpel_vcf ]];  then scalpel_text="--scalpel /mnt/${scalpel_vcf}";  fi
 if [[ $strelka_vcf ]];  then strelka_text="--strelka /mnt/${strelka_vcf}";  fi
 
 # SomaticSeq modes:

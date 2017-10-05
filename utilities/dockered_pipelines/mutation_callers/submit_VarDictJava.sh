@@ -84,7 +84,7 @@ VERSION=`cat ${MYDIR}/../../../VERSION | sed 's/##SomaticSeq=v//'`
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-vardict_script=${outdir}/logs/vardict_${timestamp}.cmd
+out_script=${outdir}/logs/vardict_${timestamp}.cmd
 
 echo "#!/bin/bash" > $out_script
 echo "" >> $out_script

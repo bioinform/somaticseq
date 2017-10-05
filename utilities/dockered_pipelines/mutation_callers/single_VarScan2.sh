@@ -74,7 +74,7 @@ done
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-varscan2_script=${outdir}/logs/varscan2_${timestamp}.cmd
+out_script=${outdir}/logs/varscan2_${timestamp}.cmd
 
 selector_text=''
 if [[ -r $SELECTOR ]]; then

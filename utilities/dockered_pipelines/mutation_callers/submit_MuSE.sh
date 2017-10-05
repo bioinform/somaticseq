@@ -82,7 +82,7 @@ done
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-muse_script=${outdir}/logs/muse_${timestamp}.cmd
+out_script=${outdir}/logs/muse_${timestamp}.cmd
 
 echo "#!/bin/bash" > $out_script
 echo "" >> $out_script
