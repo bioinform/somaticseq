@@ -86,7 +86,7 @@ echo "" >> $vardict_script
 echo "#$ -o ${logdir}" >> $vardict_script
 echo "#$ -e ${logdir}" >> $vardict_script
 echo "#$ -S /bin/bash" >> $vardict_script
-echo '#$ -l h_vmem=${MEM}' >> $vardict_script
+echo "#$ -l h_vmem=${MEM}" >> $vardict_script
 echo 'set -e' >> $vardict_script
 echo "" >> $vardict_script
 
