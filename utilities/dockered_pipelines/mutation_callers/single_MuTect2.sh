@@ -133,7 +133,7 @@ fi
 echo "" >> $out_script
 
 echo "docker run --rm -v /:/mnt -u $UID --memory $(( MEM * threads ))G broadinstitute/gatk:4.beta.5 \\" >> $out_script
-echo "java -Xmx${MEM} -jar gatk.jar Mutect2 \\" >> $out_script
+echo "java -Xmx${MEM}g -jar gatk.jar Mutect2 \\" >> $out_script
 echo "--threads ${threads} \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "$selector_text \\" >> $out_script
@@ -145,7 +145,7 @@ echo "--output /mnt/${outdir}/unfiltered.${outvcf}" >> $out_script
 echo "" >> $out_script
 
 echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G broadinstitute/gatk:4.beta.5 \\" >> $out_script
-echo "java -Xmx${MEM} -jar gatk.jar FilterMutectCalls \\" >> $out_script
+echo "java -Xmx${MEM}g -jar gatk.jar FilterMutectCalls \\" >> $out_script
 echo "--variant /mnt/${outdir}/unfiltered.${outvcf} \\" >> $out_script
 echo "--output /mnt/${outdir}/${outvcf}" >> $out_script
 
