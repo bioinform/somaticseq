@@ -298,7 +298,7 @@ with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         t_ref_con = tsv_item[tBAM_REF_Concordant] if tsv_item[tBAM_REF_Concordant] != 'nan' else '0'
         t_ref_dis = tsv_item[tBAM_REF_Discordant] if tsv_item[tBAM_REF_Discordant] != 'nan' else '0'
         t_alt_con = tsv_item[tBAM_ALT_Concordant] if tsv_item[tBAM_ALT_Concordant] != 'nan' else '0'
-        t_alt_dis = tsv_item[tBAM_ALT_Concordant] if tsv_item[tBAM_ALT_Concordant] != 'nan' else '0'
+        t_alt_dis = tsv_item[tBAM_ALT_Discordant] if tsv_item[tBAM_ALT_Discordant] != 'nan' else '0'
 
         # DP4toGT:
         gt = dp4_to_gt(t_ref_for, t_ref_rev, t_alt_for, t_alt_rev)

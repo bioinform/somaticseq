@@ -917,6 +917,9 @@ Have implemented the following improvement, mostly for indels:
   Added run scripts for read alignments and post-alignment processing, i.e,. FASTQ $\rightarrow$ BAM, at utilities/dockered\_pipelines/alignments.
   
   \item
+  Fixed a bug where the last two CD4 numbers were both alternate concordant reads in the output VCF file, when the last number should've been alternate discordant reads.
+  
+  \item
   Changed the output file names from Trained.s(SNV$\vert$IINDEL).vcf and Untrained.s(SNV$\vert$INDEL).vcf to SSeq.Classified.s(SNV$\vert$IINDE).vcf and Consensus.s(SNV$\vert$IINDEL).vcf. No change to the actual tumor-normal SomaticSeq algorithm.
 
 \end{itemize}
