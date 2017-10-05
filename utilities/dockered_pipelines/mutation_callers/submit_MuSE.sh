@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,action:,dbsnp: -n 'submit_MuSE.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,action:,MEM:,dbsnp: -n 'submit_MuSE.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -15,6 +15,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 VAF=0.05
 action=echo
+MEM=4
 
 while true; do
     case "$1" in
@@ -60,6 +61,12 @@ while true; do
             *) dbsnp=$2 ; shift 2 ;;
         esac ;;
 
+    --MEM )
+        case "$2" in
+            "") shift 2 ;;
+            *) MEM=$2 ; shift 2 ;;
+        esac ;;
+
     --action )
         case "$2" in
             "") shift 2 ;;
@@ -77,38 +84,38 @@ mkdir -p ${logdir}
 
 muse_script=${outdir}/logs/muse_${timestamp}.cmd
 
-echo "#!/bin/bash" > $muse_script
-echo "" >> $muse_script
+echo "#!/bin/bash" > $out_script
+echo "" >> $out_script
 
-echo "#$ -o ${logdir}" >> $muse_script
-echo "#$ -e ${logdir}" >> $muse_script
-echo "#$ -S /bin/bash" >> $muse_script
-echo '#$ -l h_vmem=4G' >> $muse_script
-echo 'set -e' >> $muse_script
-echo "" >> $muse_script
+echo "#$ -o ${logdir}" >> $out_script
+echo "#$ -e ${logdir}" >> $out_script
+echo "#$ -S /bin/bash" >> $out_script
+echo "#$ -l h_vmem=${MEM}G" >> $out_script
+echo 'set -e' >> $out_script
+echo "" >> $out_script
 
-echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $muse_script
-echo "" >> $muse_script
+echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
+echo "" >> $out_script
 
-echo "cat ${SELECTOR} | awk -F \"\t\" '{print \$1 \"\t\" \$2 \"\t\" \$3}' > ${outdir}/bed_3columns.bed" >> $muse_script
-echo "" >> $muse_script
+echo "cat ${SELECTOR} | awk -F \"\t\" '{print \$1 \"\t\" \$2 \"\t\" \$3}' > ${outdir}/bed_3columns.bed" >> $out_script
+echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 4g marghoob/muse:1.0rc_c \\" >> $muse_script
-echo "MuSEv1.0rc_submission_c039ffa call \\" >> $muse_script
-echo "-O /mnt/${outdir}/MuSE \\" >> $muse_script
-echo "-l /mnt/${outdir}/bed_3columns.bed \\" >> $muse_script
-echo "-f /mnt/${HUMAN_REFERENCE} \\" >> $muse_script
-echo "/mnt/${tumor_bam} \\" >> $muse_script
-echo "/mnt/${normal_bam}" >> $muse_script
-echo "" >> $muse_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G marghoob/muse:1.0rc_c \\" >> $out_script
+echo "MuSEv1.0rc_submission_c039ffa call \\" >> $out_script
+echo "-O /mnt/${outdir}/MuSE \\" >> $out_script
+echo "-l /mnt/${outdir}/bed_3columns.bed \\" >> $out_script
+echo "-f /mnt/${HUMAN_REFERENCE} \\" >> $out_script
+echo "/mnt/${tumor_bam} \\" >> $out_script
+echo "/mnt/${normal_bam}" >> $out_script
+echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 4g marghoob/muse:1.0rc_c \\" >> $muse_script
-echo "MuSEv1.0rc_submission_c039ffa sump \\" >> $muse_script
-echo "-I /mnt/${outdir}/MuSE.MuSE.txt \\" >> $muse_script
-echo "-E -O /mnt/${outdir}/${outvcf} \\" >> $muse_script
-echo "-D /mnt/${dbsnp}.gz" >> $muse_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G marghoob/muse:1.0rc_c \\" >> $out_script
+echo "MuSEv1.0rc_submission_c039ffa sump \\" >> $out_script
+echo "-I /mnt/${outdir}/MuSE.MuSE.txt \\" >> $out_script
+echo "-E -O /mnt/${outdir}/${outvcf} \\" >> $out_script
+echo "-D /mnt/${dbsnp}.gz" >> $out_script
 
-echo "" >> $muse_script
-echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $muse_script
+echo "" >> $out_script
+echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 
-${action} $muse_script
+${action} $out_script

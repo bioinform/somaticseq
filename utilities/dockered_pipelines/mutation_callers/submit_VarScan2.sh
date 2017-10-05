@@ -1,6 +1,6 @@
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,action:,VAF: -n 'submit_VarScan2.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,action:,MEM:,VAF: -n 'submit_VarScan2.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -12,6 +12,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 VAF=0.10
 action=echo
+MEM=9
 
 while true; do
     case "$1" in
@@ -57,6 +58,12 @@ while true; do
             *) VAF=$2 ; shift 2 ;;
         esac ;;
 
+    --MEM )
+        case "$2" in
+            "") shift 2 ;;
+            *) MEM=$2 ; shift 2 ;;
+        esac ;;
+
     --action )
         case "$2" in
             "") shift 2 ;;
@@ -80,63 +87,63 @@ if [[ -r $SELECTOR ]]; then
     selector_text="-l /mnt/${SELECTOR}"
 fi
 
-echo "#!/bin/bash" > $varscan2_script
-echo "" >> $varscan2_script
+echo "#!/bin/bash" > $out_script
+echo "" >> $out_script
 
-echo "#$ -o ${logdir}" >> $varscan2_script
-echo "#$ -e ${logdir}" >> $varscan2_script
-echo "#$ -S /bin/bash" >> $varscan2_script
-echo '#$ -l h_vmem=9G' >> $varscan2_script
-echo 'set -e' >> $varscan2_script
-echo "" >> $varscan2_script
+echo "#$ -o ${logdir}" >> $out_script
+echo "#$ -e ${logdir}" >> $out_script
+echo "#$ -S /bin/bash" >> $out_script
+echo "#$ -l h_vmem=${MEM}G" >> $out_script
+echo 'set -e' >> $out_script
+echo "" >> $out_script
 
-echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $varscan2_script
-echo "" >> $varscan2_script
+echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
+echo "" >> $out_script
 
-echo "docker run --rm -u $UID -v /:/mnt --memory 8g lethalfang/samtools:0.1.19 bash -c \\" >> $varscan2_script
-echo "\"samtools mpileup \\" >> $varscan2_script
-echo "-B -q 25 -Q 20 $selector_text -f \\" >> $varscan2_script
-echo "/mnt/${HUMAN_REFERENCE} \\" >> $varscan2_script
-echo "/mnt/${normal_bam} \\" >> $varscan2_script
-echo "> /mnt/${outdir}/normal.pileup\"" >> $varscan2_script
+echo "docker run --rm -u $UID -v /:/mnt --memory ${MEM}G lethalfang/samtools:0.1.19 bash -c \\" >> $out_script
+echo "\"samtools mpileup \\" >> $out_script
+echo "-B -q 25 -Q 20 $selector_text -f \\" >> $out_script
+echo "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
+echo "/mnt/${normal_bam} \\" >> $out_script
+echo "> /mnt/${outdir}/normal.pileup\"" >> $out_script
 
-echo "" >> $varscan2_script
+echo "" >> $out_script
 
-echo "docker run --rm -u $UID -v /:/mnt --memory 8g lethalfang/samtools:0.1.19 bash -c \\" >> $varscan2_script
-echo "\"samtools mpileup \\" >> $varscan2_script
-echo "-B -q 25 -Q 20 $selector_text -f \\" >> $varscan2_script
-echo "/mnt/${HUMAN_REFERENCE} \\" >> $varscan2_script
-echo "/mnt/${tumor_bam} \\" >> $varscan2_script
-echo "> /mnt/${outdir}/tumor.pileup\"" >> $varscan2_script
+echo "docker run --rm -u $UID -v /:/mnt --memory ${MEM}G lethalfang/samtools:0.1.19 bash -c \\" >> $out_script
+echo "\"samtools mpileup \\" >> $out_script
+echo "-B -q 25 -Q 20 $selector_text -f \\" >> $out_script
+echo "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
+echo "/mnt/${tumor_bam} \\" >> $out_script
+echo "> /mnt/${outdir}/tumor.pileup\"" >> $out_script
 
-echo "" >> $varscan2_script
+echo "" >> $out_script
 
-echo "docker run --rm -u $UID -v /:/mnt --memory 8g djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
-echo "java -Xmx8g -jar VarScan2.3.7.jar somatic \\" >> $varscan2_script
-echo "/mnt/${outdir}/normal.pileup \\" >> $varscan2_script
-echo "/mnt/${outdir}/tumor.pileup \\" >> $varscan2_script
-echo "/mnt/${outdir}/${outvcf%.vcf} --output-vcf 1 --min-var-freq $VAF" >> $varscan2_script
+echo "docker run --rm -u $UID -v /:/mnt --memory ${MEM}G djordjeklisic/sbg-varscan2:v1 \\" >> $out_script
+echo "java -Xmx8g -jar VarScan2.3.7.jar somatic \\" >> $out_script
+echo "/mnt/${outdir}/normal.pileup \\" >> $out_script
+echo "/mnt/${outdir}/tumor.pileup \\" >> $out_script
+echo "/mnt/${outdir}/${outvcf%.vcf} --output-vcf 1 --min-var-freq $VAF" >> $out_script
 
-echo "" >> $varscan2_script
+echo "" >> $out_script
 
-echo "docker run --rm -u $UID -v /:/mnt --memory 8g djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
-echo "java -Xmx8g -jar VarScan2.3.7.jar processSomatic \\" >> $varscan2_script
-echo "/mnt/${outdir}/${outvcf%.vcf}.snp.vcf" >> $varscan2_script
+echo "docker run --rm -u $UID -v /:/mnt --memory ${MEM}G djordjeklisic/sbg-varscan2:v1 \\" >> $out_script
+echo "java -Xmx8g -jar VarScan2.3.7.jar processSomatic \\" >> $out_script
+echo "/mnt/${outdir}/${outvcf%.vcf}.snp.vcf" >> $out_script
 
-echo "" >> $varscan2_script
+echo "" >> $out_script
 
-echo "docker run --rm -u $UID -v /:/mnt --memory 8g djordjeklisic/sbg-varscan2:v1 \\" >> $varscan2_script
-echo "java -Xmx8g -jar VarScan2.3.7.jar somaticFilter \\" >> $varscan2_script
-echo "/mnt/${outdir}/${outvcf%.vcf}.snp.Somatic.hc.vcf \\" >> $varscan2_script
-echo "-indel-file /mnt/${outdir}/${outvcf%.vcf}.indel.vcf \\" >> $varscan2_script
-echo "-output-file /mnt/${outdir}/${outvcf%.vcf}.snp.Somatic.hc.filter.vcf" >> $varscan2_script
+echo "docker run --rm -u $UID -v /:/mnt --memory ${MEM}G djordjeklisic/sbg-varscan2:v1 \\" >> $out_script
+echo "java -Xmx8g -jar VarScan2.3.7.jar somaticFilter \\" >> $out_script
+echo "/mnt/${outdir}/${outvcf%.vcf}.snp.Somatic.hc.vcf \\" >> $out_script
+echo "-indel-file /mnt/${outdir}/${outvcf%.vcf}.indel.vcf \\" >> $out_script
+echo "-output-file /mnt/${outdir}/${outvcf%.vcf}.snp.Somatic.hc.filter.vcf" >> $out_script
 
-echo "" >> $varscan2_script
+echo "" >> $out_script
 
-echo "rm ${outdir}/normal.pileup" >> $varscan2_script
-echo "rm ${outdir}/tumor.pileup" >> $varscan2_script
-echo "" >> $varscan2_script
+echo "rm ${outdir}/normal.pileup" >> $out_script
+echo "rm ${outdir}/tumor.pileup" >> $out_script
+echo "" >> $out_script
 
-echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $varscan2_script
+echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 
-${action} $varscan2_script
+${action} $out_script

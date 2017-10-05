@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,human-reference:,selector:,action:,exome -n 'submit_Strelka.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,human-reference:,selector:,action:,MEM:,exome -n 'submit_Strelka.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -14,6 +14,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 action=echo
+MEM=6
 
 while true; do
     case "$1" in
@@ -53,6 +54,12 @@ while true; do
             *) SELECTOR=$2 ; shift 2 ;;
         esac ;;
         
+    --MEM )
+        case "$2" in
+            "") shift 2 ;;
+            *) MEM=$2 ; shift 2 ;;
+        esac ;;
+        
     --action )
         case "$2" in
             "") shift 2 ;;
@@ -80,18 +87,18 @@ fi
 
 strelka_script=${outdir}/logs/strelka_${timestamp}.cmd
 
-echo "#!/bin/bash" > $strelka_script
-echo "" >> $strelka_script
+echo "#!/bin/bash" > $out_script
+echo "" >> $out_script
 
-echo "#$ -o ${logdir}" >> $strelka_script
-echo "#$ -e ${logdir}" >> $strelka_script
-echo "#$ -S /bin/bash" >> $strelka_script
-echo '#$ -l h_vmem=6G' >> $strelka_script
-echo 'set -e' >> $strelka_script
-echo "" >> $strelka_script
+echo "#$ -o ${logdir}" >> $out_script
+echo "#$ -e ${logdir}" >> $out_script
+echo "#$ -S /bin/bash" >> $out_script
+echo "#$ -l h_vmem=${MEM}G" >> $out_script
+echo 'set -e' >> $out_script
+echo "" >> $out_script
 
-echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $strelka_script
-echo "" >> $strelka_script
+echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
+echo "" >> $out_script
 
 
 selector_basename=`basename ${SELECTOR}`
@@ -100,9 +107,9 @@ then
     input_BED=${SELECTOR}.gz
     
 else
-    echo "cat ${SELECTOR} | docker run -v /:/mnt -u $UID --rm --memory 6g -i lethalfang/tabix:1.2.1 bgzip > ${outdir}/${selector_basename}.gz" >> $strelka_script
-    echo "docker run -v /:/mnt -u $UID --rm --memory 6g lethalfang/tabix:1.2.1 tabix /mnt/${outdir}/${selector_basename}.gz" >> $strelka_script
-    echo "" >> $strelka_script
+    echo "cat ${SELECTOR} | docker run -v /:/mnt -u $UID --rm --memory ${MEM}G -i lethalfang/tabix:1.2.1 bgzip > ${outdir}/${selector_basename}.gz" >> $out_script
+    echo "docker run -v /:/mnt -u $UID --rm --memory ${MEM}G lethalfang/tabix:1.2.1 tabix /mnt/${outdir}/${selector_basename}.gz" >> $out_script
+    echo "" >> $out_script
     
     input_BED=${outdir}/${selector_basename}.gz
 fi
@@ -112,22 +119,22 @@ then
     exome='--exome'
 fi
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 6g lethalfang/strelka:2.8.3 \\" >> $strelka_script
-echo "/opt/strelka/bin/configureStrelkaGermlineWorkflow.py \\" >> $strelka_script
-echo "--bam=/mnt/${tumor_bam} \\" >> $strelka_script
-echo "--referenceFasta=/mnt/${HUMAN_REFERENCE}  \\" >> $strelka_script
-echo "--callMemMb=4096 \\" >> $strelka_script
-echo "$region_txt \\" >> $strelka_script
-echo "--callRegions=/mnt/${input_BED} \\" >> $strelka_script
-echo "${exome} \\" >> $strelka_script
-echo "--runDir=/mnt/${outdir}/${outvcf%\.vcf}" >> $strelka_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/strelka:2.8.3 \\" >> $out_script
+echo "/opt/strelka/bin/configureStrelkaGermlineWorkflow.py \\" >> $out_script
+echo "--bam=/mnt/${tumor_bam} \\" >> $out_script
+echo "--referenceFasta=/mnt/${HUMAN_REFERENCE}  \\" >> $out_script
+echo "--callMemMb=4096 \\" >> $out_script
+echo "$region_txt \\" >> $out_script
+echo "--callRegions=/mnt/${input_BED} \\" >> $out_script
+echo "${exome} \\" >> $out_script
+echo "--runDir=/mnt/${outdir}/${outvcf%\.vcf}" >> $out_script
 
-echo "" >> $strelka_script
+echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 6g lethalfang/strelka:2.8.3 \\" >> $strelka_script
-echo "/mnt/${outdir}/${outvcf%\.vcf}/runWorkflow.py -m local -j 1" >> $strelka_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/strelka:2.8.3 \\" >> $out_script
+echo "/mnt/${outdir}/${outvcf%\.vcf}/runWorkflow.py -m local -j 1" >> $out_script
 
-echo "" >> $strelka_script
-echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $strelka_script
+echo "" >> $out_script
+echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 
-${action} $strelka_script
+${action} $out_script

@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,tumor-bam:,normal-bam:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,action:,mutect:,indelocator:,mutect2:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,strelka-snv:,strelka-indel:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,tumor-bam:,normal-bam:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,MEM:,action:,mutect:,indelocator:,mutect2:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,strelka-snv:,strelka-indel:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -14,6 +14,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 action=echo
+MEM=6
 
 while true; do
     case "$1" in
@@ -64,6 +65,12 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *)  cosmic=$2 ; shift 2 ;;
+        esac ;;
+
+    --MEM )
+        case "$2" in
+            "") shift 2 ;;
+            *) MEM=$2 ; shift 2 ;;
         esac ;;
 
     --action )
@@ -244,54 +251,54 @@ if [[ $truth_snv ]];        then truth_snv_text="--truth-snv ${truth_snv}"      
 if [[ $truth_indel ]];      then truth_indel_text="--truth-indel ${truth_indel}"               ; fi
 if [[ $ada_r_script ]];     then ada_r_script_text="--ada-r-script ${ada_r_script}"            ; fi
 
-echo "#!/bin/bash" > $sseq_script
-echo "" >> $sseq_script
+echo "#!/bin/bash" > $out_script
+echo "" >> $out_script
 
-echo "#$ -o ${logdir}" >> $sseq_script
-echo "#$ -e ${logdir}" >> $sseq_script
-echo "#$ -S /bin/bash" >> $sseq_script
-echo '#$ -l h_vmem=6G' >> $sseq_script # ML may require lots of RAM
-echo 'set -e' >> $sseq_script
-echo "" >> $sseq_script
+echo "#$ -o ${logdir}" >> $out_script
+echo "#$ -e ${logdir}" >> $out_script
+echo "#$ -S /bin/bash" >> $out_script
+echo "#$ -l h_vmem=${MEM}G" >> $out_script # ML may require lots of RAM
+echo 'set -e' >> $out_script
+echo "" >> $out_script
 
-echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $sseq_script
-echo "" >> $sseq_script
+echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
+echo "" >> $out_script
 
-echo "docker pull lethalfang/somaticseq:${VERSION}" >> $sseq_script
-echo "" >> $sseq_script
+echo "docker pull lethalfang/somaticseq:${VERSION}" >> $out_script
+echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 24g lethalfang/somaticseq:${VERSION} \\" >> $sseq_script
-echo "/opt/somaticseq/SomaticSeq.Wrapper.sh \\" >> $sseq_script
-echo "--output-dir       /mnt/${outdir} \\" >> $sseq_script
-echo "--genome-reference /mnt/${HUMAN_REFERENCE} \\" >> $sseq_script
-echo "--tumor-bam        /mnt/${tumor_bam} \\" >> $sseq_script
-echo "--normal-bam       /mnt/${normal_bam} \\" >> $sseq_script
-echo "$mutect_text \\" >> $sseq_script
-echo "$indelocator_text \\" >> $sseq_script
-echo "$mutect2_text \\" >> $sseq_script
-echo "$varscan_snv_text \\" >> $sseq_script
-echo "$varscan_indel_text \\" >> $sseq_script
-echo "$jsm_text \\" >> $sseq_script
-echo "$sniper_text \\" >> $sseq_script
-echo "$vardict_text \\" >> $sseq_script
-echo "$muse_text \\" >> $sseq_script
-echo "$lofreq_snv_text \\" >> $sseq_script
-echo "$lofreq_indel_text \\" >> $sseq_script
-echo "$scalpel_text \\" >> $sseq_script
-echo "$strelka_snv_text \\" >> $sseq_script
-echo "$strelka_indel_text \\" >> $sseq_script
-echo "$selector_text \\" >> $sseq_script
-echo "$exclusion_text \\" >> $sseq_script
-echo "$cosmic_text \\" >> $sseq_script
-echo "$dbsnp_text \\" >> $sseq_script
-echo "$classifier_snv_text \\" >> $sseq_script
-echo "$classifier_indel_text \\" >> $sseq_script
-echo "$truth_snv_text \\" >> $sseq_script
-echo "$truth_indel_text \\" >> $sseq_script
-echo "$ada_r_script_text \\" >> $sseq_script
-echo "--gatk /opt/GATK/GenomeAnalysisTK.jar" >> $sseq_script
+echo "docker run --rm -v /:/mnt -u $UID --memory 24g lethalfang/somaticseq:${VERSION} \\" >> $out_script
+echo "/opt/somaticseq/SomaticSeq.Wrapper.sh \\" >> $out_script
+echo "--output-dir       /mnt/${outdir} \\" >> $out_script
+echo "--genome-reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
+echo "--tumor-bam        /mnt/${tumor_bam} \\" >> $out_script
+echo "--normal-bam       /mnt/${normal_bam} \\" >> $out_script
+echo "$mutect_text \\" >> $out_script
+echo "$indelocator_text \\" >> $out_script
+echo "$mutect2_text \\" >> $out_script
+echo "$varscan_snv_text \\" >> $out_script
+echo "$varscan_indel_text \\" >> $out_script
+echo "$jsm_text \\" >> $out_script
+echo "$sniper_text \\" >> $out_script
+echo "$vardict_text \\" >> $out_script
+echo "$muse_text \\" >> $out_script
+echo "$lofreq_snv_text \\" >> $out_script
+echo "$lofreq_indel_text \\" >> $out_script
+echo "$scalpel_text \\" >> $out_script
+echo "$strelka_snv_text \\" >> $out_script
+echo "$strelka_indel_text \\" >> $out_script
+echo "$selector_text \\" >> $out_script
+echo "$exclusion_text \\" >> $out_script
+echo "$cosmic_text \\" >> $out_script
+echo "$dbsnp_text \\" >> $out_script
+echo "$classifier_snv_text \\" >> $out_script
+echo "$classifier_indel_text \\" >> $out_script
+echo "$truth_snv_text \\" >> $out_script
+echo "$truth_indel_text \\" >> $out_script
+echo "$ada_r_script_text \\" >> $out_script
+echo "--gatk /opt/GATK/GenomeAnalysisTK.jar" >> $out_script
 
-echo "" >> $sseq_script
-echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $sseq_script
+echo "" >> $out_script
+echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 
-$action $sseq_script
+$action $out_script

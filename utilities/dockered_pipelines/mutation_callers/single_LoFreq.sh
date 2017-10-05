@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,human-reference:,selector:,dbsnp:,action: -n 'submit_LoFreq.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,human-reference:,selector:,dbsnp:,action:,MEM: -n 'submit_LoFreq.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -15,6 +15,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 VAF=0.05
 action=echo
+MEM=12
 
 while true; do
     case "$1" in
@@ -54,6 +55,12 @@ while true; do
             *) dbsnp=$2 ; shift 2 ;;
         esac ;;
 
+    --MEM )
+        case "$2" in
+            "") shift 2 ;;
+            *) MEM=$2 ; shift 2 ;;
+        esac ;;
+
     --action )
         case "$2" in
             "") shift 2 ;;
@@ -73,30 +80,30 @@ mkdir -p ${logdir}
 
 lofreq_script=${outdir}/logs/lofreq_${timestamp}.cmd
 
-echo "#!/bin/bash" > $lofreq_script
-echo "" >> $lofreq_script
+echo "#!/bin/bash" > $out_script
+echo "" >> $out_script
 
-echo "#$ -o ${logdir}" >> $lofreq_script
-echo "#$ -e ${logdir}" >> $lofreq_script
-echo "#$ -S /bin/bash" >> $lofreq_script
-echo '#$ -l h_vmem=12G' >> $lofreq_script
-echo 'set -e' >> $lofreq_script
-echo "" >> $lofreq_script
+echo "#$ -o ${logdir}" >> $out_script
+echo "#$ -e ${logdir}" >> $out_script
+echo "#$ -S /bin/bash" >> $out_script
+echo "#$ -l h_vmem=${MEM}G" >> $out_script
+echo 'set -e' >> $out_script
+echo "" >> $out_script
 
-echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $lofreq_script
-echo "" >> $lofreq_script
+echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
+echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 12g lethalfang/lofreq:2.1.3.1 \\" >> $lofreq_script
-echo "lofreq call \\" >> $lofreq_script
-echo "--call-indels \\" >> $lofreq_script
-echo "--min-mq 1 \\" >> $lofreq_script
-echo "-l /mnt/${SELECTOR} \\" >> $lofreq_script
-echo "-f /mnt/${HUMAN_REFERENCE} \\" >> $lofreq_script
-echo "-o /mnt/${outdir}/${outvcf} \\" >> $lofreq_script
-echo "-S /mnt/${dbsnp}.gz \\" >> $lofreq_script
-echo "/mnt/${tumor_bam}" >> $lofreq_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/lofreq:2.1.3.1 \\" >> $out_script
+echo "lofreq call \\" >> $out_script
+echo "--call-indels \\" >> $out_script
+echo "--min-mq 1 \\" >> $out_script
+echo "-l /mnt/${SELECTOR} \\" >> $out_script
+echo "-f /mnt/${HUMAN_REFERENCE} \\" >> $out_script
+echo "-o /mnt/${outdir}/${outvcf} \\" >> $out_script
+echo "-S /mnt/${dbsnp}.gz \\" >> $out_script
+echo "/mnt/${tumor_bam}" >> $out_script
 
-echo "" >> $lofreq_script
-echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $lofreq_script
+echo "" >> $out_script
+echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 
-${action} $lofreq_script
+${action} $out_script
