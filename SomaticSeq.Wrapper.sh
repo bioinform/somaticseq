@@ -235,63 +235,63 @@ files_to_delete=''
 #####     #####     #####     #####     #####     #####     #####     #####
 # Modify the output of each tools into something that can be merged with GATK CombineVariants, just to be able to combine all the variant calls.
 # MuTect
-if [[ -r $mutect_vcf ]]; then
+if [[ $mutect_vcf ]]; then
     $MYDIR/utilities/modify_MuTect.py -type snp -infile ${mutect_vcf} -outfile ${merged_dir}/mutect.snp.vcf -nbam ${nbam} -tbam ${tbam}
     files_to_delete="${merged_dir}/mutect.snp.vcf ${merged_dir}/mutect.snp.vcf.idx $files_to_delete"
 fi
 
 # If INDEL:
 # Indelocator:
-if [[ -r $indelocator_vcf ]]; then
+if [[ $indelocator_vcf ]]; then
     $MYDIR/utilities/modify_MuTect.py -type indel -infile ${indelocator_vcf} -outfile ${merged_dir}/indelocator.vcf -nbam ${nbam} -tbam ${tbam}
     files_to_delete="${merged_dir}/indelocator.vcf ${merged_dir}/indelocator.vcf.idx $files_to_delete"
 fi
 
 # MuTect2
-if [[ -r $mutect2_vcf ]]; then
+if [[ $mutect2_vcf ]]; then
     $MYDIR/utilities/modify_MuTect2.py -infile $mutect2_vcf -snv ${merged_dir}/mutect.snp.vcf -indel ${merged_dir}/mutect.indel.vcf
     files_to_delete="${merged_dir}/mutect.snp.vcf ${merged_dir}/mutect.snp.vcf.idx ${merged_dir}/mutect.indel.vcf ${merged_dir}/mutect.indel.vcf.idx $files_to_delete"
 fi
 
 # VarScan2:
-if [[ -r $varscan_vcf ]]; then
+if [[ $varscan_vcf ]]; then
     $MYDIR/utilities/modify_VJSD.py -method VarScan2 -infile ${varscan_vcf} -outfile ${merged_dir}/varscan2.snp.vcf
     files_to_delete="${merged_dir}/varscan2.snp.vcf ${merged_dir}/varscan2.snp.vcf.idx $files_to_delete"
 fi
 
 # VarScan2:
-if [[ -r $varscan_indel_vcf ]]; then
+if [[ $varscan_indel_vcf ]]; then
     $MYDIR/utilities/modify_VJSD.py -method VarScan2 -infile ${varscan_indel_vcf} -outfile ${merged_dir}/varscan2.indel.vcf
     files_to_delete="${merged_dir}/varscan2.indel.vcf ${merged_dir}/varscan2.indel.vcf.idx $files_to_delete"
 fi
 
 # JointSNVMix2:
-if [[ -r $jsm_vcf ]] ; then
+if [[ $jsm_vcf ]] ; then
     $MYDIR/utilities/modify_VJSD.py -method JointSNVMix2  -infile ${jsm_vcf} -outfile ${merged_dir}/jsm.vcf
     files_to_delete="${merged_dir}/jsm.vcf ${merged_dir}/jsm.vcf.idx $files_to_delete"
 fi
 
 # SomaticSniper:
-if [[ -r $sniper_vcf ]]; then
+if [[ $sniper_vcf ]]; then
     $MYDIR/utilities/modify_VJSD.py -method SomaticSniper -infile ${sniper_vcf} -outfile ${merged_dir}/somaticsniper.vcf
     files_to_delete="${merged_dir}/somaticsniper.vcf ${merged_dir}/somaticsniper.vcf.idx $files_to_delete"
 fi
 
 # VarDict:
 # Does both SNV and INDEL
-if [[ -r $vardict_vcf ]]; then
+if [[ $vardict_vcf ]]; then
     $MYDIR/utilities/modify_VJSD.py -method VarDict -infile ${vardict_vcf} -outfile ${merged_dir}/vardict.vcf -filter paired
     files_to_delete="${merged_dir}/snp.vardict.vcf ${merged_dir}/snp.vardict.vcf.idx ${merged_dir}/indel.vardict.vcf ${merged_dir}/indel.vardict.vcf.idx $files_to_delete"
 fi
 
 # MuSE:
-if [[ -r $muse_vcf ]]; then
+if [[ $muse_vcf ]]; then
     $MYDIR/utilities/modify_VJSD.py -method MuSE  -infile ${muse_vcf} -outfile ${merged_dir}/muse.vcf
     files_to_delete="${merged_dir}/muse.vcf ${merged_dir}/muse.vcf.idx $files_to_delete"
 fi
 
 # LoFreq:
-if [[ -r $lofreq_vcf ]]; then
+if [[ $lofreq_vcf ]]; then
 
     if [ ${lofreq_vcf: -3} == ".gz" ]; then
         gunzip -c $lofreq_vcf > ${merged_dir}/lofreq.snv.vcf
@@ -301,7 +301,7 @@ if [[ -r $lofreq_vcf ]]; then
 fi
 
 # LoFreq:
-if [[ -r $lofreq_indel_vcf ]]; then
+if [[ $lofreq_indel_vcf ]]; then
 
     if [ ${lofreq_indel_vcf: -3} == ".gz" ]; then
         gunzip -c $lofreq_indel_vcf > ${merged_dir}/lofreq.indel.vcf
@@ -310,13 +310,22 @@ if [[ -r $lofreq_indel_vcf ]]; then
     fi
 fi
 
+
+# Scalpel: just make copy so the .idx won't cause problem, or write permission of the original directory
+# Scalpel:
+if [[ $scalpel_vcf ]]; then
+    cp $scalpel_vcf ${merged_dir}/scalpel.vcf
+    files_to_delete="${merged_dir}/scalpel.vcf ${merged_dir}/scalpel.vcf.idx $files_to_delete"
+fi
+
+
 # Strelka: this is so that Strelka INDEL VCF does not clash with Scalpel, for reasons I haven't yet figured out.
-if [[ -r $strelka_snv_vcf ]]; then
+if [[ $strelka_snv_vcf ]]; then
     $MYDIR/utilities/modify_Strelka.py -infile ${strelka_snv_vcf} -outfile ${merged_dir}/strelka.snv.vcf
     files_to_delete="${merged_dir}/strelka.snv.vcf ${merged_dir}/strelka.snv.vcf.idx $files_to_delete"
 fi
 
-if [[ -r $strelka_indel_vcf ]]; then
+if [[ $strelka_indel_vcf ]]; then
     $MYDIR/utilities/modify_Strelka.py -infile ${strelka_indel_vcf} -outfile ${merged_dir}/strelka.indel.vcf
     files_to_delete="${merged_dir}/strelka.indel.vcf ${merged_dir}/strelka.indel.vcf.idx $files_to_delete"
 fi
@@ -324,14 +333,14 @@ fi
 
 
 # dbSNP
-if [[ -r ${dbsnp} ]]; then
+if [[ ${dbsnp} ]]; then
     dbsnp_input="-dbsnp ${dbsnp}"
 else
     dbsnp_input=''
 fi
 
 # COSMIC
-if [[ -r ${cosmic} ]]; then
+if [[ ${cosmic} ]]; then
     cosmic_input="-cosmic ${cosmic}"
 else
     cosmic_input=''
@@ -361,10 +370,10 @@ then
     files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf.idx $files_to_delete"
 
 
-    if [[ -r ${merged_dir}/mutect.snp.vcf ]]; then
+    if [[ ${mutect2_vcf} ]]; then
         mutect_input="-mutect ${merged_dir}/mutect.snp.vcf"
         tool_mutect="CGA"
-    elif [[ -r ${mutect_vcf} ]]; then
+    elif [[ ${mutect_vcf} ]]; then
         mutect_input="-mutect ${mutect_vcf}"
         tool_mutect="CGA"
     else
@@ -373,16 +382,7 @@ then
     fi
 
 
-    if [[ -r ${strelka_snv_vcf} ]]; then
-        strelka_input="-strelka ${strelka_snv_vcf}"
-        tool_strelka="Strelka"
-    else
-        strelka_input=''
-        tool_strelka=''
-    fi
-
-
-    if [[ -r ${varscan_vcf} ]]; then
+    if [[ ${varscan_vcf} ]]; then
         varscan_input="-varscan ${varscan_vcf}"
         tool_varscan="VarScan2"
     else
@@ -391,7 +391,17 @@ then
     fi
 
 
-    if [[ -r ${jsm_vcf} ]]; then
+    if [[ ${strelka_snv_vcf} ]]; then
+        strelka_input="-strelka ${strelka_snv_vcf}"
+        tool_strelka="Strelka"
+    else
+        strelka_input=''
+        tool_strelka=''
+    fi
+
+
+
+    if [[ ${jsm_vcf} ]]; then
         jsm_input="-jsm ${jsm_vcf}"
         tool_jsm="JointSNVMix2"
     else
@@ -400,7 +410,7 @@ then
     fi
 
 
-    if [[ -r ${sniper_vcf} ]]; then
+    if [[ ${sniper_vcf} ]]; then
         sniper_input="-sniper ${sniper_vcf}"
         tool_sniper="SomaticSniper"
     else
@@ -409,7 +419,7 @@ then
     fi
 
 
-    if [[ -r ${merged_dir}/snp.vardict.vcf ]]; then
+    if [[ ${vardict_vcf} ]]; then
         vardict_input="-vardict ${merged_dir}/snp.vardict.vcf"
         tool_vardict="VarDict"
     else
@@ -418,7 +428,7 @@ then
     fi
 
 
-    if [[ -r ${muse_vcf} ]]; then
+    if [[ ${muse_vcf} ]]; then
         muse_input="-muse ${muse_vcf}"
         tool_muse="MuSE"
     else
@@ -427,7 +437,7 @@ then
     fi
 
 
-    if [[ -r ${lofreq_vcf} ]]; then
+    if [[ ${lofreq_vcf} ]]; then
         lofreq_input="-lofreq ${lofreq_vcf}"
         tool_lofreq="LoFreq"
     else
@@ -436,7 +446,8 @@ then
     fi
 
 
-    if [[ -r ${snpgroundtruth} ]]; then
+
+    if [[ ${snpgroundtruth} ]]; then
         truth_input="-truth ${snpgroundtruth}"
     else
         truth_input=''
@@ -444,12 +455,12 @@ then
 
 
     ##
-    if [[ -r ${masked_region} ]]; then
+    if [[ ${masked_region} ]]; then
         intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.snp.vcf -b ${masked_region} -v > ${merged_dir}/tmp.snp.vcf
         mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf
     fi
 
-    if [[ -r ${inclusion_region} ]]; then
+    if [[ ${inclusion_region} ]]; then
         intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.snp.vcf -b ${inclusion_region} | uniq > ${merged_dir}/tmp.snp.vcf
         mv ${merged_dir}/tmp.snp.vcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf
     fi
@@ -477,12 +488,12 @@ then
 
 
     # If a classifier is used, assume predictor.R, and do the prediction routine:
-    if [[ -r ${snpclassifier} ]] && [[ -r ${ada_r_script} ]]; then
+    if [[ ${snpclassifier} ]] && [[ ${ada_r_script} ]]; then
         "$ada_r_script" "$snpclassifier" "${merged_dir}/Ensemble.sSNV.tsv" "${merged_dir}/SSeq.Classified.sSNV.tsv"
         $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/SSeq.Classified.sSNV.tsv -vcf ${merged_dir}/SSeq.Classified.sSNV.vcf -pass $pass_threshold -low $lowqual_threshold -N "$normal_name" -T "$tumor_name" -all -phred -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq $tool_strelka
 
     # If ground truth is here, assume builder.R, and build a classifier
-    elif [[ -r ${snpgroundtruth} ]] && [[ -r ${ada_r_script} ]]; then
+    elif [[ ${snpgroundtruth} ]] && [[ ${ada_r_script} ]]; then
         ${ada_r_script} "${merged_dir}/Ensemble.sSNV.tsv"
 
     # If no training and no classification, then make VCF by majority vote consensus:
@@ -496,12 +507,12 @@ fi
 
 
 #################### INDEL ####################
-if [[ -r ${merged_dir}/mutect.indel.vcf || -r ${merged_dir}/strelka.indel.vcf || -r ${merged_dir}/varscan2.indel.vcf || -r ${merged_dir}/indel.vardict.vcf || -r ${lofreq_indel_vcf} || ${merged_dir}/indelocator.vcf || $scalpel_vcf ]]
+if [[ -r ${merged_dir}/mutect.indel.vcf || -r ${merged_dir}/strelka.indel.vcf || -r ${merged_dir}/varscan2.indel.vcf || -r ${merged_dir}/indel.vardict.vcf || -r ${lofreq_indel_vcf} || -r ${merged_dir}/indelocator.vcf || -r ${merged_dir}/scalpel.vcf ]]
 then
 
     mergeindel=''
     all_indel=''
-    for vcf in ${merged_dir}/mutect.indel.vcf ${merged_dir}/strelka.indel.vcf ${merged_dir}/indel.vardict.vcf ${merged_dir}/varscan2.indel.vcf ${lofreq_indel_vcf} ${merged_dir}/indelocator.vcf $scalpel_vcf
+    for vcf in ${merged_dir}/mutect.indel.vcf ${merged_dir}/strelka.indel.vcf ${merged_dir}/indel.vardict.vcf ${merged_dir}/varscan2.indel.vcf ${lofreq_indel_vcf} ${merged_dir}/indelocator.vcf ${merged_dir}/scalpel.vcf
     do
         if [[ -r $vcf ]]; then
             mergeindel="$mergeindel --variant $vcf"
@@ -519,10 +530,10 @@ then
 
 
     ## MuTect2 will take precedence over Indelocator
-    if [[ -r ${merged_dir}/mutect.indel.vcf ]]; then
+    if [[ ${mutect2_vcf} ]]; then
         indelocator_input="-mutect ${merged_dir}/mutect.indel.vcf"
         tool_indelocator="CGA"
-    elif [[ -r ${indelocator_vcf} ]]; then
+    elif [[ ${mutect_vcf} ]]; then
         indelocator_input="-mutect ${indelocator_vcf}"
         tool_indelocator="CGA"
     else
@@ -531,7 +542,7 @@ then
     fi
 
 
-    if [[ -r ${strelka_indel_vcf} ]]; then
+    if [[ ${strelka_indel_vcf} ]]; then
         strelka_input="-strelka ${strelka_indel_vcf}"
         tool_strelka="Strelka"
     else
@@ -540,7 +551,7 @@ then
     fi
 
 
-    if [[ -r ${varscan_indel_vcf} ]]; then
+    if [[ ${varscan_indel_vcf} ]]; then
         varscan_input="-varscan ${varscan_indel_vcf}"
         tool_varscan="VarScan2"
     else
@@ -549,7 +560,7 @@ then
     fi
 
 
-    if [[ -r ${merged_dir}/indel.vardict.vcf ]]; then
+    if [[ ${varscan_indel_vcf} ]]; then
         vardict_input="-vardict ${merged_dir}/indel.vardict.vcf"
         tool_vardict="VarDict"
     else
@@ -558,7 +569,7 @@ then
     fi
 
 
-    if [[ -r ${lofreq_indel_vcf} ]]; then
+    if [[ ${lofreq_indel_vcf} ]]; then
         lofreq_input="-lofreq ${lofreq_indel_vcf}"
         tool_lofreq="LoFreq"
     else
@@ -567,7 +578,7 @@ then
     fi
 
 
-    if [[ -r ${scalpel_vcf} ]]; then
+    if [[ ${scalpel_vcf} ]]; then
         scalpel_input="-scalpel ${scalpel_vcf}"
         tool_scalpel="Scalpel"
     else
@@ -576,7 +587,7 @@ then
     fi
 
 
-    if [[ -r ${indelgroundtruth} ]]; then
+    if [[ ${indelgroundtruth} ]]; then
         truth_input="-truth ${indelgroundtruth}"
     else
         truth_input=''
@@ -584,12 +595,12 @@ then
 
 
     #
-    if [[ -r ${masked_region} ]]; then
+    if [[ ${masked_region} ]]; then
         intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.indel.vcf -b ${masked_region} -v > ${merged_dir}/tmp.indel.vcf
         mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf
     fi
 
-    if [[ -r ${inclusion_region} ]]; then
+    if [[ ${inclusion_region} ]]; then
         intersectBed -header -a ${merged_dir}/CombineVariants_MVJSD.indel.vcf -b ${inclusion_region} | uniq > ${merged_dir}/tmp.indel.vcf
         mv ${merged_dir}/tmp.indel.vcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf
     fi
@@ -614,12 +625,12 @@ then
 
 
     # If a classifier is used, use it:
-    if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]; then
+    if [[ ${indelclassifier} ]] && [[ ${ada_r_script} ]]; then
         ${ada_r_script} "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/SSeq.Classified.sINDEL.tsv"
         $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/SSeq.Classified.sINDEL.tsv -vcf ${merged_dir}/SSeq.Classified.sINDEL.vcf -pass $pass_threshold -low $lowqual_threshold -N "$normal_name" -T "$tumor_name" -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka
 
     # If ground truth is here, assume builder.R, and build a classifier
-    elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]; then
+    elif [[ ${indelgroundtruth} ]] && [[ ${ada_r_script} ]]; then
         ${ada_r_script} "${merged_dir}/Ensemble.sINDEL.tsv"
 
     # If no training and no classification, then make VCF by majority vote consensus:
