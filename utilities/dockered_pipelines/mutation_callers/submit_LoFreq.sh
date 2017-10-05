@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,dbsnp:,MEM:,action: -n 'submit_LoFreq.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,dbsnp:,extra-arguments:,MEM:,action: -n 'submit_LoFreq.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -53,6 +53,12 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *) SELECTOR=$2 ; shift 2 ;;
+        esac ;;
+
+    --extra-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *) extra_arguments=$2 ; shift 2 ;;
         esac ;;
 
     --MEM )
@@ -107,6 +113,7 @@ echo "--call-indels \\" >> $out_script
 echo "-l /mnt/${SELECTOR} \\" >> $out_script
 echo "-f /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-o /mnt/${outdir}/${vcf_prefix} \\" >> $out_script
+echo "${extra_arguments} \\" >> $out_script
 echo "-d /mnt/${dbsnp}.gz" >> $out_script
 
 echo "" >> $out_script

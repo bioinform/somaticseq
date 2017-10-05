@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,mapping-quality:,base-quality:,prior:,split:,MEM:,action: -n 'submit_SomaticSniper.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,mapping-quality:,base-quality:,prior:,split:,extra-arguments:,MEM:,action: -n 'submit_SomaticSniper.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -70,6 +70,12 @@ while true; do
             *)  prior=$2 ; shift 2 ;;
         esac ;;
 
+    --extra-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  extra_arguments=$2 ; shift 2 ;;
+        esac ;;
+
     --MEM )
         case "$2" in
             "") shift 2 ;;
@@ -114,7 +120,7 @@ echo "" >> $out_script
 
 echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/somaticsniper:1.0.5.0 \\" >> $out_script
 echo "/opt/somatic-sniper/build/bin/bam-somaticsniper \\" >> $out_script
-echo "-q ${MQ} -Q ${BQ} -s ${prior} -F vcf \\" >> $out_script
+echo "-q ${MQ} -Q ${BQ} -s ${prior} -F vcf ${extra_arguments} \\" >> $out_script
 echo "-f /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "/mnt/${tumor_bam} \\" >> $out_script
 echo "/mnt/${normal_bam} \\" >> $out_script

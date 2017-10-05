@@ -13,6 +13,8 @@ timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 VAF=0.10
 action=echo
 MEM=7
+minMQ=25
+minBQ=20
 
 while true; do
     case "$1" in
@@ -50,6 +52,30 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *) VAF=$2 ; shift 2 ;;
+        esac ;;
+
+    --minMQ )
+        case "$2" in
+            "") shift 2 ;;
+            *) minMQ=$2 ; shift 2 ;;
+        esac ;;
+
+    --minBQ )
+        case "$2" in
+            "") shift 2 ;;
+            *) minBQ=$2 ; shift 2 ;;
+        esac ;;
+
+    --extra-pileup-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *) extra_pileup_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --extra-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *) extra_arguments=$2 ; shift 2 ;;
         esac ;;
 
     --MEM )
@@ -96,17 +122,16 @@ echo "" >> $out_script
 
 echo "docker run --rm -u $UID -v /:/mnt --memory ${MEM}G lethalfang/samtools:0.1.19 bash -c \\" >> $out_script
 echo "\"samtools mpileup \\" >> $out_script
-echo "-B -q 25 -Q 20 $selector_text -f \\" >> $out_script
-echo "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
+echo "-B -q ${minMQ} -Q ${minBQ} ${extra_pileup_arguments} $selector_text -f \\" >> $out_scriptecho "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "/mnt/${tumor_bam} \\" >> $out_script
 echo "> /mnt/${outdir}/tumor.pileup\"" >> $out_script
 
 echo "" >> $out_script
 
 echo "docker run --rm -u $UID -v /:/mnt --memory ${MEM}G djordjeklisic/sbg-varscan2:v1 bash -c \\" >> $out_script
-echo "\"java -Xmx6g -jar VarScan2.3.7.jar mpileup2cns \\" >> $out_script
+echo "\"java -Xmx${MEM}g -jar VarScan2.3.7.jar mpileup2cns \\" >> $out_script
 echo "/mnt/${outdir}/tumor.pileup \\" >> $out_script
-echo "--variants --min-var-freq $VAF --output-vcf 1 \\" >> $out_script
+echo "--variants ${extra_arguments} --min-var-freq $VAF --output-vcf 1 \\" >> $out_script
 echo "> /mnt/${outdir}/${outvcf}\"" >> $out_script
 
 echo "" >> $out_script

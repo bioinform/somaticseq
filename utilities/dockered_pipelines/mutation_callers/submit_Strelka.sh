@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,MEM:,action:,exome -n 'submit_Strelka.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,extra-config-arguments:,extra-run-arguments:,MEM:,action:,exome -n 'submit_Strelka.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -52,6 +52,18 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *) SELECTOR=$2 ; shift 2 ;;
+        esac ;;
+
+    --extra-config-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *) extra_config_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --extra-run-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *) extra_run_arguments=$2 ; shift 2 ;;
         esac ;;
 
     --MEM )
@@ -127,13 +139,13 @@ echo "--referenceFasta=/mnt/${HUMAN_REFERENCE}  \\" >> $out_script
 echo "--callMemMb=$(( 1024 * MEM )) \\" >> $out_script
 echo "$region_txt \\" >> $out_script
 echo "--callRegions=/mnt/${input_BED} \\" >> $out_script
-echo "${exome} \\" >> $out_script
+echo "${exome} ${extra_config_arguments} \\" >> $out_script
 echo "--runDir=/mnt/${outdir}/${outvcf%\.vcf}" >> $out_script
 
 echo "" >> $out_script
 
 echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/strelka:2.8.3 \\" >> $out_script
-echo "/mnt/${outdir}/${outvcf%\.vcf}/runWorkflow.py -m local -j 1" >> $out_script
+echo "/mnt/${outdir}/${outvcf%\.vcf}/runWorkflow.py -m local -j 1 ${extra_run_arguments}" >> $out_script
 
 echo "" >> $out_script
 echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script

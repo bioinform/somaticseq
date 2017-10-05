@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,human-reference:,selector:,action:,MEM:,two-pass -n 'submit_Scalpel.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,human-reference:,selector:,extra-discovery-arguments:,extra-export-arguments:,action:,MEM:,two-pass -n 'submit_Scalpel.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -47,6 +47,18 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *) SELECTOR=$2 ; shift 2 ;;
+        esac ;;
+
+    --extra-discovery-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  extra_discovery_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --extra-export-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  extra_export_arguments=$2 ; shift 2 ;;
         esac ;;
 
     --MEM )
@@ -101,11 +113,13 @@ echo "--ref /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--bed /mnt/${SELECTOR} \\" >> $out_script
 echo "--bam /mnt/${tumor_bam} \\" >> $out_script
 echo "--window 600 \\" >> $out_script
+echo "${extra_discovery_arguments} \\" >> $out_script
 echo "--dir /mnt/${outdir}/scalpel && \\" >> $out_script
 echo "/opt/scalpel-0.5.3/scalpel-export --single \\" >> $out_script
 echo "--db /mnt/${outdir}/scalpel/variants.db.dir \\" >> $out_script
 echo "--ref /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--bed /mnt/${SELECTOR} \\" >> $out_script
+echo "${extra_export_arguments} \\" >> $out_script
 echo "> /mnt/${outdir}/scalpel/scalpel.vcf\"" >> $out_script
 echo "" >> $out_script
 

@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,human-reference:,selector:,dbsnp:,action:,MEM: -n 'submit_LoFreq.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,human-reference:,selector:,dbsnp:,action:,extra-arguments:,MEM: -n 'submit_LoFreq.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -55,6 +55,12 @@ while true; do
             *) dbsnp=$2 ; shift 2 ;;
         esac ;;
 
+    --extra-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *) extra_arguments=$2 ; shift 2 ;;
+        esac ;;
+
     --MEM )
         case "$2" in
             "") shift 2 ;;
@@ -101,6 +107,7 @@ echo "-l /mnt/${SELECTOR} \\" >> $out_script
 echo "-f /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-o /mnt/${outdir}/${outvcf} \\" >> $out_script
 echo "-S /mnt/${dbsnp}.gz \\" >> $out_script
+echo "${extra_arguments} \\" >> $out_script
 echo "/mnt/${tumor_bam}" >> $out_script
 
 echo "" >> $out_script

@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,sample-name:,human-reference:,selector:,dbsnp:,action:,MEM:,threads: -n 'submit_MuTect.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,sample-name:,human-reference:,selector:,dbsnp:,extra-arguments:,action:,MEM:,threads: -n 'submit_MuTect.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -73,6 +73,12 @@ while true; do
             *)  threads=$2 ; shift 2 ;;
         esac ;;
 
+    --extra-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  extra_arguments=$2 ; shift 2 ;;
+        esac ;;
+
     --action )
         case "$2" in
             "") shift 2 ;;
@@ -134,6 +140,7 @@ echo "$selector_text \\" >> $out_script
 echo "--input /mnt/${tumor_bam} \\" >> $out_script
 echo "--tumorSampleName \${tumor_name} \\" >> $out_script
 echo "$dbsnp_text \\" >> $out_script
+echo "${extra_arguments} \\" >> $out_script
 echo "--output /mnt/${outdir}/unfiltered.${outvcf}" >> $out_script
 echo "" >> $out_script
 

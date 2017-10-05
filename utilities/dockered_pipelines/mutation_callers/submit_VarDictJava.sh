@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,action:,VAF:,MEM: -n 'submit_VarDictJava.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,extra-arguments:,action:,VAF:,MEM: -n 'submit_VarDictJava.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -61,6 +61,12 @@ while true; do
             *) VAF=$2 ; shift 2 ;;
         esac ;;
 
+    --extra-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *) extra_arguments=$2 ; shift 2 ;;
+        esac ;;
+        
     --MEM )
         case "$2" in
             "") shift 2 ;;
@@ -117,6 +123,7 @@ fi
 
 echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/vardictjava:1.5.1 bash -c \\" >> $out_script
 echo "\"/opt/VarDict-1.5.1/bin/VarDict \\" >> $out_script
+echo "${extra_arguments} \\" >> $out_script
 echo "-G /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-f $VAF -h \\" >> $out_script
 echo "-b '/mnt/${tumor_bam}|/mnt/${normal_bam}' \\" >> $out_script

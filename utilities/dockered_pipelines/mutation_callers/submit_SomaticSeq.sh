@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,tumor-bam:,normal-bam:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,MEM:,action:,mutect:,indelocator:,mutect2:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,strelka-snv:,strelka-indel:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'submit_SomaticSeq.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,tumor-bam:,normal-bam:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,MEM:,action:,mutect:,indelocator:,mutect2:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,strelka-snv:,strelka-indel:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel:,extra-arguments: -n 'submit_SomaticSeq.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -193,6 +193,12 @@ while true; do
             *)  truth_indel=$2 ; shift 2 ;;
         esac ;;
 
+    --extra-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *) extra_arguments=$2 ; shift 2 ;;
+        esac ;;
+        
     -- ) shift; break ;;
     * ) break ;;
     esac
@@ -296,6 +302,7 @@ echo "$classifier_indel_text \\" >> $out_script
 echo "$truth_snv_text \\" >> $out_script
 echo "$truth_indel_text \\" >> $out_script
 echo "$ada_r_script_text \\" >> $out_script
+echo "${extra_arguments} \\" >> $out_script
 echo "--gatk /opt/GATK/GenomeAnalysisTK.jar" >> $out_script
 
 echo "" >> $out_script

@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,action:,skip-size:,convergence-threshold:,MEM:,split: -n 'submit_JointSNVMix2.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,action:,skip-size:,convergence-threshold:,extra-train-arguments:,extra-classify-arguments:,MEM:,split: -n 'submit_JointSNVMix2.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -62,6 +62,18 @@ while true; do
             *) convergence_threshold=$2 ; shift 2 ;;
         esac ;;
 
+    --extra-train-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *) extra_train_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --extra-classify-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *) extra_classify_arguments=$2 ; shift 2 ;;
+        esac ;;
+
     --MEM )
         case "$2" in
             "") shift 2 ;;
@@ -108,6 +120,7 @@ echo "docker run --rm -v /:/mnt --memory ${MEM}G -u $UID lethalfang/jointsnvmix2
 echo "/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py train joint_snv_mix_two \\" >> $out_script
 echo "--convergence_threshold $convergence_threshold \\" >> $out_script
 echo "--skip_size $skip_size \\" >> $out_script
+echo "${extra_train_arguments} \\" >> $out_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "/mnt/${normal_bam} \\" >> $out_script
 echo "/mnt/${tumor_bam} \\" >> $out_script
@@ -126,6 +139,7 @@ echo "" >> $out_script
 
 echo "docker run --rm -v /:/mnt --memory ${MEM}G -u $UID lethalfang/jointsnvmix2:0.7.5 bash -c \\"  >> $out_script
 echo \""/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py classify joint_snv_mix_two \\" >> $out_script
+echo "${extra_classify_arguments} \\" >> $out_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "/mnt/${normal_bam} \\" >> $out_script
 echo "/mnt/${tumor_bam} \\" >> $out_script
