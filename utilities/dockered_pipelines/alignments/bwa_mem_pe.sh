@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,fq1:,fq2:,ID:,LB:,PL:,SM:,genome-reference:,out-script:,out-bam:,threads:,standalone, -n 'bwa_mem_pe.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,fq1:,fq2:,ID:,LB:,PL:,SM:,bam-header:,genome-reference:,out-script:,out-bam:,threads:,standalone, -n 'bwa_mem_pe.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -45,6 +45,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  outBam=$2 ; shift 2 ;;
+            esac ;;
+
+        --bam-header )
+            case "$2" in
+                "") shift 2 ;;
+                *)  bamHeader=$2 ; shift 2 ;;
             esac ;;
 
         --ID )
@@ -120,6 +126,11 @@ then
 fi
 
 echo "" >> $out_script
+
+if [[ ! $bamHeader ]]
+then
+    bamHeader="@RG\tID:${ID}\tLB:${LB}\tPL:${PL}\tSM:${SM}"
+fi
 
 echo "docker run --rm -v /:/mnt -u $UID lethalfang/bwa:0.7.15_samtools bash -c \\" >> $out_script
 echo "\"bwa mem \\" >> $out_script
