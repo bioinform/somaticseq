@@ -99,7 +99,7 @@ echo "java -Xmx8g -jar /usr/GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T PrintReads \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${inBam} \\" >> $out_script
-echo "-BQSR /mnt/${outdir}/BQSR.${timestamp}.table" >> $out_script
+echo "-BQSR /mnt/${outdir}/BQSR.${timestamp}.table \\" >> $out_script
 echo "-o /mnt/${outdir}/${outBam}" >> $out_script
 
 echo "" >> $out_script

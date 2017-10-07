@@ -159,34 +159,137 @@ echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
 
+
 if [[ $bwa ]]
 then
 
     if [[ ${t_fq1} && ${t_fq2} ]]
     then
         $MYDIR/bwa_mem_pe.sh \
-        --fq1        ${t_fq1} \
-        --fq2        ${t_fq2} \
-        --output-dir ${outdir} \
-        --bam-out    tumor.sorted.bam \
-        --bam-header ${tumor_bam_header} \
-        --out-script ${out_script}
+        --fq1              ${t_fq1} \
+        --fq2              ${t_fq2} \
+        --genome-reference ${GENOME_REFERENCE} \
+        --output-dir       ${outdir} \
+        --bam-out          tumor.sorted.bam \
+        --bam-header       ${tumor_bam_header} \
+        --threads          ${threads} \
+        --out-script       ${out_script}
+
+        latest_tumor_bam="${outdir}/tumor.sorted.bam"
     fi
-    
-    latest_tumor_bam='tumor.sorted.bam'
-    
+
     if [[ ${n_fq1} && ${n_fq2} ]]
     then
         $MYDIR/bwa_mem_pe.sh \
-        --fq1        ${n_fq1} \
-        --fq2        ${n_fq2} \
-        --output-dir ${outdir} \
-        --bam-out    normal.sorted.bam \
-        --bam-header ${normal_bam_header} \
-        --out-script ${out_script}
+        --fq1              ${n_fq1} \
+        --fq2              ${n_fq2} \
+        --genome-reference ${GENOME_REFERENCE} \
+        --output-dir       ${outdir} \
+        --bam-out          normal.sorted.bam \
+        --bam-header       ${normal_bam_header} \
+        --threads          ${threads} \
+        --out-script       ${out_script}
+        
+        latest_normal_bam="${outdir}/normal.sorted.bam"
     fi
-
-    latest_normal_bam='normal.sorted.bam'
 
 fi
 
+
+if [[ $markdup ]]
+then
+
+    if [[ ${latest_tumor_bam} ]]
+    then
+        $MYDIR/markdup.sh \
+        --output-dir ${outdir} \
+        --in-bam     ${latest_tumor_bam}
+        --out-bam    tumor.markdup.bam \
+        --out-script ${out_script}
+    
+        latest_tumor_bam="${outdir}/tumor.markdup.bam"
+    fi
+    
+  
+    if [[ ${latest_normal_bam} ]]
+    then
+    
+        $MYDIR/markdup.sh \
+        --output-dir ${outdir} \
+        --in-bam     ${latest_normal_bam} \
+        --out-bam    normal.markdup.bam \
+        --out-script ${out_script}
+    
+        latest_normal_bam="${outdir}/normal.markdup.bam"
+    fi
+fi
+
+
+if [[ $indel_realign ]]
+then
+
+    if [[ ${latest_tumor_bam} && ${latest_normal_bam} ]]
+    then
+    
+        $MYDIR/jointIndelRealign.sh \
+        --output-dir       ${outdir} \
+        --normal-bam       ${latest_normal_bam} \
+        --tumor-bam        ${latest_tumor_bam} \
+        --genome-reference ${GENOME_REFERENCE} \
+        --out-script       ${out_script}
+        
+        latest_normal_bam=${latest_normal_bam%.bam}.jointRealigned.bam
+        latest_tumor_bam=${latest_tumor_bam%.bam}.jointRealigned.bam
+
+    elif [[ ${latest_tumor_bam} ]]
+    then
+        
+        $MYDIR/singleIndelRealign.sh \
+        --output-dir       ${outdir} \
+        --tumor-bam        ${latest_tumor_bam} \
+        --genome-reference ${GENOME_REFERENCE} \
+        --out-script       ${out_script}
+        
+        latest_tumor_bam=${latest_tumor_bam%.bam}.indelRealigned.bam
+    
+    elif [[ ${latest_normal_bam} ]]
+    then
+    
+        $MYDIR/singleIndelRealign.sh \
+        --output-dir       ${outdir} \
+        --tumor-bam        ${latest_normal_bam} \
+        --genome-reference ${GENOME_REFERENCE} \
+        --out-script       ${out_script}
+        
+        latest_normal_bam=${latest_normal_bam%.bam}.indelRealigned.bam
+    fi
+    
+fi
+
+
+if [[ $bqsr ]]
+then
+
+    if [[ ${latest_tumor_bam} ]]
+    then
+        $MYDIR/BQSR.sh \
+        --output-dir       ${outdir} \
+        --in-bam           ${latest_tumor_bam} \
+        --out-bam          ${t_outbam} \
+        --genome-reference ${GENOME_REFERENCE} \
+        --dbsnp            ${dbsnp} \
+        --out-script       ${out_script}
+    fi
+    
+    if [[ ${latest_normal_bam} ]]
+    then
+        $MYDIR/BQSR.sh \
+        --output-dir       ${outdir} \
+        --in-bam           ${latest_normal_bam} \
+        --out-bam          ${n_outbam} \
+        --genome-reference ${GENOME_REFERENCE} \
+        --dbsnp            ${dbsnp} \
+        --out-script       ${out_script}
+    fi
+
+fi

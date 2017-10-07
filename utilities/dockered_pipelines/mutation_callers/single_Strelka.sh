@@ -119,7 +119,7 @@ then
     input_BED=${SELECTOR}.gz
     
 else
-    echo "cat ${SELECTOR} | docker run -v /:/mnt -u $UID --rm --memory ${MEM}G -i lethalfang/tabix:1.2.1 bgzip > ${outdir}/${selector_basename}.gz" >> $out_script
+    echo "docker run -v /:/mnt -u $UID --rm --memory ${MEM}G lethalfang/tabix:1.2.1 bash -c \"cat /mnt/${SELECTOR} | bgzip > /mnt/${outdir}/${selector_basename}.gz\"" >> $out_script
     echo "docker run -v /:/mnt -u $UID --rm --memory ${MEM}G lethalfang/tabix:1.2.1 tabix /mnt/${outdir}/${selector_basename}.gz" >> $out_script
     echo "" >> $out_script
     
