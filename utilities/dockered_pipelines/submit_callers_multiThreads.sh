@@ -381,7 +381,7 @@ do
     
         if [[ $exome_stat ]]
         then
-            $exome_stat='--exome'
+            exome_stat='--exome'
         fi
     
         $MYDIR/mutation_callers/submit_Strelka.sh \
