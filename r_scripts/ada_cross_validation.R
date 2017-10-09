@@ -1,158 +1,89 @@
 #!/usr/bin/env Rscript
 
-### To start, set the input filenames in "Main (entry point)" section.
-
 require("ada")
 
 args <- commandArgs(TRUE)
 
-filename = args[1]
-numTrueCalls = as.integer( args[2] )
+training_data_filename = args[1]
 
 ##### Main (entry point)
-# Train and test filenames
+train_filename = paste(training_data_filename)
+train_data = read.table(train_filename, header=TRUE)
 
-train_filename = filename
-test_filename  = filename
-
-#train_filename <- ""
-test_filename <- ""
-
-
-# If one filename is set, data is splitted to test/train randomly
-data_filename <- train_filename
-train_filename = ""
-test_filename = ""
-
-print(test_filename)
-print(train_filename)
-
-
-if (data_filename != "") {
-    data <- read.table(data_filename, header=TRUE)
-    
-    index <- 1:nrow(data)
-    train_index <- sample(index, trunc(length(index)/2))
-    
-    test_data_ <- data[-train_index,]
-    train_data_ <- data[train_index,]
-    
+if (!(1 %in% train_data$TrueVariant_or_False && 0 %in% train_data$TrueVariant_or_False)) {
+    stop("In training mode, there must be both true positives and false positives in the call set.")
 }
 
-if (test_filename != "") {
-    test_data_ = read.table(test_filename, header=TRUE)
-}
+# Use substitution identity for training
+train_data$GC2CG = 0
+train_data$GC2TA = 0
+train_data$GC2AT = 0
+train_data$TA2AT = 0
+train_data$TA2GC = 0
+train_data$TA2CG = 0
 
-if (train_filename != "") {
-    train_data_ = read.table(train_filename, header=TRUE)
-}
+train_data$GC2CG[ (train_data$REF=='G' & train_data$ALT=='C') | (train_data$REF=='C' & train_data$ALT=='G') ] = 1
+train_data$GC2TA[ (train_data$REF=='G' & train_data$ALT=='T') | (train_data$REF=='C' & train_data$ALT=='A') ] = 1
+train_data$GC2AT[ (train_data$REF=='G' & train_data$ALT=='A') | (train_data$REF=='C' & train_data$ALT=='T') ] = 1
+train_data$TA2AT[ (train_data$REF=='T' & train_data$ALT=='A') | (train_data$REF=='A' & train_data$ALT=='T') ] = 1
+train_data$TA2GC[ (train_data$REF=='T' & train_data$ALT=='G') | (train_data$REF=='A' & train_data$ALT=='C') ] = 1
+train_data$TA2CG[ (train_data$REF=='T' & train_data$ALT=='T') | (train_data$REF=='A' & train_data$ALT=='G') ] = 1
 
-train_data <- train_data_
-test_data <- test_data_
+# Do not use these for training
+train_data$CHROM      <- NULL
+train_data$POS        <- NULL
+train_data$ID         <- NULL
+train_data$REF        <- NULL
+train_data$ALT        <- NULL
+train_data$if_COSMIC  <- NULL
+train_data$COSMIC_CNT <- NULL
+train_data$T_VAF_REV  <- NULL
+train_data$T_VAF_FOR  <- NULL
 
-if (FALSE) {
-print("Updating missing values...")
-train_data <- set_missing_values(train_data)
-test_data <- set_missing_values(test_data)
-
-}else {
-
-train_data <- train_data[,-c(1, 2, 3, 4, 5)]
-test_data <- test_data[,-c(1, 2, 3, 4, 5)]
-
-}
-test_data[,'TrueVariant_or_False'] <- NULL
-
-if (FALSE) {
-print("Updating features...")
-train_data <- update_features(train_data, 0.3)
-test_data <- update_features(test_data, 0.3)
-}
-
-train_data[,'REF'] <- NULL
-train_data[,'ALT'] <- NULL
-
-test_data[,'REF'] <- NULL
-test_data[,'ALT'] <- NULL
-
-
-if (FALSE) {
-model_formula <- as.formula( TrueVariant_or_False ~
-                                ((if_MuTect_ + if_VarScan2_ + if_JointSNVMix2_ + if_SomaticSniper_ +
-                                if_MuTect_if_JointSNVMix2 + if_MuTect_if_SomaticSniper + if_JointSNVMix2_if_SomaticSniper +
-                                if_MuTect_if_JointSNVMix2_if_SomaticSniper) +
-                                (SNVMix2_Score + Sniper_Score +
-                                if_dbsnp + BAF + COMMON + G5 + G5A +   # Probably no need for G5/G5A
-                                N_VAQ +
-                                T_VAQ + T_MQ0  + T_MLEAF +
-                                N_StrandBias + N_BaseQBias + N_MapQBias + N_TailDistBias +
-                                T_StrandBias + T_BaseQBias + T_MapQBias + T_TailDistBias +
-                                N_AMQ_REF + N_AMQ_ALT + N_BQ_REF + N_BQ_ALT + N_MQ +
-                                T_AMQ_REF + T_AMQ_ALT + T_BQ_REF + T_BQ_ALT + T_MQ +
-                                #N_DP_large +
-                                T_DP_small + T_DP_large +
-                                N_ALT_FREQ_FOR + N_ALT_FREQ_REV + N_ALT_STRAND_BIAS +
-                                T_ALT_FREQ_FOR + T_ALT_FREQ_REV + T_ALT_STRAND_BIAS )))
-} else {
 model_formula <- as.formula(TrueVariant_or_False ~ .)
+
+
+# Cross validation:
+
+for (ith_try in 1:10)
+
+{
+    # split test/train 50-50
+    sample <- sample.int(n = nrow(train_data), size = floor(.5*nrow(train_data)), replace = F)
+    train <- train_data[sample, ]
+    test  <- train_data[-sample, ]
+    
+    # do model
+    ada.model <- ada(model_formula, data = train, iter = 500)
+    # print(ada.model)
+    ada.pred <- predict(ada.model, newdata = test, type="both", n.iter=350)
+    
+    # probability > 0.5
+    pass_calls <- ada.pred$prob[,2] > 0.5
+    reject_calls <- ada.pred$prob[,2] < 0.1
+    
+    # Counting
+    num_pass_calls <- sum( pass_calls )
+    num_reject_calls <- sum( reject_calls )
+    num_pass_true_positives <- sum( pass_calls[pass_calls == test$TrueVariant_or_False] )
+    num_true_positives <- sum(test$TrueVariant_or_False)
+    
+    # Calculate results
+    precision <- num_pass_true_positives/num_pass_calls
+    sensitivity <- num_pass_true_positives/num_true_positives
+    F1_score <- 2 * num_pass_true_positives / ( num_true_positives + num_pass_calls )
+    
+    # Print out
+    cat (ith_try, 'th_try', '\n')
+    
+    cat("PASS_Calls =",          num_pass_calls, "\n")
+    cat("REJECT_Calls =",        num_reject_calls, "\n")
+    
+    cat("PASS_TruePositives =",  num_pass_true_positives, "\n")
+    cat("PASS_FalsePositives =", num_pass_calls - num_pass_true_positives, "\n")
+    
+    cat("Sensitivity =",         sensitivity, "\n")
+    cat("Precision =",           precision, "\n")
+    cat("F1 =",                  F1_score, "\n")
+
 }
-
-
-
-print("Fitting model...")
-ada.model <- ada(model_formula, data = train_data, iter = 1000)
-
-print(ada.model)
-
-#pdf("varplot.pdf")
-#varplot(ada.model)
-#dev.off()
-#pdf("iterplot.pdf")
-#plot(ada.model, TRUE, TRUE)
-#dev.off()
-
-print("Computing prediction values...")
-ada.pred <- predict(ada.model, newdata = test_data, type="both")
-
-
-
-# Print results out:
-if (TRUE) {
-for (threshold in seq(0,1, .01)) {
-
-    cat("threshold: ", threshold, "\t")
-    ada_predicted_call <- ada.pred$prob[,2] > threshold
-
-    # Sensitivity
-    # numTrueCalls <- 14194  # stage4 indel
-    # numTrueCalls <- 8292   # stage3 indel
-
-    # numTrueCalls <- 16268  # stage4 snv
-    # numTrueCalls <- 7903   # stage3 snv
-    # numTrueCalls <- 4332   # stage2 snv
-    # numTrueCalls <- 3537   # stage1 snv
-
-    num_true_positives_predicted <- sum(ada_predicted_call[ada_predicted_call == test_data_[,'TrueVariant_or_False']])
-    num_all_positive_predictied  <- sum(ada_predicted_call)
-
-    Sensitivity <- num_true_positives_predicted / numTrueCalls
-    cat("Recall: ", Sensitivity , "\t")
-
-    # Specificity
-    Specificity <- num_true_positives_predicted / num_all_positive_predictied
-    cat("Precision: ", Specificity, "\t")
-
-
-    cat("DREAM_Accuracy: ", (Specificity + Sensitivity)/2, "\t")
-    cat("F1: ", (  2 * num_true_positives_predicted / ( numTrueCalls + num_all_positive_predictied )  ), "\n")
-}
-}
-
-
-
-# Write predicted values to output file
-if(TRUE){
-    test_data_output <- cbind(test_data_, SCORE = ada.pred$prob[,2])
-    write.table(test_data_output, row.names = FALSE, sep="\t", na = "nan", file = paste( "ADA", filename, sep = "."), quote=FALSE)
-}
-#source("script/log_regression.R")
