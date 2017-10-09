@@ -40,6 +40,11 @@ train_data$COSMIC_CNT <- NULL
 train_data$T_VAF_REV  <- NULL
 train_data$T_VAF_FOR  <- NULL
 
+for (var_i in tail(args, -1) ) {
+    train_data[, var_i] <- NULL
+    cat("Remove", var_i, "\n")
+}
+
 model_formula <- as.formula(TrueVariant_or_False ~ .)
 
 print("Fitting model...")
