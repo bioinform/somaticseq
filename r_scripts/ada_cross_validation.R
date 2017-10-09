@@ -40,9 +40,9 @@ train_data$COSMIC_CNT <- NULL
 train_data$T_VAF_REV  <- NULL
 train_data$T_VAF_FOR  <- NULL
 
-for (var_i in tail(args, -2) ) {
+for (var_i in tail(args, -1) ) {
     train_data[, var_i] <- NULL
-    cat("Remove feature: ", var_i, "\n")
+    cat("Remove feature:", var_i, "\n")
 }
 
 
