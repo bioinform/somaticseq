@@ -179,6 +179,7 @@ then
     --out-vcf VarScan2.vcf \
     --selector ${SELECTOR} \
     --human-reference ${HUMAN_REFERENCE} \
+    --VAF ${min_vaf} \
     --action $action
 
     varscan_input="--varscan ${outdir}/VarScan2.vcf"

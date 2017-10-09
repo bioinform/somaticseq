@@ -206,7 +206,7 @@ if [[ $SELECTOR ]]
 then
     cp $SELECTOR ${parent_outdir}/genome.bed
 else
-    cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${parent_outdir}/genome.bed
+    cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XY]+$/' > ${parent_outdir}/genome.bed
 fi
 
 docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \
