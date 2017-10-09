@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,threads:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel:,scalpel-two-pass,exome -n 'submit_callers_multiThreads.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,threads:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,somaticseq-train,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel:,scalpel-two-pass,exome -n 'submit_callers_multiThreads.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -146,6 +146,9 @@ while true; do
 
     --somaticseq )
             somaticseq=1 ; shift ;;
+
+    --somaticseq-train )
+        somaticseq_train=1 ; shift ;;
 
     --ada-r-script )
         case "$2" in
@@ -414,7 +417,7 @@ do
 
         if [[ $ada_r_script ]]; then
             ada_r_script_text="--ada-r-script /mnt/${ada_r_script}"
-        elif [[ $truth_snv || $truth_indel ]]; then
+        elif [[ ($truth_snv || $truth_indel) && $somaticseq_train ]]; then
             ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_builder_ntChange.R"
         elif [[ $classifier_snv || $classifier_indel ]]; then
             ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"

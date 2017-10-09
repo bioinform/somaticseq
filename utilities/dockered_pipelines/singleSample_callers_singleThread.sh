@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,in-bam:,sample-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,mutect2,varscan2,vardict,lofreq,scalpel,strelka,somaticseq,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'singleSample_caller_singleThread.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,in-bam:,sample-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,mutect2,varscan2,vardict,lofreq,scalpel,strelka,somaticseq,somaticseq-train,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel: -n 'singleSample_caller_singleThread.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -116,6 +116,9 @@ while true; do
     --somaticseq )
         somaticseq=1 ; shift ;;
 
+    --somaticseq-train )
+        somaticseq_train=1 ; shift ;;
+    
     --ada-r-script )
         case "$2" in
             "") shift 2 ;;
@@ -260,7 +263,7 @@ then
     
     if [[ $ada_r_script ]]; then
         ada_r_script_text="--ada-r-script /mnt/${ada_r_script}"
-    elif [[ $truth_snv || $truth_indel ]]; then
+    elif [[ ($truth_snv || $truth_indel) && somaticseq_train ]]; then
         ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_builder_ntChange.R"
     elif [[ $classifier_snv || $classifier_indel ]]; then
         ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"
