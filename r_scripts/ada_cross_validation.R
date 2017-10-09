@@ -40,8 +40,13 @@ train_data$COSMIC_CNT <- NULL
 train_data$T_VAF_REV  <- NULL
 train_data$T_VAF_FOR  <- NULL
 
-model_formula <- as.formula(TrueVariant_or_False ~ .)
+for (var_i in tail(args, -2) ) {
+    train_data[, var_i] <- NULL
+    cat("Remove feature: " var_i, "\n")
+}
 
+
+model_formula <- as.formula(TrueVariant_or_False ~ .)
 
 # Cross validation:
 
@@ -50,12 +55,13 @@ for (ith_try in 1:10)
 {
     # split test/train 50-50
     sample <- sample.int(n = nrow(train_data), size = floor(.5*nrow(train_data)), replace = F)
-    train <- train_data[sample, ]
-    test  <- train_data[-sample, ]
+    train  <- train_data[sample, ]
+    test   <- train_data[-sample, ]
     
     # do model
     ada.model <- ada(model_formula, data = train, iter = 500)
     # print(ada.model)
+
     ada.pred <- predict(ada.model, newdata = test, type="both", n.iter=350)
     
     # probability > 0.5
