@@ -343,7 +343,7 @@ do
         --out-vcf MuSE.vcf \
         --human-reference ${HUMAN_REFERENCE} \
         --dbsnp ${dbsnp} \
-        --extra-arguments "${muse_extra_arguments}" \        
+        --extra-arguments "${muse_extra_arguments}" \
         --action $action
         
         muse_input="--muse ${outdir}/${ith_thread}/MuSE.vcf"
