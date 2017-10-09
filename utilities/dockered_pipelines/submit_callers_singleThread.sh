@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,somaticseq-train,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel:,scalpel-two-pass -n 'mutation_caller_script_generators.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,muse-extra-arguments:,lofreq,scalpel,strelka,somaticseq,somaticseq-train,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel:,scalpel-two-pass -n 'mutation_caller_script_generators.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -20,6 +20,8 @@ action='echo'
 somaticseq_action='echo'
 somaticseq_dir='SomaticSeq'
 min_vaf=0.05
+
+muse_extra_arguments='-E'
 
 while true; do
     case "$1" in
@@ -127,6 +129,12 @@ while true; do
 
     --muse )
         muse=1 ; shift ;;
+
+    --muse-extra-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  muse_extra_arguments=$2 ; shift 2 ;;
+        esac ;;
 
     --lofreq )
         lofreq=1 ; shift ;;
@@ -282,6 +290,7 @@ then
     --out-vcf MuSE.vcf \
     --human-reference ${HUMAN_REFERENCE} \
     --dbsnp ${dbsnp} \
+    --extra-arguments "${muse_extra_arguments}" \
     --action $action
 
     muse_input="--muse ${outdir}/MuSE.vcf"

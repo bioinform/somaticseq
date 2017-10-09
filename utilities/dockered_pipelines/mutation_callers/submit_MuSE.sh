@@ -16,7 +16,6 @@ timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 VAF=0.05
 action=echo
 MEM=4
-extra_arguments='-E'
 
 while true; do
     case "$1" in
