@@ -30,6 +30,8 @@ right_beta=2
 
 threads=12
 
+realign_arguments='-dt NONE --maxReadsForConsensuses 150000 --maxReadsInMemory 500000 --maxReadsForRealignment 2000000'
+
 while true; do
     case "$1" in
         -o | --output-dir )
@@ -291,7 +293,7 @@ do
         --out-script $out_script
         
         bam_file_to_be_split="${outdir}/TNMerged.bam"
-        files_to_delete="${outdir}/TNMerged.bam $files_to_delete"
+        files_to_delete="${outdir}/TNMerged.bam ${outdir}/TNMerged.bam.bai $files_to_delete"
     fi
     
     
@@ -448,7 +450,7 @@ do
         --output-dir ${outdir} \
         --selector ${ith_selector} \
         --out-tag JointRealigned \
-        --extra-arguments '-dt NONE --maxReadsForConsensuses 150000 --maxReadsInMemory 500000 --maxReadsForRealignment 2000000' \
+        --extra-arguments ${realign_arguments} \
         --out-script $out_script
                 
         echo "" >> $out_script

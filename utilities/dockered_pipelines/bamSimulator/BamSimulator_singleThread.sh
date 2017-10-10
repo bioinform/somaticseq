@@ -28,6 +28,8 @@ down_sample=1
 left_beta=2
 right_beta=2
 
+realign_arguments='-dt NONE --maxReadsForConsensuses 150000 --maxReadsInMemory 500000 --maxReadsForRealignment 2000000'
+
 while true; do
     case "$1" in
         -o | --output-dir )
@@ -224,7 +226,7 @@ then
     --out-script $out_script
     
     bam_file_to_be_split="${outdir}/TNMerged.bam"
-    files_to_delete="${outdir}/TNMerged.bam $files_to_delete"
+    files_to_delete="${outdir}/TNMerged.bam ${outdir}/TNMerged.bam.bai $files_to_delete"
 fi
 
 
