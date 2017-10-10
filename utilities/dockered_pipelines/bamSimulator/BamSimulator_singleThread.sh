@@ -401,10 +401,10 @@ then
 else
 
     echo "mv ${final_normal_bam}     ${outdir}/${out_normal}" >> $out_script
-    echo "mv ${final_normal_bam}.bai ${outdir}/${out_normal}.bai" >> $out_script
-    echo "" >> $out_script
     echo "mv ${final_tumor_bam}      ${outdir}/${out_tumor}" >> $out_script
+    echo "" >> $out_script
     echo "mv ${final_tumor_bam}.bai  ${outdir}/${out_tumor}.bai" >> $out_script
+    echo "mv ${final_normal_bam}.bai ${outdir}/${out_normal}.bai" >> $out_script
     
 
 fi
