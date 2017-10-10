@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,tumor-bam:,normal-bam:,genome-reference:,selector:,out-script:,standalone, -n 'IndelRealign.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,tumor-bam:,normal-bam:,genome-reference:,selector:,out-tag:,extra-arguments:,out-script:,standalone, -n 'IndelRealign.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -14,7 +14,8 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 
-keep_intermediates=0
+out_tag='JointRealigned'
+#extra_arguments='-dt NONE --maxReadsForConsensuses 150000 --maxReadsInMemory 500000 --maxReadsForRealignment 2000000'
 
 while true; do
     case "$1" in
@@ -46,6 +47,18 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  SELECTOR=$2 ; shift 2 ;;
+            esac ;;
+
+        --out-tag )
+            case "$2" in
+                "") shift 2 ;;
+                *)  out_tag=$2 ; shift 2 ;;
+            esac ;;
+
+        --extra-arguments )
+            case "$2" in
+                "") shift 2 ;;
+                *)  extra_arguments=$2 ; shift 2 ;;
             esac ;;
 
         --out-script )
@@ -106,16 +119,11 @@ echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${tbam} \\" >> $out_script
 echo "-I /mnt/${nbam} \\" >> $out_script
 echo "-targetIntervals /mnt/${outdir}/T.N.intervals \\" >> $out_script
-#echo "$selector_input \\" >> $out_script
-echo "-dt NONE \\" >> $out_script
-echo "--maxReadsForConsensuses 150000 \\" >> $out_script
-echo "--maxReadsInMemory 500000 \\" >> $out_script
-echo "--maxReadsForRealignment 2000000 \\" >> $out_script
-echo "-nWayOut .JointRealigned.bam" >> $out_script
+echo "-nWayOut .${out_tag}.bam" >> $out_script
 echo "" >> $out_script
 
-realigned_normal=${nbam%.bam}.JointRealigned.bam
-realigned_tumor=${tbam%.bam}.JointRealigned.bam
+realigned_normal=${nbam%.bam}.${out_tag}.bam
+realigned_tumor=${tbam%.bam}.${out_tag}.bam
 
 echo "mv ${realigned_normal%.bam}.bai ${realigned_normal}.bai" >> $out_script
 echo "mv ${realigned_tumor%.bam}.bai ${realigned_tumor}.bai" >> $out_script

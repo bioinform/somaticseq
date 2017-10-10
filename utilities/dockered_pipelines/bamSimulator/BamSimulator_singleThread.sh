@@ -370,6 +370,7 @@ echo "mv ${final_tumor_bam} ${outdir}/${out_tumor}" >> $out_script
 echo "mv ${final_tumor_bam}.bai ${outdir}/${out_tumor}.bai" >> $out_script
 echo "" >> $out_script
 
+
 if [[ $indel_realign ]]
 then
     $MYDIR/bamSurgeon/IndelRealign.sh \
@@ -378,7 +379,21 @@ then
     --genome-reference ${HUMAN_REFERENCE} \
     --output-dir ${outdir} \
     --selector ${SELECTOR} \
+    --out_tag JointRealigned \
+    --extra-arguments '-dt NONE --maxReadsForConsensuses 150000 --maxReadsInMemory 500000 --maxReadsForRealignment 2000000' \
     --out-script $out_script
+    
+    echo "" >> $out_script
+    
+    realigned_normal=${out_normal%.bam}.JointRealigned.bam
+    realigned_tumor=${out_tumor%.bam}.JointRealigned.bam
+    
+    echo "mv ${outdir}/${realigned_normal}     ${outdir}/${out_normal}" >> $out_script
+    echo "mv ${outdir}/${realigned_normal}.bai ${outdir}/${out_normal}.bai" >> $out_script
+    echo "" >> $out_script
+    echo "mv ${outdir}/${realigned_tumor}     ${outdir}/${out_tumor}" >> $out_script
+    echo "mv ${outdir}/${realigned_tumor}.bai ${outdir}/${out_tumor}.bai" >> $out_script
+
 fi
 
 
