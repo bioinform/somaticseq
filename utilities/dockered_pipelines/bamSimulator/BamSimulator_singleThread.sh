@@ -379,7 +379,7 @@ then
     --genome-reference ${HUMAN_REFERENCE} \
     --output-dir ${outdir} \
     --selector ${SELECTOR} \
-    --out_tag JointRealigned \
+    --out-tag JointRealigned \
     --extra-arguments '-dt NONE --maxReadsForConsensuses 150000 --maxReadsInMemory 500000 --maxReadsForRealignment 2000000' \
     --out-script $out_script
     
