@@ -450,7 +450,7 @@ do
         --output-dir ${outdir} \
         --selector ${ith_selector} \
         --out-tag JointRealigned \
-        --extra-arguments ${realign_arguments} \
+        --extra-arguments "${realign_arguments}" \
         --out-script $out_script
                 
         echo "" >> $out_script
