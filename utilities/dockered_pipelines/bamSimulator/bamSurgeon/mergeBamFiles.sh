@@ -76,7 +76,6 @@ echo "" >> $out_script
 
 for file in ${bam_string}
 do
-    echo $file
     input_file_string="I=/mnt/${file} ${input_file_string}"
 done
 

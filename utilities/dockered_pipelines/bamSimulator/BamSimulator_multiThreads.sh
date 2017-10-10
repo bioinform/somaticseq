@@ -514,5 +514,7 @@ then
     --bam-string "${nbams_to_merge}" \
     --bam-out ${out_normal} \
     --out-script ${parent_logdir}/mergeBam.${timestamp}.cmd
+    
+    echo ${parent_logdir}/mergeBam.${timestamp}.cmd
 fi
 
