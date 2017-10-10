@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,down-sample:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,left-beta:,right-beta:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,action:,threads:,merge-bam,split-bam,clean-bam,indel-realign,keep-intermediates -n 'BamSimulator.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,down-sample:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,left-beta:,right-beta:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,action:,threads:,merge-bam,split-bam,clean-bam,indel-realign,merge-output-bams,keep-intermediates -n 'BamSimulator.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -183,6 +183,9 @@ while true; do
 
         --indel-realign )
             indel_realign=1 ; shift ;;
+
+        --merge-output-bams )
+            merge_output_bams=1 ; shift ;;
 
         --keep-intermediates )
             keep_intermediates=1 ; shift ;;
@@ -489,6 +492,27 @@ do
 
     ${action} $out_script
 
+    tbams_to_merge="${outdir}/${out_tumor} ${tbams_to_merge}"
+    nbams_to_merge="${outdir}/${out_normal} ${nbams_to_merge}"
+
     ith_thread=$(( $ith_thread + 1))
 
 done
+
+
+if [[ $merge_output_bams ]]
+then
+    $MYDIR/bamSurgeon/mergeBamFiles.sh \
+    --output-dir ${parent_outdir} \
+    --bam-string "${tbams_to_merge}" \
+    --bam-out ${out_tumor} \
+    --out-script ${parent_logdir}/mergeBam.${timestamp}.cmd \
+    --standalone
+
+    $MYDIR/bamSurgeon/mergeBamFiles.sh \
+    --output-dir ${parent_outdir} \
+    --bam-string "${nbams_to_merge}" \
+    --bam-out ${out_normal} \
+    --out-script ${parent_logdir}/mergeBam.${timestamp}.cmd
+fi
+
