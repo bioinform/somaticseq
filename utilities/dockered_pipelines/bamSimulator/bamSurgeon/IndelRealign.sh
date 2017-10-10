@@ -119,6 +119,7 @@ echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${tbam} \\" >> $out_script
 echo "-I /mnt/${nbam} \\" >> $out_script
 echo "-targetIntervals /mnt/${outdir}/T.N.intervals \\" >> $out_script
+echo "${extra_arguments} \\" >> $out_script
 echo "-nWayOut .${out_tag}.bam" >> $out_script
 echo "" >> $out_script
 

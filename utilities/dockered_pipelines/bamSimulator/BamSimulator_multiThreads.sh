@@ -338,7 +338,8 @@ do
         --out-script $out_script
     
         bam_file_for_spikein="${outdir}/Designated.Tumor.bam"
-        files_to_delete="${outdir}/Designated.Tumor.bam ${outdir}/Designated.Tumor.bam.bai $files_to_delete"
+        final_normal_bam="${outdir}/Designated.Normal.bam"
+        files_to_delete="${outdir}/Designated.Tumor.bam ${outdir}/Designated.Tumor.bam.bai ${outdir}/Designated.Normal.bam ${outdir}/Designated.Normal.bam.bai $files_to_delete"
     
     # If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. Without splitting, the original normal is the output normal
     else
@@ -369,8 +370,10 @@ do
         fi
         
         bam_file_for_spikein="${in_tumor}"
-        ln -s /mnt/${in_normal}     ${outdir}/${out_normal}
-        ln -s /mnt/${in_normal}.bai ${outdir}/${out_normal}.bai
+        ln -s /mnt/${in_normal}     ${outdir}/Designated.Normal.bam
+        ln -s /mnt/${in_normal}.bai ${outdir}/Designated.Normal.bam.bai
+        final_normal_bam="${outdir}/Designated.Normal.bam"
+        
     fi
 
 
@@ -431,16 +434,16 @@ do
     fi
     
     
-    echo "" >> $out_script
-    echo "mv ${final_tumor_bam} ${outdir}/${out_tumor}" >> $out_script
-    echo "mv ${final_tumor_bam}.bai ${outdir}/${out_tumor}.bai" >> $out_script
-    echo "" >> $out_script
+    #echo "" >> $out_script
+    #echo "mv ${final_tumor_bam} ${outdir}/${out_tumor}" >> $out_script
+    #echo "mv ${final_tumor_bam}.bai ${outdir}/${out_tumor}.bai" >> $out_script
+    #echo "" >> $out_script
     
     if [[ $indel_realign ]]
     then
         $MYDIR/bamSurgeon/IndelRealign.sh \
-        --tumor-bam ${outdir}/${out_tumor} \
-        --normal-bam ${outdir}/${out_normal} \
+        --tumor-bam ${final_tumor_bam} \
+        --normal-bam ${final_normal_bam} \
         --genome-reference ${HUMAN_REFERENCE} \
         --output-dir ${outdir} \
         --selector ${ith_selector} \
@@ -450,14 +453,23 @@ do
                 
         echo "" >> $out_script
         
-        realigned_normal=${out_normal%.bam}.JointRealigned.bam
-        realigned_tumor=${out_tumor%.bam}.JointRealigned.bam
+        realigned_normal=${final_normal_bam%.bam}.JointRealigned.bam
+        realigned_tumor=${final_tumor_bam%.bam}.JointRealigned.bam
         
-        echo "mv ${outdir}/${realigned_normal}     ${outdir}/${out_normal}" >> $out_script
-        echo "mv ${outdir}/${realigned_normal}.bai ${outdir}/${out_normal}.bai" >> $out_script
+        echo "mv ${realigned_normal}     ${outdir}/${out_normal}" >> $out_script
+        echo "mv ${realigned_normal}.bai ${outdir}/${out_normal}.bai" >> $out_script
         echo "" >> $out_script
-        echo "mv ${outdir}/${realigned_tumor}     ${outdir}/${out_tumor}" >> $out_script
-        echo "mv ${outdir}/${realigned_tumor}.bai ${outdir}/${out_tumor}.bai" >> $out_script
+        echo "mv ${realigned_tumor}      ${outdir}/${out_tumor}" >> $out_script
+        echo "mv ${realigned_tumor}.bai  ${outdir}/${out_tumor}.bai" >> $out_script
+        
+    else
+    
+        echo "mv ${final_normal_bam}     ${outdir}/${out_normal}" >> $out_script
+        echo "mv ${final_normal_bam}.bai ${outdir}/${out_normal}.bai" >> $out_script
+        echo "" >> $out_script
+        echo "mv ${final_tumor_bam}      ${outdir}/${out_tumor}" >> $out_script
+        echo "mv ${final_tumor_bam}.bai  ${outdir}/${out_tumor}.bai" >> $out_script
+    
     fi
     
     
@@ -467,7 +479,7 @@ do
     then
         echo "for file in $files_to_delete" >> $out_script
         echo "do" >> $out_script
-        echo "    rm \$file" >> $out_script
+        echo "    rm -fv \$file" >> $out_script
         echo "done" >> $out_script
     fi
     
