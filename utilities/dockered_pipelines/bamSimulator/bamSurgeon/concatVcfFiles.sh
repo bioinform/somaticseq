@@ -80,8 +80,8 @@ do
 done
 
 # Merge the BAM files
-echo "docker run -v /:/mnt -u $UID --memory 2g --rm lethalfang/vcftools:0.1.14 \\" >> $out_script
-echo "vcf-concat \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --memory 2g --rm lethalfang/vcftools:0.1.14 bash -c \\" >> $out_script
+echo "\"vcf-concat \\" >> $out_script
 echo "${input_file_string} \\" >> $out_script
-echo "> /mnt/${outdir}/${outvcf}" >> $out_script
+echo "> /mnt/${outdir}/${outvcf}\"" >> $out_script
 echo "" >> $out_script
