@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,tumor-fq1:,tumor-fq2:,tumor-bam-header:,normal-fq1:,normal-fq2:,normal-bam-header:,genome-reference:,dbsnp:,known-indel:,tumor-in-bam:,tumor-out-bam:,normal-in-bam:,normal-out-bam:,MEM:,bwa,markdup,indel-realign,bqsr -n 'fastq2bam_pipeline_singleThread.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,tumor-fq1:,tumor-fq2:,tumor-bam-header:,normal-fq1:,normal-fq2:,normal-bam-header:,genome-reference:,dbsnp:,known-indel:,tumor-in-bam:,tumor-out-bam:,normal-in-bam:,normal-out-bam:,MEM:,out-script:,action:,threads:,bwa,markdup,indel-realign,bqsr -n 'fastq2bam_pipeline_singleThread.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -15,9 +15,10 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 
 tumor_bam_header='@RG\tID:myPipeline\tLB:myLibrary\tPL:illumina\tSM:TUMOR'
-normal_bam_header='@RG\tID:myPipeline\tLB:myLibrary\tPL:illumina\tSM:TUMOR'
+normal_bam_header='@RG\tID:myPipeline\tLB:myLibrary\tPL:illumina\tSM:NORMAL'
 MEM=14
 threads=1
+action=echo
 
 while true; do
     case "$1" in
@@ -106,6 +107,12 @@ while true; do
             *)  MEM=$2 ; shift 2 ;;
         esac ;;
 
+    --out-script )
+        case "$2" in
+            "") shift 2 ;;
+            *)  out_script=$2 ; shift 2 ;;
+        esac ;;
+
     --action )
         case "$2" in
             "") shift 2 ;;
@@ -157,7 +164,6 @@ files_to_delete=''
 
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
-
 
 
 if [[ $bwa ]]
