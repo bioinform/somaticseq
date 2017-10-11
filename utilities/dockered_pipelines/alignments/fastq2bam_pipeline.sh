@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,tumor-fq1:,tumor-fq2:,tumor-bam-header:,normal-fq1:,normal-fq2:,normal-bam-header:,genome-reference:,dbsnp:,known-indel:,tumor-in-bam:,tumor-out-bam:,normal-in-bam:,normal-out-bam:,MEM:,out-script:,action:,threads:,bwa,markdup,indel-realign,bqsr -n 'fastq2bam_pipeline_singleThread.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,tumor-fq1:,tumor-fq2:,tumor-bam-header:,normal-fq1:,normal-fq2:,normal-bam-header:,genome-reference:,dbsnp:,known-indel:,tumor-in-bam:,tumor-out-bam:,normal-in-bam:,normal-out-bam:,MEM:,out-script:,action:,threads:,bwa,markdup,indel-realign,bqsr, -n 'fastq2bam_pipeline_singleThread.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -41,6 +41,12 @@ while true; do
             *)  t_fq2=$2 ; shift 2 ;;
         esac ;;
 
+    --tumor-bam-header )
+        case "$2" in
+            "") shift 2 ;;
+            *)  tumor_bam_header=$2 ; shift 2 ;;
+        esac ;;
+
     --normal-fq1 )
         case "$2" in
             "") shift 2 ;;
@@ -51,6 +57,12 @@ while true; do
         case "$2" in
             "") shift 2 ;;
             *)  n_fq2=$2 ; shift 2 ;;
+        esac ;;
+
+    --normal-bam-header )
+        case "$2" in
+            "") shift 2 ;;
+            *)  normal_bam_header=$2 ; shift 2 ;;
         esac ;;
 
     --tumor-in-bam )
@@ -133,8 +145,14 @@ while true; do
 
     -- ) shift; break ;;
     * ) break ;;
+    
     esac
 done
+
+
+
+
+
 
 hg_dict=${GENOME_REFERENCE%\.fa*}.dict
 
