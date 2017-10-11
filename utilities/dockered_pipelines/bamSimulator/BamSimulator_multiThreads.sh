@@ -523,13 +523,13 @@ then
     $MYDIR/bamSurgeon/concatVcfFiles.sh \
     --output-dir ${parent_outdir} \
     --vcf-string "${snv_vcf_to_merge}" \
-    --vcf-out synthetic_snvs.vcf
+    --vcf-out synthetic_snvs.vcf \
     --out-script ${parent_logdir}/mergeFiles.${timestamp}.cmd
     
     $MYDIR/bamSurgeon/concatVcfFiles.sh \
     --output-dir ${parent_outdir} \
     --vcf-string "${indel_vcf_to_merge}" \
-    --vcf-out synthetic_indels.leftAlign.vcf
+    --vcf-out synthetic_indels.leftAlign.vcf \
     --out-script ${parent_logdir}/mergeFiles.${timestamp}.cmd
     
     if [[ $num_svs -gt 0 ]]
@@ -537,7 +537,7 @@ then
         $MYDIR/bamSurgeon/concatVcfFiles.sh \
         --output-dir ${parent_outdir} \
         --vcf-string "${sv_vcf_to_merge}" \
-        --vcf-out synthetic_svs.vcf
+        --vcf-out synthetic_svs.vcf \
         --out-script ${parent_logdir}/mergeFiles.${timestamp}.cmd
     fi
     
