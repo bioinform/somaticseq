@@ -166,8 +166,11 @@ echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
 
-if [[ $bwa -eq 1 ]]
+if [[ $bwa ]]
 then
+
+    echo ''
+    echo $bwa
 
     if [[ ${t_fq1} && ${t_fq2} ]]
     then
@@ -202,7 +205,7 @@ then
 fi
 
 
-if [[ $markdup -eq 1 ]]
+if [[ $markdup ]]
 then
 
     if [[ ${latest_tumor_bam} ]]
@@ -231,7 +234,7 @@ then
 fi
 
 
-if [[ $indel_realign -eq 1 ]]
+if [[ $indel_realign ]]
 then
 
     if [[ ${latest_tumor_bam} && ${latest_normal_bam} ]]
@@ -273,7 +276,7 @@ then
 fi
 
 
-if [[ $bqsr -eq 1 ]]
+if [[ $bqsr ]]
 then
 
     if [[ ${latest_tumor_bam} ]]
