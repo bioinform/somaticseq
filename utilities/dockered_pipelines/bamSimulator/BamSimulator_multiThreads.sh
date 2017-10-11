@@ -472,6 +472,8 @@ do
         echo "mv ${realigned_tumor}      ${outdir}/${out_tumor}" >> $out_script
         echo "mv ${realigned_tumor}.bai  ${outdir}/${out_tumor}.bai" >> $out_script
         
+        files_to_delete="${final_tumor_bam} ${files_to_delete}"
+        
     else
     
         echo "mv ${final_normal_bam}     ${outdir}/${out_normal}" >> $out_script
