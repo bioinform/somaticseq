@@ -122,7 +122,7 @@ while true; do
     --out-script )
         case "$2" in
             "") shift 2 ;;
-            *)  out_script=$2 ; shift 2 ;;
+            *)  out_script_name=$2 ; shift 2 ;;
         esac ;;
 
     --action )
@@ -183,16 +183,9 @@ files_to_delete=''
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
-    
-echo ''
-echo $bwa $bwa $bwa
-
 
 if [[ $bwa ]]
 then
-
-    echo ''
-    echo $bwa
 
     if [[ ${t_fq1} && ${t_fq2} ]]
     then
@@ -201,7 +194,7 @@ then
         --fq2              ${t_fq2} \
         --genome-reference ${GENOME_REFERENCE} \
         --output-dir       ${outdir} \
-        --bam-out          tumor.sorted.bam \
+        --out-bam          tumor.sorted.bam \
         --bam-header       ${tumor_bam_header} \
         --threads          ${threads} \
         --out-script       ${out_script}
@@ -216,7 +209,7 @@ then
         --fq2              ${n_fq2} \
         --genome-reference ${GENOME_REFERENCE} \
         --output-dir       ${outdir} \
-        --bam-out          normal.sorted.bam \
+        --out-bam          normal.sorted.bam \
         --bam-header       ${normal_bam_header} \
         --threads          ${threads} \
         --out-script       ${out_script}
