@@ -227,7 +227,7 @@ then
     then
         $MYDIR/markdup.sh \
         --output-dir ${outdir} \
-        --in-bam     ${latest_tumor_bam}
+        --in-bam     ${latest_tumor_bam} \
         --out-bam    tumor.markdup.bam \
         --out-script ${out_script}
     
