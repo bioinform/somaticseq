@@ -165,6 +165,10 @@ files_to_delete=''
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
+    
+echo ''
+echo $bwa $bwa $bwa
+
 
 if [[ $bwa ]]
 then
