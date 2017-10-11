@@ -405,6 +405,7 @@ do
     --seed $seed \
     --out-script $out_script
     
+    snv_vcf_to_merge="${outdir}/synthetic_snvs.vcf ${snv_vcf_to_merge}"
     
     $MYDIR/bamSurgeon/bamsurgeon_addindels.sh \
     --output-dir ${outdir} \
@@ -417,6 +418,8 @@ do
     --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
     --seed $seed \
     --out-script $out_script
+    
+    indel_vcf_to_merge="${outdir}/synthetic_indels.leftAlign.vcf ${indel_vcf_to_merge}"
     
     files_to_delete="$files_to_delete ${outdir}/snvs.added.bam ${outdir}/snvs.added.bam.bai"
     final_tumor_bam=${outdir}/snvs.indels.added.bam
@@ -433,7 +436,9 @@ do
         --svs ${outdir}/random_sSV.bed \
         --seed $seed \
         --out-script $out_script
-            
+        
+        sv_vcf_to_merge="${outdir}/synthetic_svs.vcf ${sv_vcf_to_merge}"
+        
         final_tumor_bam=${outdir}/snvs.indels.svs.added.bam
         files_to_delete="$files_to_delete ${outdir}/snvs.indels.added.bam ${outdir}/snvs.indels.added.bam.bai"
     fi
@@ -494,7 +499,7 @@ do
 
     tbams_to_merge="${outdir}/${out_tumor} ${tbams_to_merge}"
     nbams_to_merge="${outdir}/${out_normal} ${nbams_to_merge}"
-
+    
     ith_thread=$(( $ith_thread + 1))
 
 done
@@ -506,15 +511,35 @@ then
     --output-dir ${parent_outdir} \
     --bam-string "${tbams_to_merge}" \
     --bam-out ${out_tumor} \
-    --out-script ${parent_logdir}/mergeBam.${timestamp}.cmd \
+    --out-script ${parent_logdir}/mergeFiles.${timestamp}.cmd \
     --standalone
 
     $MYDIR/bamSurgeon/mergeBamFiles.sh \
     --output-dir ${parent_outdir} \
     --bam-string "${nbams_to_merge}" \
     --bam-out ${out_normal} \
-    --out-script ${parent_logdir}/mergeBam.${timestamp}.cmd
+    --out-script ${parent_logdir}/mergeFiles.${timestamp}.cmd
     
-    echo ${parent_logdir}/mergeBam.${timestamp}.cmd
+    $MYDIR/bamSurgeon/concatVcfFiles.sh \
+    --output-dir ${parent_outdir} \
+    --vcf-string "${snv_vcf_to_merge}" \
+    --vcf-out synthetic_snvs.vcf
+    --out-script ${parent_logdir}/mergeFiles.${timestamp}.cmd
+    
+    $MYDIR/bamSurgeon/concatVcfFiles.sh \
+    --output-dir ${parent_outdir} \
+    --vcf-string "${indel_vcf_to_merge}" \
+    --vcf-out synthetic_indels.leftAlign.vcf
+    --out-script ${parent_logdir}/mergeFiles.${timestamp}.cmd
+    
+    if [[ $num_svs -gt 0 ]]
+    then
+        $MYDIR/bamSurgeon/concatVcfFiles.sh \
+        --output-dir ${parent_outdir} \
+        --vcf-string "${sv_vcf_to_merge}" \
+        --vcf-out synthetic_svs.vcf
+        --out-script ${parent_logdir}/mergeFiles.${timestamp}.cmd
+    fi
+    
+    echo ${parent_logdir}/mergeFiles.${timestamp}.cmd
 fi
-
