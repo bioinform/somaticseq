@@ -335,7 +335,7 @@ do
         --genome-reference ${HUMAN_REFERENCE} \
         --output-dir ${outdir} \
         --bam-in ${bam_file_to_be_split} \
-        --bam-out1 ${out_normal} \
+        --bam-out1 Designated.Normal.bam \
         --bam-out2 Designated.Tumor.bam \
         --split-proportion ${proportion} \
         --down-sample ${down_sample} \
