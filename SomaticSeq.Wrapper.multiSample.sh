@@ -479,7 +479,7 @@ then
     # If a classifier is used, assume predictor.R, and do the prediction routine:
     if [[ -r ${snpclassifier} ]] && [[ -r ${ada_r_script} ]]; then
         "$ada_r_script" "$snpclassifier" "${merged_dir}/Ensemble.sSNV.tsv" "${merged_dir}/Trained.sSNV.tsv"
-        $MYDIR/SSeq_tsv2vcf_seqc2.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass $pass_threshold -low $lowqual_threshold -N "$normal_name" -T "$tumor_name" -all -phred -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq $tool_strelka
+        $MYDIR/SSeq_tsv2vcf_multiSample.py -tsv ${merged_dir}/Trained.sSNV.tsv -vcf ${merged_dir}/Trained.sSNV.vcf -pass $pass_threshold -low $lowqual_threshold -N "$normal_name" -T "$tumor_name" -all -phred -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq $tool_strelka
 
     # If ground truth is here, assume builder.R, and build a classifier
     elif [[ -r ${snpgroundtruth} ]] && [[ -r ${ada_r_script} ]]; then
@@ -487,7 +487,7 @@ then
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else
-        $MYDIR/SSeq_tsv2vcf_seqc2.py -tsv ${merged_dir}/Ensemble.sSNV.tsv -vcf ${merged_dir}/Untrained.sSNV.vcf -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq $tool_strelka -N "$normal_name" -T "$tumor_name" -all
+        $MYDIR/SSeq_tsv2vcf_multiSample.py -tsv ${merged_dir}/Ensemble.sSNV.tsv -vcf ${merged_dir}/Untrained.sSNV.vcf -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq $tool_strelka -N "$normal_name" -T "$tumor_name" -all
     fi
 
 fi
@@ -616,7 +616,7 @@ then
     # If a classifier is used, use it:
     if [[ -r ${indelclassifier} ]] && [[ -r ${ada_r_script} ]]; then
         ${ada_r_script} "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/Trained.sINDEL.tsv"
-        $MYDIR/SSeq_tsv2vcf_seqc2.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass $pass_threshold -low $lowqual_threshold -N "$normal_name" -T "$tumor_name" -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka
+        $MYDIR/SSeq_tsv2vcf_multiSample.py -tsv ${merged_dir}/Trained.sINDEL.tsv -vcf ${merged_dir}/Trained.sINDEL.vcf -pass $pass_threshold -low $lowqual_threshold -N "$normal_name" -T "$tumor_name" -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka
 
     # If ground truth is here, assume builder.R, and build a classifier
     elif [[ -r ${indelgroundtruth} ]] && [[ -r ${ada_r_script} ]]; then
@@ -624,7 +624,7 @@ then
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else
-        $MYDIR/SSeq_tsv2vcf_seqc2.py -tsv ${merged_dir}/Ensemble.sINDEL.tsv -vcf ${merged_dir}/Untrained.sINDEL.vcf -N "$normal_name" -T "$tumor_name" -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka -all
+        $MYDIR/SSeq_tsv2vcf_multiSample.py -tsv ${merged_dir}/Ensemble.sINDEL.tsv -vcf ${merged_dir}/Untrained.sINDEL.vcf -N "$normal_name" -T "$tumor_name" -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka -all
     fi
 
 fi
