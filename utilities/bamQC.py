@@ -12,9 +12,8 @@ parser.add_argument('-maxNM',  '--max-NM',        type=int,    help='filter out 
 args              = parser.parse_args()
 maxNM             = args.max_NM
 
-with pysam.AlignmentFile(bam_file) as bam, \
-pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
-
+with pysam.AlignmentFile(bam_file) as bam:
+    
     reads = bam.fetch()
     
     clipped_and_discordant = 0
