@@ -560,7 +560,7 @@ then
     fi
 
 
-    if [[ ${varscan_indel_vcf} ]]; then
+    if [[ ${vardict_vcf} ]]; then
         vardict_input="-vardict ${merged_dir}/indel.vardict.vcf"
         tool_vardict="VarDict"
     else
