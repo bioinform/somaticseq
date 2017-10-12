@@ -2,7 +2,6 @@
 
 import sys, argparse, pysam, gzip, time
 import regex as re
-import numpy
 from os import sep
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -24,19 +23,23 @@ with pysam.AlignmentFile(bam_file) as bam:
     
     for read_i in reads:
         
-        if (not read_i.is_proper_pair) and ('S' in read_i.cigarstring):
-            clipped_and_discordant += 1
-        elif not read_i.is_proper_pair:
-            discordant_only += 1
-        elif 'S' in read_i.cigarstring:
-            clipped_only += 1
+        
+        if not read_i.is_unmapped:
+
+            if (not read_i.is_proper_pair) and ('S' in read_i.cigarstring):
+                clipped_and_discordant += 1
+            elif not read_i.is_proper_pair:
+                discordant_only += 1
+            elif 'S' in read_i.cigarstring:
+                clipped_only += 1
+                
+            if read_i.mapping_quality == 0:
+                mq0 += 1
+                
+        else:
             
-        if read_i.mapping_quality == 0:
-            mq0 += 1
-            
-        if read_i.is_unmapped:
             unmapped += 1
-            
+                        
         total_reads += 1
         
     
