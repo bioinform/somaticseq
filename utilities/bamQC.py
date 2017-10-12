@@ -7,10 +7,9 @@ from os import sep
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-bam',  '--bam-file-in',   type=str,    help='Input BAM file',  required=True,  default=None)
-parser.add_argument('-maxNM',  '--max-NM',        type=int,    help='filter out high edit distance reads', required=False,  default=8)
 
-args              = parser.parse_args()
-maxNM             = args.max_NM
+args     = parser.parse_args()
+bam_file = args.bam_file_in
 
 with pysam.AlignmentFile(bam_file) as bam:
     
