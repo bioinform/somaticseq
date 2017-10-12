@@ -119,31 +119,6 @@ logdir=${outdir}/logs
 mkdir -p ${logdir}
 
 
-if [[ ${out_script_name} ]]
-then
-    out_script="${logdir}/${out_script_name}"
-else
-    out_script="${logdir}/postProcessBams.${timestamp}.cmd"    
-fi
-
-
-echo "#!/bin/bash" > $out_script
-echo "" >> $out_script
-
-echo "#$ -o ${logdir}" >> $out_script
-echo "#$ -e ${logdir}" >> $out_script
-echo "#$ -S /bin/bash" >> $out_script
-echo "#$ -l h_vmem=${MEM}G" >> $out_script
-echo "#$ -pe smp ${threads}" >> $out_script
-
-echo 'set -e' >> $out_script
-echo "" >> $out_script
-
-files_to_delete=''
-
-echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
-echo "" >> $out_script
-
 
 
 if [[ $threads -ge 1 ]]
@@ -170,6 +145,32 @@ do
 
     mkdir -p ${outdir}/${ith_thread}
     mv ${outdir}/${ith_thread}.bed ${outdir}/${ith_thread}
+
+
+    if [[ ${out_script_name} ]]
+    then
+        out_script="${outdir}/${ith_thread}/${out_script_name}"
+    else
+        out_script="${outdir}/${ith_thread}/postProcessBams.${timestamp}.cmd"    
+    fi
+    
+    
+    echo "#!/bin/bash" > $out_script
+    echo "" >> $out_script
+    
+    echo "#$ -o ${logdir}" >> $out_script
+    echo "#$ -e ${logdir}" >> $out_script
+    echo "#$ -S /bin/bash" >> $out_script
+    echo "#$ -l h_vmem=${MEM}G" >> $out_script
+    echo "#$ -pe smp ${threads}" >> $out_script
+    
+    echo 'set -e' >> $out_script
+    echo "" >> $out_script
+    
+    files_to_delete=''
+    
+    echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
+    echo "" >> $out_script
 
     if [[ $indel_realign ]]
     then
