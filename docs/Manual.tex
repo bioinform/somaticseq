@@ -920,7 +920,14 @@ Have implemented the following improvement, mostly for indels:
   Fixed a bug where the last two CD4 numbers were both alternate concordant reads in the output VCF file, when the last number should've been alternate discordant reads.
   
   \item
-  Changed the output file names from Trained.s(SNV$\vert$IINDEL).vcf and Untrained.s(SNV$\vert$INDEL).vcf to SSeq.Classified.s(SNV$\vert$IINDE).vcf and Consensus.s(SNV$\vert$IINDEL).vcf. No change to the actual tumor-normal SomaticSeq algorithm.
+  Changed the output file names from Trained.s(SNV$\vert$INDEL).vcf and Untrained.s(SNV$\vert$INDEL).vcf to SSeq.Classified.s(SNV$\vert$INDE).vcf and Consensus.s(SNV$\vert$INDEL).vcf. No change to the actual tumor-normal SomaticSeq algorithm.
+  
+  \item
+  Modified r\_scripts/ada\_model\_builder\_ntChange.R to allow you to ignore certain features, e.g., r\_scripts/ada\_model\_builder\_ntChange.R Training\_Data.tsv nBAM\_REF\_BQ tBAM\_REF\_BQ SiteHomopolymer\_Length ...
+  
+  Everything after the input file are features to be ignored during training.
+  
+  Also added r\_scripts/ada\_cross\_validation.R.
 
 \end{itemize}
 

@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,tumor-fq1:,tumor-fq2:,tumor-bam-header:,normal-fq1:,normal-fq2:,normal-bam-header:,genome-reference:,dbsnp:,known-indel:,tumor-in-bam:,tumor-out-bam:,normal-in-bam:,normal-out-bam:,MEM:,out-script:,action:,threads:,bwa,markdup,indel-realign,bqsr, -n 'fastq2bam_pipeline_singleThread.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,tumor-fq1:,tumor-fq2:,tumor-bam-header:,normal-fq1:,normal-fq2:,normal-bam-header:,genome-reference:,dbsnp:,known-indel:,tumor-in-bam:,tumor-out-bam:,normal-in-bam:,normal-out-bam:,MEM:,out-script:,action:,threads:,bwa,pre-realign-markdup,indel-realign,bqsr, -n 'fastq2bam_pipeline_singleThread.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -134,8 +134,8 @@ while true; do
     --bwa )
         bwa=1 ; shift ;;
 
-    --markdup )
-        markdup=1 ; shift ;;
+    --pre-realign-markdup )
+        pre_realign_markdup=1 ; shift ;;
 
     --indel-realign )
         indel_realign=1 ; shift ;;
@@ -149,15 +149,13 @@ while true; do
     esac
 done
 
-
-
-
-
+VERSION='latest'
 
 hg_dict=${GENOME_REFERENCE%\.fa*}.dict
 
 logdir=${outdir}/logs
 mkdir -p ${logdir}
+
 
 if [[ ${out_script_name} ]]
 then
@@ -165,6 +163,7 @@ then
 else
     out_script="${logdir}/fastq2bam.${timestamp}.cmd"    
 fi
+
 
 echo "#!/bin/bash" > $out_script
 echo "" >> $out_script
@@ -220,7 +219,7 @@ then
 fi
 
 
-if [[ $markdup ]]
+if [[ $pre_realign_markdup ]]
 then
 
     if [[ ${latest_tumor_bam} ]]
@@ -247,6 +246,7 @@ then
         latest_normal_bam="${outdir}/normal.markdup.bam"
     fi
 fi
+
 
 
 if [[ $indel_realign ]]
