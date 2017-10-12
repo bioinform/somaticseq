@@ -119,8 +119,6 @@ logdir=${outdir}/logs
 mkdir -p ${logdir}
 
 
-
-
 if [[ $threads -ge 1 ]]
 then
 
@@ -143,15 +141,15 @@ ith_thread=1
 while [[ $ith_thread -le $threads ]]
 do
 
-    mkdir -p ${outdir}/${ith_thread}
+    mkdir -p ${outdir}/${ith_thread}/logs
     mv ${outdir}/${ith_thread}.bed ${outdir}/${ith_thread}
 
 
     if [[ ${out_script_name} ]]
     then
-        out_script="${outdir}/${ith_thread}/${out_script_name}"
+        out_script="${outdir}/${ith_thread}/logs/${out_script_name}"
     else
-        out_script="${outdir}/${ith_thread}/postProcessBams.${timestamp}.cmd"    
+        out_script="${outdir}/${ith_thread}/logs/postProcessBams.${timestamp}.cmd"    
     fi
     
     
