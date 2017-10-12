@@ -153,7 +153,7 @@ then
     then
         cp $SELECTOR ${outdir}/genome.bed
     else
-        cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' > ${outdir}/genome.bed
+        cat ${GENOME_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' > ${outdir}/genome.bed
     fi
         
     docker run --rm -v /:/mnt -u $UID lethalfang/somaticseq:${VERSION} \
