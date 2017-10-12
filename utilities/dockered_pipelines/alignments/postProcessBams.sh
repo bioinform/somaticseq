@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,dbsnp:,known-indel:,tumor-in-bam:,tumor-out-bam:,normal-in-bam:,normal-out-bam:,MEM:,out-script:,action:,threads:,bwa,pre-realign-markdup,indel-realign,bqsr, -n 'fastq2bam_pipeline_singleThread.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,dbsnp:,known-indel:,tumor-in-bam:,tumor-out-bam:,normal-in-bam:,normal-out-bam:,MEM:,out-script:,action:,threads:,markdup:,indel-realign,bqsr, -n 'postProcessBams.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -14,8 +14,6 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 
-tumor_bam_header='@RG\tID:myPipeline\tLB:myLibrary\tPL:illumina\tSM:TUMOR'
-normal_bam_header='@RG\tID:myPipeline\tLB:myLibrary\tPL:illumina\tSM:NORMAL'
 MEM=14
 threads=1
 action=echo
@@ -125,7 +123,7 @@ if [[ ${out_script_name} ]]
 then
     out_script="${logdir}/${out_script_name}"
 else
-    out_script="${logdir}/fastq2bam.${timestamp}.cmd"    
+    out_script="${logdir}/postProcessBams.${timestamp}.cmd"    
 fi
 
 
