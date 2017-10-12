@@ -184,8 +184,8 @@ do
             --genome-reference ${GENOME_REFERENCE} \
             --out-script       ${out_script}
             
-            latest_normal_bam=${n_inbam%.bam}.jointRealigned.bam
-            latest_tumor_bam=${t_inbam%.bam}.jointRealigned.bam
+            latest_normal_bam=`basename ${n_inbam%.bam}.jointRealigned.bam`
+            latest_tumor_bam=`basename ${t_inbam%.bam}.jointRealigned.bam`
     
         elif [[ ${t_inbam} ]]
         then
@@ -197,7 +197,7 @@ do
             --genome-reference ${GENOME_REFERENCE} \
             --out-script       ${out_script}
             
-            latest_tumor_bam=${t_inbam%.bam}.indelRealigned.bam
+            latest_tumor_bam=`basename ${t_inbam%.bam}.jointRealigned.bam`
         
         elif [[ ${n_inbam} ]]
         then
@@ -209,7 +209,7 @@ do
             --genome-reference ${GENOME_REFERENCE} \
             --out-script       ${out_script}
             
-            latest_normal_bam=${n_inbam%.bam}.indelRealigned.bam
+            latest_normal_bam=`basename ${n_inbam%.bam}.jointRealigned.bam`
         fi
         
     fi
@@ -222,7 +222,7 @@ do
         then
             $MYDIR/BQSR.sh \
             --output-dir       ${outdir}/${ith_thread} \
-            --in-bam           ${latest_tumor_bam} \
+            --in-bam           ${outdir}/${ith_thread}/${latest_tumor_bam} \
             --out-bam          ${t_outbam} \
             --genome-reference ${GENOME_REFERENCE} \
             --dbsnp            ${dbsnp} \
@@ -233,7 +233,7 @@ do
         then
             $MYDIR/BQSR.sh \
             --output-dir       ${outdir}/${ith_thread} \
-            --in-bam           ${latest_normal_bam} \
+            --in-bam           ${outdir}/${ith_thread}/${latest_normal_bam} \
             --out-bam          ${n_outbam} \
             --genome-reference ${GENOME_REFERENCE} \
             --dbsnp            ${dbsnp} \
