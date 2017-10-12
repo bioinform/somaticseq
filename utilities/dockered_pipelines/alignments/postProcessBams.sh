@@ -181,7 +181,7 @@ do
             --output-dir       ${outdir}/${ith_thread} \
             --normal-bam       ${n_inbam} \
             --tumor-bam        ${t_inbam} \
-            --selector         ${SELECTOR} \
+            --selector         ${outdir}/${ith_thread}/${ith_thread}.bed \
             --genome-reference ${GENOME_REFERENCE} \
             --out-script       ${out_script}
             
@@ -194,7 +194,7 @@ do
             $MYDIR/singleIndelRealign.sh \
             --output-dir       ${outdir}/${ith_thread} \
             --tumor-bam        ${t_inbam} \
-            --selector         ${SELECTOR} \            
+            --selector         ${outdir}/${ith_thread}/${ith_thread}.bed \            
             --genome-reference ${GENOME_REFERENCE} \
             --out-script       ${out_script}
             
@@ -206,7 +206,7 @@ do
             $MYDIR/singleIndelRealign.sh \
             --output-dir       ${outdir}/${ith_thread} \
             --tumor-bam        ${n_inbam} \
-            --selector         ${SELECTOR} \            
+            --selector         ${outdir}/${ith_thread}/${ith_thread}.bed \            
             --genome-reference ${GENOME_REFERENCE} \
             --out-script       ${out_script}
             
