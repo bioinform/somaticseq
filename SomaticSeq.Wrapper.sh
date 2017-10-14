@@ -280,8 +280,10 @@ fi
 # VarDict:
 # Does both SNV and INDEL
 if [[ $vardict_vcf ]]; then
-    $MYDIR/utilities/modify_VJSD.py -method VarDict -infile ${vardict_vcf} -outfile ${merged_dir}/vardict.vcf -filter paired
-    files_to_delete="${merged_dir}/snp.vardict.vcf ${merged_dir}/snp.vardict.vcf.idx ${merged_dir}/indel.vardict.vcf ${merged_dir}/indel.vardict.vcf.idx $files_to_delete"
+    $MYDIR/utilities/modify_VarDict.py -infile ${vardict_vcf} -outfile ${merged_dir}/misorted.vardict.vcf
+    $MYDIR/utilities/vcfsorter.pl ${hg_dict} ${merged_dir}/snp.misorted.vardict.vcf   > ${merged_dir}/snp.vardict.vcf
+    $MYDIR/utilities/vcfsorter.pl ${hg_dict} ${merged_dir}/indel.misorted.vardict.vcf > ${merged_dir}/indel.vardict.vcf
+    files_to_delete="${merged_dir}/snp.misorted.vardict.vcf ${merged_dir}/indel.misorted.vardict.vcf ${merged_dir}/snp.vardict.vcf ${merged_dir}/snp.vardict.vcf.idx ${merged_dir}/indel.vardict.vcf ${merged_dir}/indel.vardict.vcf.idx $files_to_delete"
 fi
 
 # MuSE:
