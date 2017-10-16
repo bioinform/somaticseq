@@ -2,7 +2,7 @@
 
 # Quick and dirty, hacky way to do it.
 
-import argparse, pysam, itertools, os
+import argparse, pysam, itertools, os, sys
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 PRE_DIR = os.path.join(MY_DIR, os.pardir)
