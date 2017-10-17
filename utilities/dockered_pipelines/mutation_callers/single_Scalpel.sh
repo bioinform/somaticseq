@@ -15,7 +15,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 VAF=0.05
 action=echo
-MEM=32
+MEM=16
 
 while true; do
     case "$1" in
