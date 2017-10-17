@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,threads:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,muse-extra-arguments:,lofreq,scalpel,strelka,somaticseq,somaticseq-train,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel:,scalpel-two-pass,exome -n 'submit_callers_multiThreads.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,somaticseq-dir:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,min-vaf:,action:,somaticseq-action:,threads:,mutect,mutect2,varscan2,jointsnvmix2,somaticsniper,vardict,muse,lofreq,scalpel,strelka,somaticseq,somaticseq-train,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel:,scalpel-two-pass,exome,mutect2-arguments:,mutect2-filter-arguments:,varscan-arguments:,varscan-pileup-arguments:,jsm-train-arguments:,jsm-classify-arguments:,somaticsniper-arguments:,vardict-arguments:,muse-arguments:,lofreq-arguments:,scalpel-discovery-arguments:,scalpel-export-arguments:,strelka-config-arguments:,strelka-run-arguments:,somaticseq-arguments:, -n 'submit_callers_multiThreads.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -137,12 +137,6 @@ while true; do
     --muse )
             muse=1 ; shift ;;
 
-    --muse-extra-arguments )
-        case "$2" in
-            "") shift 2 ;;
-            *)  muse_extra_arguments=$2 ; shift 2 ;;
-        esac ;;
-
     --lofreq )
             lofreq=1 ; shift ;;
 
@@ -188,6 +182,96 @@ while true; do
             *)  truth_indel=$2 ; shift 2 ;;
         esac ;;
 
+    --mutect2-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  mutect2_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --mutect2-filter-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  mutect2_filter_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --varscan-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  varscan_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --varscan-pileup-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  varscan_pileup_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --jsm-train-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  jsm_train_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --jsm-classify-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  jsm_classify_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --somaticsniper-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  somaticsniper_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --vardict-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  vardict_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --muse-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  muse_extra_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --lofreq-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  lofreq_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --scalpel-discovery-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  scalpel_discovery_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --scalpel-export-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  scalpel_export_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --strelka-config-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  strelka_config_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --strelka-run-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  strelka_run_arguments=$2 ; shift 2 ;;
+        esac ;;
+
+    --somaticseq-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  somaticseq_arguments=$2 ; shift 2 ;;
+        esac ;;
+
     --scalpel-two-pass )
         two_pass=1 ; shift ;;
         
@@ -229,6 +313,8 @@ then
     --out-dir ${outdir} \
     --out-vcf JointSNVMix2.vcf \
     --human-reference ${HUMAN_REFERENCE} \
+    --extra-train-arguments ${jsm_train_arguments} \
+    --extra-classify-arguments ${jsm_classify_arguments} \
     --action $action
 fi
 
@@ -243,6 +329,7 @@ then
     --out-vcf SomaticSniper.vcf \
     --human-reference ${HUMAN_REFERENCE} \
     --split $threads \
+    --extra-arguments ${somaticsniper_arguments} \
     --action $action
 fi
 
@@ -294,6 +381,8 @@ do
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --human-reference ${HUMAN_REFERENCE} \
         --dbsnp ${dbsnp} \
+        --extra-arguments ${mutect2_arguments} \
+        --extra-filter-arguments ${mutect2_filter_arguments} \        
         --action $action
     
         mutect2_input="--mutect2 ${outdir}/${ith_thread}/MuTect2.vcf"
@@ -309,6 +398,8 @@ do
         --out-vcf VarScan2.vcf \
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --human-reference ${HUMAN_REFERENCE} \
+        --extra-pileup-arguments ${varscan_pileup_arguments} \
+        --extra-arguments ${varscan_arguments} \
         --action $action
     
         varscan_snv_input="--varscan-snv ${outdir}/${ith_thread}/VarScan2.snp.vcf"
@@ -327,6 +418,7 @@ do
         --out-vcf VarDict.vcf \
         --human-reference ${HUMAN_REFERENCE} \
         --VAF ${min_vaf} \
+        --extra-arguments ${vardict_arguments} \
         --action $action
         
         vardict_input="--vardict ${outdir}/${ith_thread}/VarDict.vcf"
@@ -360,6 +452,7 @@ do
         --out-vcf LoFreq.vcf \
         --human-reference ${HUMAN_REFERENCE} \
         --dbsnp ${dbsnp} \
+        --extra-arguments ${lofreq_arguments} \
         --action $action
         
         lofreq_snv_input="--lofreq-snv ${outdir}/${ith_thread}/LoFreq.somatic_final.snvs.vcf.gz"
@@ -382,6 +475,9 @@ do
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --out-vcf Scalpel.vcf \
         --human-reference ${HUMAN_REFERENCE} \
+        --extra-discovery-arguments ${scalpel_discovery_arguments} \
+        --extra-export-arguments ${scalpel_export_arguments} \
+        ${two_pass} \
         --action $action
         
         scalpel_input="--scalpel ${outdir}/${ith_thread}/Scalpel.vcf"
@@ -404,6 +500,8 @@ do
         --out-vcf Strelka.vcf \
         --human-reference ${HUMAN_REFERENCE} \
         $exome_stat \
+        --extra-config-arguments ${strelka_config_arguments} \
+        --extra-run-arguments ${strelka_run_arguments} \
         --action $action
         
         strelka_snv_input="--strelka-snv ${outdir}/${ith_thread}/Strelka/results/variants/somatic.snvs.vcf.gz"
@@ -461,6 +559,7 @@ do
         $truth_snv_text \
         $truth_indel_text \
         $ada_r_script_text \
+        --extra-arguments ${somaticseq_arguments} \
         --action ${somaticseq_action}
     fi
         

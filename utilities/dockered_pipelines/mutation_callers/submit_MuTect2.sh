@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,dbsnp:,MEM:,threads:,extra-arguments:,action: -n 'submit_MuTect.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,dbsnp:,MEM:,threads:,extra-arguments:,extra-filter-arguments:,action: -n 'submit_MuTect.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -91,6 +91,11 @@ while true; do
             *)  extra_arguments=$2 ; shift 2 ;;
         esac ;;
 
+    --extra-filter-arguments )
+        case "$2" in
+            "") shift 2 ;;
+            *)  extra_filter_arguments=$2 ; shift 2 ;;
+        esac ;;
 
     --action )
         case "$2" in
@@ -169,6 +174,7 @@ echo "" >> $out_script
 echo "docker run --rm -v /:/mnt -u $UID --memory 6g broadinstitute/gatk:4.beta.5 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar gatk.jar FilterMutectCalls \\" >> $out_script
 echo "--variant /mnt/${outdir}/unfiltered.${outvcf} \\" >> $out_script
+echo "${extra_filter_arguments} \\" >> $out_script
 echo "--output /mnt/${outdir}/${outvcf}" >> $out_script
 
 echo "" >> $out_script
