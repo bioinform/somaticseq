@@ -308,6 +308,9 @@ docker run --rm -v /:/mnt -u $UID lethalfang/somaticseq:${VERSION} \
 if [[ $jointsnvmix2 -eq 1 ]]
 then
 
+    input_jsm_train_arguments=''
+    input_jsm_classify_arguments=''
+
     if [[ ${jsm_train_arguments} ]]
     then
         input_jsm_train_arguments="--extra-train-arguments ${jsm_train_arguments}"
