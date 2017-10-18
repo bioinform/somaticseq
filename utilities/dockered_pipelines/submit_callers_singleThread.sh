@@ -390,7 +390,7 @@ then
     --out-dir ${outdir} \
     --out-vcf SomaticSniper.vcf \
     --human-reference ${HUMAN_REFERENCE} \
-    ${input_somaticsniper_arguments} \    
+    ${input_somaticsniper_arguments} \
     --action $action
 
     sniper_input="--sniper ${outdir}/SomaticSniper.vcf"
