@@ -394,6 +394,9 @@ do
     if [[ $mutect2 -eq 1 ]]
     then
     
+        mutect2_arguments=''
+        input_mutect2_filter_arguments=''
+    
         if [[ ${mutect2_arguments} ]]
         then
             input_mutect2_arguments="--extra-arguments ${mutect2_arguments}"
