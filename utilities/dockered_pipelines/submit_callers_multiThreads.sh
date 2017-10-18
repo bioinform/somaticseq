@@ -308,9 +308,6 @@ docker run --rm -v /:/mnt -u $UID lethalfang/somaticseq:${VERSION} \
 if [[ $jointsnvmix2 -eq 1 ]]
 then
 
-    input_jsm_train_arguments=''
-    input_jsm_classify_arguments=''
-
     if [[ ${jsm_train_arguments} ]]
     then
         input_jsm_train_arguments="--extra-train-arguments ${jsm_train_arguments}"
@@ -373,7 +370,6 @@ do
         sniper_input="--sniper ${outdir}/${ith_thread}/SomaticSniper.vcf"
     fi
     
-    
     if [[ $mutect -eq 1 ]]
     then
         $MYDIR/mutation_callers/submit_MuTect.sh \
@@ -416,7 +412,7 @@ do
         --human-reference ${HUMAN_REFERENCE} \
         --dbsnp ${dbsnp} \
         ${input_mutect2_arguments} \
-        ${input_mutect2_filter_arguments} \        
+        ${input_mutect2_filter_arguments} \
         --action $action
     
         mutect2_input="--mutect2 ${outdir}/${ith_thread}/MuTect2.vcf"

@@ -315,7 +315,7 @@ then
     --human-reference ${HUMAN_REFERENCE} \
     --dbsnp ${dbsnp} \
     ${input_mutect2_arguments} \
-    ${input_mutect2_filter_arguments} \        
+    ${input_mutect2_filter_arguments} \
     --action $action
 
     mutect2_input="--mutect2 ${outdir}/MuTect2.vcf"
