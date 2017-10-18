@@ -277,6 +277,14 @@ timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
+
+if [[ ! ${SELECTOR} ]]
+then
+    cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
+    SELECTOR="${outdir}/genome.bed"
+fi
+
+
 if [[ $mutect -eq 1 ]]
 then
     $MYDIR/mutation_callers/submit_MuTect.sh \
