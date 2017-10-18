@@ -94,7 +94,8 @@ pysam.FastaFile(ref_fa) as ref_fa:
             
             ref_string = ref_fa.fetch( my_coordinates[0][0], my_coordinates[0][1]-1, my_coordinates[-1][1] )
             mnp_list    = list( itertools.product(*base_options) )
-                        
+            
+            # This also serves to "unique-fy" duplicate strings from mnp_list
             mnp_tally = {}
             for string_i in mnp_list:
                 mnp_tally[ ''.join(string_i) ] = 0
