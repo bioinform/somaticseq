@@ -28,30 +28,50 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 ```
 
 **submit_callers_[single|multi]Thread(s).sh** can submit dockered somatic mutation calling jobs. The multiThread version is recommended for WGS. The following options:
-* --normal-bam /ABSOLUTE/PATH/TO/normal_sample.bam (Required)
-* --tumor-bam /ABSOLUTE/PATH/TO/tumor_sample.bam (Required)
-* --human-reference /ABSOLUTE/PATH/TO/human_reference.fa (Required)
-* --output-dir /ABSOLUTE/PATH/TO/output_results (Required)
-* --dbsnp /ABSOLUTE/PATH/TO/dbsnp.vcf (Required)
-* --cosmic /ABSOLUTE/PATH/TO/cosmic.vcf (Optional)
-* --selector /ABSOLUTE/PATH/TO/capture_region.bed (Optional. Will assume whole genome from the .fai file without it.)
-* --exclude /ABSOLUTE/PATH/TO/blacklist_region.bed (Optional)
-* --min-af (Optional. The minimum VAF cutoff for VarDict and VarScan2. Defaults are 0.10 for VarScan2 and 0.05 for VarDict).
-* --action qsub (Optional: the command preceding the .cmd scripts. Default is echo)
-* --threads 36 (Optional for multiThreads and invalid for singleThread: evenly split the genome into 36 BED files. Default = 12).
-* --mutect2 (optional)
-* --varscan2 (optional)
-* --jointsnvmix2 (optional)
-* --somaticsniper (optional)
-* --vardict (optional)
-* --muse (optional)
-* --lofreq (optional)
-* --scalpel (optional)
-* --strelka (optional)
-* --somaticseq (Optional. This script always be echo'ed, as it should not be submitted until all the callers above complete).
-* --somaticseq-dir (Optional. The directory name of the SomaticSeq output. Default = SomaticSeq).
-* --somaticseq-action (Optional. What to do with the somaticseq.cmd. Default is echo. Only do "qsub" if you have already completed all the mutation callers, but want to run SomaticSeq at a different setting.)
-* --scalpel-two-pass (Optional parameter for Scalpel. Default = false.)
+* --normal-bam                  /ABSOLUTE/PATH/TO/normal_sample.bam (Required)
+* --tumor-bam                   /ABSOLUTE/PATH/TO/tumor_sample.bam  (Required)
+* --human-reference             /ABSOLUTE/PATH/TO/human_reference.fa (Required)
+* --dbsnp                       /ABSOLUTE/PATH/TO/dbsnp.vcf (Required for MuSE and LoFreq)
+* --cosmic                      /ABSOLUTE/PATH/TO/cosmic.vcf (Optional)
+* --selector                    /ABSOLUTE/PATH/TO/Capture_region.bed (Optional. Will assume whole genome from the .fai file without it.)
+* --exclude                     /ABSOLUTE/PATH/TO/Blacklist_region.bed (Optional)
+* --min-af                      (Optional. The minimum VAF cutoff for VarDict and VarScan2. Defaults are 0.10 for VarScan2 and 0.05 for VarDict).
+* --action                      qsub (Optional: the command preceding the .cmd scripts. Default is echo)
+* --threads                     36 (Optional for multiThreads and invalid for singleThread: evenly split the genome into 36 BED files. Default = 12).
+* --mutect2                     (Optional flag to invoke MuTect2)
+* --varscan2                    (Optional flag to invoke VarScan2)
+* --jointsnvmix2                (Optional flag to invoke JointSNVMix2)
+* --somaticsniper               (Optional flag to invoke SomaticSniper)
+* --vardict                     (Optional flag to invoke VarDict)
+* --muse                        (Optional flag to invoke MuSE)
+* --lofreq                      (Optional flag to invoke LoFreq)
+* --scalpel                     (Optional flag to invoke Scalpel)
+* --strelka                     (Optional flag to invoke Strelka)
+* --somaticseq                  (Optional flag to invoke SomaticSeq. This script always be echo'ed, as it should not be submitted until all the callers above complete).
+* --output-dir                  /ABSOLUTE/PATH/TO/OUTPUT_DIRECTORY (Required)
+* --somaticseq-dir              SomaticSeq_Output_Directory (Optional. The directory name of the SomaticSeq output. Default = SomaticSeq).
+* --somaticseq-action           (Optional. What to do with the somaticseq.cmd. Default is echo. Only do "qsub" if you have already completed all the mutation callers, but want to run SomaticSeq at a different setting.)
+* --classifier-snv              Trained_sSNV_Classifier.RData (Optional if there is a classifer you want to use)
+* --classifier-indel            Trained_sINDEL_Classifier.RData (Optional if there is a classifer you want to use)
+* --truth-snv                   sSNV_ground_truth.vcf (Optional if there is a ground truth, and everything else will be labeled false positive)
+* --truth-indel                 sINDEL_ground_truth.vcf (Optional if there is a ground truth, and everything else will be labeled false positive)
+* --exome                       (Optional flag for Strelka)
+* --scalpel-two-pass            (Optional parameter for Scalpel. Default = false.)
+* --mutect2-arguments           (Extra parameters to pass onto Mutect2, e.g., --mutect2-arguments '--initial_tumor_lod 3.0 --log_somatic_prior -5.0 --min_base_quality_score 20')
+* --mutect2-filter-arguments    (Extra parameters to pass onto FilterMutectCalls)
+* --varscan-arguments           (Extra parameters to pass onto VarScan2)
+* --varscan-pileup-arguments    (Extra parameters to pass onto samtools mpileup that creates pileup files for VarScan)
+* --jsm-train-arguments         (Extra parameters to pass onto JointSNVMix2's train command)
+* --jsm-classify-arguments      (Extra parameters to pass onto JointSNVMix2's classify command)
+* --somaticsniper-arguments     (Extra parameters to pass onto SomaticSniper)
+* --vardict-arguments           (Extra parameters to pass onto VarDict)
+* --muse-arguments              (Extra parameters to pass onto MuSE)
+* --lofreq-arguments            (Extra parameters to pass onto LoFreq)
+* --scalpel-discovery-arguments (Extra parameters to pass onto Scalpel's discovery command)
+* --scalpel-export-arguments    (Extra parameters to pass onto Scalpel's export command)
+* --strelka-config-arguments    (Extra parameters to pass onto Strelka's config command)
+* --strelka-run-arguments       (Extra parameters to pass onto Strekla's run command)
+* --somaticseq-arguments        (Extra parameters to pass onto SomaticSeq.Wrapper.sh)
 
 
 **What does that command do**
@@ -64,12 +84,12 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 * Because SomaticSniper does not support partial BAM input (one would have to manually split the BAMs in order to parallelize SomaticSniper this way), the above mentioned procedure is not applied to SomaticSniper. Instead, a single-threaded script will be created (and potentially qsub'ed) into /ABSOLUTE/PATH/TO/RESULTS/logs.
   * However, because SomaticSniper is by far the fastest tool there, single-thread is doable even for WGS. Even single-threaded SomaticSniper will likely finish before parallelized Scalpel. When I benchmarked the DREAM Challenge Stage 3 by splitting it into 120 regions, Scalpel took 10 hours and 10 minutes to complete 1/120 of the data. SomaticSniper took a little under 5 hours for the whole thing. 
   * After SomaticSniper finishes, the result VCF files will be split into each of the /ABSOLUTE/PATH/TO/RESULTS/1, /ABSOLUTE/PATH/TO/RESULTS/2, etc. 
-* JointSNVMix2 also does not support partial BAM input. Unlike SomaticSniper, it's slow and takes massive amount of memory. It's not a good idea to run JointSNVMix2 on a WGS data. The only way to do so is to manually split the BAM files and run each separately. We may do so in the future, but JointSNVMix2 is a 5-year old that's no longer being supported, so we probably won't bother. 
+* JointSNVMix2 also does not support partial BAM input. Unlike SomaticSniper, it's slow and takes massive amount of memory. It's not a good idea to run JointSNVMix2 on a WGS data. The only way to do so is to manually split the BAM files and run each separately. We may do so in the future, but JointSNVMix2 is a 5-year old that's no longer being supported, so we probably won't. 
 
 
 **NOTES**
 * Parallelization (i.e., splitting) is not turned on for SomaticSniper because 1) it's manageable on a single thread, and 2) it doesn't support partial processing with BED file, so it may not be worth the time to split the BAM.
-* After specifying the reference fasta (must have extensions of .fa or fasta), it must also include the .dict and .fa.fai (or .fasta.fai) files in the same directory.
+* After specifying the reference fasta (must have extensions of .fa or .fasta), it must also include the .dict and .fa.fai (or .fasta.fai) files in the same directory.
 * When specifying /ABSOLUTE/PATH/TO/dbsnp.vcf, there also needs to be dbsnp.vcf.idx, dbsnp.vcf.gz, and dbsnp.vcf.gz.tbi present at the same directory because MuSE and LoFreq are expecting them.
 * There is no public docker image for MuTect v1 because we don't have distribution rights.
 * We also have no distribution rights for VarScan2, so our script points to a 3rd-party version. Only run it if you are licensed to do so. 
