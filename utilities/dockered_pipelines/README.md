@@ -49,6 +49,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 * --strelka                     (Optional flag to invoke Strelka)
 * --somaticseq                  (Optional flag to invoke SomaticSeq. This script always be echo'ed, as it should not be submitted until all the callers above complete).
 * --output-dir                  /ABSOLUTE/PATH/TO/OUTPUT_DIRECTORY (Required)
+* --somaticseq-train            (Optional flag to invoke SomaticSeq to produce classifiers if ground truth VCF files are provided. Only recommended in singleThread mode, because otherwise it's better to combine the output TSV files first, and then train classifiers.)
 * --somaticseq-dir              SomaticSeq_Output_Directory (Optional. The directory name of the SomaticSeq output. Default = SomaticSeq).
 * --somaticseq-action           (Optional. What to do with the somaticseq.cmd. Default is echo. Only do "qsub" if you have already completed all the mutation callers, but want to run SomaticSeq at a different setting.)
 * --classifier-snv              Trained_sSNV_Classifier.RData (Optional if there is a classifer you want to use)
