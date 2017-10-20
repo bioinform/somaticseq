@@ -263,7 +263,7 @@ then
     
     if [[ $ada_r_script ]]; then
         ada_r_script_text="--ada-r-script /mnt/${ada_r_script}"
-    elif [[ ($truth_snv || $truth_indel) && somaticseq_train ]]; then
+    elif [[ ($truth_snv || $truth_indel) && $somaticseq_train ]]; then
         ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_builder_ntChange.R"
     elif [[ $classifier_snv || $classifier_indel ]]; then
         ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"

@@ -633,7 +633,7 @@ then
 
     # If ground truth is here, assume builder.R, and build a classifier
     elif [[ ${indelgroundtruth} ]] && [[ ${ada_r_script} ]]; then
-        ${ada_r_script} "${merged_dir}/Ensemble.sINDEL.tsv"
+        ${ada_r_script} "${merged_dir}/Ensemble.sINDEL.tsv" Strelka_QSS Strelka_TQSS
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else
