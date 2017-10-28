@@ -142,7 +142,7 @@ while true; do
     esac
 done
 
-
+hg_dict=${hg_ref%\.fa*}.dict
 
 if ! [[ -d ${merged_dir} ]];
 then
