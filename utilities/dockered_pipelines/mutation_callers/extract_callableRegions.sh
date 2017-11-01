@@ -147,17 +147,16 @@ echo "java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T CallableLoci \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${bamFile} \\" >> $out_script
-echo "-maxDepth ${maxDepth} \\" >> $out_script
-echo "-maxFractionOfReadsWithLowMAPQ ${maxFractionOfReadsWithLowMAPQ} \\" >> $out_script
-echo "-maxLowMAPQ ${maxLowMAPQ} \\" >> $out_script
-echo "-minBaseQuality ${minBaseQuality} \\" >> $out_script
-echo "-minMappingQuality ${minMappingQuality} \\" >> $out_script
-echo "-minDepth ${minDepth} \\" >> $out_script
-echo "-minDepthForLowMAPQ ${minDepthForLowMAPQ} \\" >> $out_script
-echo "-summary /mnt/${bamFile}.summary \\" >> $out_script
+echo "--maxDepth ${maxDepth} \\" >> $out_script
+echo "--maxFractionOfReadsWithLowMAPQ ${maxFractionOfReadsWithLowMAPQ} \\" >> $out_script
+echo "--maxLowMAPQ ${maxLowMAPQ} \\" >> $out_script
+echo "--minBaseQuality ${minBaseQuality} \\" >> $out_script
+echo "--minMappingQuality ${minMappingQuality} \\" >> $out_script
+echo "--minDepth ${minDepth} \\" >> $out_script
+echo "--minDepthForLowMAPQ ${minDepthForLowMAPQ} \\" >> $out_script
+echo "--summary /mnt/${bamFile}.summary \\" >> $out_script
 echo "${selector_text} \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
-
 echo "-o /mnt/${bamFile}.callable.bed" >> $out_script
 
 echo "" >> $out_script
