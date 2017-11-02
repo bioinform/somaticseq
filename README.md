@@ -18,5 +18,6 @@ The documentation for those scripts are in Section 4 of the [User's Manual](docs
 <b>For a quick description of SomaticSeq, you may watch this 8-minute video:</b>
   [![SomaticSeq Video](docs/SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")
 
+
 <b>Notes</b>
 * You must make sure all the input files (i.e., VCF, BAM, FASTA, etc.) are sorted the same way. Otherwise the results would not be valid.
