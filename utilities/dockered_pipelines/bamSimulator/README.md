@@ -42,7 +42,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 --output-dir        /ABSOLUTE/PATH/TO/trainingSet \
 --threads           12 \
 --action            qsub
---merge-bam --split-bam --indel-realign
+--merge-bam --split-bam --indel-realign --merge-output-bams
 ```
 
 **BamSimulator_.sh** creates two semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**, **synthetic_indels.vcf**, and **synthetic_svs.vcf**.

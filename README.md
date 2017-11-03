@@ -2,7 +2,43 @@
 * Detailed documentation is included in the package. It's located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). Quick guide can be found [here](http://bioinform.github.io/somaticseq/).
 * SomaticSeq's open-access paper published in [Genome Biology](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page.
-* Note: Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data. This is expected when there is no variant read in the matched normal, resulting in NaN in the output.
+
+* An example command:
+```
+$somaticseq/SomaticSeq.Wrapper.sh \
+--output-dir       /PATH/TO/RESULTS/SomaticSeq_MVSDULPK \
+--genome-reference /PATH/TO/GRCh38.fa \
+--tumor-bam        /PATH/TO/HCC1395.bam \
+--normal-bam       /PATH/TO/HCC1395BL.bam \
+--dbsnp            /PATH/TO/dbSNP.GRCh38.vcf \
+--cosmic           /PATH/TO/COSMIC.v77.vcf \
+--mutect2          /PATH/TO/RESULTS/MuTect2.vcf \
+--varscan-snv      /PATH/TO/RESULTS/VarScan2.snp.vcf \
+--varscan-indel    /PATH/TO/RESULTS/VarScan2.indel.vcf \
+--sniper           /PATH/TO/RESULTS/SomaticSniper.vcf \
+--vardict          /PATH/TO/RESULTS/VarDict.vcf \
+--muse             /PATH/TO/RESULTS/MuSE.vcf \
+--lofreq-snv       /PATH/TO/RESULTS/LoFreq.somatic_final.snvs.vcf.gz \
+--lofreq-indel     /PATH/TO/RESULTS/LoFreq.somatic_final.indels.vcf.gz \
+--scalpel          /PATH/TO/RESULTS/Scalpel.vcf \
+--strelka-snv      /PATH/TO/RESULTS/Strelka/results/variants/somatic.snvs.vcf.gz \
+--strelka-indel    /PATH/TO/RESULTS/Strelka/results/variants/somatic.indels.vcf.gz \
+--inclusion-region /PATH/TO/RESULTS/captureRegion.bed \
+--exclusion-region /PATH/TO/RESULTS/blackList.bed \
+--gatk             /opt/GATK/GenomeAnalysisTK.jar
+```
+* For all those VCF files, either .vcf or .vcf.gz are acceptable. 
+* You must make sure all the input files (i.e., VCF, BAM, FASTA, etc.) are sorted the same way. Otherwise the results would not be valid.
+* Some additional parameters:
+  * --truth-snv: if you have ground truth VCF file for SNV
+  * --truth-indel: if you have a ground truth VCF file for INDEL
+  * --ada-r-script $somaticseq/r_scripts/ada_model_builder_ntChange.R to train, if you have ground truths supplised.
+  * --classifier-snv: classifier previously built for SNV
+  * --classifier-indel: classifier previously built for INDEL
+  * --ada-r-script $somaticseq/r_scripts/ada_model_predictor.R to use the classifiers specified above to make predictions
+
+* Note: 
+  * Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data. This is expected when there is no variant read in the matched normal, resulting in NaN in the output.
    ```
      RuntimeWarning: invalid value encountered in double_scalars
      z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
@@ -17,3 +53,7 @@ The documentation for those scripts are in Section 4 of the [User's Manual](docs
 
 <b>For a quick description of SomaticSeq, you may watch this 8-minute video:</b>
   [![SomaticSeq Video](docs/SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")
+
+
+<b>Notes</b>
+* You must make sure all the input files (i.e., VCF, BAM, FASTA, etc.) are sorted the same way. Otherwise the results would not be valid.
