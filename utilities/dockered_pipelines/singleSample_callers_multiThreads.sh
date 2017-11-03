@@ -165,6 +165,9 @@ timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
+VERSION=`cat ${MYDIR}/../../VERSION | sed 's/##SomaticSeq=v//'`
+
+
 if [[ $SELECTOR ]]
 then
     cp $SELECTOR ${outdir}/genome.bed
