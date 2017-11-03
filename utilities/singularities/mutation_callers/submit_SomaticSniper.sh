@@ -118,7 +118,7 @@ echo "" >> $out_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt lethalfang/somaticsniper:1.0.5.0 \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://lethalfang/somaticsniper:1.0.5.0-2 \\" >> $out_script
 echo "/opt/somatic-sniper/build/bin/bam-somaticsniper \\" >> $out_script
 echo "-q ${MQ} -Q ${BQ} -s ${prior} -F vcf ${extra_arguments} \\" >> $out_script
 echo "-f /mnt/${HUMAN_REFERENCE} \\" >> $out_script
@@ -132,7 +132,7 @@ then
     echo "i=1" >> $out_script
     echo "while [[ \$i -le $split ]]" >> $out_script
     echo "do" >> $out_script
-    echo "    singularity exec --bind /:/mnt lethalfang/somaticseq:base-1.0 bash -c \"bedtools intersect -a /mnt/${outdir}/${outvcf} -b /mnt/${outdir}/\${i}/\${i}.bed -header | uniq > /mnt/${outdir}/\${i}/${outvcf}\"" >> $out_script
+    echo "    singularity exec --bind /:/mnt docker://lethalfang/somaticseq:base-1.0 bash -c \"bedtools intersect -a /mnt/${outdir}/${outvcf} -b /mnt/${outdir}/\${i}/\${i}.bed -header | uniq > /mnt/${outdir}/\${i}/${outvcf}\"" >> $out_script
     echo "    i=\$(( \$i + 1 ))" >> $out_script
     echo "done" >> $out_script
 fi
