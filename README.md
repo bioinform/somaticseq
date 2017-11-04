@@ -48,7 +48,7 @@ $somaticseq/SomaticSeq.Wrapper.sh \
 The documentation for those scripts are in Section 4 of the [User's Manual](docs/Manual.pdf "Documentation").
 * The pipeline to generate training data out of your own sequencing data based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon) is located at [utilities/dockered_pipelines/bamSimulator](utilities/dockered_pipelines/bamSimulator).
 * The alignment pipeline to generate BAM files based on GATK's best practices is at [utilities/dockered_pipelines/alignments](utilities/dockered_pipelines/alignments).
-* A lot of the dockerized pipelines are replicated for singularity at [utilities/singularities](utilities/singularities), although those aren't as extensively tested as the docker pipelines.
+* A lot of the dockerized pipelines are ported to singularity at [utilities/singularities](utilities/singularities), although they may not be as extensively tested or optimized as the dockered ones.
 
 <b>For a quick description of SomaticSeq, you may watch this 8-minute video:</b>
   [![SomaticSeq Video](docs/SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")
