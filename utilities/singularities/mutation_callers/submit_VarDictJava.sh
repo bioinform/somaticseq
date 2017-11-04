@@ -105,6 +105,9 @@ echo "" >> $out_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
+echo "JAVA_HOME=''" >> $out_script
+echo "" >> $out_script
+
 
 total_bases=`cat ${SELECTOR} | awk -F "\t" '{print $3-$2}' | awk '{ sum += $1 } END { print sum }'`
 num_lines=`cat ${SELECTOR} | wc -l`
