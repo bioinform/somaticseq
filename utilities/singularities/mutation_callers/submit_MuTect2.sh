@@ -145,21 +145,21 @@ if [[ $tumor_name ]]
 then
     echo "tumor_name=${tumor_name}" >> $out_script
 else
-    echo "tumor_name=\`docker run --rm -v /:/mnt -u $UID --memory 1g lethalfang/samtools:0.1.19 samtools view -H /mnt/${tumor_bam} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//'\`" >> $out_script
+    echo "tumor_name=\`singularity exec --bind /:/mnt docker://lethalfang/samtools:0.1.18 samtools view -H /mnt/${tumor_bam} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//'\`" >> $out_script
 fi
 
 if [[ $normal_name ]]
 then
     echo "normal_name=${normal_name}" >> $out_script
 else
-    echo "normal_name=\`docker run --rm -v /:/mnt -u $UID --memory 1g lethalfang/samtools:0.1.19 samtools view -H /mnt/${normal_bam} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//'\`" >> $out_script
+    echo "normal_name=\`singularity exec --bind /:/mnt docker://lethalfang/samtools:0.1.18 samtools view -H /mnt/${normal_bam} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//'\`" >> $out_script
     echo "" >> $out_script
 fi
 
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory $(( MEM * threads ))G broadinstitute/gatk:4.beta.6 \\" >> $out_script
-echo "java -Xmx${MEM}g -jar gatk.jar Mutect2 \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://broadinstitute/gatk:4.beta.6 \\" >> $out_script
+echo "java -Xmx${MEM}g -jar /gatk/gatk.jar Mutect2 \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "$selector_text \\" >> $out_script
 echo "--input /mnt/${normal_bam} \\" >> $out_script
@@ -171,8 +171,8 @@ echo "${extra_arguments} \\" >> $out_script
 echo "--output /mnt/${outdir}/unfiltered.${outvcf}" >> $out_script
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory 6g broadinstitute/gatk:4.beta.6 \\" >> $out_script
-echo "java -Xmx${MEM}g -jar gatk.jar FilterMutectCalls \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://broadinstitute/gatk:4.beta.6 \\" >> $out_script
+echo "java -Xmx${MEM}g -jar /gatk/gatk.jar FilterMutectCalls \\" >> $out_script
 echo "--variant /mnt/${outdir}/unfiltered.${outvcf} \\" >> $out_script
 echo "${extra_filter_arguments} \\" >> $out_script
 echo "--output /mnt/${outdir}/${outvcf}" >> $out_script
