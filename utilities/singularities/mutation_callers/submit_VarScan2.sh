@@ -126,7 +126,7 @@ echo "" >> $out_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:0.1.19 bash -c \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:0.1.18 bash -c \\" >> $out_script
 echo "\"samtools mpileup \\" >> $out_script
 echo "-B -q ${minMQ} -Q ${minBQ} ${extra_pileup_arguments} $selector_text -f \\" >> $out_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
@@ -135,7 +135,7 @@ echo "> /mnt/${outdir}/normal.pileup\"" >> $out_script
 
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:0.1.19 bash -c \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:0.1.18 bash -c \\" >> $out_script
 echo "\"samtools mpileup \\" >> $out_script
 echo "-B -q ${minMQ} -Q ${minBQ} ${extra_pileup_arguments} $selector_text -f \\" >> $out_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
