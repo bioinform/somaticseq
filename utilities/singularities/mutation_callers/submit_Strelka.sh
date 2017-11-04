@@ -119,8 +119,8 @@ then
     input_BED=${SELECTOR}.gz
     
 else
-    echo "docker run -v /:/mnt -u $UID --rm --memory ${MEM}G lethalfang/tabix:1.2.1 bash -c \"cat /mnt/${SELECTOR} | bgzip > /mnt/${outdir}/${selector_basename}.gz\"" >> $out_script
-    echo "docker run -v /:/mnt -u $UID --rm --memory ${MEM}G lethalfang/tabix:1.2.1 tabix /mnt/${outdir}/${selector_basename}.gz" >> $out_script
+    echo "singularity exec --bind /:/mnt docker://lethalfang/tabix:1.2.1 bash -c \"cat /mnt/${SELECTOR} | bgzip > /mnt/${outdir}/${selector_basename}.gz\"" >> $out_script
+    echo "singularity exec --bind /:/mnt docker://lethalfang/tabix:1.2.1 tabix /mnt/${outdir}/${selector_basename}.gz" >> $out_script
     echo "" >> $out_script
     
     input_BED=${outdir}/${selector_basename}.gz
