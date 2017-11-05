@@ -71,7 +71,7 @@ fi
 echo "" >> $out_script
 
 # To split a BAM file, first you must sort by name:
-echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/remove_reads_with_many_qnames_or_bad_CIGAR.py \\" >> $out_script
 echo "-bamin /mnt/${inbam} \\" >> $out_script
 echo "-bamout /mnt/${outdir}/${outbam}" >> $out_script

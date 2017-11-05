@@ -138,7 +138,7 @@ fi
 
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt --pwd /mnt/${outdir} docker://lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
+echo "singularity exec --bind /:/mnt --pwd /mnt/${outdir} docker://lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
 echo "/usr/local/bamsurgeon/bin/addsnv.py \\" >> $out_script
 echo "--snvfrac 0.1 --mutfrac 0.5 --coverdiff 0.9 --procs 1 \\" >> $out_script
 echo "--varfile /mnt/${snvs} \\" >> $out_script
@@ -155,12 +155,11 @@ echo "--ignoresnps --force --tagreads \\" >> $out_script
 echo "--aligner mem" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
-echo "/usr/local/bamsurgeon/scripts/makevcf.py \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 bash -c \\" >> $out_script
+echo "\"/usr/local/bamsurgeon/scripts/makevcf.py \\" >> $out_script
 echo "/mnt/${outdir}/addsnv_logs_unsorted.${outbam} \\" >> $out_script
-echo "| singularity exec --bind /:/mnt docker://lethalfang/bedtools:2.26.0 \\" >> $out_script
-echo "bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_script
-echo "> ${outdir}/synthetic_snvs.vcf" >> $out_script
+echo "| bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_script
+echo "> /mnt/${outdir}/synthetic_snvs.vcf\"" >> $out_script
 echo "" >> $out_script
 
 echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:1.3.1 \\" >> $out_script

@@ -5,4 +5,4 @@ RUN cd /opt && wget https://storage.googleapis.com/google-code-archive-downloads
 RUN cd /opt/pysam-0.5 && wget https://pypi.python.org/packages/2.7/s/setuptools/setuptools-0.6c11-py2.7.egg && python setup.py build && python setup.py install
 
 RUN cd /opt && wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/joint-snv-mix/JointSNVMix-0.7.5.tar.gz && tar -xvf JointSNVMix-0.7.5.tar.gz && cd JointSNVMix-0.7.5 && python setup.py install
-RUN cd /opt && wget http://gallifrey.thruhere.net/vcfsorter.pl
+RUN cd /opt && wget http://gallifrey.thruhere.net/vcfsorter.pl && chmod a+x vcfsorter.pl
