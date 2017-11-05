@@ -36,7 +36,7 @@ $somaticseq/SomaticSeq.Wrapper.sh \
     * ```--classifier-snv```:   classifier previously built for SNV
     * ```--classifier-indel```: classifier previously built for INDEL
     * ```--ada-r-script```:     $somaticseq/r_scripts/ada_model_predictor.R to use the classifiers specified above to make predictions
-    * Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data, e.g., when there is no variant read in the matched normal, resulting in NaN in the output.
+* Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data, e.g., when there is no variant read in the matched normal, resulting in NaN in the output.
    ```
      RuntimeWarning: invalid value encountered in double_scalars
      z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
