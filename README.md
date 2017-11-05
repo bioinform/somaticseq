@@ -30,13 +30,13 @@ $somaticseq/SomaticSeq.Wrapper.sh \
 * For all those VCF files, either .vcf or .vcf.gz are acceptable. 
 * You must make sure all the input files (i.e., VCF, BAM, FASTA, etc.) are sorted the same way. Otherwise, the results would not be valid.
 * Some additional parameters:
-    * --truth-snv: if you have ground truth VCF file for SNV
-    * --truth-indel: if you have a ground truth VCF file for INDEL
-    * --ada-r-script $somaticseq/r_scripts/ada_model_builder_ntChange.R to train, if you have ground truths supplised.
-    * --classifier-snv: classifier previously built for SNV
-    * --classifier-indel: classifier previously built for INDEL
-    * --ada-r-script $somaticseq/r_scripts/ada_model_predictor.R to use the classifiers specified above to make predictions
-    * Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data, e.g., when there is no variant read in the matched normal, resulting in NaN in the output.
+    * ```--truth-snv```:        if you have ground truth VCF file for SNV
+    * ```--truth-indel```:      if you have a ground truth VCF file for INDEL
+    * ```--ada-r-script```:     $somaticseq/r_scripts/ada_model_builder_ntChange.R to train, if you have ground truths supplised.
+    * ```--classifier-snv```:   classifier previously built for SNV
+    * ```--classifier-indel```: classifier previously built for INDEL
+    * ```--ada-r-script```:     $somaticseq/r_scripts/ada_model_predictor.R to use the classifiers specified above to make predictions
+* Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data, e.g., when there is no variant read in the matched normal, resulting in NaN in the output.
    ```
      RuntimeWarning: invalid value encountered in double_scalars
      z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)

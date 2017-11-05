@@ -103,7 +103,7 @@ then
     selector_input="-L /mnt/${SELECTOR}"
 fi
 
-echo "singularity exec --bind /:/mnt docker://broadinstitute/gatk3:3.7-0 java -Xmx9g -jar GenomeAnalysisTK.jar \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://broadinstitute/gatk3:3.7-0 java -Xmx9g -jar /usr/GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T RealignerTargetCreator \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${tbam} \\" >> $out_script
