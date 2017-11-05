@@ -174,9 +174,9 @@ echo "sv --cnvfile /mnt/${outdir}/cnvfile.bed \\" >> $out_script
 echo "| vcfsorter.pl /mnt/${hg_dict} - > /mnt/${outdir}/random_sSV.bed\"" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/bedtools:2.26.0 \\" >> $out_script
-echo "bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai -i /mnt/${outdir}/cnvfile.bed \\" >> $out_script
-echo "> ${outdir}/sorted.cnvfile.bed" >> $out_script
+echo "singularity exec --bind /:/mnt docker://lethalfang/bedtools:2.26.0 bash -c \\" >> $out_script
+echo "\"bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai -i /mnt/${outdir}/cnvfile.bed \\" >> $out_script
+echo "> /mnt/${outdir}/sorted.cnvfile.bed\"" >> $out_script
 echo "" >> $out_script
 
 echo "singularity exec --bind /:/mnt docker://lethalfang/tabix:1.2.1 bgzip -f /mnt/${outdir}/sorted.cnvfile.bed" >> $out_script
