@@ -112,7 +112,7 @@ echo "" >> $out_script
 
 
 # Then you can split
-echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/sortedBamSplit.py \\" >> $out_script
 echo "--bam /mnt/${inbam} \\" >> $out_script
 echo "--proportion ${proportion} \\" >> $out_script

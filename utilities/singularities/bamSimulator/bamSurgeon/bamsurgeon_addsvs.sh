@@ -104,7 +104,7 @@ fi
 
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt --pwd /mnt/${outdir} docker://lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
+echo "singularity exec --bind /:/mnt --pwd /mnt/${outdir} docker://lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
 echo "/usr/local/bamsurgeon/bin/addsv.py \\" >> $out_script
 echo "--svfrac 0.1 --procs 1 \\" >> $out_script
 echo "--varfile /mnt/${svs} \\" >> $out_script
@@ -119,12 +119,11 @@ echo "--aligner mem" >> $out_script
 echo "" >> $out_script
 
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
-echo "/usr/local/bamsurgeon/scripts/makevcf_sv.py -l /mnt/${outdir}/addsv_logs_unsorted.${outbam} \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 bash -c \\" >> $out_script
+echo "\"/usr/local/bamsurgeon/scripts/makevcf_sv.py -l /mnt/${outdir}/addsv_logs_unsorted.${outbam} \\" >> $out_script
 echo "-r /mnt/${HUMAN_REFERENCE} \\" >> $out_script
-echo "| singularity exec --bind /:/mnt docker://lethalfang/bedtools:2.26.0 \\" >> $out_script
-echo "bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_script
-echo "> ${outdir}/synthetic_svs.vcf" >> $out_script
+echo "| bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_script
+echo "> /mnt/${outdir}/synthetic_svs.vcf\"" >> $out_script
 echo "" >> $out_script
 
 
