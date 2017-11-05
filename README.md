@@ -3,7 +3,7 @@
 * SomaticSeq's open-access paper published in [Genome Biology](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page.
 
-<b>An example command:</b>
+<b>An example SomaticSeq command after mutation caller jobs are complete:</b>
 ```
 $somaticseq/SomaticSeq.Wrapper.sh \
 --output-dir       /PATH/TO/RESULTS/SomaticSeq_MVSDULPK \
@@ -25,18 +25,18 @@ $somaticseq/SomaticSeq.Wrapper.sh \
 --strelka-indel    /PATH/TO/RESULTS/Strelka/results/variants/somatic.indels.vcf.gz \
 --inclusion-region /PATH/TO/RESULTS/captureRegion.bed \
 --exclusion-region /PATH/TO/RESULTS/blackList.bed \
---gatk             /opt/GATK/GenomeAnalysisTK.jar
+--gatk             /opt/GATK3/GenomeAnalysisTK.jar
 ```
-* For all those VCF files, either .vcf or .vcf.gz are acceptable. 
-* You must make sure all the input files (i.e., VCF, BAM, FASTA, etc.) are sorted the same way. Otherwise, the results would not be valid.
-* Some additional parameters:
+* For all those input VCF files, either .vcf or .vcf.gz are acceptable. 
+* You must make sure all the input files (i.e., VCF, BAM, FASTA, etc.) are sorted identically. Otherwise, the results would not be valid, because the program does not check for proper ordering.
+* Additional parameters for training/prediction:
     * ```--truth-snv```:        if you have ground truth VCF file for SNV
     * ```--truth-indel```:      if you have a ground truth VCF file for INDEL
-    * ```--ada-r-script```:     $somaticseq/r_scripts/ada_model_builder_ntChange.R to train, if you have ground truths supplised.
-    * ```--classifier-snv```:   classifier previously built for SNV
-    * ```--classifier-indel```: classifier previously built for INDEL
+    * ```--ada-r-script```:     $somaticseq/r_scripts/ada_model_builder_ntChange.R to build classifiers (.RData files), if you have ground truths supplied.
+    * ```--classifier-snv```:   classifier (.RData file) previously built for SNV
+    * ```--classifier-indel```: classifier (.RData file) previously built for INDEL
     * ```--ada-r-script```:     $somaticseq/r_scripts/ada_model_predictor.R to use the classifiers specified above to make predictions
-* Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data, e.g., when there is no variant read in the matched normal, resulting in NaN in the output.
+* Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data, e.g., z-scores between reference- and variant-supporting reads will be NaN if there is no reference read at a position.
    ```
      RuntimeWarning: invalid value encountered in double_scalars
      z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
@@ -44,7 +44,7 @@ $somaticseq/SomaticSeq.Wrapper.sh \
 
 <b>Dockerized Pipelines</b>
 * The docker repo for SomaticSeq is at https://hub.docker.com/r/lethalfang/somaticseq/.
-* We also have run script generators for the dockerized somatic mutation callers at [utilities/dockered_pipelines](utilities/dockered_pipelines).
+* We also have automated script generators for the dockerized somatic mutation callers at [utilities/dockered_pipelines](utilities/dockered_pipelines).
 The documentation for those scripts are in Section 4 of the [User's Manual](docs/Manual.pdf "Documentation").
 * The pipeline to generate training data out of your own sequencing data based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon) is located at [utilities/dockered_pipelines/bamSimulator](utilities/dockered_pipelines/bamSimulator).
 * The limited alignment pipeline to generate BAM files based on GATK's best practices is at [utilities/dockered_pipelines/alignments](utilities/dockered_pipelines/alignments).
