@@ -176,9 +176,14 @@ else
 fi
     
 
-docker run --rm -v /:/mnt -u $UID lethalfang/somaticseq:${VERSION} \
-/opt/somaticseq/utilities/split_Bed_into_equal_regions.py \
--infile /mnt/${outdir}/genome.bed -num $threads -outfiles /mnt/${outdir}/bed
+if [[ `which python3` ]]
+then
+     $MYDIR/../split_Bed_into_equal_regions.py -infile ${outdir}/genome.bed -num $threads -outfiles ${outdir}/bed
+else
+    docker run --rm -v /:/mnt -u $UID lethalfang/somaticseq:${VERSION} \
+    /opt/somaticseq/utilities/split_Bed_into_equal_regions.py \
+    -infile /mnt/${outdir}/genome.bed -num $threads -outfiles /mnt/${outdir}/bed
+fi
 
 
 ith_thread=1
