@@ -217,7 +217,7 @@ fi
 
 if [[ `which python3` ]]
 then
-     $MYDIR/../../split_Bed_into_equal_regions.py -infile ${outdir}/genome.bed -num $threads -outfiles ${outdir}/bed
+     $MYDIR/../../split_Bed_into_equal_regions.py -infile ${parent_outdir}/genome.bed -num $threads -outfiles ${parent_outdir}/bed
 else
     docker run --rm -v /:/mnt -u $UID -i lethalfang/somaticseq:${VERSION} \
     /opt/somaticseq/utilities/split_Bed_into_equal_regions.py \

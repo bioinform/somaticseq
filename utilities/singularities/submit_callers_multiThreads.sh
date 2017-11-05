@@ -297,8 +297,8 @@ then
 else
     cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
 fi
-  
-    
+
+
 if [[ `which python3` ]]
 then
      $MYDIR/../split_Bed_into_equal_regions.py -infile ${outdir}/genome.bed -num $threads -outfiles ${outdir}/bed
@@ -307,6 +307,7 @@ else
     /opt/somaticseq/utilities/split_Bed_into_equal_regions.py \
     -infile /mnt/${outdir}/genome.bed -num $threads -outfiles /mnt/${outdir}/bed
 fi
+
 
 # JSM is outdated and doesn't support partial BAM input....
 if [[ $jointsnvmix2 -eq 1 ]]
