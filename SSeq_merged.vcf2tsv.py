@@ -47,6 +47,7 @@ parser.add_argument('-vardict', '--vardict-vcf',              type=str,   help='
 parser.add_argument('-muse',    '--muse-vcf',                 type=str,   help='MuSE VCF',          required=False, default=None)
 parser.add_argument('-lofreq',  '--lofreq-vcf',               type=str,   help='LoFreq VCF',        required=False, default=None)
 parser.add_argument('-scalpel', '--scalpel-vcf',              type=str,   help='Scalpel VCF',       required=False, default=None)
+parser.add_argument('-tnscope', '--tnscope-vcf',              type=str,   help='TNscope VCF',       required=False, default=None)
 
 parser.add_argument('-ref',     '--genome-reference',         type=str,   help='.fasta.fai file to get the contigs', required=True, default=None)
 parser.add_argument('-dedup',   '--deduplicate',     action='store_true', help='Do not consider duplicate reads from BAM files. Default is to count everything', required=False, default=False)
@@ -82,6 +83,7 @@ vardict   = args.vardict_vcf
 muse      = args.muse_vcf
 lofreq    = args.lofreq_vcf
 scalpel   = args.scalpel_vcf
+tnscope   = args.tnscope_vcf
 
 min_mq    = args.minimum_mapping_quality
 min_bq    = args.minimum_base_quality
@@ -149,14 +151,15 @@ out_header = \
 {REF}\t\
 {ALT}\t\
 {if_MuTect}\t\
-{if_Strelka}\t\
 {if_VarScan2}\t\
 {if_JointSNVMix2}\t\
 {if_SomaticSniper}\t\
 {if_VarDict}\t\
+{MuSE_Tier}\t\
 {if_LoFreq}\t\
 {if_Scalpel}\t\
-{MuSE_Tier}\t\
+{if_Strelka}\t\
+{if_TNscope}\t\
 {Strelka_Score}\t\
 {Strelka_QSS}\t\
 {Strelka_TQSS}\t\
@@ -274,61 +277,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         while dbsnp_line.startswith('#'):
             dbsnp_line = dbsnp.readline().rstrip()
     
-    if mutect:
-        mutect = genome.open_textfile(mutect)
-        mutect_line = mutect.readline().rstrip()
-        while mutect_line.startswith('#'):
-            mutect_line = mutect.readline().rstrip()
+    for caller_i in ('mutect', 'varscan', 'jsm', 'sniper', 'vardict', 'muse', 'lofreq', 'scalpel', 'strelka', 'tnscope'):
+        vars()[caller_i] = genome.open_textfile(vars()[caller_i]
+        vars()[caller_i + '_line'] = vars()[caller_i].readline().rstrip()
+        while vars()[caller_i + '_line'].startswith('#'):
+            vars()[caller_i + '_line'] = vars()[caller_i].readline().rstrip()
 
-    if strelka:
-        strelka = genome.open_textfile(strelka)
-        strelka_line = strelka.readline().rstrip()
-        while strelka_line.startswith('#'):
-            strelka_line = strelka.readline().rstrip()
-    
-    if sniper:
-        sniper = genome.open_textfile(sniper)
-        sniper_line = sniper.readline().rstrip()
-        while sniper_line.startswith('#'):
-            sniper_line = sniper.readline().rstrip()
-    
-    if varscan:
-        varscan = genome.open_textfile(varscan)
-        varscan_line = varscan.readline().rstrip()
-        while varscan_line.startswith('#'):
-            varscan_line = varscan.readline().rstrip()
-    
-    if jsm:
-        jsm = genome.open_textfile(jsm)
-        jsm_line = jsm.readline().rstrip()
-        while jsm_line.startswith('#'):
-            jsm_line = jsm.readline().rstrip()
-    
-    if vardict:
-        vardict = genome.open_textfile(vardict)
-        vardict_line = vardict.readline().rstrip()
-        while vardict_line.startswith('#'):
-            vardict_line = vardict.readline().rstrip()
-    
-    if muse:
-        muse = genome.open_textfile(muse)
-        muse_line = muse.readline().rstrip()
-        while muse_line.startswith('#'):
-            muse_line = muse.readline().rstrip()
-    
-    if lofreq:
-        lofreq = genome.open_textfile(lofreq)
-        lofreq_line = lofreq.readline().rstrip()
-        while lofreq_line.startswith('#'):
-            lofreq_line = lofreq.readline().rstrip()
-            
-    if scalpel:
-        scalpel = genome.open_textfile(scalpel)
-        scalpel_line = scalpel.readline().rstrip()
-        while scalpel_line.startswith('#'):
-            scalpel_line = scalpel.readline().rstrip()
-
-    
     
     # Get through all the headers:
     while my_line.startswith('#') or my_line.startswith('track='):
@@ -430,7 +384,6 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             
             #################################### Find the same coordinate in those VCF files ####################################
             if args.mutect_vcf:        got_mutect,  mutect_variants,  mutect_line  = genome.find_vcf_at_coordinate(my_coordinate, mutect_line,  mutect,  chrom_seq)
-            if args.strelka_vcf:       got_strelka, strelka_variants, strelka_line = genome.find_vcf_at_coordinate(my_coordinate, strelka_line, strelka, chrom_seq)
             if args.varscan_vcf:       got_varscan, varscan_variants, varscan_line = genome.find_vcf_at_coordinate(my_coordinate, varscan_line, varscan, chrom_seq)
             if args.jsm_vcf:           got_jsm,     jsm_variants,     jsm_line     = genome.find_vcf_at_coordinate(my_coordinate, jsm_line,     jsm,     chrom_seq)
             if args.somaticsniper_vcf: got_sniper,  sniper_variants,  sniper_line  = genome.find_vcf_at_coordinate(my_coordinate, sniper_line,  sniper,  chrom_seq)
@@ -438,6 +391,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             if args.muse_vcf:          got_muse,    muse_variants,    muse_line    = genome.find_vcf_at_coordinate(my_coordinate, muse_line,    muse,    chrom_seq)
             if args.lofreq_vcf:        got_lofreq,  lofreq_variants,  lofreq_line  = genome.find_vcf_at_coordinate(my_coordinate, lofreq_line,  lofreq,  chrom_seq)
             if args.scalpel_vcf:       got_scalpel, scalpel_variants, scalpel_line = genome.find_vcf_at_coordinate(my_coordinate, scalpel_line, scalpel, chrom_seq)
+            if args.strelka_vcf:       got_strelka, strelka_variants, strelka_line = genome.find_vcf_at_coordinate(my_coordinate, strelka_line, strelka, chrom_seq)
+            if args.tnscope_vcf:       got_tnscope, tnscope_variants, tnscope_line = genome.find_vcf_at_coordinate(my_coordinate, tnscope_line, tnscope, chrom_seq)
             if args.ground_truth_vcf:  got_truth,   truth_variants,   truth_line   = genome.find_vcf_at_coordinate(my_coordinate, truth_line,   truth,   chrom_seq)
             if args.dbsnp_vcf:         got_dbsnp,   dbsnp_variants,   dbsnp_line   = genome.find_vcf_at_coordinate(my_coordinate, dbsnp_line,   dbsnp,   chrom_seq)
             if args.cosmic_vcf:        got_cosmic,  cosmic_variants,  cosmic_line  = genome.find_vcf_at_coordinate(my_coordinate, cosmic_line,  cosmic,  chrom_seq)
@@ -490,27 +445,6 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     nlod = tlod = tandem = ecnt = nan
 
 
-                #################### Collect Strelka ####################:
-                if args.strelka_vcf:
-                    
-                    if variant_id in strelka_variants:
-                        
-                        strelka_variant_i = strelka_variants[variant_id]
-                        strelka_classification = 1 if 'PASS' in strelka_variant_i.filters else 0
-                        somatic_evs = strelka_variant_i.get_info_value('SomaticEVS')
-                        qss = strelka_variant_i.get_info_value('QSS')
-                        tqss = strelka_variant_i.get_info_value('TQSS')
-                        
-                    else:
-                        strelka_classification = 0
-                        somatic_evs = qss = tqss = nan
-                        
-                else:
-                    strelka_classification = nan
-                    somatic_evs = qss = tqss = nan
-                        
-                
-                
                 #################### Collect VarScan ####################:
                 if args.varscan_vcf:
 
@@ -518,7 +452,6 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                         varscan_variant_i = varscan_variants[ variant_id ]
                         varscan_classification = 1 if varscan_variant_i.get_info_value('SOMATIC') else 0
-                        score_varscan2 = int(varscan_variant_i.get_info_value('SSC'))
 
                         # If ref_base, first_alt, and indel_length unknown, get it here:
                         if not ref_base:         ref_base = varscan_variant_i.refbase
@@ -527,13 +460,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         
                     else:
                         varscan_classification = 0
-                        score_varscan2 = nan
 
                     num_callers += varscan_classification
                 else:
-                    varscan_classification = score_varscan2 = nan
+                    varscan_classification = nan
 
-
+                
                 #################### Collect JointSNVMix ####################:
                 if args.jsm_vcf:
                     
@@ -735,6 +667,49 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 else:
                     scalpel_classification = nan
                 
+
+                #################### Collect Strelka ####################:
+                if args.strelka_vcf:
+                    
+                    if variant_id in strelka_variants:
+                        
+                        strelka_variant_i = strelka_variants[variant_id]
+                        strelka_classification = 1 if 'PASS' in strelka_variant_i.filters else 0
+                        somatic_evs = strelka_variant_i.get_info_value('SomaticEVS')
+                        qss = strelka_variant_i.get_info_value('QSS')
+                        tqss = strelka_variant_i.get_info_value('TQSS')
+                        
+                    else:
+                        strelka_classification = 0
+                        somatic_evs = qss = tqss = nan
+                        
+                else:
+                    strelka_classification = nan
+                    somatic_evs = qss = tqss = nan
+                        
+                
+                #################### Collect TNScope (similar format as MuTect2) ####################:
+                if args.tnscope_vcf:
+
+                    if variant_id in tnscope_variants:
+
+                        tnscope_variant_i = tnscope_variants[variant_id]
+                        tnscope_classification = 1 if (tnscope_variant_i.get_info_value('SOMATIC') or 'PASS' in tnscope_variant_i.filters) else 0
+                                                
+                        # If ref_base, first_alt, and indel_length unknown, get it here:
+                        if not ref_base:         ref_base = tnscope_variant_i.refbase
+                        if not first_alt:        first_alt = tnscope_variant_i.altbase
+                        if indel_length == None: indel_length = len(first_alt) - len(ref_base)
+
+                    else:
+                        # Not called by TNscope
+                        tnscope_classification = 0
+
+                    num_callers += tnscope_classification
+                else:
+                    # Assign a bunch of NaN's
+                    tnscope_classification = nan
+
                             
                 # Potentially write the output only if it meets this threshold:
                 if num_callers >= args.minimum_num_callers:
@@ -1095,6 +1070,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         sor = sor_numerator / sor_denominator
                         if sor >= 100:
                             sor = 100
+        
+                    # Calculate VarScan'2 SCC directly without using VarScan2 output:
+                    try:
+                        score_varscan2 = genome.p2phred( stats.fisher_exact( ((t_alt_for + t_alt_rev, n_alt_for + n_alt_rev), (t_ref_for + t_ref_rev, n_ref_for + n_ref_rev)), alternative='greater' )[1] )
+                    except ValueError:
+                        score_varscan2 = nan
                     
                     ############################################################################################
                     ############################################################################################
@@ -1157,14 +1138,15 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     REF                     = ref_base,                                               \
                     ALT                     = first_alt,                                              \
                     if_MuTect               = mutect_classification,                                  \
-                    if_Strelka              = strelka_classification,                                 \
                     if_VarScan2             = varscan_classification,                                 \
                     if_JointSNVMix2         = jointsnvmix2_classification,                            \
                     if_SomaticSniper        = sniper_classification,                                  \
                     if_VarDict              = vardict_classification,                                 \
+                    MuSE_Tier               = muse_classification,                                    \
                     if_LoFreq               = lofreq_classification,                                  \
                     if_Scalpel              = scalpel_classification,                                 \
-                    MuSE_Tier               = muse_classification,                                    \
+                    if_Strelka              = strelka_classification,                                 \
+                    if_TNscope              = tnscope_classification,                                 \
                     Strelka_Score           = somatic_evs,                                            \
                     Strelka_QSS             = qss,                                                    \
                     Strelka_TQSS            = tqss,                                                   \
@@ -1263,5 +1245,5 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             my_line = my_sites.readline().rstrip()
         
     ##########  Close all open files if they were opened  ##########
-    opened_files = (ref_fa, nbam, tbam, truth, cosmic, dbsnp, mutect, strelka, sniper, varscan, jsm, vardict, muse, lofreq, scalpel)
+    opened_files = (ref_fa, nbam, tbam, truth, cosmic, dbsnp, mutect, varscan, jsm, sniper, vardict, muse, lofreq, scalpel, strelka, tnscope)
     [opened_file.close() for opened_file in opened_files if opened_file]

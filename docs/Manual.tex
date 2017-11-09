@@ -1009,6 +1009,17 @@ Have implemented the following improvement, mostly for indels:
 \end{itemize}
 
 
+\subsection{Version 2.6.0}
+
+\begin{itemize}
+  \item
+  VarScan2\_Score is no longer extracted from VarScan's output. Rather, it's now calculated directly using Fisher's Exact Test, which reproduces VarScan's output, but will have a real value when VarScan2 does not output a particular variant. 
+  
+  \item
+  Incorporate TNScope's output VCF into SomaticSeq, but did not incorporate TNScope caller into the workflow because we don't have distribution license. 
+  
+\end{itemize}
+
 
 
 \section{Contact Us}
