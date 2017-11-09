@@ -278,12 +278,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             dbsnp_line = dbsnp.readline().rstrip()
     
     for caller_i in ('mutect', 'varscan', 'jsm', 'sniper', 'vardict', 'muse', 'lofreq', 'scalpel', 'strelka', 'tnscope'):
-        vars()[caller_i] = genome.open_textfile( vars()[caller_i] )
-        vars()[caller_i + '_line'] = vars()[caller_i].readline().rstrip()
-        while vars()[caller_i + '_line'].startswith('#'):
+        if vars()[caller_i]:
+            vars()[caller_i] = genome.open_textfile( vars()[caller_i] )
             vars()[caller_i + '_line'] = vars()[caller_i].readline().rstrip()
+            while vars()[caller_i + '_line'].startswith('#'):
+                vars()[caller_i + '_line'] = vars()[caller_i].readline().rstrip()
 
-    
     # Get through all the headers:
     while my_line.startswith('#') or my_line.startswith('track='):
         my_line = my_sites.readline().rstrip()
