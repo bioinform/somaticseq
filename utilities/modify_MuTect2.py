@@ -48,8 +48,9 @@ with genome.open_textfile(infile) as vcf_in, open(snv_out, 'w') as snv_out, open
         line_i = vcf_in.readline().rstrip()
 
     # This line will be #CHROM:
+    snv_out.write( line_i + '\n' )
+    indel_out.write( line_i + '\n' )
     header = line_i.split('\t')
-    
     
     if args.is_tnscope:
         # Doesn't matter which one is normal/tumor. These information are not used. 
