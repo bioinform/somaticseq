@@ -45,6 +45,9 @@ with genome.open_textfile(infile) as vcf_in, open(snv_out, 'w') as snv_out, open
         if line_i.startswith('##tumor_sample='):
             tumor_name = line_i.split('=')[1]
             
+        if line_i.startswith('##INFO=<ID=SOR,'):
+            line_i = re.sub(r'Float', 'String', line_i)
+            
         line_i = vcf_in.readline().rstrip()
 
     # This line will be #CHROM:
