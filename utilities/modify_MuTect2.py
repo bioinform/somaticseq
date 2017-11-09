@@ -35,10 +35,7 @@ with genome.open_textfile(infile) as vcf_in, open(snv_out, 'w') as snv_out, open
     line_i = vcf_in.readline().rstrip()
     
     while line_i.startswith('##'):
-        
-        snv_out.write( line_i + '\n' )
-        indel_out.write( line_i + '\n' )
-        
+                
         if line_i.startswith('##normal_sample='):
             normal_name = line_i.split('=')[1]
             
@@ -47,7 +44,9 @@ with genome.open_textfile(infile) as vcf_in, open(snv_out, 'w') as snv_out, open
             
         if line_i.startswith('##INFO=<ID=SOR,'):
             line_i = re.sub(r'Float', 'String', line_i)
-            
+
+        snv_out.write( line_i + '\n' )
+        indel_out.write( line_i + '\n' )        
         line_i = vcf_in.readline().rstrip()
 
     # This line will be #CHROM:
