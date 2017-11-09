@@ -18,7 +18,7 @@ parser.add_argument('-infile',  '--input-vcf', type=str, help='Input VCF file', 
 parser.add_argument('-snv',     '--snv-out',   type=str, help='Output VCF file', required=True)
 parser.add_argument('-indel',   '--indel-out', type=str, help='Output VCF file', required=True)
 
-parser.add_argument('-tnscope', '--is-tnscipe', action="store_true", help='Actually TNscope VCF', required=False, default=False)
+parser.add_argument('-tnscope', '--is-tnscope', action="store_true", help='Actually TNscope VCF', required=False, default=False)
 
 # Parse the arguments:
 args = parser.parse_args()
