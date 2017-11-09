@@ -14,9 +14,11 @@ import genomic_file_handlers as genome
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 # Variant Call Type, i.e., snp or indel
-parser.add_argument('-infile', '--input-vcf',  type=str, help='Input VCF file', required=True)
-parser.add_argument('-indel',  '--indel-out', type=str, help='Output VCF file', required=True)
-parser.add_argument('-snv',    '--snv-out', type=str, help='Output VCF file', required=True)
+parser.add_argument('-infile',  '--input-vcf', type=str, help='Input VCF file', required=True)
+parser.add_argument('-snv',     '--snv-out',   type=str, help='Output VCF file', required=True)
+parser.add_argument('-indel',   '--indel-out', type=str, help='Output VCF file', required=True)
+
+parser.add_argument('-tnscope', '--is-tnscope', action="store_true", help='Actually TNscope VCF', required=False, default=False)
 
 # Parse the arguments:
 args = parser.parse_args()
@@ -33,24 +35,32 @@ with genome.open_textfile(infile) as vcf_in, open(snv_out, 'w') as snv_out, open
     line_i = vcf_in.readline().rstrip()
     
     while line_i.startswith('##'):
-        
-        snv_out.write( line_i + '\n' )
-        indel_out.write( line_i + '\n' )
-        
+                
         if line_i.startswith('##normal_sample='):
             normal_name = line_i.split('=')[1]
             
         if line_i.startswith('##tumor_sample='):
             tumor_name = line_i.split('=')[1]
             
-        line_i = vcf_in.readline().rstrip()
+        if line_i.startswith('##INFO=<ID=SOR,'):
+            line_i = re.sub(r'Float', 'String', line_i)
+
         snv_out.write( line_i + '\n' )
-        indel_out.write( line_i + '\n' )
+        indel_out.write( line_i + '\n' )        
+        line_i = vcf_in.readline().rstrip()
 
     # This line will be #CHROM:
+    snv_out.write( line_i + '\n' )
+    indel_out.write( line_i + '\n' )
     header = line_i.split('\t')
-    normal_index = header.index(normal_name) - 9
-    tumor_index = header.index(tumor_name) - 9
+    
+    if args.is_tnscope:
+        # Doesn't matter which one is normal/tumor. These information are not used. 
+        normal_index, tumor_index = 1,0
+        
+    else:
+        normal_index = header.index(normal_name) - 9
+        tumor_index = header.index(tumor_name) - 9
     
     # This will be the first variant line:
     line_i = vcf_in.readline().rstrip()
