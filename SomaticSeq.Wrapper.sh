@@ -340,7 +340,7 @@ fi
 
 # TNscope's VCF files are modeled after MuTect2's format:
 if [[ $tnscope_vcf ]]; then
-    $MYDIR/utilities/modify_MuTect2.py -infile $tnscope_vcf -snv ${merged_dir}/tnscope.snp.vcf -indel ${merged_dir}/tnscope.indel.vcf
+    $MYDIR/utilities/modify_MuTect2.py -infile $tnscope_vcf -snv ${merged_dir}/tnscope.snp.vcf -indel ${merged_dir}/tnscope.indel.vcf -tnscope
     files_to_delete="${merged_dir}/tnscope.snp.vcf ${merged_dir}/tnscope.snp.vcf.idx ${merged_dir}/tnscope.indel.vcf ${merged_dir}/tnscope.indel.vcf.idx $files_to_delete"
 fi
 
