@@ -69,7 +69,7 @@
 
 \section{Introduction}
 
-SomaticSeq is a flexible post-somatic-mutation-calling workflow for improved accuracy. We have incorporated multiple somatic mutation caller(s) to obtain a combined call set, and then it uses machine learning to distinguish true mutations from false positives from that call set. We have incorporated the following somatic mutation caller: MuTect/Indelocator, MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, and Scalpel. You may incorporate some or all of those callers into your own pipeline with SomaticSeq.
+SomaticSeq is a flexible post-somatic-mutation-calling workflow for improved accuracy. We have incorporated multiple somatic mutation caller(s) to obtain a combined call set, and then it uses machine learning to distinguish true mutations from false positives from that call set. We have incorporated the following somatic mutation caller: MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka, and TNscope. You may incorporate some or all of those callers into your own pipeline with SomaticSeq.
 
 The manuscript, An ensemble approach to accurately detect somatic mutations using SomaticSeq, is published in \href{http://dx.doi.org/10.1186/s13059-015-0758-2}{Genome Biology 2015, 16:197}. The SomaticSeq project is located at \href{http://bioinform.github.io/somaticseq/}{\textit{http://bioinform.github.io/somaticseq/}}. The data described in the manuscript is also described at \href{http://bioinform.github.io/somaticseq/data.html}{\textit{http://bioinform.github.io/somaticseq/data.html}}. There have been some major improvements since the publication. 
 
@@ -108,7 +108,7 @@ SomaticSeq and (almost) all the somatic mutation callers we have incorporated ar
 
   \item SomaticSeq is dockerized at https://hub.docker.com/r/lethalfang/somaticseq/.
   
-  \item MuTect2 (tested with GATK:4.beta.3): https://hub.docker.com/r/broadinstitute/gatk
+  \item MuTect2 (tested with GATK:4.beta.6): https://hub.docker.com/r/broadinstitute/gatk
 
   \item VarScan2 (untested): https://hub.docker.com/r/djordjeklisic/sbg-varscan2/
 
@@ -159,6 +159,7 @@ SomaticSeq.Wrapper.sh \
 --scalpel           Scalpel/variants.indel.vcf \
 --strelka-snv       Strelka/variants.snv.vcf \
 --strelka-indel     Strelka/variants.indel.vcf \
+--tnscope           TNscope.vcf.gz \
 --normal-bam        matched_normal.bam \
 --tumor-bam         tumor.bam \
 --ada-r-script      ada_model_builder.R \
@@ -200,6 +201,7 @@ SomaticSeq.Wrapper.sh \
 --scalpel           Scalpel/variants.indel.vcf \
 --strelka-snv       Strelka/variants.snv.vcf \
 --strelka-indel     Strelka/variants.indel.vcf \
+--tnscope           TNscope.vcf.gz \
 --normal-bam        matched_normal.bam \
 --tumor-bam         tumor.bam \
 --ada-r-script      ada_model_predictor.R \
@@ -1016,7 +1018,7 @@ Have implemented the following improvement, mostly for indels:
   VarScan2\_Score is no longer extracted from VarScan's output. Rather, it's now calculated directly using Fisher's Exact Test, which reproduces VarScan's output, but will have a real value when VarScan2 does not output a particular variant. 
   
   \item
-  Incorporate TNScope's output VCF into SomaticSeq, but did not incorporate TNScope caller into the workflow because we don't have distribution license. 
+  Incorporate TNscope's output VCF into SomaticSeq, but did not incorporate TNscope caller into the dockerized workflow because we don't have distribution license. 
   
 \end{itemize}
 
