@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,mutect:,mutect2:,indelocator:,strelka-snv:,strelka-indel:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,genome-reference:,cosmic:,dbsnp:,gatk:,tumor-bam:,normal-bam:,classifier-snv:,classifier-indel:,ada-r-script:,exclusion-region:,inclusion-region:,truth-indel:,truth-snv:,pass-threshold:,lowqual-threshold:,tumor-sample-name:,normal-sample-name:,keep-intermediates: -n 'SomaticSeq.Wrapper.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,mutect:,mutect2:,indelocator:,strelka-snv:,strelka-indel:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,tnscope:,genome-reference:,cosmic:,dbsnp:,gatk:,tumor-bam:,normal-bam:,classifier-snv:,classifier-indel:,ada-r-script:,exclusion-region:,inclusion-region:,truth-indel:,truth-snv:,pass-threshold:,lowqual-threshold:,tumor-sample-name:,normal-sample-name:,keep-intermediates: -n 'SomaticSeq.Wrapper.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -108,6 +108,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  scalpel_vcf=$2 ; shift 2 ;;
+            esac ;;
+
+        --tnscope )
+            case "$2" in
+                "") shift 2 ;;
+                *)  tnscope_vcf=$2 ; shift 2 ;;
             esac ;;
 
         --genome-reference )
@@ -332,20 +338,21 @@ if [[ $strelka_indel_vcf ]]; then
     files_to_delete="${merged_dir}/strelka.indel.vcf ${merged_dir}/strelka.indel.vcf.idx $files_to_delete"
 fi
 
+# TNscope's VCF files are modeled after MuTect2's format:
+if [[ $tnscope_vcf ]]; then
+    $MYDIR/utilities/modify_MuTect2.py -infile $tnscope_vcf -snv ${merged_dir}/tnscope.snp.vcf -indel ${merged_dir}/tnscope.indel.vcf -tnscope
+    files_to_delete="${merged_dir}/tnscope.snp.vcf ${merged_dir}/tnscope.snp.vcf.idx ${merged_dir}/tnscope.indel.vcf ${merged_dir}/tnscope.indel.vcf.idx $files_to_delete"
+fi
 
 
 # dbSNP
 if [[ ${dbsnp} ]]; then
     dbsnp_input="-dbsnp ${dbsnp}"
-else
-    dbsnp_input=''
 fi
 
 # COSMIC
 if [[ ${cosmic} ]]; then
     cosmic_input="-cosmic ${cosmic}"
-else
-    cosmic_input=''
 fi
 
 
@@ -355,7 +362,7 @@ then
 
     mergesnp=''
     all_snp=''
-    for vcf in ${merged_dir}/mutect.snp.vcf ${merged_dir}/varscan2.snp.vcf ${merged_dir}/jsm.vcf ${merged_dir}/somaticsniper.vcf ${merged_dir}/snp.vardict.vcf ${merged_dir}/muse.vcf ${lofreq_vcf} ${merged_dir}/strelka.snv.vcf 
+    for vcf in ${merged_dir}/mutect.snp.vcf ${merged_dir}/varscan2.snp.vcf ${merged_dir}/jsm.vcf ${merged_dir}/somaticsniper.vcf ${merged_dir}/snp.vardict.vcf ${merged_dir}/muse.vcf ${lofreq_vcf} ${merged_dir}/strelka.snv.vcf ${merged_dir}/tnscope.snp.vcf
     do
         if [[ -r $vcf ]]; then
             mergesnp="$mergesnp --variant $vcf"
@@ -372,87 +379,66 @@ then
     files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf.idx $files_to_delete"
 
 
+    # See if each tool was used/exist
     if [[ ${mutect2_vcf} ]]; then
         mutect_input="-mutect ${merged_dir}/mutect.snp.vcf"
         tool_mutect="CGA"
     elif [[ ${mutect_vcf} ]]; then
         mutect_input="-mutect ${mutect_vcf}"
         tool_mutect="CGA"
-    else
-        mutect_input=''
-        tool_mutect=''
     fi
 
 
     if [[ ${varscan_vcf} ]]; then
         varscan_input="-varscan ${varscan_vcf}"
         tool_varscan="VarScan2"
-    else
-        varscan_input=''
-        tool_varscan=''
     fi
-
-
-    if [[ ${strelka_snv_vcf} ]]; then
-        strelka_input="-strelka ${strelka_snv_vcf}"
-        tool_strelka="Strelka"
-    else
-        strelka_input=''
-        tool_strelka=''
-    fi
-
 
 
     if [[ ${jsm_vcf} ]]; then
         jsm_input="-jsm ${jsm_vcf}"
         tool_jsm="JointSNVMix2"
-    else
-        jsm_input=''
-        tool_jsm=''
     fi
 
 
     if [[ ${sniper_vcf} ]]; then
         sniper_input="-sniper ${sniper_vcf}"
         tool_sniper="SomaticSniper"
-    else
-        sniper_input=''
-        tool_sniper=''
     fi
 
 
     if [[ ${vardict_vcf} ]]; then
         vardict_input="-vardict ${merged_dir}/snp.vardict.vcf"
         tool_vardict="VarDict"
-    else
-        vardict_input=''
-        tool_vardict=''
     fi
 
 
     if [[ ${muse_vcf} ]]; then
         muse_input="-muse ${muse_vcf}"
         tool_muse="MuSE"
-    else
-        muse_input=''
-        tool_muse=''
     fi
 
 
     if [[ ${lofreq_vcf} ]]; then
         lofreq_input="-lofreq ${lofreq_vcf}"
         tool_lofreq="LoFreq"
-    else
-        lofreq_input=''
-        tool_lofreq=''
+    fi
+
+
+    if [[ ${strelka_snv_vcf} ]]; then
+        strelka_input="-strelka ${strelka_snv_vcf}"
+        tool_strelka="Strelka"
+    fi
+
+    if [[ ${tnscope_vcf} ]]; then
+        tnscope_input="-tnscope ${merged_dir}/tnscope.snp.vcf"
+        tool_tnscope="TNscope"
     fi
 
 
 
     if [[ ${snpgroundtruth} ]]; then
         truth_input="-truth ${snpgroundtruth}"
-    else
-        truth_input=''
     fi
 
 
@@ -476,12 +462,13 @@ then
     $cosmic_input \
     $mutect_input \
     $varscan_input \
-    $strelka_input \
     $jsm_input \
     $sniper_input \
     $vardict_input \
     $muse_input \
     $lofreq_input \
+    $strelka_input \
+    $tnscope_input \
     -mincaller 0.5 \
     -tbam ${tbam} \
     -nbam ${nbam} \
@@ -492,7 +479,7 @@ then
     # If a classifier is used, assume predictor.R, and do the prediction routine:
     if [[ ${snpclassifier} ]] && [[ ${ada_r_script} ]]; then
         "$ada_r_script" "$snpclassifier" "${merged_dir}/Ensemble.sSNV.tsv" "${merged_dir}/SSeq.Classified.sSNV.tsv"
-        $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/SSeq.Classified.sSNV.tsv -vcf ${merged_dir}/SSeq.Classified.sSNV.vcf -pass $pass_threshold -low $lowqual_threshold -N "$normal_name" -T "$tumor_name" -all -phred -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq $tool_strelka
+        $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/SSeq.Classified.sSNV.tsv -vcf ${merged_dir}/SSeq.Classified.sSNV.vcf -pass $pass_threshold -low $lowqual_threshold -N "$normal_name" -T "$tumor_name" -all -phred -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq $tool_strelka $tool_tnscope
 
     # If ground truth is here, assume builder.R, and build a classifier
     elif [[ ${snpgroundtruth} ]] && [[ ${ada_r_script} ]]; then
@@ -500,7 +487,7 @@ then
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else
-        $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sSNV.tsv -vcf ${merged_dir}/Consensus.sSNV.vcf -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq $tool_strelka -N "$normal_name" -T "$tumor_name" -all
+        $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sSNV.tsv -vcf ${merged_dir}/Consensus.sSNV.vcf -tools $tool_mutect $tool_varscan $tool_jsm $tool_sniper $tool_vardict $tool_muse $tool_lofreq $tool_strelka $tool_tnscope -N "$normal_name" -T "$tumor_name" -all
     fi
 
 fi
@@ -538,61 +525,47 @@ then
     elif [[ ${mutect_vcf} ]]; then
         indelocator_input="-mutect ${indelocator_vcf}"
         tool_indelocator="CGA"
-    else
-        indelocator_input=''
-        tool_indelocator=''
-    fi
-
-
-    if [[ ${strelka_indel_vcf} ]]; then
-        strelka_input="-strelka ${strelka_indel_vcf}"
-        tool_strelka="Strelka"
-    else
-        strelka_input=''
-        tool_strelka=''
     fi
 
 
     if [[ ${varscan_indel_vcf} ]]; then
         varscan_input="-varscan ${varscan_indel_vcf}"
         tool_varscan="VarScan2"
-    else
-        varscan_input=''
-        tool_varscan=''
     fi
 
 
     if [[ ${vardict_vcf} ]]; then
         vardict_input="-vardict ${merged_dir}/indel.vardict.vcf"
         tool_vardict="VarDict"
-    else
-        vardict_input=''
-        tool_vardict=''
     fi
 
 
     if [[ ${lofreq_indel_vcf} ]]; then
         lofreq_input="-lofreq ${lofreq_indel_vcf}"
         tool_lofreq="LoFreq"
-    else
-        lofreq_input=''
-        tool_lofreq=''
     fi
 
 
     if [[ ${scalpel_vcf} ]]; then
         scalpel_input="-scalpel ${scalpel_vcf}"
         tool_scalpel="Scalpel"
-    else
-        scalpel_input=''
-        tool_scalpel=''
+    fi
+
+
+    if [[ ${strelka_indel_vcf} ]]; then
+        strelka_input="-strelka ${strelka_indel_vcf}"
+        tool_strelka="Strelka"
+    fi
+
+
+    if [[ ${tnscope_vcf} ]]; then
+        tnscope_input="-tnscope ${merged_dir}/tnscope.indel.vcf"
+        tool_tnscope="TNscope"
     fi
 
 
     if [[ ${indelgroundtruth} ]]; then
         truth_input="-truth ${indelgroundtruth}"
-    else
-        truth_input=''
     fi
 
 
@@ -614,11 +587,12 @@ then
     $dbsnp_input \
     $cosmic_input \
     $indelocator_input \
-    $strelka_input \
     $varscan_input \
     $vardict_input \
     $lofreq_input \
     $scalpel_input \
+    $strelka_input \
+    $tnscope_input \
     -mincaller 0.5 \
     -tbam ${tbam} \
     -nbam ${nbam} \
@@ -629,7 +603,7 @@ then
     # If a classifier is used, use it:
     if [[ ${indelclassifier} ]] && [[ ${ada_r_script} ]]; then
         ${ada_r_script} "$indelclassifier" "${merged_dir}/Ensemble.sINDEL.tsv" "${merged_dir}/SSeq.Classified.sINDEL.tsv"
-        $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/SSeq.Classified.sINDEL.tsv -vcf ${merged_dir}/SSeq.Classified.sINDEL.vcf -pass $pass_threshold -low $lowqual_threshold -N "$normal_name" -T "$tumor_name" -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka
+        $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/SSeq.Classified.sINDEL.tsv -vcf ${merged_dir}/SSeq.Classified.sINDEL.vcf -pass $pass_threshold -low $lowqual_threshold -N "$normal_name" -T "$tumor_name" -all -phred -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka $tool_tnscope
 
     # If ground truth is here, assume builder.R, and build a classifier
     elif [[ ${indelgroundtruth} ]] && [[ ${ada_r_script} ]]; then
@@ -637,7 +611,7 @@ then
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else
-        $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sINDEL.tsv -vcf ${merged_dir}/Consensus.sINDEL.vcf -N "$normal_name" -T "$tumor_name" -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka -all
+        $MYDIR/SSeq_tsv2vcf.py -tsv ${merged_dir}/Ensemble.sINDEL.tsv -vcf ${merged_dir}/Consensus.sINDEL.vcf -N "$normal_name" -T "$tumor_name" -tools $tool_indelocator $tool_varscan $tool_vardict $tool_lofreq $tool_scalpel $tool_strelka $tool_tnscope -all
     fi
 
 fi
@@ -651,7 +625,7 @@ then
 
         if [[ -e $file ]]
         then
-            rm $file
+            rm -v $file
         fi
 
     done
