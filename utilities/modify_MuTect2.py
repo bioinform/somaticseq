@@ -14,9 +14,11 @@ import genomic_file_handlers as genome
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 # Variant Call Type, i.e., snp or indel
-parser.add_argument('-infile', '--input-vcf',  type=str, help='Input VCF file', required=True)
-parser.add_argument('-indel',  '--indel-out', type=str, help='Output VCF file', required=True)
-parser.add_argument('-snv',    '--snv-out', type=str, help='Output VCF file', required=True)
+parser.add_argument('-infile',  '--input-vcf', type=str, help='Input VCF file', required=True)
+parser.add_argument('-snv',     '--snv-out',   type=str, help='Output VCF file', required=True)
+parser.add_argument('-indel',   '--indel-out', type=str, help='Output VCF file', required=True)
+
+parser.add_argument('-tnscope', '--is-tnscipe', action="store_true", help='Actually TNscope VCF', required=False, default=False)
 
 # Parse the arguments:
 args = parser.parse_args()
@@ -44,13 +46,18 @@ with genome.open_textfile(infile) as vcf_in, open(snv_out, 'w') as snv_out, open
             tumor_name = line_i.split('=')[1]
             
         line_i = vcf_in.readline().rstrip()
-        snv_out.write( line_i + '\n' )
-        indel_out.write( line_i + '\n' )
 
     # This line will be #CHROM:
     header = line_i.split('\t')
-    normal_index = header.index(normal_name) - 9
-    tumor_index = header.index(tumor_name) - 9
+    
+    
+    if args.tnscope:
+        # Doesn't matter which one is normal/tumor. These information are not used. 
+        normal_index, tumor_index = 0,1
+        
+    else:
+        normal_index = header.index(normal_name) - 9
+        tumor_index = header.index(tumor_name) - 9
     
     # This will be the first variant line:
     line_i = vcf_in.readline().rstrip()
