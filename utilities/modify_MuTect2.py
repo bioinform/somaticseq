@@ -54,7 +54,7 @@ with genome.open_textfile(infile) as vcf_in, open(snv_out, 'w') as snv_out, open
     
     if args.is_tnscope:
         # Doesn't matter which one is normal/tumor. These information are not used. 
-        normal_index, tumor_index = 0,1
+        normal_index, tumor_index = 1,0
         
     else:
         normal_index = header.index(normal_name) - 9
