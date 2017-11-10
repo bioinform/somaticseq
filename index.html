@@ -163,12 +163,9 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <h2>Running SomaticSeq</h2>
     This SomaticSeq workflow takes about 3 hours for an ensmeble call set of 50K calls. You may use the SomaticSeq.Wrapper.sh script or create your own pipeline script.
 
-    The shell command (All VCF files need to be properly sorted. VCF files can also be bgzipped, but make sure they have .gz extension).<br>
+    All VCF, BAM, and FASTA files need to be sorted identically. For VCF files, both .vcf and .vcf.gz are acceptable.<br>
     
-    Long options shown here are only available for v2.0.3 or later.
-
     <h3>Command-line options for SomaticSeq.Wrapper.sh:</h3>
-    <h4>Long options only available after v2.0.3</h4>
     <ul>
     <li><code>--mutect</code>: MuTect's output VCF (Optional)</li>
     <li><code>--indelocator</code>: Indelocator's output VCF (Optional)</li>
@@ -206,7 +203,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
 
     
     <ul>
-    <li><b>Sample command for somatic mutation prediction mode:</b><br>
+    <li><b>Example command for somatic mutation prediction mode:</b><br>
     
     <code>
     SomaticSeq.Wrapper.sh                                 \<br>
@@ -238,46 +235,20 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     --exclusion-region blacklist.bed                      \<br>
     --gatk $PATH/TO/GenomeAnalysisTK.jar                  \<br>
     --output-dir $OUTPUT_DIR
-    </code>
-    
+    </code>    
     </li>
     </ul>
-
 
     <ul>
-    <li><b>Sample command for model training mode:</b><br>
-    
-    <code>
-    SomaticSeq.Wrapper.sh                                 \<br>
-    --mutect $PATH/TO/MuTect/variants.snv.vcf             \<br>
-    --mutect2 $PATH/TO/MuTect2/variants.vcf               \<br>
-    --indelocator $PATH/TO/Indelocator/variants.indel.vcf \<br>
-    --varscan-snv $PATH/TO/VarScan/variants.snv.vcf       \<br>
-    --varscan-indel $PATH/TO/Varscan/variants.indel.vcf   \<br>
-    --jsm $PATH/TO/JointSNVMix/variants.snv.vcf           \<br>
-    --sniper $PATH/TO/SomaticSniper/variants.snv.vcf      \<br>
-    --vardict $PATH/TO/Vardict/variants.vcf               \<br>
-    --muse $PATH/TO/MuSE/variants.snv.vcf                 \<br>
-    --lofreq-snv    $PATH/TO/LoFreq/variants.snp.vcf      \<br>
-    --lofreq-indel  $PATH/TO/LoFreq/variants.indel.vcf    \<br>
-    --scalpel $PATH/TO/Scalpel/variants.indel.vcf         \<br>
-    --strelka-snv $PATH/TO/Strelka/variants.snv.vcf       \<br>
-    --strelka-indel $PATH/TO/Strelka/variants.indel.vcf   \<br>
-    --normal-bam normal.bam                               \<br>
-    --tumor-bam tumor.bam                                 \<br>
-    --ada-r-script $PATH/ada_model_builder_ntChange.R     \<br>
-    --genome-reference human_b37.fasta                    \<br>
-    --cosmic cosmic.b37.v71.vcf                           \<br>
-    --dbsnp dbSNP.b37.v141.vcf                            \<br>
-    --gatk $PATH/TO/GenomeAnalysisTK.jar                  \<br>
-    --inclusion-region validated.bed                      \<br>
-    --exclusion-region blacklist.bed                      \<br>
-    --truth-snv SNV_Ground_Truth.vcf                      \<br>
-    --truth-indel Indel_Ground_Truth.vcf                  \<br>
-    --output-dir $OUTPUT_DIR
-    </code>
-    </li>
+    <b>Ground truth VCF files and proper R script needed for training mode:</b><br>
+   
+    <li><code>--ada-r-script $somaticseq/r_scripts/ada_model_builder_ntChange.R </code></li>
+    <li><code>--truth-snv groundTruth.sSNV.vcf </code></li>
+    <li><code>--truth-indel groundTruth.sINDEL.vcf </code></li>
+
     </ul>
+
+
 
 
     <h3>Contact Us</h3>
