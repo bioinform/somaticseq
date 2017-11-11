@@ -16,7 +16,7 @@
         .container {
         margin-right: auto;
         margin-left: auto;
-        max-width:1024px;
+        max-width:960px;
         }
     </style>
 
@@ -127,74 +127,73 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
 
 
     <h2>Download SomaticSeq</h2>
+
     <ul>
-    <li>The source code is hosted at <a href="https://github.com/bioinform/somaticseq/" onclick="trackOutboundLink('https://github.com/bioinform/somaticseq'); return false'">https://github.com/bioinform/somaticseq</a>
-    </li>
+        <li>The source code is hosted at <a href="https://github.com/bioinform/somaticseq/" onclick="trackOutboundLink('https://github.com/bioinform/somaticseq'); return false'">https://github.com/bioinform/somaticseq</a></li>
 
-    <li>The packaged releases can be found at <a href="https://github.com/bioinform/somaticseq/releases"
-                                           onclick="trackOutboundLink('https://github.com/bioinform/somaticseq/releases'); return false;">https://github.com/bioinform/somaticseq/releases</a>
-    </li>
+        <li>The packaged releases can be found at <a href="https://github.com/bioinform/somaticseq/releases"
+                                           onclick="trackOutboundLink('https://github.com/bioinform/somaticseq/releases'); return false;">https://github.com/bioinform/somaticseq/releases</a></li>
 
-    <li>Docker image can be downloaded at <a href="https://hub.docker.com/r/lethalfang/somaticseq/" onclick="trackOutboundLink('https://hub.docker.com/r/lethalfang/somaticseq/'); return false'">https://hub.docker.com/r/lethalfang/somaticseq/</a>
-
+        <li>Docker image can be downloaded at <a href="https://hub.docker.com/r/lethalfang/somaticseq/" onclick="trackOutboundLink('https://hub.docker.com/r/lethalfang/somaticseq/'); return false'">https://hub.docker.com/r/lethalfang/somaticseq/</a>
     </ul>
 
 
 
 
     <h2>Software Dependencies</h2>
+
     <ul>
-    <li>Python3, plus regex, numpy, scipy, and pysam packages</li>
-    <li>R and ada package</li>
-    <li>BEDtools if inclusion and/or exclusion regions are used</li>
-    <li>Optional: free GATK (We use GATK CombineVariants. You may find other ways to combine VCF files.)</li>
-    <li>Optional: dbSNP and COSMIC file (if you want to use those information as a part of your training set)</li>
+        <li>Python3, plus regex, numpy, scipy, and pysam packages</li>
+        <li>R and ada package</li>
+        <li>BEDtools if inclusion and/or exclusion regions are used</li>
+        <li>Optional: free GATK (We use GATK CombineVariants. You may find other ways to combine VCF files.)</li>
+        <li>Optional: dbSNP and COSMIC file (if you want to use those information as a part of your training set)</li>
     </ul>
 
 
 
-
     <h2>Running SomaticSeq</h2>
-    This SomaticSeq procedure takes about 3 hours for a call set of 50K calls on 30X tumor-normal genome on a single thread. You may use the SomaticSeq.Wrapper.sh script or create your own pipeline script.
 
-    All VCF, BAM, and FASTA files need to be sorted identically. For VCF files, both .vcf and .vcf.gz are acceptable.<br>
-
-    The following command can be run when those individual mutation callers have completed running. 
-    To use our somatic mutation caller pipelines, read the README in our <a href="https://github.com/bioinform/somaticseq/" onclick="trackOutboundLink('https://github.com/bioinform/somaticseq'); return false'">source code</a>. 
+    <ul>
+        <li>This SomaticSeq procedure takes about 3 hours for a call set of 50K calls on 30X tumor-normal genome on a single thread. You may use the SomaticSeq.Wrapper.sh script or create your own pipeline script.</li>
+        <li>PAll VCF, BAM, and FASTA files need to be sorted identically. For VCF files, both .vcf and .vcf.gz are acceptable.</li>
+        <li>PThe following command can be run when those individual mutation callers have completed running. 
+            To use our somatic mutation caller pipelines, read the README in our <a href="https://github.com/bioinform/somaticseq/" onclick="trackOutboundLink('https://github.com/bioinform/somaticseq'); return false'">source code</a>.</li>
+    </ul>
     
     <h3>Command-line options for SomaticSeq.Wrapper.sh:</h3>
     <ul>
-    <li><code>--mutect</code>: MuTect's output VCF (Optional)</li>
-    <li><code>--indelocator</code>: Indelocator's output VCF (Optional)</li>
-    <li><code>--mutect2</code>: MuTect2's output VCF (Optional)</li>
-    <li><code>--varscan-snv</code>: VarScan2's output SNV VCF (Optional)</li>
-    <li><code>--varscan-indel</code>: VarScan2's output INDEL VCF (Optional)</li>
-    <li><code>--jsm</code>: JointSNVMix's variant output converted to VCF (Optional)</li>
-    <li><code>--sniper</code>: SomaticSniper's output VCF (Optional)</li>
-    <li><code>--vardict</code>: VarDict's output VCF (Optional)</li>
-    <li><code>--muse</code>: MuSE's output VCF (Optional)</li>
-    <li><code>--lofreq-snv</code>: LoFreq's output VCF (Optional)</li>
-    <li><code>--lofreq-indel</code>: LoFreq's output INDEL VCF (Optional)</li>
-    <li><code>--scalpel</code>: Scalpel's output VCF (Optional)</li>
-    <li><code>--strelka-snv</code>: Strelka2's SNV VCF (Optional)</li>
-    <li><code>--strelka-indel</code>: Strelka2's INDEL VCF (Optional)</li>
-    <li><code>--normal-bam</code>: Normal BAM files</li>
-    <li><code>--tumor-bam</code>: Tumor BAM files</li>
-    <li><code>--ada-r-script</code>: Ada script in R, located in somaticseq/r_scripts (Optional. If not provided, SomaticSeq will not attempt to train or predict. If --classifier-snv and/or --classifier-indel are provided, this script is assumed to be predictor.R. If --truth-snv and/or --truth-indel are provided, this script is assumed to be builder.R).</li>
-    <li><code>--classifier-snv</code>: Trained model/classifier for SNV, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
-    <li><code>--classifier-indel</code>: Trained model/classifier for INDEL, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
-    <li><code>--genome-reference</code>: Genome reference FASTA file</li>
-    <li><code>--cosmic</code>: COSMIC VCF file</li>
-    <li><code>--dbsnp</code>: dbSNP VCF file</li>
-    <li><code>--gatk</code>: GATK's java executable file</li>
-    <li><code>--inclusion-region</code>: Only include those regions in analysis</li>
-    <li><code>--exclusion-region</code>: Regions to toss out in the final VCF files (Optional)</li>
-    <li><code>--truth-snv</code>: A VCF file containing true sSNVs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
-    <li><code>--truth-indel</code>: A VCF file containing true sINDELs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
-    <li><code>--output-dir</code>: Output directory (make sure it exists)</li>
-    <li><code>--keep-intermediates</code>: [0|1], whether to keep intermediate files for debugging. [Optional. Default = 0]</li>
-    <li><code>--pass-threshold</code>: Probability value above which a call will be labeled as PASS. (Default = 0.5. Optional. Available after v2.2.2)</li>
-    <li><code>--lowqual-threshold</code>: Probability value above which (but below the PASS threshold) a call will be labeled as LowQual. (Default = 0.1. Optional. Available after v2.2.2)</li>
+        <li><code>--mutect</code>: MuTect's output VCF (Optional)</li>
+        <li><code>--indelocator</code>: Indelocator's output VCF (Optional)</li>
+        <li><code>--mutect2</code>: MuTect2's output VCF (Optional)</li>
+        <li><code>--varscan-snv</code>: VarScan2's output SNV VCF (Optional)</li>
+        <li><code>--varscan-indel</code>: VarScan2's output INDEL VCF (Optional)</li>
+        <li><code>--jsm</code>: JointSNVMix's variant output converted to VCF (Optional)</li>
+        <li><code>--sniper</code>: SomaticSniper's output VCF (Optional)</li>
+        <li><code>--vardict</code>: VarDict's output VCF (Optional)</li>
+        <li><code>--muse</code>: MuSE's output VCF (Optional)</li>
+        <li><code>--lofreq-snv</code>: LoFreq's output VCF (Optional)</li>
+        <li><code>--lofreq-indel</code>: LoFreq's output INDEL VCF (Optional)</li>
+        <li><code>--scalpel</code>: Scalpel's output VCF (Optional)</li>
+        <li><code>--strelka-snv</code>: Strelka2's SNV VCF (Optional)</li>
+        <li><code>--strelka-indel</code>: Strelka2's INDEL VCF (Optional)</li>
+        <li><code>--normal-bam</code>: Normal BAM files</li>
+        <li><code>--tumor-bam</code>: Tumor BAM files</li>
+        <li><code>--ada-r-script</code>: Ada script in R, located in somaticseq/r_scripts (Optional. If not provided, SomaticSeq will not attempt to train or predict. If --classifier-snv and/or --classifier-indel are provided, this script is assumed to be predictor.R. If --truth-snv and/or --truth-indel are provided, this script is assumed to be builder.R).</li>
+        <li><code>--classifier-snv</code>: Trained model/classifier for SNV, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
+        <li><code>--classifier-indel</code>: Trained model/classifier for INDEL, e.g., from DREAM Challenge (Optional: if provided along with predictor.R, SomaticSeq will predict somatic mutations.)</li>
+        <li><code>--genome-reference</code>: Genome reference FASTA file</li>
+        <li><code>--cosmic</code>: COSMIC VCF file</li>
+        <li><code>--dbsnp</code>: dbSNP VCF file</li>
+        <li><code>--gatk</code>: GATK's java executable file</li>
+        <li><code>--inclusion-region</code>: Only include those regions in analysis</li>
+        <li><code>--exclusion-region</code>: Regions to toss out in the final VCF files (Optional)</li>
+        <li><code>--truth-snv</code>: A VCF file containing true sSNVs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
+        <li><code>--truth-indel</code>: A VCF file containing true sINDELs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
+        <li><code>--output-dir</code>: Output directory (make sure it exists)</li>
+        <li><code>--keep-intermediates</code>: [0|1], whether to keep intermediate files for debugging. [Optional. Default = 0]</li>
+        <li><code>--pass-threshold</code>: Probability value above which a call will be labeled as PASS. (Default = 0.5. Optional. Available after v2.2.2)</li>
+        <li><code>--lowqual-threshold</code>: Probability value above which (but below the PASS threshold) a call will be labeled as LowQual. (Default = 0.1. Optional. Available after v2.2.2)</li>
     </ul>
 
 
@@ -239,9 +238,9 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <ul>
     <b>Ground truth VCF files and proper R script needed for training mode:</b><br>
    
-    <li><code>--ada-r-script $somaticseq/r_scripts/ada_model_builder_ntChange.R </code></li>
-    <li><code>--truth-snv groundTruth.sSNV.vcf </code></li>
-    <li><code>--truth-indel groundTruth.sINDEL.vcf </code></li>
+        <li><code>--ada-r-script $somaticseq/r_scripts/ada_model_builder_ntChange.R </code></li>
+        <li><code>--truth-snv groundTruth.sSNV.vcf </code></li>
+        <li><code>--truth-indel groundTruth.sINDEL.vcf </code></li>
 
     </ul>
 
@@ -265,18 +264,18 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
 
 
     <h3>References/Tools</h3>
-    <ul>
 
-    <li>MuTect:        <a href="http://dx.doi.org/10.1038/nbt.2514"              target=_blank>Cibulskis K, Lawrence MS, Carter SL, et al. Sensitive detection of somatic point mutations in impure and heterogeneous cancer samples. Nat Biotechnol. 2013;31(3):213-9.</a></li>
-    <li>VarScan2:      <a href="http://dx.doi.org/10.1101/gr.129684.111"         target=_blank>Koboldt DC, Zhang Q, Larson DE, et al. VarScan 2: somatic mutation and copy number alteration discovery in cancer by exome sequencing. Genome Res. 2012;22(3):568-76.</a></li>
-    <li>JointSNVMix2:  <a href="http://dx.doi.org/10.1093/bioinformatics/bts053" target=_blank>Roth A, Ding J, Morin R, et al. JointSNVMix: a probabilistic model for accurate detection of somatic mutations in normal/tumour paired next-generation sequencing data. Bioinformatics. 2012;28(7):907-13.</a></li>
-    <li>SomaticSniper: <a href="http://dx.doi.org/10.1093/bioinformatics/btr665" target=_blank> Larson DE, Harris CC, Chen K, et al. SomaticSniper: identification of somatic point mutations in whole genome sequencing data. Bioinformatics. 2012;28(3):311-7.</a></li>
-    <li>VarDict:       <a href="http://dx.doi.org/10.1093/nar/gkw227"            target=_blank>Lai Z, Markovets A, Ahdesmaki M, Chapman B, et al. VarDict: a novel and versatile variant caller for next-generation sequencing in cancer research. Nucleic Acids Research. 2016.</a></li>
-    <li>Indelocator:   <a href="http://dx.doi.org/10.1038/nature11154"           target=_blank'>Banerji S, Cibulskis K, Rangel-escareno C, et al. Sequence analysis of mutations and translocations across breast cancer subtypes. Nature. 2012;486(7403):405-9.</a></li>
-    <li>MuSE:          <a href="http://dx.doi.org/10.1186/s13059-016-1029-6"     target=_blank>Fan Y, Xi L, Hughes DS, et al. MuSE: accounting for tumor heterogeneity using a sample-specific error model improves sensitivity and specificity in mutation calling from sequencing data. Genome Biol. 2016;17(1):178.</a></li>
-    <li>LoFreq:        <a href="http://dx.doi.org/10.1093/nar/gks918"            target=_blank>Wilm A, Aw PP, Bertrand D, et al. LoFreq: a sequence-quality aware, ultra-sensitive variant caller for uncovering cell-population heterogeneity from high-throughput sequencing datasets. Nucleic Acids Res. 2012;40(22):11189-201.</a>
-    <li>Scalpel:       <a href="http://dx.doi.org/10.1038/nmeth.3069"            target=_blank>Narzisi G, O'rawe JA, Iossifov I, et al. Accurate de novo and transmitted indel detection in exome-capture data using microassembly. Nat Methods. 2014;11(10):1033-6.</a>
-    <li>Strelka2:      <a href="http://dx.doi.org/10.1093/bioinformatics/bts271" target=_blank>Saunders CT, Wong WS, Swamy S, Becq J, Murray LJ, Cheetham RK. Strelka: accurate somatic small-variant calling from sequenced tumor-normal sample pairs. Bioinformatics. 2012;28(14):1811-7.</a>
+    <ul>
+        <li>MuTect:        <a href="http://dx.doi.org/10.1038/nbt.2514"              target=_blank>Cibulskis K, Lawrence MS, Carter SL, et al. Sensitive detection of somatic point mutations in impure and heterogeneous cancer samples. Nat Biotechnol. 2013;31(3):213-9.</a></li>
+        <li>VarScan2:      <a href="http://dx.doi.org/10.1101/gr.129684.111"         target=_blank>Koboldt DC, Zhang Q, Larson DE, et al. VarScan 2: somatic mutation and copy number alteration discovery in cancer by exome sequencing. Genome Res. 2012;22(3):568-76.</a></li>
+        <li>JointSNVMix2:  <a href="http://dx.doi.org/10.1093/bioinformatics/bts053" target=_blank>Roth A, Ding J, Morin R, et al. JointSNVMix: a probabilistic model for accurate detection of somatic mutations in normal/tumour paired next-generation sequencing data. Bioinformatics. 2012;28(7):907-13.</a></li>
+        <li>SomaticSniper: <a href="http://dx.doi.org/10.1093/bioinformatics/btr665" target=_blank> Larson DE, Harris CC, Chen K, et al. SomaticSniper: identification of somatic point mutations in whole genome sequencing data. Bioinformatics. 2012;28(3):311-7.</a></li>
+        <li>VarDict:       <a href="http://dx.doi.org/10.1093/nar/gkw227"            target=_blank>Lai Z, Markovets A, Ahdesmaki M, Chapman B, et al. VarDict: a novel and versatile variant caller for next-generation sequencing in cancer research. Nucleic Acids Research. 2016.</a></li>
+        <li>Indelocator:   <a href="http://dx.doi.org/10.1038/nature11154"           target=_blank'>Banerji S, Cibulskis K, Rangel-escareno C, et al. Sequence analysis of mutations and translocations across breast cancer subtypes. Nature. 2012;486(7403):405-9.</a></li>
+        <li>MuSE:          <a href="http://dx.doi.org/10.1186/s13059-016-1029-6"     target=_blank>Fan Y, Xi L, Hughes DS, et al. MuSE: accounting for tumor heterogeneity using a sample-specific error model improves sensitivity and specificity in mutation calling from sequencing data. Genome Biol. 2016;17(1):178.</a></li>
+        <li>LoFreq:        <a href="http://dx.doi.org/10.1093/nar/gks918"            target=_blank>Wilm A, Aw PP, Bertrand D, et al. LoFreq: a sequence-quality aware, ultra-sensitive variant caller for uncovering cell-population heterogeneity from high-throughput sequencing datasets. Nucleic Acids Res. 2012;40(22):11189-201.</a>
+        <li>Scalpel:       <a href="http://dx.doi.org/10.1038/nmeth.3069"            target=_blank>Narzisi G, O'rawe JA, Iossifov I, et al. Accurate de novo and transmitted indel detection in exome-capture data using microassembly. Nat Methods. 2014;11(10):1033-6.</a>
+        <li>Strelka2:      <a href="http://dx.doi.org/10.1093/bioinformatics/bts271" target=_blank>Saunders CT, Wong WS, Swamy S, Becq J, Murray LJ, Cheetham RK. Strelka: accurate somatic small-variant calling from sequenced tumor-normal sample pairs. Bioinformatics. 2012;28(14):1811-7.</a>
     </ul>
 
 
