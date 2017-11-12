@@ -131,7 +131,7 @@ then
     exome='--exome'
 fi
 
-echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/strelka:2.8.3 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/strelka:2.8.4 \\" >> $out_script
 echo "/opt/strelka/bin/configureStrelkaGermlineWorkflow.py \\" >> $out_script
 echo "--bam=/mnt/${tumor_bam} \\" >> $out_script
 echo "--referenceFasta=/mnt/${HUMAN_REFERENCE}  \\" >> $out_script
@@ -143,7 +143,7 @@ echo "--runDir=/mnt/${outdir}/${outvcf%\.vcf}" >> $out_script
 
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/strelka:2.8.3 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/strelka:2.8.4 \\" >> $out_script
 echo "/mnt/${outdir}/${outvcf%\.vcf}/runWorkflow.py -m local -j 1 ${extra_run_arguments}" >> $out_script
 
 echo "" >> $out_script
