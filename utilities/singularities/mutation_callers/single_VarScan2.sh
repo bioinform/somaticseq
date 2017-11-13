@@ -12,7 +12,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 VAF=0.10
 action=echo
-MEM=7
+MEM=16
 minMQ=25
 minBQ=20
 
