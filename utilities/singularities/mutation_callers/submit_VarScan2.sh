@@ -12,7 +12,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 VAF=0.10
 action=echo
-MEM=16
+MEM=8
 minMQ=25
 minBQ=20
 
@@ -119,7 +119,7 @@ echo "" >> $out_script
 echo "#$ -o ${logdir}" >> $out_script
 echo "#$ -e ${logdir}" >> $out_script
 echo "#$ -S /bin/bash" >> $out_script
-echo "#$ -l h_vmem=${MEM}G" >> $out_script
+echo "#$ -l h_vmem=$[${MEM}+2]G" >> $out_script
 echo 'set -e' >> $out_script
 echo "" >> $out_script
 

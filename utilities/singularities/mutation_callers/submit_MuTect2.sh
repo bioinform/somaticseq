@@ -132,7 +132,7 @@ echo "" >> $out_script
 echo "#$ -o ${logdir}" >> $out_script
 echo "#$ -e ${logdir}" >> $out_script
 echo "#$ -S /bin/bash" >> $out_script
-echo "#$ -l h_vmem=${MEM}G" >> $out_script
+echo "#$ -l h_vmem=$[${MEM}+1]G" >> $out_script
 echo "#$ -pe smp ${threads}" >> $out_script
 
 echo 'set -e' >> $out_script
