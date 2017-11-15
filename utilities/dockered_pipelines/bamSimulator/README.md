@@ -90,7 +90,7 @@ This is the approach described in our [2017 AACR Abstract](http://dx.doi.org/10.
 <b>A schematic of the simulation procedure (scenario #3 as described above)</b>
   ![Onkoinsight Simulation](onkoinsight_sim.png)
 
-** To create SomaticSeq classifiers**
+**To create SomaticSeq classifiers**
 * After the mutation simulation jobs are completed, you may create classifiers with the training data with the following command:
 * See [our somatic mutation pipeline](..) for more details.
 ```
