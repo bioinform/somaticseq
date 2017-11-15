@@ -15,7 +15,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_multiThreads.sh 
 --dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
 --threads         36 \
 --action          echo \
---mutect2 --varscan2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+--mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
 ```
 
 **Example Command for single-thread jobs**
@@ -27,7 +27,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 --output-dir      /ABSOLUTE/PATH/TO/RESULTS \
 --dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
 --action          echo \
---mutect2 --varscan2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+--mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
 ```
 
 **submit_callers_[single|multi]Thread(s).sh** can submit dockered somatic mutation calling jobs. The multiThread version is recommended for WGS. The following options:
