@@ -2,7 +2,7 @@
 * This pipeline is used to spike in *in silico* somatic mutations into existing BAM files to create semi-synthetic data set.
 * After the *in silico* data are generated, you can use the [somatic mutation pipeline](..) on the training data to generate the SomaticSeq classifiers.
 * Classifiers built on training data only work if the training data is similar to the data you want to predict. Ideally, the training data are sequenced on the same platform, same sample prep, and similar depth of coverage as the data of interest.
-* The spike in is based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon) slightly modified.
+* This method is based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon), slightly modified into [our own fork](https://github.com/ltfang-bina/bamsurgeon) for some speedups. 
 
 **Requirement**
 * Have internet connection, and able to pull and run docker images from Docker Hub, as we have dockerized the entire BAMSurgeon workflow. 

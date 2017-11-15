@@ -45,7 +45,7 @@ $somaticseq/SomaticSeq.Wrapper.sh \
 <b>Pipelines and Workflows</b>
 * We have dockerized pipeline that runs all the somatic mutation callers and SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines).
 * We also have dockerized pipeline for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator). This pipeline is based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). It can be used to create training set to build SomaticSeq classifiers.
-* Those two pipelines are also ported to singularity at [utilities/singularities](utilities/singularities), although they may not be as extensively tested or optimized as the dockered ones. Read the pages at the dockered pipelines for descriptions and how-to's. 
+* Those two pipelines are also ported to singularity at [**utilities/singularities**](utilities/singularities), although they may not be as extensively tested or optimized as the dockered ones. Read the pages at the dockered pipelines for descriptions and how-to's. 
 * The limited pipeline to generate BAM files based on GATK's best practices is at [utilities/dockered_pipelines/alignments](utilities/dockered_pipelines/alignments) (dockers only, no singularity yet).
 
 
