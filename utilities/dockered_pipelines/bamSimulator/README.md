@@ -23,6 +23,8 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 --num-svs           1500 \
 --min-vaf           0.0 \
 --max-vaf           1.0 \
+--left-beta         2 \
+--right-beta        5 \
 --min-variant-reads 2 \
 --output-dir        /ABSOLUTE/PATH/TO/trainingSet \
 --threads           36 \
