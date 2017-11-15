@@ -66,14 +66,13 @@ The following parameters for the script:
 2) When you have a normal that's roughly 2X the coverage as your data of choice, you can split that into two halves. One designated as normal, and the other one designated as tumor. That [DREAM Challenge's approach](https://www.synapse.org/#!Synapse:syn312572/wiki/62018). Use ```--split-bam --indel-realign```.
 3) Another approach is to merge the tumor and normal data, and then randomly split them as described above. When you merge the tumor and normal, the real tumor mutations are relegated as germline or noise, so they are considered false positives, because they are supposed to be evenly split into the designated normal. To take this approach, use ```--merge-bam --split-bam --indel-realign```.
 * Don't use --indel-realign and you do not use indel realignment in your alignment pipeline. 
-
+* You can visualize the shape of VAF distribution with python command (scipy.stats as stats): ```stats.beta.pdf(x, leftBeta, rightBeta, loc=minAF, scale=minAF+maxAF)```
 
 **What does that command do**
 
-This is a workflow created using [BAMSurgeon](https://github.com/adamewing/bamsurgeon). 
-The command demonstrated above will merge the normal and tumor BAM files into a single BAM file, and then randomly split the merged BAM file into two BAM files. 
+This is a workflow created using modified [BAMSurgeon](https://github.com/ltfang-bina/bamsurgeon).
+The ```--merge-bam``` will merge the normal and tumor BAM files into a single BAM file. Then, ```--split-bem``` will randomly split the merged BAM file into two BAM files.
 One of which is designated normal, and one of which is designated tumor. 
-Real somatic mutations in the original tumor will be randomly split into both files, and can be considered germline variants or tummor-normal contamiation. 
 Synthetic mutations will then be spiked into the designated tumor to create "real" mutations.
 This is the approach described in our [2017 AACR Abstract](http://dx.doi.org/10.1158/1538-7445.AM2017-386). 
 
