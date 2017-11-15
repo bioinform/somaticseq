@@ -89,3 +89,21 @@ This is the approach described in our [2017 AACR Abstract](http://dx.doi.org/10.
 
 <b>A schematic of the simulation procedure (scenario #3 as described above)</b>
   ![Onkoinsight Simulation](onkoinsight_sim.png)
+
+** To create SomaticSeq classifiers**
+* After the mutation simulation jobs are completed, you may create classifiers with the training data with the following command:
+* See [our somatic mutation pipeline](..) for more details.
+```
+$PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_multiThreads.sh \
+--output-dir      /ABSOLUTE/PATH/TO/trainingSet/somaticMutationPipeline \
+--normal-bam      /ABSOLUTE/PATH/TO/trainingSet/syntheticNormal.bam \
+--tumor-bam       /ABSOLUTE/PATH/TO/trainingSet/syntheticTumor.bam \
+--human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--min-vaf         0.05 \
+--thread          36 \
+--truth-snv       /ABSOLUTE/PATH/TO/trainingSet/synthetic_snvs.vcf \
+--truth-indel     /ABSOLUTE/PATH/TO/trainingSet/synthetic_indels.leftAlign.vcf \
+--action          echo \
+--mutect2 --varscan2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+```
