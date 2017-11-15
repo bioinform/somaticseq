@@ -68,12 +68,14 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 2) When you have a normal that's roughly 2X the coverage as your data of choice, you can split that into two halves. One designated as normal, and the other one designated as tumor. That [DREAM Challenge's approach](https://www.synapse.org/#!Synapse:syn312572/wiki/62018). Use ```--split-bam --indel-realign```.
 3) Another approach is to merge the tumor and normal data, and then randomly split them as described above. When you merge the tumor and normal, the real tumor mutations are relegated as germline or noise, so they are considered false positives, because they are supposed to be evenly split into the designated normal. To take this approach, use ```--merge-bam --split-bam --indel-realign```.
 * Don't use --indel-realign if you do not use indel realignment in your alignment pipeline. 
-* You can visualize the shape of VAF distribution with python command (scipy.stats as stats, numpy as np):
+* You can visualize the shape of VAF distribution with python command:
 ``` 
     import scipy.stats as stats
     import numpy as np
     import matplotlib.pyplot as plt
 
+    leftBeta, rigthBeta = 2,5
+    minAF, maxAF = 0,1
     x = np.linspace(0,1,101)
     y = stats.beta.pdf(x, leftBeta, rigthBeta, loc = minAF, scale = minAF + maxAF)
     _ = plt.plot(x, y)
@@ -105,5 +107,5 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_multiThreads.sh 
 --truth-snv       /ABSOLUTE/PATH/TO/trainingSet/synthetic_snvs.vcf \
 --truth-indel     /ABSOLUTE/PATH/TO/trainingSet/synthetic_indels.leftAlign.vcf \
 --action          echo \
---mutect2 --varscan2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+--mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
 ```
