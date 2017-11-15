@@ -66,7 +66,7 @@ The following parameters for the script:
 2) When you have a normal that's roughly 2X the coverage as your data of choice, you can split that into two halves. One designated as normal, and the other one designated as tumor. That [DREAM Challenge's approach](https://www.synapse.org/#!Synapse:syn312572/wiki/62018). Use ```--split-bam --indel-realign```.
 3) Another approach is to merge the tumor and normal data, and then randomly split them as described above. When you merge the tumor and normal, the real tumor mutations are relegated as germline or noise, so they are considered false positives, because they are supposed to be evenly split into the designated normal. To take this approach, use ```--merge-bam --split-bam --indel-realign```.
 * Don't use --indel-realign and you do not use indel realignment in your alignment pipeline. 
-* You can visualize the shape of VAF distribution with python command (scipy.stats as stats): ```stats.beta.pdf(x, leftBeta, rightBeta, loc=minAF, scale=minAF+maxAF)```
+* You can visualize the shape of VAF distribution with python command (scipy.stats as stats, numpy as np): ```stats.beta.pdf(np.linspace(0,1,101), leftBeta, rigthBeta, loc = minAF, scale = minAF + maxAF)```
 
 **What does that command do**
 
