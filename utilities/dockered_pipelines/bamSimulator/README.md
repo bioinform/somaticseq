@@ -33,7 +33,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 * **BamSimulator_.sh** creates semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**, **synthetic_indels.vcf**, and **synthetic_svs.vcf**.
 * For single-thread job (WES), use BamSimulator_singleThread.sh instead. 
 
-The following parameters for the script:
+**The following parameters for the script:**
 * ```--genome-reference``` /ABSOLUTE/PATH/TO/human_reference.fa (Required)
 * ```--selector``` /ABSOLUTE/PATH/TO/capture_region.bed (Required)
 * ```--tumor-bam-in``` Input BAM file (Required)
@@ -65,7 +65,7 @@ The following parameters for the script:
 1) If you have sequenced replicate normal, that's pretty good data set for training. You can use one of the normal as normal, and designate the other normal (of the same sample) as tumor. Use ```--indel-realign``` only. You don't need to merge them.
 2) When you have a normal that's roughly 2X the coverage as your data of choice, you can split that into two halves. One designated as normal, and the other one designated as tumor. That [DREAM Challenge's approach](https://www.synapse.org/#!Synapse:syn312572/wiki/62018). Use ```--split-bam --indel-realign```.
 3) Another approach is to merge the tumor and normal data, and then randomly split them as described above. When you merge the tumor and normal, the real tumor mutations are relegated as germline or noise, so they are considered false positives, because they are supposed to be evenly split into the designated normal. To take this approach, use ```--merge-bam --split-bam --indel-realign```.
-* Don't use --indel-realign and you do not use indel realignment in your alignment pipeline. 
+* Don't use --indel-realign if you do not use indel realignment in your alignment pipeline. 
 * You can visualize the shape of VAF distribution with python command (scipy.stats as stats, numpy as np):
 ``` 
     import scipy.stats as stats
