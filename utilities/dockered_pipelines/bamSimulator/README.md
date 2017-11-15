@@ -18,9 +18,9 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 --tumor-bam-out     syntheticTumor.bam \
 --normal-bam-out    syntheticNormal.bam \
 --split-proportion  0.5 \
---num-snvs          300 \
---num-indels        100 \
---num-svs           50 \
+--num-snvs          30000 \
+--num-indels        10000 \
+--num-svs           1500 \
 --min-vaf           0.05 \
 --max-vaf           0.5 \
 --min-variant-reads 2 \
