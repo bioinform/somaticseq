@@ -21,11 +21,11 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 --num-snvs          30000 \
 --num-indels        10000 \
 --num-svs           1500 \
---min-vaf           0.05 \
---max-vaf           0.5 \
+--min-vaf           0.0 \
+--max-vaf           1.0 \
 --min-variant-reads 2 \
 --output-dir        /ABSOLUTE/PATH/TO/trainingSet \
---threads           12 \
+--threads           36 \
 --action            qsub
 --merge-bam --split-bam --indel-realign --merge-output-bams
 ```
