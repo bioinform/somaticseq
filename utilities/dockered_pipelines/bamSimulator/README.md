@@ -56,7 +56,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 * ```--output-dir``` Output directory
 * ```--merge-bam``` Flag to merge the tumor and normal bam file input
 * ```--split-bam``` Flag to split BAM file for tumor and normal
-* ```--clean-bam``` Flag to go through the BAM file and remove reads where more than 2 identical read names are present. This was necessary for some BAM files downloaded from TCGA. However, a proper pair-end BAM file should not have the same read name appearing more than twice. Use this only when necessary. 
+* ```--clean-bam``` Flag to go through the BAM file and remove reads where more than 2 identical read names are present, or reads where its read length and CIGAR string do not match. This was necessary for some BAM files downloaded from TCGA. However, a proper pair-end BAM file should not have the same read name appearing more than twice. Use this only when necessary as it first sorts BAM file by qname, goes through the cleaning procedure, then re-sort by coordinates.
 * ```--indel-realign``` Conduct GATK Joint Indel Realignment on the two output BAM files. Instead of syntheticNormal.bam and syntheticTumor.bam, the final BAM files will be **syntheticNormal.JointRealigned.bam** and **syntheticTumor.JointRealigned.bam**.
 * ```--seed``` Random seed. Pick any integer for reproducibility purposes.
 * ```--threads``` Split the BAM files evenly in N regions, then process each (pair) of sub-BAM files in parallel. 
@@ -80,6 +80,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
     y = stats.beta.pdf(x, leftBeta, rigthBeta, loc = minAF, scale = minAF + maxAF)
     _ = plt.plot(x, y)
 ```
+* In some BAM files, there are reads where read lengths and CIGAR strings don't match. Spike in will fail in these cases, and you'll need to invoke ```--clean-bam``` to get rid of these problematic reads. 
 
 **What does that command do**
 
