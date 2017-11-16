@@ -376,7 +376,7 @@ do
             --bam-out Sorted.bam \
             --out-script $out_script
             
-            bam_file_to_be_split="${outdir}/Sorted.bam"
+            bam_file_for_spikein="${outdir}/Sorted.bam"
             files_to_delete="${outdir}/qnameSorted.bam ${outdir}/Cleaned.bam ${outdir}/Sorted.bam ${outdir}/Sorted.bam.bai $files_to_delete"
         fi
         
