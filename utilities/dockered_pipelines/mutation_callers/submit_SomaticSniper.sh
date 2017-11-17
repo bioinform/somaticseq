@@ -118,7 +118,7 @@ echo "" >> $out_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/somaticsniper:1.0.5.0 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/somaticsniper:1.0.5.0-2 \\" >> $out_script
 echo "/opt/somatic-sniper/build/bin/bam-somaticsniper \\" >> $out_script
 echo "-q ${MQ} -Q ${BQ} -s ${prior} -F vcf ${extra_arguments} \\" >> $out_script
 echo "-f /mnt/${HUMAN_REFERENCE} \\" >> $out_script
