@@ -376,9 +376,10 @@ do
             
             bam_file_for_spikein="${outdir}/Sorted.bam"
             files_to_delete="${outdir}/qnameSorted.bam ${outdir}/Cleaned.bam ${outdir}/Sorted.bam ${outdir}/Sorted.bam.bai $files_to_delete"
+        else
+            bam_file_for_spikein="${in_tumor}"
         fi
         
-        bam_file_for_spikein="${in_tumor}"
         ln -s /mnt/${in_normal}     ${outdir}/Designated.Normal.bam
         ln -s /mnt/${in_normal}.bai ${outdir}/Designated.Normal.bam.bai
         final_normal_bam="${outdir}/Designated.Normal.bam"
