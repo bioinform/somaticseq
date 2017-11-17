@@ -4,8 +4,7 @@
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page.
 
 <b>The following command is an example SomaticSeq command after mutation caller jobs are complete:</b>
-
-If you need pipelines to run those somatic mutation callers, consider our [dockerized somatic mutation pipelines](utilities/dockered_pipelines).
+* If you're searching for pipelines to run those individual somatic mutation callers, consider our [dockerized somatic mutation pipelines](utilities/dockered_pipelines).
 ```
 $somaticseq/SomaticSeq.Wrapper.sh \
 --output-dir       /PATH/TO/RESULTS/SomaticSeq_MVSDULPK \
