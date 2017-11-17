@@ -81,7 +81,7 @@ fi
 echo "" >> $out_script
 
 # Uniform sample and read group names in the merged file
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
 echo "java -Xmx6g -jar /usr/local/picard-tools-1.131/picard.jar AddOrReplaceReadGroups \\" >> $out_script
 echo "I=/mnt/${outdir}/${inbam} \\" >> $out_script
 echo "RGID=BAMSurgeon \\" >> $out_script

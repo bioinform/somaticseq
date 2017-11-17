@@ -132,7 +132,7 @@ fi
 echo "" >> $out_script
 
 #1) Generate mutation sites and VAF's
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/randomsites.py \\" >> $out_script
 echo "--genome /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
@@ -147,7 +147,7 @@ echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/bedtools:2.26.0 \\" >> $
 echo "bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai > ${outdir}/random_sSNV.bed" >> $out_script
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/randomsites.py \\" >> $out_script
 echo "--genome /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
@@ -162,7 +162,7 @@ echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/somaticseq:latest \\" >>
 echo "/opt/somaticseq/utilities/vcfsorter.pl /mnt/${hg_dict} - > ${outdir}/random_sINDEL.bed" >> $out_script
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-3 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/randomsites.py \\" >> $out_script
 echo "--genome /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
