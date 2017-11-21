@@ -49,7 +49,38 @@ with pysam.AlignmentFile(bam_file) as bam:
             unmapped += 1
                         
         total_reads += 1
-        
+    
+    
+    num_nonzero_fraglengths = total_reads - frag_lengths[0]
+    
+    # Find fragment length median:
+    n_reads_processed = 0
+    for frag_i in sorted(frag_lengths):
+        if frag_i != 0:
+            
+            n_reads_processed += frag_lengths[frag_i]
+            if n_reads_processed >= num_nonzero_fraglengths:
+                median_frag_length = frag_i
+                break
+                
+    
+    
+    # Calculate mean fragment length
+    total_length = 0
+    for frag_i in frag_lengths:
+        total_length += frag_i * frag_lengths[frag_i]
+    
+    mean_length = total_length / num_nonzero_fraglengths
+    
+    # Calculate standard deviation of fragment length
+    sum_of_square_of_x_minus_mean = 0
+    for frag_i in frag_lengths:
+        if frag_i != 0:
+            
+            square_of_x_minus_mean = (frag_i - mean_length)**2
+            sum_of_square_of_x_minus_mean += square_of_x_minus_mean * frag_lengths[frag_i]
+            
+    frag_length_std_dev = (sum_of_square_of_x_minus_mean / num_nonzero_fraglengths) ** (1/2)
     
     print('soft-clipped and discordant reads: {}'.format(clipped_and_discordant) )
     print('soft-clipped and concordant reads: {}'.format(clipped_only) )
@@ -57,9 +88,14 @@ with pysam.AlignmentFile(bam_file) as bam:
     print('MQ0 reads: {}'.format(mq0) )
     print('unmapped reads: {}'.format(unmapped) )
     print('Total reads: {}'.format(total_reads) )
+    print('Mean fragment length: {}'.format(mean_length))
+    print('fragment length standard deviation: {}'.format(frag_length_std_dev))
+    print('median fragment length: {}'.format(median_frag_length))
     
+    print('###---\nMQ: Number, Fraction')
     for mq_i in sorted(MQs):
-        print('MQ={}: {}'.format(mq_i, MQs[mq_i]) )
-        
+        print('MQ={}: {}, {}'.format(mq_i, MQs[mq_i], MQs[mq_i]/total_reads ) )
+    
+    print('###---\nFrag length distribution:')
     for frag_i in sorted(frag_lengths):
         print('FragLength={}: {}'.format(frag_i, frag_lengths[frag_i]) )
