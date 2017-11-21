@@ -14,15 +14,23 @@ with pysam.AlignmentFile(bam_file) as bam:
     
     reads = bam.fetch()
     
-    clipped_and_discordant = 0
-    clipped_only = 0
-    discordant_only = 0
-    mq0 = 0
-    unmapped = 0
-    total_reads = 0
+    clipped_and_discordant = clipped_only = discordant_only = mq0 = unmapped = total_reads = 0
+    frag_lengths = {}
+    MQs = {}
     
     for read_i in reads:
         
+        frag_length = abs(read_i.template_length)
+        if frag_length in frag_lengths:
+            frag_lengths[frag_length] += 1
+        else:
+            frag_lengths[frag_length] = 1
+        
+        mq = read_i.mapping_quality
+        if mq in MQs:
+            MQs[mq] += 1
+        else:
+            MQs[mq] = 1
         
         if not read_i.is_unmapped:
 
@@ -49,3 +57,9 @@ with pysam.AlignmentFile(bam_file) as bam:
     print('MQ0 reads: {}'.format(mq0) )
     print('unmapped reads: {}'.format(unmapped) )
     print('Total reads: {}'.format(total_reads) )
+    
+    for mq_i in sorted(MQs):
+        print('MQ={}: {}'.format(mq_i, MQs[mq_i]) )
+        
+    for frag_i in sorted(frag_lengths):
+        print('FragLength={}: {}'.format(frag_i, frag_lengths[frag_i]) )
