@@ -16,7 +16,7 @@ timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 
 tumor_bam_header='@RG\tID:myPipeline\tLB:myLibrary\tPL:illumina\tSM:TUMOR'
 normal_bam_header='@RG\tID:myPipeline\tLB:myLibrary\tPL:illumina\tSM:NORMAL'
-MEM=14
+MEM=16
 threads=1
 action=echo
 
