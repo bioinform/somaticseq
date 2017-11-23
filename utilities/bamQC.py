@@ -6,7 +6,7 @@ from os import sep
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-bam',  '--bam-file-in',  type=str,    help='Input BAM file',  required=True,  default=None)
-parser.add_argument('-ml',   'max-length',     type=int,    help='maximum length',  required=False,  default=1000)
+parser.add_argument('-ml',   '--max-length',     type=int,    help='maximum length',  required=False,  default=1000)
 
 
 args     = parser.parse_args()
