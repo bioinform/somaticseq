@@ -6,28 +6,30 @@ from os import sep
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-bam',  '--bam-file-in',  type=str,    help='Input BAM file',  required=True,  default=None)
-parser.add_argument('-ml',   '--max-length',     type=int,    help='maximum length',  required=False,  default=1000)
-
 
 args     = parser.parse_args()
 bam_file = args.bam_file_in
-max_length = args.max_length
 
 with pysam.AlignmentFile(bam_file) as bam:
     
     reads = bam.fetch()
     
-    clipped_and_discordant = clipped_only = discordant_only = mq0 = unmapped = total_reads = 0
+    clipped_and_discordant = clipped_only = discordant_only = concordant_reads = mq0 = unmapped = total_reads = 0
     frag_lengths = {}
     MQs = {}
     
     for read_i in reads:
         
-        frag_length = abs(read_i.template_length)
-        if frag_length in frag_lengths:
-            frag_lengths[frag_length] += 1
-        else:
-            frag_lengths[frag_length] = 1
+        if read_i.is_proper_pair:
+            
+            concordant_reads += 1
+            frag_length = abs(read_i.template_length)
+            
+            if frag_length in frag_lengths:
+                frag_lengths[frag_length] += 1
+            else:
+                frag_lengths[frag_length] = 1
+        
         
         mq = read_i.mapping_quality
         if mq in MQs:
@@ -53,30 +55,24 @@ with pysam.AlignmentFile(bam_file) as bam:
                         
         total_reads += 1
     
-    
-    num_nonzero_fraglengths = total_reads - frag_lengths[0]
-    
+        
     # Find fragment length median:
     n_reads_processed = 0
     for frag_i in sorted(frag_lengths):
+                    
+        n_reads_processed += frag_lengths[frag_i]
         
-        if frag_i != 0:
-            
-            n_reads_processed += frag_lengths[frag_i]
-            
-            if n_reads_processed >= num_nonzero_fraglengths/2:
-                median_frag_length = frag_i
-                break
+        if n_reads_processed >= concordant_reads/2:
+            median_frag_length = frag_i
+            break
     
     
     # Calculate mean fragment length
     total_length = 0
     total_reads_processed = 0
     for frag_i in frag_lengths:
-        
-        if 0 < frag_i < max_length:
-            total_length += frag_i * frag_lengths[frag_i]
-            total_reads_processed += frag_lengths[frag_i]
+        total_length += frag_i * frag_lengths[frag_i]
+        total_reads_processed += frag_lengths[frag_i]
     
     mean_length = total_length / total_reads_processed
     
