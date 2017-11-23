@@ -5,10 +5,13 @@ import regex as re
 from os import sep
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-bam',  '--bam-file-in',   type=str,    help='Input BAM file',  required=True,  default=None)
+parser.add_argument('-bam',  '--bam-file-in',  type=str,    help='Input BAM file',  required=True,  default=None)
+parser.add_argument('-ml',   'max-length',     type=int,    help='maximum length',  required=False,  default=1000)
+
 
 args     = parser.parse_args()
 bam_file = args.bam_file_in
+max_length = args.max_length
 
 with pysam.AlignmentFile(bam_file) as bam:
     
@@ -56,31 +59,38 @@ with pysam.AlignmentFile(bam_file) as bam:
     # Find fragment length median:
     n_reads_processed = 0
     for frag_i in sorted(frag_lengths):
+        
         if frag_i != 0:
             
             n_reads_processed += frag_lengths[frag_i]
-            if n_reads_processed >= num_nonzero_fraglengths:
+            
+            if n_reads_processed >= num_nonzero_fraglengths/2:
                 median_frag_length = frag_i
                 break
-                
     
     
     # Calculate mean fragment length
     total_length = 0
+    total_reads_processed = 0
     for frag_i in frag_lengths:
-        total_length += frag_i * frag_lengths[frag_i]
+        
+        if 0 < frag_i < max_length:
+            total_length += frag_i * frag_lengths[frag_i]
+            total_reads_processed += frag_lengths[frag_i]
     
-    mean_length = total_length / num_nonzero_fraglengths
+    mean_length = total_length / total_reads_processed
+    
     
     # Calculate standard deviation of fragment length
     sum_of_square_of_x_minus_mean = 0
     for frag_i in frag_lengths:
-        if frag_i != 0:
+        if 0 < frag_i < max_length:
             
             square_of_x_minus_mean = (frag_i - mean_length)**2
             sum_of_square_of_x_minus_mean += square_of_x_minus_mean * frag_lengths[frag_i]
             
-    frag_length_std_dev = (sum_of_square_of_x_minus_mean / num_nonzero_fraglengths) ** (1/2)
+    frag_length_std_dev = (sum_of_square_of_x_minus_mean / total_reads_processed) ** (1/2)
+    
     
     print('soft-clipped and discordant reads: {}'.format(clipped_and_discordant) )
     print('soft-clipped and concordant reads: {}'.format(clipped_only) )
