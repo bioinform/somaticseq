@@ -14,8 +14,8 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 
-minBaseQuality=-1
-minMappingQuality=-1
+minBaseQuality=0
+minMappingQuality=0
 
 
 while true; do
