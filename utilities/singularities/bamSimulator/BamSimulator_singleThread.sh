@@ -192,7 +192,7 @@ mkdir -p ${logdir}
 
 if [[ ! ${SELECTOR} ]]
 then
-    cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
+    cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XY]+$/' > ${outdir}/genome.bed
     SELECTOR="${outdir}/genome.bed"
 fi
 
