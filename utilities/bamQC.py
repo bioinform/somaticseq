@@ -80,10 +80,9 @@ with pysam.AlignmentFile(bam_file) as bam:
     # Calculate standard deviation of fragment length
     sum_of_square_of_x_minus_mean = 0
     for frag_i in frag_lengths:
-        if 0 < frag_i < max_length:
             
-            square_of_x_minus_mean = (frag_i - mean_length)**2
-            sum_of_square_of_x_minus_mean += square_of_x_minus_mean * frag_lengths[frag_i]
+        square_of_x_minus_mean = (frag_i - mean_length)**2
+        sum_of_square_of_x_minus_mean += square_of_x_minus_mean * frag_lengths[frag_i]
             
     frag_length_std_dev = (sum_of_square_of_x_minus_mean / total_reads_processed) ** (1/2)
     
