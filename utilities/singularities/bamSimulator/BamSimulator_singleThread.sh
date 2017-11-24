@@ -189,6 +189,14 @@ hg_dict=${HUMAN_REFERENCE%\.fa*}.dict
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
+
+if [[ ! ${SELECTOR} ]]
+then
+    cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
+    SELECTOR="${outdir}/genome.bed"
+fi
+
+
 if [[ ${out_script_name} ]]
 then
     out_script="${logdir}/${out_script_name}"
