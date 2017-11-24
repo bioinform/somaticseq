@@ -5,10 +5,13 @@ import regex as re
 from os import sep
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-bam',  '--bam-file-in',  type=str,    help='Input BAM file',  required=True,  default=None)
+parser.add_argument('-bam',  '--bam-file-in', type=str,    help='Input BAM file',  required=True,  default=None)
+parser.add_argument('-maxl', '--max-length',  type=int,    help='max frag length to consider',  required=False,  default=1000)
+
 
 args     = parser.parse_args()
 bam_file = args.bam_file_in
+max_length = args.max_length
 
 with pysam.AlignmentFile(bam_file) as bam:
     
@@ -71,8 +74,10 @@ with pysam.AlignmentFile(bam_file) as bam:
     total_length = 0
     total_reads_processed = 0
     for frag_i in frag_lengths:
-        total_length += frag_i * frag_lengths[frag_i]
-        total_reads_processed += frag_lengths[frag_i]
+        
+        if 0 < frag_i < max_length:
+            total_length += frag_i * frag_lengths[frag_i]
+            total_reads_processed += frag_lengths[frag_i]
     
     mean_length = total_length / total_reads_processed
     
@@ -81,8 +86,9 @@ with pysam.AlignmentFile(bam_file) as bam:
     sum_of_square_of_x_minus_mean = 0
     for frag_i in frag_lengths:
             
-        square_of_x_minus_mean = (frag_i - mean_length)**2
-        sum_of_square_of_x_minus_mean += square_of_x_minus_mean * frag_lengths[frag_i]
+        if 0 < frag_i < max_length:
+            square_of_x_minus_mean = (frag_i - mean_length)**2
+            sum_of_square_of_x_minus_mean += square_of_x_minus_mean * frag_lengths[frag_i]
             
     frag_length_std_dev = (sum_of_square_of_x_minus_mean / total_reads_processed) ** (1/2)
     
