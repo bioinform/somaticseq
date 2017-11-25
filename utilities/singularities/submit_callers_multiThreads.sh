@@ -309,53 +309,6 @@ else
 fi
 
 
-# JSM is outdated and doesn't support partial BAM input....
-if [[ $jointsnvmix2 -eq 1 ]]
-then
-
-    if [[ ${jsm_train_arguments} ]]
-    then
-        input_jsm_train_arguments="--extra-train-arguments ${jsm_train_arguments}"
-    fi
-    
-    if [[ ${jsm_classify_arguments} ]]
-    then
-        input_jsm_classify_arguments="--extra-classify-arguments ${jsm_classify_arguments}"
-    fi
-    
-    $MYDIR/mutation_callers/submit_JointSNVMix2.sh \
-    --normal-bam ${normal_bam} \
-    --tumor-bam ${tumor_bam} \
-    --out-dir ${outdir} \
-    --out-vcf JointSNVMix2.vcf \
-    --human-reference ${HUMAN_REFERENCE} \
-    ${input_jsm_train_arguments} \
-    ${input_jsm_classify_arguments} \
-    --action $action
-fi
-
-
-# SomaticSniper is very fast, so no need to parallelize
-if [[ $somaticsniper -eq 1 ]]
-then
-
-    if [[ ${somaticsniper_arguments} ]]
-    then
-        input_somaticsniper_arguments="--extra-arguments ${somaticsniper_arguments}"
-    fi
-
-    $MYDIR/mutation_callers/submit_SomaticSniper.sh \
-    --normal-bam ${normal_bam} \
-    --tumor-bam ${tumor_bam} \
-    --out-dir ${outdir} \
-    --out-vcf SomaticSniper.vcf \
-    --human-reference ${HUMAN_REFERENCE} \
-    --split $threads \
-    ${input_somaticsniper_arguments} \
-    --action $action
-fi
-
-
 ith_thread=1
 while [[ $ith_thread -le $threads ]]
 do
@@ -648,3 +601,51 @@ do
     ith_thread=$(( $ith_thread + 1))
 
 done
+
+
+
+# JSM is outdated and doesn't support partial BAM input....
+if [[ $jointsnvmix2 -eq 1 ]]
+then
+
+    if [[ ${jsm_train_arguments} ]]
+    then
+        input_jsm_train_arguments="--extra-train-arguments ${jsm_train_arguments}"
+    fi
+    
+    if [[ ${jsm_classify_arguments} ]]
+    then
+        input_jsm_classify_arguments="--extra-classify-arguments ${jsm_classify_arguments}"
+    fi
+    
+    $MYDIR/mutation_callers/submit_JointSNVMix2.sh \
+    --normal-bam ${normal_bam} \
+    --tumor-bam ${tumor_bam} \
+    --out-dir ${outdir} \
+    --out-vcf JointSNVMix2.vcf \
+    --human-reference ${HUMAN_REFERENCE} \
+    ${input_jsm_train_arguments} \
+    ${input_jsm_classify_arguments} \
+    --action $action
+fi
+
+
+# SomaticSniper is very fast, so no need to parallelize
+if [[ $somaticsniper -eq 1 ]]
+then
+
+    if [[ ${somaticsniper_arguments} ]]
+    then
+        input_somaticsniper_arguments="--extra-arguments ${somaticsniper_arguments}"
+    fi
+
+    $MYDIR/mutation_callers/submit_SomaticSniper.sh \
+    --normal-bam ${normal_bam} \
+    --tumor-bam ${tumor_bam} \
+    --out-dir ${outdir} \
+    --out-vcf SomaticSniper.vcf \
+    --human-reference ${HUMAN_REFERENCE} \
+    --split $threads \
+    ${input_somaticsniper_arguments} \
+    --action $action
+fi

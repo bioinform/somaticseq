@@ -14,8 +14,8 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 
-MQ=25
-BQ=15
+MQ=20
+BQ=15 # Somatic Quality threshold
 prior=0.0001
 action=echo
 MEM=6

@@ -189,6 +189,14 @@ hg_dict=${HUMAN_REFERENCE%\.fa*}.dict
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
+
+if [[ ! ${SELECTOR} ]]
+then
+    cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XY]+$/' > ${outdir}/genome.bed
+    SELECTOR="${outdir}/genome.bed"
+fi
+
+
 if [[ ${out_script_name} ]]
 then
     out_script="${logdir}/${out_script_name}"
@@ -300,11 +308,11 @@ else
         --bam-out Sorted.bam \
         --out-script $out_script
         
-        bam_file_to_be_split="${outdir}/Sorted.bam"
+        bam_file_for_spikein="${outdir}/Sorted.bam"
         files_to_delete="${outdir}/qnameSorted.bam ${outdir}/Cleaned.bam ${outdir}/Sorted.bam ${outdir}/Sorted.bam.bai $files_to_delete"
+    else
+        bam_file_for_spikein="${in_tumor}"
     fi
-    
-    bam_file_for_spikein="${in_tumor}"
     
     ln -s /mnt/${in_normal}     ${outdir}/Designated.Normal.bam
     ln -s /mnt/${in_normal}.bai ${outdir}/Designated.Normal.bam.bai

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os, argparse, shutil
-import regex as re
+import sys, os, argparse, shutil, re
 
 # argparse Stuff
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)

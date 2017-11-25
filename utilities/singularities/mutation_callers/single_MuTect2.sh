@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,dbsnp:,MEM:,threads:,extra-arguments:,extra-filter-arguments:,action: -n 'submit_MuTect.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,sample-name:,human-reference:,selector:,dbsnp:,extra-arguments:,action:,MEM:,threads: -n 'submit_MuTect.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -31,28 +31,16 @@ while true; do
             *)  outdir=$2 ; shift 2 ;;
         esac ;;
 
-    --tumor-bam )
+    --in-bam )
         case "$2" in
             "") shift 2 ;;
             *)  tumor_bam=$2 ; shift 2 ;;
         esac ;;
 
-    --normal-bam )
-        case "$2" in
-            "") shift 2 ;;
-            *)  normal_bam=$2 ; shift 2 ;;
-        esac ;;
-
-    --tumor-name )
+    --sample-name )
         case "$2" in
             "") shift 2 ;;
             *)  tumor_name=$2 ; shift 2 ;;
-        esac ;;
-
-    --normal-name )
-        case "$2" in
-            "") shift 2 ;;
-            *)  normal_name=$2 ; shift 2 ;;
         esac ;;
 
     --human-reference )
@@ -91,18 +79,11 @@ while true; do
             *)  extra_arguments=$2 ; shift 2 ;;
         esac ;;
 
-    --extra-filter-arguments )
-        case "$2" in
-            "") shift 2 ;;
-            *)  extra_filter_arguments=$2 ; shift 2 ;;
-        esac ;;
-
     --action )
         case "$2" in
             "") shift 2 ;;
             *)  action=$2 ; shift 2 ;;
         esac ;;
-
 
     -- ) shift; break ;;
     * ) break ;;
@@ -148,23 +129,15 @@ else
     echo "tumor_name=\`singularity exec --bind /:/mnt docker://lethalfang/samtools:0.1.18 samtools view -H /mnt/${tumor_bam} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//'\`" >> $out_script
 fi
 
-if [[ $normal_name ]]
-then
-    echo "normal_name=${normal_name}" >> $out_script
-else
-    echo "normal_name=\`singularity exec --bind /:/mnt docker://lethalfang/samtools:0.1.18 samtools view -H /mnt/${normal_bam} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//'\`" >> $out_script
-    echo "" >> $out_script
-fi
 
 echo "" >> $out_script
 
 echo "singularity exec --bind /:/mnt docker://broadinstitute/gatk:4.beta.6 \\" >> $out_script
-echo "java -Xmx${MEM}g -jar /gatk/gatk.jar Mutect2 \\" >> $out_script
+echo "java -Xmx${MEM}g -jar gatk.jar Mutect2 \\" >> $out_script
+echo "--threads ${threads} \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "$selector_text \\" >> $out_script
-echo "--input /mnt/${normal_bam} \\" >> $out_script
 echo "--input /mnt/${tumor_bam} \\" >> $out_script
-echo "--normalSampleName \${normal_name} \\" >> $out_script
 echo "--tumorSampleName \${tumor_name} \\" >> $out_script
 echo "$dbsnp_text \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
@@ -172,9 +145,8 @@ echo "--output /mnt/${outdir}/unfiltered.${outvcf}" >> $out_script
 echo "" >> $out_script
 
 echo "singularity exec --bind /:/mnt docker://broadinstitute/gatk:4.beta.6 \\" >> $out_script
-echo "java -Xmx${MEM}g -jar /gatk/gatk.jar FilterMutectCalls \\" >> $out_script
+echo "java -Xmx${MEM}g -jar gatk.jar FilterMutectCalls \\" >> $out_script
 echo "--variant /mnt/${outdir}/unfiltered.${outvcf} \\" >> $out_script
-echo "${extra_filter_arguments} \\" >> $out_script
 echo "--output /mnt/${outdir}/${outvcf}" >> $out_script
 
 echo "" >> $out_script

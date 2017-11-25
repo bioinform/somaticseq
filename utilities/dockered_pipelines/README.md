@@ -1,6 +1,9 @@
+<b>Dockerized Somatic Mutation Detection Pipeline</b>
+
 **Requirement**
-* Have internet connection, and able to pull and run docker images from Docker Hub.
-* **Recommended**: Have cluster management system with valid "qsub" command, such as Sun Grid Engine (SGE).
+* Have internet connection and docker daemon. Be able to pull and run docker images from Docker Hub.
+* **Highly recommended**: Have cluster management system with valid "qsub" command, such as Sun Grid Engine (SGE).
+* The documentation for those scripts can also be found in Section 4 of the [User's Manual](../../docs/Manual.pdf "Documentation").
 
 **Example Command for multi-thread jobs**
 ```
@@ -11,8 +14,8 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_multiThreads.sh 
 --output-dir      /ABSOLUTE/PATH/TO/RESULTS \
 --dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
 --threads         36 \
---action          qsub \
---mutect2 --varscan2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+--action          echo \
+--mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
 ```
 
 **Example Command for single-thread jobs**
@@ -23,56 +26,56 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 --human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
 --output-dir      /ABSOLUTE/PATH/TO/RESULTS \
 --dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
---action          qsub \
---mutect2 --varscan2 --jointsnvmix2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+--action          echo \
+--mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
 ```
 
 **submit_callers_[single|multi]Thread(s).sh** can submit dockered somatic mutation calling jobs. The multiThread version is recommended for WGS. The following options:
-* --normal-bam                  /ABSOLUTE/PATH/TO/normal_sample.bam (Required)
-* --tumor-bam                   /ABSOLUTE/PATH/TO/tumor_sample.bam  (Required)
-* --human-reference             /ABSOLUTE/PATH/TO/human_reference.fa (Required)
-* --dbsnp                       /ABSOLUTE/PATH/TO/dbsnp.vcf (Required for MuSE and LoFreq)
-* --cosmic                      /ABSOLUTE/PATH/TO/cosmic.vcf (Optional)
-* --selector                    /ABSOLUTE/PATH/TO/Capture_region.bed (Optional. Will assume whole genome from the .fai file without it.)
-* --exclude                     /ABSOLUTE/PATH/TO/Blacklist_region.bed (Optional)
-* --min-af                      (Optional. The minimum VAF cutoff for VarDict and VarScan2. Defaults are 0.10 for VarScan2 and 0.05 for VarDict).
-* --action                      qsub (Optional: the command preceding the .cmd scripts. Default is echo)
-* --threads                     36 (Optional for multiThreads and invalid for singleThread: evenly split the genome into 36 BED files. Default = 12).
-* --mutect2                     (Optional flag to invoke MuTect2)
-* --varscan2                    (Optional flag to invoke VarScan2)
-* --jointsnvmix2                (Optional flag to invoke JointSNVMix2)
-* --somaticsniper               (Optional flag to invoke SomaticSniper)
-* --vardict                     (Optional flag to invoke VarDict)
-* --muse                        (Optional flag to invoke MuSE)
-* --lofreq                      (Optional flag to invoke LoFreq)
-* --scalpel                     (Optional flag to invoke Scalpel)
-* --strelka                     (Optional flag to invoke Strelka)
-* --somaticseq                  (Optional flag to invoke SomaticSeq. This script always be echo'ed, as it should not be submitted until all the callers above complete).
-* --output-dir                  /ABSOLUTE/PATH/TO/OUTPUT_DIRECTORY (Required)
-* --somaticseq-train            (Optional flag to invoke SomaticSeq to produce classifiers if ground truth VCF files are provided. Only recommended in singleThread mode, because otherwise it's better to combine the output TSV files first, and then train classifiers.)
-* --somaticseq-dir              SomaticSeq_Output_Directory (Optional. The directory name of the SomaticSeq output. Default = SomaticSeq).
-* --somaticseq-action           (Optional. What to do with the somaticseq.cmd. Default is echo. Only do "qsub" if you have already completed all the mutation callers, but want to run SomaticSeq at a different setting.)
-* --classifier-snv              Trained_sSNV_Classifier.RData (Optional if there is a classifer you want to use)
-* --classifier-indel            Trained_sINDEL_Classifier.RData (Optional if there is a classifer you want to use)
-* --truth-snv                   sSNV_ground_truth.vcf (Optional if there is a ground truth, and everything else will be labeled false positive)
-* --truth-indel                 sINDEL_ground_truth.vcf (Optional if there is a ground truth, and everything else will be labeled false positive)
-* --exome                       (Optional flag for Strelka)
-* --scalpel-two-pass            (Optional parameter for Scalpel. Default = false.)
-* --mutect2-arguments           (Extra parameters to pass onto Mutect2, e.g., --mutect2-arguments '--initial_tumor_lod 3.0 --log_somatic_prior -5.0 --min_base_quality_score 20')
-* --mutect2-filter-arguments    (Extra parameters to pass onto FilterMutectCalls)
-* --varscan-arguments           (Extra parameters to pass onto VarScan2)
-* --varscan-pileup-arguments    (Extra parameters to pass onto samtools mpileup that creates pileup files for VarScan)
-* --jsm-train-arguments         (Extra parameters to pass onto JointSNVMix2's train command)
-* --jsm-classify-arguments      (Extra parameters to pass onto JointSNVMix2's classify command)
-* --somaticsniper-arguments     (Extra parameters to pass onto SomaticSniper)
-* --vardict-arguments           (Extra parameters to pass onto VarDict)
-* --muse-arguments              (Extra parameters to pass onto MuSE)
-* --lofreq-arguments            (Extra parameters to pass onto LoFreq)
-* --scalpel-discovery-arguments (Extra parameters to pass onto Scalpel's discovery command)
-* --scalpel-export-arguments    (Extra parameters to pass onto Scalpel's export command)
-* --strelka-config-arguments    (Extra parameters to pass onto Strelka's config command)
-* --strelka-run-arguments       (Extra parameters to pass onto Strekla's run command)
-* --somaticseq-arguments        (Extra parameters to pass onto SomaticSeq.Wrapper.sh)
+* ```--normal-bam```                  /ABSOLUTE/PATH/TO/normal_sample.bam (Required)
+* ```--tumor-bam```                   /ABSOLUTE/PATH/TO/tumor_sample.bam  (Required)
+* ```--human-reference```             /ABSOLUTE/PATH/TO/human_reference.fa (Required)
+* ```--dbsnp```                       /ABSOLUTE/PATH/TO/dbsnp.vcf (Required for MuSE and LoFreq)
+* ```--cosmic```                      /ABSOLUTE/PATH/TO/cosmic.vcf (Optional)
+* ```--selector```                    /ABSOLUTE/PATH/TO/Capture_region.bed (Optional. Will create genome.bed from the .fa.fai file when not specified.)
+* ```--exclude```                     /ABSOLUTE/PATH/TO/Blacklist_Region.bed (Optional)
+* ```--min-af```                      (Optional. The minimum VAF cutoff for VarDict and VarScan2. Defaults are 0.10 for VarScan2 and 0.05 for VarDict. When specified, will have the same minimum AF for both VarScan2 and VarDict.)
+* ```--action```                      qsub (Optional: the command preceding the .cmd scripts. Default is echo)
+* ```--threads```                     36 (Optional for multiThreads and invalid for singleThread: evenly split the genome into 36 BED files. Default = 12).
+* ```--mutect2```                     (Optional flag to invoke MuTect2)
+* ```--varscan2```                    (Optional flag to invoke VarScan2)
+* ```--jointsnvmix2```                (Optional flag to invoke JointSNVMix2)
+* ```--somaticsniper```               (Optional flag to invoke SomaticSniper)
+* ```--vardict```                     (Optional flag to invoke VarDict)
+* ```--muse```                        (Optional flag to invoke MuSE)
+* ```--lofreq```                      (Optional flag to invoke LoFreq)
+* ```--scalpel```                     (Optional flag to invoke Scalpel)
+* ```--strelka```                     (Optional flag to invoke Strelka)
+* ```--somaticseq```                  (Optional flag to invoke SomaticSeq. This script always be echo'ed, as it should not be submitted until all the callers above complete).
+* ```--output-dir```                  /ABSOLUTE/PATH/TO/OUTPUT_DIRECTORY (Required)
+* ```--somaticseq-train```            (Optional flag to invoke SomaticSeq to produce classifiers if ground truth VCF files are provided. Only recommended in singleThread mode, because otherwise it's better to combine the output TSV files first, and then train classifiers.)
+* ```--somaticseq-dir```              SomaticSeq_Output_Directory_Name (Optional. The directory name of the SomaticSeq output. Default = SomaticSeq).
+* ```--somaticseq-action```           (Optional. What to do with the somaticseq.cmd. Default is echo. Only do "qsub" if you have already completed all the mutation callers, but want to run SomaticSeq at a different setting, in which case consider using "--action rm" for the individual caller scripts.)
+* ```--classifier-snv```              Trained_sSNV_Classifier.RData (Optional: if there is a classifer you want to use)
+* ```--classifier-indel```            Trained_sINDEL_Classifier.RData (Optional: if there is a classifer you want to use)
+* ```--truth-snv```                   sSNV_ground_truth.vcf (Optional: if you have the ground truth, and everything else will be labeled false positive)
+* ```--truth-indel```                 sINDEL_ground_truth.vcf (Optional: if you have the ground truth, and everything else will be labeled false positive)
+* ```--exome```                       (Optional flag for Strelka which invokes a different statistical procedure)
+* ```--scalpel-two-pass```            (Optional parameter for Scalpel. Default = false. Observed no difference without it.)
+* ```--mutect2-arguments```           (Extra parameters to pass onto Mutect2, e.g., --mutect2-arguments '--initial_tumor_lod 3.0 --log_somatic_prior -5.0 --min_base_quality_score 20')
+* ```--mutect2-filter-arguments```    (Extra parameters to pass onto FilterMutectCalls)
+* ```--varscan-arguments```           (Extra parameters to pass onto VarScan2)
+* ```--varscan-pileup-arguments```    (Extra parameters to pass onto samtools mpileup that creates pileup files for VarScan)
+* ```--jsm-train-arguments```         (Extra parameters to pass onto JointSNVMix2's train command)
+* ```--jsm-classify-arguments```      (Extra parameters to pass onto JointSNVMix2's classify command)
+* ```--somaticsniper-arguments```     (Extra parameters to pass onto SomaticSniper)
+* ```--vardict-arguments```           (Extra parameters to pass onto VarDict)
+* ```--muse-arguments```              (Extra parameters to pass onto MuSE)
+* ```--lofreq-arguments```            (Extra parameters to pass onto LoFreq)
+* ```--scalpel-discovery-arguments``` (Extra parameters to pass onto Scalpel's discovery command)
+* ```--scalpel-export-arguments```    (Extra parameters to pass onto Scalpel's export command)
+* ```--strelka-config-arguments```    (Extra parameters to pass onto Strelka's config command)
+* ```--strelka-run-arguments```       (Extra parameters to pass onto Strekla's run command)
+* ```--somaticseq-arguments```        (Extra parameters to pass onto SomaticSeq.Wrapper.sh)
 
 
 **What does that command do**
@@ -97,4 +100,5 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 
 **Known Issues**
 * Running JointSNVMix2 for WGS is discouraged because of memory requirement. The only way we know to parallelize it is to split the BAM files, which is a cumbersome process and hogs disk spaces.
-* Scalpel is very slow and can be enourmously memory-hungry. Use that at your own risk. 
+* Scalpel is very slow and can be enourmously memory-hungry. Use that at your own risk. Sometimes, you may need to up the memory requirement in some regions (by editing the scripts). 
+* If jobs run out of memory, try up the memory and re-run.

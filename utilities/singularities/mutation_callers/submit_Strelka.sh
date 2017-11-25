@@ -131,7 +131,7 @@ then
     exome='--exome'
 fi
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/strelka:2.8.3-1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://lethalfang/strelka:2.8.4 \\" >> $out_script
 echo "/opt/strelka/bin/configureStrelkaSomaticWorkflow.py \\" >> $out_script
 echo "--tumorBam=/mnt/${tumor_bam} \\" >> $out_script
 echo "--normalBam=/mnt/${normal_bam} \\" >> $out_script
@@ -144,7 +144,7 @@ echo "--runDir=/mnt/${outdir}/${outvcf%\.vcf}" >> $out_script
 
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/strelka:2.8.3-1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://lethalfang/strelka:2.8.4 \\" >> $out_script
 echo "/mnt/${outdir}/${outvcf%\.vcf}/runWorkflow.py -m local -j 1 ${extra_run_arguments}" >> $out_script
 
 echo "" >> $out_script

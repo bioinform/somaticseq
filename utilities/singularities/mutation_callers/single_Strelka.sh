@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,human-reference:,selector:,extra-arguments:,action:,VAF:,MEM: -n 'submit_VarDictJava.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-bam:,human-reference:,selector:,extra-config-arguments:,extra-run-arguments:,action:,MEM:,exome -n 'submit_Strelka.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -13,25 +13,24 @@ eval set -- "$OPTS"
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
-VAF=0.05
 action=echo
-MEM=14
+MEM=6
 
 while true; do
     case "$1" in
-   --out-vcf )
+    --out-vcf )
         case "$2" in
             "") shift 2 ;;
             *)  outvcf=$2 ; shift 2 ;;
         esac ;;
 
-   --out-dir )
+    --out-dir )
         case "$2" in
             "") shift 2 ;;
             *)  outdir=$2 ; shift 2 ;;
         esac ;;
 
-    --tumor-bam )
+    --in-bam )
         case "$2" in
             "") shift 2 ;;
             *)  tumor_bam=$2 ; shift 2 ;;
@@ -55,16 +54,16 @@ while true; do
             *) SELECTOR=$2 ; shift 2 ;;
         esac ;;
 
-    --VAF )
+    --extra-config-arguments )
         case "$2" in
             "") shift 2 ;;
-            *) VAF=$2 ; shift 2 ;;
+            *) extra_config_arguments=$2 ; shift 2 ;;
         esac ;;
 
-    --extra-arguments )
+    --extra-run-arguments )
         case "$2" in
             "") shift 2 ;;
-            *) extra_arguments=$2 ; shift 2 ;;
+            *) extra_run_arguments=$2 ; shift 2 ;;
         esac ;;
         
     --MEM )
@@ -72,12 +71,15 @@ while true; do
             "") shift 2 ;;
             *) MEM=$2 ; shift 2 ;;
         esac ;;
-
+        
     --action )
         case "$2" in
             "") shift 2 ;;
             *) action=$2 ; shift 2 ;;
         esac ;;
+
+    --exome )
+        if_exome=1 ; shift ;;
 
     -- ) shift; break ;;
     * ) break ;;
@@ -85,12 +87,17 @@ while true; do
 
 done
 
-VERSION=`cat ${MYDIR}/../../../VERSION | sed 's/##SomaticSeq=v//'`
+vcf_prefix=${outvcf%\.vcf}
 
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
-out_script=${outdir}/logs/vardict_${timestamp}.cmd
+if [[ ${SELECTOR} &&  `cat ${SELECTOR} | wc -l` -lt 50 ]]; then
+    region_txt=`cat ${SELECTOR} | awk -F "\t" '{print "--region=" $1 ":" $2+1 "-" $3}' | tr '\n' '\ '`
+fi
+
+
+out_script=${outdir}/logs/strelka_${timestamp}.cmd
 
 echo "#!/bin/bash" > $out_script
 echo "" >> $out_script
@@ -106,34 +113,38 @@ echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
 
-total_bases=`cat ${SELECTOR} | awk -F "\t" '{print $3-$2}' | awk '{ sum += $1 } END { print sum }'`
-num_lines=`cat ${SELECTOR} | wc -l`
-
-input_bed=${SELECTOR}
-if [[ $(( $total_bases / $num_lines )) -gt 50000 ]]
+selector_basename=`basename ${SELECTOR}`
+if [[ -r ${SELECTOR}.gz && -r ${SELECTOR}.gz.tbi ]]
 then
-    echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/somaticseq:${VERSION} \\" >> $out_script
-    echo "/opt/somaticseq/utilities/split_mergedBed.py \\" >> $out_script
-    echo "-infile /mnt/${SELECTOR} -outfile /mnt/${outdir}/split_regions.bed" >> $out_script
+    input_BED=${SELECTOR}.gz
+    
+else
+    echo "singularity exec --bind /:/mnt docker://lethalfang/tabix:1.2.1 bash -c \"cat /mnt/${SELECTOR} | bgzip > /mnt/${outdir}/${selector_basename}.gz\"" >> $out_script
+    echo "singularity exec --bind /:/mnt docker://lethalfang/tabix:1.2.1 tabix /mnt/${outdir}/${selector_basename}.gz" >> $out_script
     echo "" >> $out_script
     
-    input_bed="${outdir}/split_regions.bed"
+    input_BED=${outdir}/${selector_basename}.gz
 fi
 
+if [[ $if_exome ]]
+then
+    exome='--exome'
+fi
 
-echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/vardictjava:1.5.1 bash -c \\" >> $out_script
-echo "\"/opt/VarDict-1.5.1/bin/VarDict \\" >> $out_script
-echo "${extra_arguments} \\" >> $out_script
-echo "-G /mnt/${HUMAN_REFERENCE} \\" >> $out_script
-echo "-f $VAF -h \\" >> $out_script
-echo "-b '/mnt/${tumor_bam}|/mnt/${normal_bam}' \\" >> $out_script
-echo "-Q 1 -c 1 -S 2 -E 3 -g 4 /mnt/${input_bed} \\" >> $out_script
-echo "> /mnt/${outdir}/${timestamp}.var\"" >> $out_script
+echo "singularity exec --bind /:/mnt docker://lethalfang/strelka:2.8.4 \\" >> $out_script
+echo "/opt/strelka/bin/configureStrelkaGermlineWorkflow.py \\" >> $out_script
+echo "--bam=/mnt/${tumor_bam} \\" >> $out_script
+echo "--referenceFasta=/mnt/${HUMAN_REFERENCE}  \\" >> $out_script
+echo "--callMemMb=$(( 1024 * MEM )) \\" >> $out_script
+echo "$region_txt \\" >> $out_script
+echo "--callRegions=/mnt/${input_BED} \\" >> $out_script
+echo "${exome} ${extra_config_arguments} \\" >> $out_script
+echo "--runDir=/mnt/${outdir}/${outvcf%\.vcf}" >> $out_script
+
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/vardictjava:1.5.1 \\" >> $out_script
-echo "bash -c \"cat /mnt/${outdir}/${timestamp}.var | awk 'NR!=1' | /opt/VarDict/testsomatic.R | /opt/VarDict/var2vcf_paired.pl -N 'TUMOR|NORMAL' -f $VAF \\" >> $out_script
-echo "> /mnt/${outdir}/${outvcf}\"" >> $out_script
+echo "singularity exec --bind /:/mnt docker://lethalfang/strelka:2.8.4 \\" >> $out_script
+echo "/mnt/${outdir}/${outvcf%\.vcf}/runWorkflow.py -m local -j 1 ${extra_run_arguments}" >> $out_script
 
 echo "" >> $out_script
 echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script

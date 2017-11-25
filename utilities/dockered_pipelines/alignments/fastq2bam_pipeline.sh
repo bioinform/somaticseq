@@ -16,7 +16,7 @@ timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 
 tumor_bam_header='@RG\tID:myPipeline\tLB:myLibrary\tPL:illumina\tSM:TUMOR'
 normal_bam_header='@RG\tID:myPipeline\tLB:myLibrary\tPL:illumina\tSM:NORMAL'
-MEM=14
+MEM=16
 threads=1
 action=echo
 
@@ -194,7 +194,7 @@ then
         --genome-reference ${GENOME_REFERENCE} \
         --output-dir       ${outdir} \
         --out-bam          tumor.sorted.bam \
-        --bam-header       ${tumor_bam_header} \
+        --bam-header       "${tumor_bam_header}" \
         --threads          ${threads} \
         --out-script       ${out_script}
 
@@ -209,7 +209,7 @@ then
         --genome-reference ${GENOME_REFERENCE} \
         --output-dir       ${outdir} \
         --out-bam          normal.sorted.bam \
-        --bam-header       ${normal_bam_header} \
+        --bam-header       "${normal_bam_header}" \
         --threads          ${threads} \
         --out-script       ${out_script}
         

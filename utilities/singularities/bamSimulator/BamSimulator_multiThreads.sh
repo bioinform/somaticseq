@@ -249,7 +249,7 @@ do
     echo "#$ -o ${logdir}" >> $out_script
     echo "#$ -e ${logdir}" >> $out_script
     echo "#$ -S /bin/bash" >> $out_script
-    echo '#$ -l h_vmem=14G' >> $out_script
+    echo '#$ -l h_vmem=36G' >> $out_script
     echo 'set -e' >> $out_script
     echo "" >> $out_script
     
@@ -374,11 +374,12 @@ do
             --bam-out Sorted.bam \
             --out-script $out_script
             
-            bam_file_to_be_split="${outdir}/Sorted.bam"
+            bam_file_for_spikein="${outdir}/Sorted.bam"
             files_to_delete="${outdir}/qnameSorted.bam ${outdir}/Cleaned.bam ${outdir}/Sorted.bam ${outdir}/Sorted.bam.bai $files_to_delete"
+        else
+            bam_file_for_spikein="${in_tumor}"
         fi
         
-        bam_file_for_spikein="${in_tumor}"
         ln -s /mnt/${in_normal}     ${outdir}/Designated.Normal.bam
         ln -s /mnt/${in_normal}.bai ${outdir}/Designated.Normal.bam.bai
         final_normal_bam="${outdir}/Designated.Normal.bam"
