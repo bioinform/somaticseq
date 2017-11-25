@@ -33,10 +33,10 @@ pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
                 read_i.qual = qual_i
                 
                 if read_i.has_tag('BI'):
-                    read_i.set_tag(tag='BI', value=read_i.get_tag('BI')[front_clipped::][:-back_num], value_type='Z', replace=True)
+                    read_i.set_tag(tag='BI', value=read_i.get_tag('BI')[front_num::][:-back_num], value_type='Z', replace=True)
                     
                 if read_i.has_tag('BD'):
-                    read_i.set_tag(tag='BD', value=read_i.get_tag('BD')[front_clipped::][:-back_num], value_type='Z', replace=True)
+                    read_i.set_tag(tag='BD', value=read_i.get_tag('BD')[front_num::][:-back_num], value_type='Z', replace=True)
                 
             
             elif front_clipped:
