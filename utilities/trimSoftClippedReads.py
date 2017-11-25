@@ -22,7 +22,24 @@ pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
             front_clipped = re.search(r'^([0-9]+)S', read_i.cigarstring)
             back_clipped = re.search(r'([0-9]+)S$', read_i.cigarstring)
             
-            if front_clipped:
+            if front_clipped and back_clipped:
+            
+                front_num = int( front_clipped.groups()[0] )
+                back_num  = int( back_clipped.groups()[0] )
+            
+                qual_i = read_i.qual[front_num::][:-back_num]
+                
+                read_i.seq = read_i.seq[front_num::][:-back_num]
+                read_i.qual = qual_i
+                
+                if read_i.has_tag('BI'):
+                    read_i.set_tag(tag='BI', value=read_i.get_tag('BI')[front_clipped::][:-back_num], value_type='Z', replace=True)
+                    
+                if read_i.has_tag('BD'):
+                    read_i.set_tag(tag='BD', value=read_i.get_tag('BD')[front_clipped::][:-back_num], value_type='Z', replace=True)
+                
+            
+            elif front_clipped:
                 
                 num_bases = int( front_clipped.groups()[0] )
                 read_i.cigarstring = re.sub(r'^([0-9]+)S', '', read_i.cigarstring)
