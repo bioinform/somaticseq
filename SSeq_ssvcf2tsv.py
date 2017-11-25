@@ -137,6 +137,8 @@ out_header = \
 {COMMON}\t\
 {if_COSMIC}\t\
 {COSMIC_CNT}\t\
+{Consistent_Mates}\t\
+{Inconsistent_Mates}\t\
 {M2_TLOD}\t\
 {M2_ECNT}\t\
 {MSI}\t\
@@ -295,7 +297,9 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             my_coordinates = genomic_coordinates( fai_item[0], 1, int(fai_item[1]) )
         
         ##### ##### ##### ##### ##### #####
-        for my_coordinate in my_coordinates:
+        fo{Consistent_Mates}\t\
+{Inconsistent_Mates}\t\
+r my_coordinate in my_coordinates:
             
             ######## If VCF, can get ref base, variant base, as well as other identifying information ######## 
             if is_vcf:
@@ -575,6 +579,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     
                     t_noise_read_count = t_poor_read_count  = 0
                     
+                    qname_collector = {}
+                    
                     for read_i in t_reads:
                         if not read_i.is_unmapped and dedup_test(read_i):
                             
@@ -590,6 +596,11 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             
                             # Reference calls:
                             if code_i == 1 and base_call_i == ref_base[0]:
+
+                                try:
+                                    qname_collector[read_i.qname].append(0)
+                                except KeyError:
+                                    qname_collector[read_i.qname] = [0]
                             
                                 t_ref_read_mq.append( read_i.mapping_quality )
                                 t_ref_read_bq.append( read_i.query_qualities[ith_base] )
@@ -630,6 +641,11 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             elif (indel_length == 0 and code_i == 1 and base_call_i == first_alt) or \
                                  (indel_length < 0  and code_i == 2 and indel_length == indel_length_i) or \
                                  (indel_length > 0  and code_i == 3):
+
+                                try:
+                                    qname_collector[read_i.qname].append(1)
+                                except KeyError:
+                                    qname_collector[read_i.qname] = [1]
                                 
                                 t_alt_read_mq.append( read_i.mapping_quality )
                                 t_alt_read_bq.append( read_i.query_qualities[ith_base] )
@@ -667,6 +683,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             
                             # Inconsistent read or 2nd alternate calls:
                             else:
+
+                                try:
+                                    qname_collector[read_i.qname].append(2)
+                                except KeyError:
+                                    qname_collector[read_i.qname] = [2]
+                                
                                 t_noise_read_count += 1
                                     
                     
@@ -745,6 +767,17 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             break
         
                     site_homopolymer_length = max( alt_c+1, ref_c+1 )
+
+                    consistent_mates = inconsistent_mates = 0
+                    for pairs_i in qname_collector:
+                        
+                        # Both are alternative calls:
+                        if qname_collector[pairs_i] == [1,1]:
+                            consistent_mates += 1
+                        
+                        # One is alternate call but the other one is not:
+                        elif len(qname_collector[pairs_i]) == 2 and 1 in qname_collector[pairs_i]:
+                            inconsistent_mates += 1
         
                     if my_identifiers:
                         my_identifiers = ';'.join(my_identifiers)
@@ -769,6 +802,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     COMMON                  = if_common,                                              \
                     if_COSMIC               = if_cosmic,                                              \
                     COSMIC_CNT              = num_cases,                                              \
+                    Consistent_Mates        = consistent_mates,                                       \
+                    Inconsistent_Mates      = inconsistent_mates,                                     \
                     M2_TLOD                 = tlod,                                                   \
                     M2_ECNT                 = ecnt,                                                   \
                     MSI                     = msi,                                                    \
@@ -777,38 +812,38 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     MaxHomopolymer_Length   = homopolymer_length,                                     \
                     SiteHomopolymer_Length  = site_homopolymer_length,                                \
                     T_DP                    = T_dp,                                                   \
-                    tBAM_REF_MQ             = '%g' % t_ref_mq,                                         \
-                    tBAM_ALT_MQ             = '%g' % t_alt_mq,                                         \
-                    tBAM_Z_Ranksums_MQ      = '%g' % t_z_ranksums_mq,                                  \
-                    tBAM_REF_BQ             = '%g' % t_ref_bq,                                         \
-                    tBAM_ALT_BQ             = '%g' % t_alt_bq,                                         \
-                    tBAM_Z_Ranksums_BQ      = '%g' % t_z_ranksums_bq,                                  \
-                    tBAM_REF_NM             = '%g' % t_ref_NM,                                         \
-                    tBAM_ALT_NM             = '%g' % t_alt_NM,                                         \
-                    tBAM_NM_Diff            = '%g' % t_NM_Diff,                                        \
-                    tBAM_REF_Concordant     = t_ref_concordant_reads,                                  \
-                    tBAM_REF_Discordant     = t_ref_discordant_reads,                                  \
-                    tBAM_ALT_Concordant     = t_alt_concordant_reads,                                  \
-                    tBAM_ALT_Discordant     = t_alt_discordant_reads,                                  \
-                    tBAM_Concordance_FET    = rescale(t_concordance_fet, 'fraction', p_scale, 1001),   \
+                    tBAM_REF_MQ             = '%g' % t_ref_mq,                                        \
+                    tBAM_ALT_MQ             = '%g' % t_alt_mq,                                        \
+                    tBAM_Z_Ranksums_MQ      = '%g' % t_z_ranksums_mq,                                 \
+                    tBAM_REF_BQ             = '%g' % t_ref_bq,                                        \
+                    tBAM_ALT_BQ             = '%g' % t_alt_bq,                                        \
+                    tBAM_Z_Ranksums_BQ      = '%g' % t_z_ranksums_bq,                                 \
+                    tBAM_REF_NM             = '%g' % t_ref_NM,                                        \
+                    tBAM_ALT_NM             = '%g' % t_alt_NM,                                        \
+                    tBAM_NM_Diff            = '%g' % t_NM_Diff,                                       \
+                    tBAM_REF_Concordant     = t_ref_concordant_reads,                                 \
+                    tBAM_REF_Discordant     = t_ref_discordant_reads,                                 \
+                    tBAM_ALT_Concordant     = t_alt_concordant_reads,                                 \
+                    tBAM_ALT_Discordant     = t_alt_discordant_reads,                                 \
+                    tBAM_Concordance_FET    = rescale(t_concordance_fet, 'fraction', p_scale, 1001),  \
                     T_REF_FOR               = t_ref_for,                                              \
                     T_REF_REV               = t_ref_rev,                                              \
                     T_ALT_FOR               = t_alt_for,                                              \
                     T_ALT_REV               = t_alt_rev,                                              \
-                    tBAM_StrandBias_FET     = rescale(t_strandbias_fet, 'fraction', p_scale, 1001),    \
-                    tBAM_Z_Ranksums_EndPos  = '%g' % t_z_ranksums_endpos,                              \
-                    tBAM_REF_Clipped_Reads  = t_ref_SC_reads,                                          \
-                    tBAM_ALT_Clipped_Reads  = t_alt_SC_reads,                                          \
-                    tBAM_Clipping_FET       = rescale(t_clipping_fet, 'fraction', p_scale, 1001),      \
-                    tBAM_MQ0                = t_MQ0,                                                   \
-                    tBAM_Other_Reads        = t_noise_read_count,                                      \
-                    tBAM_Poor_Reads         = t_poor_read_count,                                       \
-                    tBAM_REF_InDel_3bp      = t_ref_indel_3bp,                                         \
-                    tBAM_REF_InDel_2bp      = t_ref_indel_2bp,                                         \
-                    tBAM_REF_InDel_1bp      = t_ref_indel_1bp,                                         \
-                    tBAM_ALT_InDel_3bp      = t_alt_indel_3bp,                                         \
-                    tBAM_ALT_InDel_2bp      = t_alt_indel_2bp,                                         \
-                    tBAM_ALT_InDel_1bp      = t_alt_indel_1bp,                                         \
+                    tBAM_StrandBias_FET     = rescale(t_strandbias_fet, 'fraction', p_scale, 1001),   \
+                    tBAM_Z_Ranksums_EndPos  = '%g' % t_z_ranksums_endpos,                             \
+                    tBAM_REF_Clipped_Reads  = t_ref_SC_reads,                                         \
+                    tBAM_ALT_Clipped_Reads  = t_alt_SC_reads,                                         \
+                    tBAM_Clipping_FET       = rescale(t_clipping_fet, 'fraction', p_scale, 1001),     \
+                    tBAM_MQ0                = t_MQ0,                                                  \
+                    tBAM_Other_Reads        = t_noise_read_count,                                     \
+                    tBAM_Poor_Reads         = t_poor_read_count,                                      \
+                    tBAM_REF_InDel_3bp      = t_ref_indel_3bp,                                        \
+                    tBAM_REF_InDel_2bp      = t_ref_indel_2bp,                                        \
+                    tBAM_REF_InDel_1bp      = t_ref_indel_1bp,                                        \
+                    tBAM_ALT_InDel_3bp      = t_alt_indel_3bp,                                        \
+                    tBAM_ALT_InDel_2bp      = t_alt_indel_2bp,                                        \
+                    tBAM_ALT_InDel_1bp      = t_alt_indel_1bp,                                        \
                     InDel_Length            = indel_length,                                           \
                     TrueVariant_or_False    = judgement )
                     
