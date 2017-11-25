@@ -23,17 +23,39 @@ pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
             back_clipped = re.search(r'([0-9]+)S$', read_i.cigarstring)
             
             if front_clipped:
+                
                 num_bases = int( front_clipped.groups()[0] )
                 read_i.cigarstring = re.sub(r'^([0-9]+)S', '', read_i.cigarstring)
-                read_i.seq = read_i.seq[num_bases-1::]
+                
+                qual_i = read_i.qual[num_bases::]
+                
+                read_i.seq = read_i.seq[num_bases::]
+                read_i.qual = qual_i
+                
+                if read_i.has_tag('BI'):
+                    read_i.set_tag(tag='BI', value=read_i.get_tag('BI')[num_bases::], value_type='Z', replace=True)
+                    
+                if read_i.has_tag('BD'):
+                    read_i.set_tag(tag='BD', value=read_i.get_tag('BD')[num_bases::], value_type='Z', replace=True)
                 
                 
             elif back_clipped:
+                
                 num_bases = int( back_clipped.groups()[0] )
                 read_i.cigarstring = re.sub('[0-9]+S$', '', read_i.cigarstring)
+                
+                qual_i = read_i.qual[:-num_bases]
+                
                 read_i.seq = read_i.seq[:-num_bases]
-            
-            
+                read_i.qual = qual_i
+                
+                if read_i.has_tag('BI'):
+                    read_i.set_tag(tag='BI', value=read_i.get_tag('BI')[:-num_bases], value_type='Z', replace=True)
+                    
+                if read_i.has_tag('BD'):
+                    read_i.set_tag(tag='BD', value=read_i.get_tag('BD')[:-num_bases], value_type='Z', replace=True)
+                
+            # Mate CIGAR
             if read_i.has_tag('MC'):
                 mate_cigar = read_i.get_tag('MC')
                 if 'S' in mate_cigar:
