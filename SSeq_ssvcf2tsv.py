@@ -297,9 +297,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
             my_coordinates = genomic_coordinates( fai_item[0], 1, int(fai_item[1]) )
         
         ##### ##### ##### ##### ##### #####
-        fo{Consistent_Mates}\t\
-{Inconsistent_Mates}\t\
-r my_coordinate in my_coordinates:
+        for my_coordinate in my_coordinates:
             
             ######## If VCF, can get ref base, variant base, as well as other identifying information ######## 
             if is_vcf:
