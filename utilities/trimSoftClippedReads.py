@@ -17,7 +17,7 @@ pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
     
     for read_i in reads:
         
-        if 'S' in read_i.cigarstring:
+        if read_i.cigarstring and 'S' in read_i.cigarstring:
 
             front_clipped = re.search(r'^([0-9]+)S', read_i.cigarstring)
             back_clipped = re.search(r'([0-9]+)S$', read_i.cigarstring)
