@@ -26,7 +26,8 @@ pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
             
                 front_num = int( front_clipped.groups()[0] )
                 back_num  = int( back_clipped.groups()[0] )
-            
+                read_i.cigarstring = re.sub(r'^[0-9]+S|[0-9]+S$', '', read_i.cigarstring)
+                
                 qual_i = read_i.qual[front_num::][:-back_num]
                 
                 read_i.seq = read_i.seq[front_num::][:-back_num]
@@ -76,7 +77,7 @@ pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
         if read_i.has_tag('MC'):
             mate_cigar = read_i.get_tag('MC')
             if 'S' in mate_cigar:
-                new_cigar = re.sub(r'[0-9]+S', '', mate_cigar)
+                new_cigar = re.sub(r'^[0-9]+S|[0-9]+S$', '', mate_cigar)
                 read_i.set_tag(tag='MC', value=new_cigar, value_type='Z', replace=True)
             
         bamout.write(read_i)
