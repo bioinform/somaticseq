@@ -15,6 +15,8 @@ pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
 
     reads = bam.fetch()
     
+    total_trimmed_bases = 0
+    
     for read_i in reads:
         
         if read_i.cigarstring and 'S' in read_i.cigarstring:
@@ -39,6 +41,8 @@ pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
                 if read_i.has_tag('BD'):
                     read_i.set_tag(tag='BD', value=read_i.get_tag('BD')[front_num::][:-back_num], value_type='Z', replace=True)
                 
+                total_trimmed_bases += front_num
+                total_trimmed_bases += back_num
             
             elif front_clipped:
                 
@@ -56,6 +60,7 @@ pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
                 if read_i.has_tag('BD'):
                     read_i.set_tag(tag='BD', value=read_i.get_tag('BD')[num_bases::], value_type='Z', replace=True)
                 
+                total_trimmed_bases += num_bases
                 
             elif back_clipped:
                 
@@ -72,6 +77,8 @@ pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
                     
                 if read_i.has_tag('BD'):
                     read_i.set_tag(tag='BD', value=read_i.get_tag('BD')[:-num_bases], value_type='Z', replace=True)
+                    
+                total_trimmed_bases += num_bases
                 
         # Mate CIGAR
         if read_i.has_tag('MC'):
@@ -81,3 +88,5 @@ pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
                 read_i.set_tag(tag='MC', value=new_cigar, value_type='Z', replace=True)
             
         bamout.write(read_i)
+
+print('A total of {} bases trimmed.'.format(total_trimmed_bases += num_bases))
