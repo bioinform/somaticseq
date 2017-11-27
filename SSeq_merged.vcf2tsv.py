@@ -1,21 +1,5 @@
 #!/usr/bin/env python3
 
-# 1-based index in this program.
-# Sample command:
-# python3 SSeq_merged.vcf2tsv.py -myvcf BINA.snp.vcf -sniper somaticsniper/variants.vcf -varscan varscan2/variants.snp.vcf -jsm jointsnvmix2/variants.vcf -vardict vardict/variants.snp.vcf.gz -muse muse/variants.vcf -nbam normal.indelrealigned.bam -tbam tumor.indelrealigned.bam -ref human_g1k_v37_decoy.fasta -outfile SSeq2.snp.tsv
-
-### Improvement since the 2015 Genome Biology publication:
-  # Supports MuSE, LoFreq, Scalpel
-  # Allow +/- INDEL lengh for insertion and deletion
-  # Uses pysam to extract information directly from BAM files, e.g., flanking indel, edit distance, discordance, etc.
-  # Implement optional minimal mapping quality (MQ) and base call quality (BQ) filter, for which pysam considers the reads in BAM files. 
-  # Allow user to count only non-duplicate reads if -dedup option is invoked. 
-  # Allow handling of VCF files with multiple lines (i.e., different variants) at the same chromosome coordinates, as well as ALT columns with multiple ALT calls.
-  # Deprecated HaplotypeCaller and SAMTools dependencies
-  # Get useful metrics from MuTect2
-
-# -- 6/1/2016
-
 import sys, argparse, math, gzip, os, pysam
 import regex as re
 import scipy.stats as stats
@@ -171,6 +155,8 @@ out_header = \
 {COMMON}\t\
 {if_COSMIC}\t\
 {COSMIC_CNT}\t\
+{Consistent_Mates}\t\
+{Inconsistent_Mates}\t\
 {N_DP}\t\
 {nBAM_REF_MQ}\t\
 {nBAM_ALT_MQ}\t\
@@ -936,6 +922,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     
                     t_noise_read_count = t_poor_read_count  = 0
                     
+                    qname_collector = {}
+                    
                     for read_i in t_reads:
                         if not read_i.is_unmapped and dedup_test(read_i):
                             
@@ -951,6 +939,11 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             
                             # Reference calls:
                             if code_i == 1 and base_call_i == ref_base[0]:
+
+                                try:
+                                    qname_collector[read_i.qname].append(0)
+                                except KeyError:
+                                    qname_collector[read_i.qname] = [0]
                             
                                 t_ref_read_mq.append( read_i.mapping_quality )
                                 t_ref_read_bq.append( read_i.query_qualities[ith_base] )
@@ -991,7 +984,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             elif (indel_length == 0 and code_i == 1 and base_call_i == first_alt) or \
                                  (indel_length < 0  and code_i == 2 and indel_length == indel_length_i) or \
                                  (indel_length > 0  and code_i == 3):
-                                
+
+                                try:
+                                    qname_collector[read_i.qname].append(1)
+                                except KeyError:
+                                    qname_collector[read_i.qname] = [1]
+
                                 t_alt_read_mq.append( read_i.mapping_quality )
                                 t_alt_read_bq.append( read_i.query_qualities[ith_base] )
                                 
@@ -1028,6 +1026,12 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             
                             # Inconsistent read or 2nd alternate calls:
                             else:
+                                
+                                try:
+                                    qname_collector[read_i.qname].append(2)
+                                except KeyError:
+                                    qname_collector[read_i.qname] = [2]
+                                
                                 t_noise_read_count += 1
                                     
                     
@@ -1124,7 +1128,18 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                             break
         
                     site_homopolymer_length = max( alt_c+1, ref_c+1 )
-        
+
+                    consistent_mates = inconsistent_mates = 0
+                    for pairs_i in qname_collector:
+                        
+                        # Both are alternative calls:
+                        if qname_collector[pairs_i] == [1,1]:
+                            consistent_mates += 1
+                        
+                        # One is alternate call but the other one is not:
+                        elif len(qname_collector[pairs_i]) == 2 and 1 in qname_collector[pairs_i]:
+                            inconsistent_mates += 1
+
                     if my_identifiers:
                         my_identifiers = ';'.join(my_identifiers)
                     else:
@@ -1158,6 +1173,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     COMMON                  = if_common,                                              \
                     if_COSMIC               = if_cosmic,                                              \
                     COSMIC_CNT              = num_cases,                                              \
+                    Consistent_Mates        = consistent_mates,                                       \
+                    Inconsistent_Mates      = inconsistent_mates,                                     \
                     N_DP                    = N_dp,                                                   \
                     nBAM_REF_MQ             = '%g' % n_ref_mq,                                        \
                     nBAM_ALT_MQ             = '%g' % n_alt_mq,                                        \

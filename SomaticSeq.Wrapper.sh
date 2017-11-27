@@ -1,5 +1,6 @@
 #!/bin/bash
 # Use getopt instead of getopts for long options
+# Consistent_Mates Inconsistent_Mates not included for training because BamSurgeon does not do those simulations. Also large number indicate short fragments.
 
 set -e
 
@@ -483,7 +484,7 @@ then
 
     # If ground truth is here, assume builder.R, and build a classifier
     elif [[ ${snpgroundtruth} ]] && [[ ${ada_r_script} ]]; then
-        ${ada_r_script} "${merged_dir}/Ensemble.sSNV.tsv"
+        ${ada_r_script} "${merged_dir}/Ensemble.sSNV.tsv" Consistent_Mates Inconsistent_Mates
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else
@@ -607,7 +608,7 @@ then
 
     # If ground truth is here, assume builder.R, and build a classifier
     elif [[ ${indelgroundtruth} ]] && [[ ${ada_r_script} ]]; then
-        ${ada_r_script} "${merged_dir}/Ensemble.sINDEL.tsv" Strelka_QSS Strelka_TQSS
+        ${ada_r_script} "${merged_dir}/Ensemble.sINDEL.tsv" Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else
