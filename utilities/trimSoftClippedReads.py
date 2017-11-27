@@ -89,4 +89,4 @@ pysam.AlignmentFile(bam_out, 'wb', template=bam) as bamout:
             
         bamout.write(read_i)
 
-print('A total of {} bases trimmed.'.format(total_trimmed_bases += num_bases))
+print('A total of {} bases trimmed.'.format(total_trimmed_bases))
