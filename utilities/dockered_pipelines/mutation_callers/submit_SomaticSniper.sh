@@ -132,7 +132,7 @@ then
     echo "i=1" >> $out_script
     echo "while [[ \$i -le $split ]]" >> $out_script
     echo "do" >> $out_script
-    echo "    docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/somaticseq:base-1.0 bash -c \"bedtools intersect -a /mnt/${outdir}/${outvcf} -b /mnt/${outdir}/\${i}/\${i}.bed -header | uniq > /mnt/${outdir}/\${i}/${outvcf}\"" >> $out_script
+    echo "    docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/bedtools:2.26.0 bash -c \"bedtools intersect -a /mnt/${outdir}/${outvcf} -b /mnt/${outdir}/\${i}/\${i}.bed -header | uniq > /mnt/${outdir}/\${i}/${outvcf}\"" >> $out_script
     echo "    i=\$(( \$i + 1 ))" >> $out_script
     echo "done" >> $out_script
 fi
