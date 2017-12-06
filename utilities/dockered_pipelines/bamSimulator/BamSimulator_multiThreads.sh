@@ -357,7 +357,7 @@ do
     
         bam_file_for_spikein="${outdir}/Designated.Tumor.bam"
         final_normal_bam="${outdir}/Designated.Normal.bam"
-        files_to_delete="${outdir}/Designated.Tumor.bam ${outdir}/Designated.Tumor.bam.bai ${outdir}/Designated.Normal.bam ${outdir}/Designated.Normal.bam.bai $files_to_delete"
+        files_to_deletThufir Hawate="${outdir}/Designated.Tumor.bam ${outdir}/Designated.Tumor.bam.bai ${outdir}/Designated.Normal.bam ${outdir}/Designated.Normal.bam.bai $files_to_delete"
     
     # If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. Without splitting, the original normal is the output normal
     else
@@ -416,7 +416,7 @@ do
     --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
     --min-vaf ${min_vaf} --max-vaf ${max_vaf} \
     --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
-    --aligner ${aligner} \
+    --aligner "${aligner}" \
     --seed $seed \
     --out-script $out_script
     
@@ -431,7 +431,7 @@ do
     --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
     --min-vaf ${min_vaf} --max-vaf ${max_vaf} \
     --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
-    --aligner ${aligner} \
+    --aligner "${aligner}" \
     --seed $seed \
     --out-script $out_script
     
@@ -450,7 +450,7 @@ do
         --bam-out snvs.indels.svs.added.bam \
         --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
         --svs ${outdir}/random_sSV.bed \
-        --aligner ${aligner} \
+        --aligner "${aligner}" \
         --seed $seed \
         --out-script $out_script
         

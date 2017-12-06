@@ -159,7 +159,7 @@ echo "--maxdepth $max_depth \\" >> $out_script
 echo "--minmutreads $min_var_reads \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
 echo "--tagreads --force \\" >> $out_script
-echo "--aligner ${aligner}" >> $out_script
+echo "--aligner "${aligner}"" >> $out_script
 echo "" >> $out_script
 
 echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script

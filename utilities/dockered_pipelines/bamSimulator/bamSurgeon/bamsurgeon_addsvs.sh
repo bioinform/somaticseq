@@ -122,7 +122,7 @@ echo "--maxlibsize 1000 \\" >> $out_script
 echo "--cnvfile /mnt/${cnvfile} \\" >> $out_script
 echo "--tagreads \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
-echo "--aligner ${aligner}" >> $out_script
+echo "--aligner "${aligner}"" >> $out_script
 echo "" >> $out_script
 
 
