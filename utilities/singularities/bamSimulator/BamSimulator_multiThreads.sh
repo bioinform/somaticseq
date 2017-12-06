@@ -414,7 +414,7 @@ do
     --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
     --min-vaf ${min_vaf} --max-vaf ${max_vaf} \
     --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
-    --aligner ${aligner} \
+    --aligner "${aligner}" \
     --seed $seed \
     --out-script $out_script
     
@@ -429,7 +429,7 @@ do
     --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
     --min-vaf ${min_vaf} --max-vaf ${max_vaf} \
     --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
-    --aligner ${aligner} \
+    --aligner "${aligner}" \
     --seed $seed \
     --out-script $out_script
     
@@ -448,7 +448,7 @@ do
         --bam-out snvs.indels.svs.added.bam \
         --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
         --svs ${outdir}/random_sSV.bed \
-        --aligner ${aligner} \
+        --aligner "${aligner}" \
         --seed $seed \
         --out-script $out_script
         

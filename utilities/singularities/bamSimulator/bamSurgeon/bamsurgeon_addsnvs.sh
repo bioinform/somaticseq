@@ -159,7 +159,7 @@ echo "--minmutreads $min_var_reads \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
 echo "--picardjar /usr/local/picard-tools-1.131/picard.jar \\" >> $out_script
 echo "--ignoresnps --force --tagreads \\" >> $out_script
-echo "--aligner ${aligner}" >> $out_script
+echo "--aligner "${aligner}"" >> $out_script
 echo "" >> $out_script
 
 echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 bash -c \\" >> $out_script
