@@ -521,11 +521,15 @@ then
     --out-script ${parent_logdir}/mergeFiles.${timestamp}.cmd \
     --standalone
 
-    $MYDIR/bamSurgeon/mergeBamFiles.sh \
-    --output-dir ${parent_outdir} \
-    --bam-string "${nbams_to_merge}" \
-    --bam-out ${out_normal} \
-    --out-script ${parent_logdir}/mergeFiles.${timestamp}.cmd
+    
+    if [[ $merge_bam || $split_bam || $indel_realign ]]
+    then
+        $MYDIR/bamSurgeon/mergeBamFiles.sh \
+        --output-dir ${parent_outdir} \
+        --bam-string "${nbams_to_merge}" \
+        --bam-out ${out_normal} \
+        --out-script ${parent_logdir}/mergeFiles.${timestamp}.cmd
+    fi
     
     $MYDIR/bamSurgeon/concatVcfFiles.sh \
     --output-dir ${parent_outdir} \
