@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out:,bam-in:,svs:,cnv-file:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,standalone -n 'bamsurgeon_addsvs.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out:,bam-in:,svs:,cnv-file:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,aligner:,out-script:,seed:,standalone -n 'bamsurgeon_addsvs.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -14,6 +14,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 seed=$( date +"%Y" )
+aligner='mem'
 
 while true; do
     case "$1" in
@@ -57,6 +58,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  cnvfile=$2 ; shift 2 ;;
+            esac ;;
+
+        --aligner )
+            case "$2" in
+                "") shift 2 ;;
+                *)  aligner=$2 ; shift 2 ;;
             esac ;;
 
         --out-script )
@@ -115,7 +122,7 @@ echo "--maxlibsize 1000 \\" >> $out_script
 echo "--cnvfile /mnt/${cnvfile} \\" >> $out_script
 echo "--tagreads \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
-echo "--aligner mem" >> $out_script
+echo "--aligner ${aligner}" >> $out_script
 echo "" >> $out_script
 
 

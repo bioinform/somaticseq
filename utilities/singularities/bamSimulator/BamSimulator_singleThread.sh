@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,down-sample:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,left-beta:,right-beta:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,action:,merge-bam,split-bam,clean-bam,indel-realign,keep-intermediates -n 'BamSimulator.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,down-sample:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,left-beta:,right-beta:,min-depth:,max-depth:,min-variant-reads:,aligner:,out-script:,seed:,action:,merge-bam,split-bam,clean-bam,indel-realign,keep-intermediates -n 'BamSimulator.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -27,6 +27,7 @@ min_var_reads=1
 down_sample=1
 left_beta=2
 right_beta=2
+aligner='mem'
 
 realign_arguments='-dt NONE --maxReadsForConsensuses 150000 --maxReadsInMemory 500000 --maxReadsForRealignment 2000000'
 
@@ -144,6 +145,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  min_var_reads=$2 ; shift 2 ;;
+            esac ;;
+
+        --aligner )
+            case "$2" in
+                "") shift 2 ;;
+                *)  aligner=$2 ; shift 2 ;;
             esac ;;
 
         --out-script )
@@ -342,6 +349,7 @@ $MYDIR/bamSurgeon/bamsurgeon_addsnvs.sh \
 --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
 --min-vaf ${min_vaf} --max-vaf ${max_vaf} \
 --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
+--aligner ${aligner} \
 --seed $seed \
 --out-script $out_script
 
@@ -355,6 +363,7 @@ $MYDIR/bamSurgeon/bamsurgeon_addindels.sh \
 --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
 --min-vaf ${min_vaf} --max-vaf ${max_vaf} \
 --min-depth ${min_depth} --max-depth ${max_depth} --min-variant-reads ${min_var_reads} \
+--aligner ${aligner} \
 --seed $seed \
 --out-script $out_script
 
@@ -371,6 +380,7 @@ then
     --bam-out snvs.indels.svs.added.bam \
     --cnv-file ${outdir}/sorted.cnvfile.bed.gz \
     --svs ${outdir}/random_sSV.bed \
+    --aligner ${aligner} \
     --seed $seed \
     --out-script $out_script
         

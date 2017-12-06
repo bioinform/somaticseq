@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out:,bam-in:,indels:,cnv-file:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,standalone -n 'bamsurgeon_addindels.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out:,bam-in:,indels:,cnv-file:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,aligner:,out-script:,seed:,standalone -n 'bamsurgeon_addindels.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -18,6 +18,7 @@ seed=$( date +"%Y" )
 min_depth=10
 max_dpeth=5000
 min_var_reads=1
+aligner='mem'
 
 while true; do
     case "$1" in
@@ -99,6 +100,12 @@ while true; do
                 *)  out_script_name=$2 ; shift 2 ;;
             esac ;;
 
+        --aligner )
+            case "$2" in
+                "") shift 2 ;;
+                *)  aligner=$2 ; shift 2 ;;
+            esac ;;
+
         --seed )
             case "$2" in
                 "") shift 2 ;;
@@ -152,7 +159,7 @@ echo "--maxdepth $max_depth \\" >> $out_script
 echo "--minmutreads $min_var_reads \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
 echo "--tagreads --force \\" >> $out_script
-echo "--aligner mem" >> $out_script
+echo "--aligner ${aligner}" >> $out_script
 echo "" >> $out_script
 
 echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
