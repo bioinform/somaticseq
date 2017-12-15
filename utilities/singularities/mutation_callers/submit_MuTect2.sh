@@ -167,6 +167,7 @@ echo "--input /mnt/${tumor_bam} \\" >> $out_script
 echo "--normalSampleName \${normal_name} \\" >> $out_script
 echo "--tumorSampleName \${tumor_name} \\" >> $out_script
 echo "$dbsnp_text \\" >> $out_script
+echo "--threads ${threads} \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
 echo "--output /mnt/${outdir}/unfiltered.${outvcf}" >> $out_script
 echo "" >> $out_script

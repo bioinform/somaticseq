@@ -1,5 +1,6 @@
 #!/bin/bash
 # Use getopt instead of getopts for long options
+# Consistent_Mates Inconsistent_Mates not included for training because BamSurgeon does not do those simulations. Also large number indicate short fragments.
 
 set -e
 
@@ -370,7 +371,7 @@ then
         fi
     done
 
-    if [[ -r ${gatk} ]]; then
+    if [[ ${gatk} ]]; then
         java -Xmx4g -jar ${gatk} -T CombineVariants -R ${hg_ref} --setKey null --genotypemergeoption UNSORTED $mergesnp --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
     else
         cat $all_snp | egrep -v '^#'  | awk -F "\t" '{print $1 "\t" $2 "\t.\t" $4 "\t" $5}' | sort | uniq | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" "." "\t" "PASS" "\t" "."}' | cat <(echo -e '##fileformat=VCFv4.1\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO') - | $MYDIR/utilities/vcfsorter.pl ${hg_dict} - > ${merged_dir}/CombineVariants_MVJSD.snp.vcf
@@ -483,7 +484,7 @@ then
 
     # If ground truth is here, assume builder.R, and build a classifier
     elif [[ ${snpgroundtruth} ]] && [[ ${ada_r_script} ]]; then
-        ${ada_r_script} "${merged_dir}/Ensemble.sSNV.tsv"
+        ${ada_r_script} "${merged_dir}/Ensemble.sSNV.tsv" Consistent_Mates Inconsistent_Mates
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else
@@ -607,7 +608,7 @@ then
 
     # If ground truth is here, assume builder.R, and build a classifier
     elif [[ ${indelgroundtruth} ]] && [[ ${ada_r_script} ]]; then
-        ${ada_r_script} "${merged_dir}/Ensemble.sINDEL.tsv" Strelka_QSS Strelka_TQSS
+        ${ada_r_script} "${merged_dir}/Ensemble.sINDEL.tsv" Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates
 
     # If no training and no classification, then make VCF by majority vote consensus:
     else

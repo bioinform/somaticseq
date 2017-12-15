@@ -1039,6 +1039,17 @@ Have implemented the following improvement, mostly for indels:
 \end{itemize}
 
 
+\subsection{Version 2.7.0}
+
+\begin{itemize}
+  \item
+  Added another feature: consistent/inconsistent calls for paired reads if the position is covered by both forward and reverse reads. However, they're excluded as training features in SomaticSeq.Wrapper.sh script for the time being. 
+  
+  \item
+  Change non-GCTA characters to N in VarDict.vcf file to make it conform to VCF file specifications. 
+
+\end{itemize}
+
 
 
 \section{Contact Us}

@@ -67,7 +67,7 @@ then
     echo "#$ -o ${logdir}" >> $out_script
     echo "#$ -e ${logdir}" >> $out_script
     echo "#$ -S /bin/bash" >> $out_script
-    echo '#$ -l h_vmem=2G' >> $out_script
+    echo '#$ -l h_vmem=4G' >> $out_script
     echo 'set -e' >> $out_script
 fi
 

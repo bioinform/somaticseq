@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out:,bam-in:,snvs:,cnv-file:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,out-script:,seed:,standalone -n 'bamsurgeon_addsnvs.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,bam-out:,bam-in:,snvs:,cnv-file:,min-vaf:,max-vaf:,min-depth:,max-depth:,min-variant-reads:,aligner:,out-script:,seed:,standalone -n 'bamsurgeon_addsnvs.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -18,6 +18,7 @@ seed=$( date +"%Y" )
 min_depth=5
 max_dpeth=5000
 min_var_reads=1
+aligner='mem'
 
 while true; do
     case "$1" in
@@ -93,6 +94,12 @@ while true; do
                 *)  min_var_reads=$2 ; shift 2 ;;
             esac ;;
 
+        --aligner )
+            case "$2" in
+                "") shift 2 ;;
+                *)  aligner=$2 ; shift 2 ;;
+            esac ;;
+
         --out-script )
             case "$2" in
                 "") shift 2 ;;
@@ -152,7 +159,7 @@ echo "--minmutreads $min_var_reads \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
 echo "--picardjar /usr/local/picard-tools-1.131/picard.jar \\" >> $out_script
 echo "--ignoresnps --force --tagreads \\" >> $out_script
-echo "--aligner mem" >> $out_script
+echo "--aligner "${aligner}"" >> $out_script
 echo "" >> $out_script
 
 echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 bash -c \\" >> $out_script

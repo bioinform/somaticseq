@@ -87,8 +87,9 @@ open(out_indel, 'w') as indelout:
         # Fix the occasional error where ALT and REF are the same:
         if vcfcall.refbase != vcfcall.altbase:
                     
-            # In the REF field, non-GCTA characters should be changed to N to fit the VCF standard:
+            # In the REF/ALT field, non-GCTA characters should be changed to N to fit the VCF standard:
             vcfcall.refbase = re.sub( r'[^GCTA]', 'N', vcfcall.refbase, flags=re.I )
+            vcfcall.altbase = re.sub( r'[^GCTA]', 'N', vcfcall.altbase, flags=re.I )
             
             ## To be consistent with other tools, Combine AD:RD or ALD:RD into DP4.
             # VarDict puts Tumor first and Normal next
