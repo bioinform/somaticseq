@@ -102,7 +102,7 @@ echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${normalBam} \\" >> $out_script
 echo "-I /mnt/${tumorBam} \\" >> $out_script
 echo "${selector_text} \\" >> $out_script
-echo "-o /mnt/${outdir}/T.N.intervals" >> $out_script
+echo "-o /mnt/${outdir}/T.N.${timestamp}.intervals" >> $out_script
 
 echo "" >> $out_script
 
@@ -113,7 +113,7 @@ echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${normalBam} \\" >> $out_script
 echo "-I /mnt/${tumorBam} \\" >> $out_script
 echo "${selector_text} \\" >> $out_script
-echo "-targetIntervals /mnt/${outdir}/T.N.intervals \\" >> $out_script
+echo "-targetIntervals /mnt/${outdir}/T.N.${timestamp}.intervals \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
 echo "-nWayOut .jointRealigned.bam" >> $out_script
 
