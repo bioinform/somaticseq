@@ -22,6 +22,8 @@ parser.add_argument('--bowtie-normals', type=str, nargs='*', help='tumor sample 
 parser.add_argument('--novo-tumors',    type=str, nargs='*', help='tumor sample name',  required=False, default=[])
 parser.add_argument('--novo-normals',   type=str, nargs='*', help='tumor sample name',  required=False, default=[])
 
+parser.add_argument('-all', '--print-all', action='store_true', help='Print everything', required=False, default=False)
+
 
 args = parser.parse_args()
 
@@ -35,6 +37,7 @@ bowtie_tumors  = args.bowtie_tumors
 bowtie_normals = args.bowtie_normals
 novo_tumors    = args.novo_tumors
 novo_normals   = args.novo_normals
+print_all      = args.print_all
 
 with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     
@@ -89,8 +92,9 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     line_i = vcfin.readline().rstrip()
     
     while line_i:
-        
+    
         vcf_i = genome.Vcf_line( line_i )
+        sample_columns = line_i.split('\t')[9::]
         
         bwa_passes = bowtie_passes = novo_passes = 0
         trained_passes = 0
@@ -170,17 +174,88 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         consensus_passes += 1
 
 
+        bwaEA    = bwaNC    = bwaNS    = bwaIL    = 0
+        bowtieEA = bowtieNC = bowtieNS = bowtieIL = 0
+        novoEA   = novoNC   = novoNS   = novoIL   = 0
         for sample_i in called_samples:
-            if   sample_i.startswith('IL_'):
-                IL_passes += 1
-            elif sample_i.startswith('NS_'):
-                NS_passes += 1
-            elif sample_i.startswith('EA_'):
-                EA_passes += 1
-            elif sample_i.startswith('NC_'):
-                NC_passes += 1
+            if sample_i.endswith('.bwa'):
+                
+                if sample_i.startswith('EA_'):
+                    bwaEA += 1       
+                elif sample_i.startswith('NC_'):
+                    bwaNC += 1
+                elif sample_i.startswith('NS_'):
+                    bwaNS += 1
+                elif sample_i.startswith('IL_'):
+                    bwaIL += 1
+            
+            elif sample_i.endswith('.bowtie'):
+                
+                if sample_i.startswith('EA_'):
+                    bowtieEA += 1       
+                elif sample_i.startswith('NC_'):
+                    bowtieNC += 1
+                elif sample_i.startswith('NS_'):
+                    bowtieNS += 1
+                elif sample_i.startswith('IL_'):
+                    bowtieIL += 1
+            
+            elif sample_i.endswith('.novo'):
+                
+                if sample_i.startswith('EA_'):
+                    novoEA += 1       
+                elif sample_i.startswith('NC_'):
+                    novoNC += 1
+                elif sample_i.startswith('NS_'):
+                    novoNS += 1
+                elif sample_i.startswith('IL_'):
+                    novoIL += 1
+                
+        bwaSites    = (bwaEA>=1)    + (bwaNC>=1)    + (bwaNS>=3)    + (bwaIL>=2)
+        bowtieSites = (bowtieEA>=1) + (bowtieNC>=1) + (bowtieNS>=3) + (bowtieIL>=2)
+        novoSites   = (novoEA>=1)   + (novoNC>=1)   + (novoNS>=3)   + (novoIL>=2)
         
+        EAcalls = (bwaEA>=1) + (bowtieEA>=1) + (novoEA>=1)
+        NCcalls = (bwaNC>=1) + (bowtieNC>=1) + (novoNC>=1)
+        NScalls = (bwaNS>=3) + (bowtieNS>=3) + (novoNS>=3)
+        ILcalls = (bwaIL>=2) + (bowtieIL>=2) + (novoIL>=2)
         
+        # Tier 1 calls are by all aligners and all sites
+        if bwaSites>=2 and bowtieSites>=2 and novoSites>=2 and EAcalls>=2 and NCcalls>=2 and NScalls>=2 and ILcalls>=2:
+            qual_i = 'Tier1'
+            
+        # Tier 2 calls are by all aligners and majoirty sites, or majority aligners and all sites
+        elif ( (bwaSites>=2 and bowtieSites>=2 and novoSites>=2) and ( (EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2 ) ) or \
+             ( ((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) and ( EAcalls>=2 and NCcalls>=2 and NScalls>=2 and ILcalls>=2 ) ):
+            qual_i = 'Tier2'
+            
+        # Tier 3 calls are majority sites and majority aligners:
+        elif ( (bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2 ) and ( (EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2 ):
+            qual_i = 'Tier3'
         
+        # Tier 4 are majority sites or majority aligners:
+        elif ( (bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2 ) or ( (EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2 ):
+            qual_i = 'Tier4'
+            
+        # REJECT otherwise:
+        else:
+            qual_i = 'REJECT'
+        
+                
+        info_column = 'calledSamples={calledSamples};bwaSites={BWA};bowtieSites={BOWTIE};novoSites={NOVO};EA={EA};NC={NC};NS={NS};IL={IL}'.format(calledSamples=','.join(called_samples), BWA=bwaSites, BOWTIE=bowtieSites, NOVO=novoSites, EA=EAcalls, NC=NCcalls, NS=NScalls, IL=ILcalls )
+        
+        outline_i = '{CHROM}\t{POS}\t{ID}\t{REF}\t{ALT}\t{QUAL}\t{FILTER}\t{INFO}\t{FORMAT}'.format(CHROM=vcf_i.chromosome, POS=vcf_i.position, ID=vcf_i.identifier, REF=vcf_i.refbase, ALT=vcf_i.altbase, QUAL='.', FILTER=qual_i, INFO=info_column, FORMAT=vcf_i.field)
+        
+        for i in bwa_tumor_indices:
+            outline_i = outline_i + '\t' + sample_columns[i]
+
+        for i in bowtie_tumor_indices:
+            outline_i = outline_i + '\t' + sample_columns[i]
+
+        for i in novo_tumor_indices:
+            outline_i = outline_i + '\t' + sample_columns[i]
+
+        if qual_i != 'REJECT' or print_all:
+            vcfout.write( outline_i + '\n')
         
         line_i = vcfin.readline().rstrip()
