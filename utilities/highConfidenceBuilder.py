@@ -395,11 +395,8 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
         
         # Tier 1 calls are called by all aligners and all sites, and classified as PASS at least once
         if bwaSites>=2 and bowtieSites>=2 and novoSites>=2 and EAcalls>=2 and NCcalls>=2 and NScalls>=2 and ILcalls>=2 and trained_passes>0:
-            qual_i = 'Tier1A'
-            
-        elif bwaSites>=2 and bowtieSites>=2 and novoSites>=2 and EAcalls>=2 and NCcalls>=2 and NScalls>=2 and ILcalls>=2 and trained_passes==0:
-            qual_i = 'Tier1B'
-            
+            qual_i = 'Tier1'
+                        
         # Tier 2 calls are by all aligners and majoirty sites, or majority aligners and all sites, and classified PASS at least once
         elif ( ((bwaSites>=2 and bowtieSites>=2 and novoSites>=2) and ( (EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2 )) or \
              (((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) and ( EAcalls>=2 and NCcalls>=2 and NScalls>=2 and ILcalls>=2 )) ) and trained_passes>0:
