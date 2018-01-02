@@ -93,12 +93,18 @@ rule mutect2:
         normal_name=$(samtools view -H {input.normal} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//')
 
         java -Xmx{resources.mem_mb}m -jar {config[gatk]} \
-        -T MuTect2 \
-        -R {config[reference]} \
-        -I:tumor {input.tumor} \
-        -I:normal {input.normal} \
+        Mutect2 \
+        --reference {config[reference]} \
+        --input {input.normal} \
+        --input {input.tumor} \
+        --normalSampleName "$normal_name" \
+        --tumorSampleName "$tumor_name" \
         --dbsnp {config[dbsnp]} \
-        -o {output}
+        --output unfiltered-{output}
+        java -Xmx{resources.mem_mb}m -jar {config[gatk]} \
+        FilterMutectCalls \
+        --variant unfiltered-{output} \
+        --output {output}
         """
 
 rule scalpel:
