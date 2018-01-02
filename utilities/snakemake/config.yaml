@@ -1,0 +1,11 @@
+lofreq:  True
+muse:  True
+mutect2:  True
+scalpel:  True
+sniper:  True
+strelka:  True
+vardict:  True
+varscan2:  True
+# The number of threads to use for each variant caller that supports
+# parallelization.
+caller_threads:  36

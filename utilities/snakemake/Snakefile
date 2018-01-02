@@ -1,0 +1,284 @@
+# -*- python -*-
+# vim: set ft=python
+
+import glob
+import os
+
+shell.prefix("set -eo pipefail; ")
+
+configfile: "config.yaml"
+
+
+
+rule sniper:
+    input:
+        tumor=config["tumor"],
+        normal=config["normal"]
+    output:
+        "SomaticSniper.vcf"
+    threads: 1
+    resources:
+        mem_mb=6000
+    shell:
+        """
+        bam-somaticsniper \
+        -f {config[reference]} \
+        -F vcf \
+        -q 25 `# minimum mapping quality` \
+        -Q 15 `# minimum somatic SNV quality` \
+        -s 0.0001 `# prior probability of a somatic mutation` \
+        {input.tumor} \
+        {input.normal} \
+        {output}
+        """
+
+rule lofreq:
+    input:
+        tumor=config["tumor"],
+        normal=config["normal"]
+    output:
+        snps="lofreq/somatic_final.snvs.vcf.gz",
+        indels="lofreq/somatic_final.indels.vcf.gz"
+    threads: config["caller_threads"]
+    resources:
+        mem_mb=12000
+    shell:
+        """
+        lofreq somatic \
+        --call-indels \
+        --threads {threads} \
+        --tumor {input.tumor} \
+        --normal {input.normal} \
+        --ref {config[reference]} \
+        --dbsnp {config[dbsnp]} \
+        --outprefix lofreq/
+        """
+
+rule muse:
+    input:
+        tumor=config["tumor"],
+        normal=config["normal"]
+    output:
+        "MuSE.vcf"
+    threads: 1
+    resources:
+        mem_mb=4000
+    shell:
+        """
+        MuSE call \
+        -O MuSE \
+        -f {config[reference]} \
+        {input.tumor} \
+        {input.normal}
+        MuSE sump \
+        -G \
+        -I MuSE.MuSE.txt \
+        -O {output} \
+        -D {config[dbsnp]}
+        """
+
+rule mutect2:
+    input:
+        tumor=config["tumor"],
+        normal=config["normal"]
+    output:
+        "MuTect2.vcf"
+    threads: 1
+    resources:
+        mem_mb=7000
+    shell:
+        """
+        # for now, copied straight from the original SomaticSeq pipeline code
+        tumor_name=$(samtools view -H {input.tumor} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//')
+        normal_name=$(samtools view -H {input.normal} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//')
+
+        java -Xmx{resources.mem_mb}m -jar {config[gatk]} \
+        -T MuTect2 \
+        -R {config[reference]} \
+        -I:tumor {input.tumor} \
+        -I:normal {input.normal} \
+        --dbsnp {config[dbsnp]} \
+        -o {output}
+        """
+
+rule scalpel:
+    input:
+        tumor=config["tumor"],
+        normal=config["normal"],
+        refdict=config["reference"].replace('.fasta','.dict')
+    output:
+        "Scalpel.vcf"
+    threads: 1
+    resources:
+        mem_mb=32000
+    shell:
+        """
+        scalpel-discovery --somatic \
+        --ref {config[reference]} \
+        --normal {input.normal} \
+        --tumor {input.tumor} \
+        --window 600 \
+        --dir scalpel \
+        && scalpel-export --somatic \
+           --db scalpel/main/somatic.db.dir \
+           --ref {config[reference]} \
+        | vcfsorter.pl {input.refdict} - \
+        > {output}
+        """
+
+rule strelka:
+    input:
+        tumor=config["tumor"],
+        normal=config["normal"]
+    output:
+        snps="strelka/results/variants/somatic.snvs.vcf.gz",
+        indels="strelka/results/variants/somatic.indels.vcf.gz"
+    threads: config["caller_threads"]
+    resources:
+        mem_mb=6000
+    shell:
+        """
+        configureStrelkaSomaticWorkflow.py \
+        --tumorBam={input.tumor} \
+        --normalBam={input.normal} \
+        --referenceFasta={config[reference]} \
+        --callMemMb={resources.mem_mb} \
+        --runDir=strelka
+        strelka/runWorkflow.py -m local -j {threads}
+        """
+
+rule genome_interval:
+    input:
+        config["reference"]+".fai"
+    output:
+        "genome.bed"
+    threads: 1
+    resources:
+        mem_mb=1000
+    shell:
+        """
+        awk -F "\t" '{{print $1 "\t0\t" $2}}' {input} > {output}
+        """
+
+rule vardict:
+    input:
+        tumor=config["tumor"],
+        normal=config["normal"],
+        interval=rules.genome_interval.output
+    output:
+        "VarDict.vcf"
+    threads: 1
+    resources:
+        mem_mb=8000
+    shell:
+        """
+        VarDict \
+        -h \
+        -G {config[reference]} \
+        -f 0.05 \
+        -b '{input.tumor}|{input.normal}' \
+        -Q 1 \
+        -c 1 \
+        -S 2 \
+        -E 3 \
+        -g 4 \
+        | awk 'NR!=1' \
+        | testsomatic.R \
+        | var2vcf_paired.pl -N 'TUMOR|NORMAL' -f 0.05 \
+        {input.interval} \
+        > {output}
+        """
+
+rule varscan:
+    input:
+        tumor=config["tumor"].replace(".bam",".mpileup"),
+        normal=config["normal"].replace(".bam",".mpileup")
+    output:
+        snps="VarScan2.snp.vcf",
+        indels="VarScan2.indel.vcf"
+    threads: 1
+    resources:
+        mem_mb=9000
+    shell:
+        """
+        java -Xmx{resources.mem_mb}m -jar {config[varscan]} somatic \
+        {input.normal} {input.tumor} VarScan2 \
+        --output-vcf 1 \
+        --min-var-freq 0.10
+        java -Xmx{resources.mem_mb}m -jar {config[varscan]} processSomatic \
+        {output.snps}
+        java -Xmx{resources.mem_mb}m -jar {config[varscan]} somaticFilter \
+        VarScan2.snp.Somatic.hc.vcf \
+        -indel-file {output.indels} \
+        -output-file VarScan2.snp.Somatic.hc.filter.vcf
+        """
+
+rule mpileup:
+    input:
+        "{name}.bam"
+    output:
+        temp("{name}.mpileup")
+    threads: 1
+    shell:
+        """
+        samtools mpileup -B -q 25 -Q 20 -f {config[reference]} {input} \
+        > {output}
+        """
+
+varcallers_single_output = [
+    "muse",
+    "mutect2",
+    "scalpel",
+    "sniper",
+    "vardict",
+]
+# variant callers that have separate output files for SNVs and Indels
+varcallers_multi_output = [
+    "lofreq",
+    "strelka",
+    "varscan",
+]
+varcallers = varcallers_single_output + varcallers_multi_output
+
+somaticseq_inputs = [eval('.'.join(['rules',varcaller,'output']))
+                     for varcaller in varcallers if config[varcaller]]
+somaticseq_inputflags = ""
+
+for varcaller in varcallers_single_output:
+    if config[varcaller]:
+        somaticseq_inputflags += (
+            " --" + varcaller + " "
+            + eval('.'.join(['rules',varcaller,'output']))[0]
+        )
+for varcaller in varcallers_multi_output:
+    if config[varcaller]:
+        somaticseq_inputflags += (
+            " --" + varcaller + "-snv "
+            + eval('.'.join(['rules',varcaller,'output','snps'])) +
+            " --" + varcaller + "-indel "
+            + eval('.'.join(['rules',varcaller,'output','indels']))
+        )
+
+rule somaticseq:
+    input:
+        tumor=config["tumor"],
+        normal=config["normal"],
+        inputs=somaticseq_inputs
+    output:
+        "SomaticSeq/"
+    threads: 1
+    resources:
+        mem_mb=6000
+    params:
+        inputflags=somaticseq_inputflags
+    shell:
+        """
+        SomaticSeq.Wrapper.sh \
+        --output-dir SomaticSeq \
+        --genome-reference {config[reference]} \
+        --dbsnp {config[dbsnp]} \
+        --gatk {config[gatk]} \
+        --tumor-bam {input.tumor} \
+        --normal-bam {input.normal} \
+        {params.inputflags}
+        """
