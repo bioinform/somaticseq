@@ -12,8 +12,9 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument('-infile',  '--infile',   type=str, help='VCF in', required=True)
 parser.add_argument('-outfile', '--outfile',  type=str, help='VCF out', required=True)
 
-parser.add_argument('-pass',     '--pass-score', type=float, help='PASS SCORE',  required=False, default=3)
-parser.add_argument('-ncallers', '--num-callers', type=int, help='# callers to be considered PASS if untrained', required=False, default=3)
+parser.add_argument('-pass',     '--pass-score',   type=float, help='PASS SCORE',  required=False, default=3.010299956639812)
+parser.add_argument('-reject',   '--reject-score', type=float, help='PASS SCORE',  required=False, default=0.4575749056067512)
+parser.add_argument('-ncallers', '--num-callers',  type=int, help='# callers to be considered PASS if untrained', required=False, default=3)
 
 parser.add_argument('--bwa-tumors',     type=str, nargs='*', help='tumor sample name',  required=False, default=[])
 parser.add_argument('--bwa-normals',    type=str, nargs='*', help='tumor sample name',  required=False, default=[])
@@ -50,8 +51,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
         line_i = vcfin.readline().rstrip()
     
     # At this point, line_i starts with CHROM:
-    vcfout.write('##FILTER=<ID=Tier1A,Description="Called by all aligners and all sites, and classified as PASS at least once">\n')
-    vcfout.write('##FILTER=<ID=Tier1B,Description="Called by all aligners and all sites, but never been classified as PASS">\n')
+    vcfout.write('##FILTER=<ID=Tier1,Description="Called by all aligners and all sites">\n')
     vcfout.write('##FILTER=<ID=Tier2A,Description="Called by all aligners and majoirty sites, or majority aligners and all sites, and classified PASS at least once">\n')
     vcfout.write('##FILTER=<ID=Tier2B,Description="Called by all aligners and majoirty sites, or majority aligners and all sites, but never been classified as PASS">\n')
     vcfout.write('##FILTER=<ID=Tier3A,Description="Called by majority aligners and majoirty sites, and classified PASS at least once">\n')
@@ -71,7 +71,8 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     vcfout.write('##INFO=<ID=bwaSites,Number=1,Type=Integer,Description="called by # of sites where bwa is the aligner">\n')
     vcfout.write('##INFO=<ID=bowtieSites,Number=1,Type=Integer,Description="called by # of sites where bowtie2 is the aligner">\n')
     vcfout.write('##INFO=<ID=novoSites,Number=1,Type=Integer,Description="called by # of sites where novoalign is the aligner">\n')
-    vcfout.write('##INFO=<ID=Classified,Number=1,Type=Integer,Description="# of samples classified by SomaticSeq classifiers">\n')
+    vcfout.write('##INFO=<ID=ClassifiedPass,Number=1,Type=Integer,Description="# of samples classified as PASS by SomaticSeq classifiers">\n')
+    vcfout.write('##INFO=<ID=ClassifiedReject,Number=1,Type=Integer,Description="# of samples classified as REJECT by SomaticSeq classifiers">\n')
     vcfout.write('##INFO=<ID=Consensus,Number=1,Type=Integer,Description="# of samples classified by majority caller consensus">\n')
     vcfout.write('##INFO=<ID=bwaTVAF,Number=1,Type=Float,Description="tumor VAF from bwa data">\n')
     vcfout.write('##INFO=<ID=bowtieTVAF,Number=1,Type=Float,Description="tumor VAF from bowtie data">\n')
@@ -130,6 +131,8 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
         trained_passes = 0
         consensus_passes = 0
         IL_passes = NS_passes = EA_passes = NC_passes = 0
+        bwa_classPass = bowtie_classPass = novo_classPass = 0
+        bwa_classReject = bowtie_classReject = novo_classReject = 0
         called_samples = []
         
         # Look for "PASS" calls, either model classified or consensus, in BWA:
@@ -165,6 +168,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     t_bwa_refDP = t_bwa_refDP + ref_for + ref_rev
                     t_bwa_altDP = t_bwa_altDP + alt_for + alt_rev
 
+
         # Look for "PASS" calls, either model classified or consensus, in BOWTIE:
         t_bowtie_refDP = t_bowtie_altDP = 0
         for call_i in bowtie_tumor_indices:
@@ -197,6 +201,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     
                     t_bowtie_refDP = t_bowtie_refDP + ref_for + ref_rev
                     t_bowtie_altDP = t_bowtie_altDP + alt_for + alt_rev
+
         
         # Look for "PASS" calls, either model classified or consensus, in NOVOALIGN:
         t_novo_refDP = t_novo_altDP = 0
@@ -390,7 +395,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
         
         EAcalls = (bwaEA>=1) + (bowtieEA>=1) + (novoEA>=1)
         NCcalls = (bwaNC>=1) + (bowtieNC>=1) + (novoNC>=1)
-        NScalls = (bwaNS>=3) + (bowtieNS>=3) + (novoNS>=3)
+        NScalls = (bwaNS>=5) + (bowtieNS>=5) + (novoNS>=5)
         ILcalls = (bwaIL>=2) + (bowtieIL>=2) + (novoIL>=2)
         
         # Tier 1 calls are called by all aligners and all sites, and classified as PASS at least once
