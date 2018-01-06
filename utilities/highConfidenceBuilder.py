@@ -32,6 +32,7 @@ infile         = args.infile
 outfile        = args.outfile
 ncallers       = args.num_callers
 pass_score     = args.pass_score
+reject_score   = args.reject_score
 bwa_tumors     = args.bwa_tumors
 bwa_normals    = args.bwa_normals
 bowtie_tumors  = args.bowtie_tumors
@@ -148,6 +149,11 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     called_samples.append( samples[call_i] )
                     bwa_passes += 1
                     trained_passes += 1
+                    bwa_classPass += 1
+                    
+                elif score and score != '.' and float(score) < reject_score:
+                    
+                    bwa_classReject += 1
                 
                 elif score == '.' or score == None:
                     
@@ -182,6 +188,11 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     called_samples.append( samples[call_i] )
                     bowtie_passes += 1
                     trained_passes += 1
+                    bowtie_classPass += 1
+                    
+                elif score and score != '.' and float(score) < reject_score:
+                    
+                    bowtie_classReject += 1
                     
                 elif score == '.' or score == None:
                     
@@ -216,6 +227,11 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     called_samples.append( samples[call_i] )
                     novo_passes += 1
                     trained_passes += 1
+                    novo_classPass += 1
+                    
+                elif score and score != '.' and float(score) < reject_score:
+                    
+                    novo_classReject += 1
                     
                 elif score == '.' or score == None:
                     
@@ -395,7 +411,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
         
         EAcalls = (bwaEA>=1) + (bowtieEA>=1) + (novoEA>=1)
         NCcalls = (bwaNC>=1) + (bowtieNC>=1) + (novoNC>=1)
-        NScalls = (bwaNS>=5) + (bowtieNS>=5) + (novoNS>=5)
+        NScalls = (bwaNS>=4) + (bowtieNS>=4) + (novoNS>=4)
         ILcalls = (bwaIL>=2) + (bowtieIL>=2) + (novoIL>=2)
         
         # Tier 1 calls are called by all aligners and all sites, and classified as PASS at least once
