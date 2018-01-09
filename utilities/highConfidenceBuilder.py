@@ -12,8 +12,8 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument('-infile',  '--infile',   type=str, help='VCF in', required=True)
 parser.add_argument('-outfile', '--outfile',  type=str, help='VCF out', required=True)
 
-parser.add_argument('-pass',     '--pass-score',   type=float, help='PASS SCORE',    required=False, default=3.010299956639812)
-parser.add_argument('-reject',   '--reject-score', type=float, help='REJECT SCORE',  required=False, default=0.4575749056067512)
+parser.add_argument('-pass',     '--pass-score',   type=float, help='PASS SCORE. Default=0.7',    required=False, default=5.228787452803376)
+parser.add_argument('-reject',   '--reject-score', type=float, help='REJECT SCORE. Default=0.1',  required=False, default=0.4575749056067512)
 parser.add_argument('-ncallers', '--num-callers',  type=int,   help='# callers to be considered PASS if untrained', required=False, default=3)
 
 parser.add_argument('--bwa-tumors',     type=str, nargs='*', help='tumor sample name',  required=False, default=[])
@@ -541,12 +541,12 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
 
 
         # Counting
-        bwaSites    = (IL_classPass['bwa']   >=2) + (NS_classPass['bwa']   >=4) + (EA_consensus['bwa']   >=1) + (NC_consensus['bwa']   >=1)
-        bowtieSites = (IL_classPass['bowtie']>=2) + (NS_classPass['bowtie']>=4) + (EA_consensus['bowtie']>=1) + (NC_consensus['bowtie']>=1)
-        novoSites   = (IL_classPass['novo']  >=2) + (NS_classPass['novo']  >=4) + (EA_consensus['novo']  >=1) + (NC_consensus['novo']  >=1)
+        bwaSites    = (IL_classPass['bwa']   >=2) + (NS_classPass['bwa']   >=5) + (EA_consensus['bwa']   >=1) + (NC_consensus['bwa']   >=1)
+        bowtieSites = (IL_classPass['bowtie']>=2) + (NS_classPass['bowtie']>=5) + (EA_consensus['bowtie']>=1) + (NC_consensus['bowtie']>=1)
+        novoSites   = (IL_classPass['novo']  >=2) + (NS_classPass['novo']  >=5) + (EA_consensus['novo']  >=1) + (NC_consensus['novo']  >=1)
         
         ILcalls = (IL_classPass['bwa']>=2) + (IL_classPass['bowtie']>=2) + (IL_classPass['novo']>=2)
-        NScalls = (NS_classPass['bwa']>=4) + (NS_classPass['bowtie']>=4) + (NS_classPass['novo']>=4)
+        NScalls = (NS_classPass['bwa']>=5) + (NS_classPass['bowtie']>=5) + (NS_classPass['novo']>=5)
         EAcalls = (EA_consensus['bwa']>=1) + (EA_consensus['bowtie']>=1) + (EA_consensus['novo']>=1)
         NCcalls = (NC_consensus['bwa']>=1) + (NC_consensus['bowtie']>=1) + (NC_consensus['novo']>=1)
         
@@ -561,7 +561,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
         # Tier 2 calls are by all aligners and majoirty sites, or majority aligners and all sites, and classified PASS at least once
         elif ( ((bwaSites>=2 and bowtieSites>=2 and novoSites>=2) and ( (EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2 )) or \
              (((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) and ( EAcalls>=2 and NCcalls>=2 and NScalls>=2 and ILcalls>=2 )) ) and \
-             (IL_classPass['bwa']>=2 or IL_classPass['bowtie']>=2 or IL_classPass['novo']>=2 or NS_classPass['bwa']>=4 or NS_classPass['bowtie']>=4 or NS_classPass['novo']>=4):
+             (IL_classPass['bwa']>=2 or IL_classPass['bowtie']>=2 or IL_classPass['novo']>=2 or NS_classPass['bwa']>=5 or NS_classPass['bowtie']>=5 or NS_classPass['novo']>=5):
             qual_i = 'Tier2A'
 
         elif ( ((bwaSites>=2 and bowtieSites>=2 and novoSites>=2) and ( (EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2 )) or \
@@ -570,7 +570,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
 
         # Tier 3 calls are majority sites and majority aligners, and classified PASS at least once
         elif ((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) and ((EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2) and \
-             (IL_classPass['bwa']>=2 or IL_classPass['bowtie']>=2 or IL_classPass['novo']>=2 or NS_classPass['bwa']>=4 or NS_classPass['bowtie']>=4 or NS_classPass['novo']>=4):
+             (IL_classPass['bwa']>=2 or IL_classPass['bowtie']>=2 or IL_classPass['novo']>=2 or NS_classPass['bwa']>=5 or NS_classPass['bowtie']>=5 or NS_classPass['novo']>=5):
             qual_i = 'Tier3A'
 
         elif ((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) and ((EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2):
@@ -578,7 +578,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
 
         # Tier 4 are majority sites or majority aligners:
         elif ( ((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) or ((EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2) ) and \
-             (IL_classPass['bwa']>=2 or IL_classPass['bowtie']>=2 or IL_classPass['novo']>=2 or NS_classPass['bwa']>=4 or NS_classPass['bowtie']>=4 or NS_classPass['novo']>=4):
+             (IL_classPass['bwa']>=2 or IL_classPass['bowtie']>=2 or IL_classPass['novo']>=2 or NS_classPass['bwa']>=5 or NS_classPass['bowtie']>=5 or NS_classPass['novo']>=5):
             qual_i = 'Tier4A'
 
         elif ( ((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) or ((EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2) ):
@@ -586,7 +586,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
 
         # Tier 5 are by either one aligner or one site:
         elif (bwaSites>=2 or bowtieSites>=2 or novoSites>=2 or EAcalls>=2 or NCcalls>=2 or NScalls>=2 or ILcalls>=2) and \
-             (IL_classPass['bwa']>=2 or IL_classPass['bowtie']>=2 or IL_classPass['novo']>=2 or NS_classPass['bwa']>=4 or NS_classPass['bowtie']>=4 or NS_classPass['novo']>=4):
+             (IL_classPass['bwa']>=2 or IL_classPass['bowtie']>=2 or IL_classPass['novo']>=2 or NS_classPass['bwa']>=5 or NS_classPass['bowtie']>=5 or NS_classPass['novo']>=5):
             qual_i = 'Tier5A'
             
         elif (bwaSites>=2 or bowtieSites>=2 or novoSites>=2 or EAcalls>=2 or NCcalls>=2 or NScalls>=2 or ILcalls>=2):
