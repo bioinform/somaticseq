@@ -158,7 +158,7 @@ fi
 
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://broadinstitute/gatk:4.beta.6 \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://broadinstitute/gatk:4.0.0.0 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar /gatk/gatk.jar Mutect2 \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "$selector_text \\" >> $out_script
@@ -172,7 +172,7 @@ echo "${extra_arguments} \\" >> $out_script
 echo "--output /mnt/${outdir}/unfiltered.${outvcf}" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://broadinstitute/gatk:4.beta.6 \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://broadinstitute/gatk:4.0.0.0 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar /gatk/gatk.jar FilterMutectCalls \\" >> $out_script
 echo "--variant /mnt/${outdir}/unfiltered.${outvcf} \\" >> $out_script
 echo "${extra_filter_arguments} \\" >> $out_script
