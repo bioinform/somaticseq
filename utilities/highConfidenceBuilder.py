@@ -111,6 +111,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     vcfout.write('##INFO=<ID=nCalledSamples,Number=1,Type=Integer,Description="number of called samples">\n')    
     vcfout.write('##INFO=<ID=nPASSES,Number=1,Type=Integer,Description="number of samples where the variant is classified as PASS by SomaticSeq">\n')
     vcfout.write('##INFO=<ID=nREJECTS,Number=1,Type=Integer,Description="number of samples where the variant is classified as REJECT by SomaticSeq">\n')
+    vcfout.write('##INFO=<ID=nREJECTorNoCall,Number=1,Type=Integer,Description="number of samples where the variant is classified as REJECT or not called at all">\n')
     vcfout.write('##INFO=<ID=nCONSENSUS,Number=1,Type=Integer,Description="number of samples where majority of callers agree">\n')
     
     header = line_i.split('\t')
@@ -187,7 +188,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
         novo_consensus     = {'IL': 0, 'NS': 0, 'EA': 0, 'NC': 0}
         
         # Count classified PASS, classified REJECTS, and Consensus
-        nPASS = nREJECT = nConsensus = 0
+        nPASS = nREJECT = nNoCall = nConsensus = 0
         
         # Count MQ0 reads
         t_bwa_MQ0 = t_bowtie_MQ0 = t_novo_MQ0 = 0
@@ -238,7 +239,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     elif samples[call_i].startswith('NC_'):
                         NC_classReject['bwa'] += 1
                         bwa_classReject['NC'] += 1
-                
+                        
                 n_tools = vcf_i.get_sample_value('NUM_TOOLS', call_i)
                 if n_tools and n_tools != '.' and int(n_tools) > ncallers:
                     
@@ -271,6 +272,9 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                 MQ0 = vcf_i.get_sample_value('MQ0', call_i)
                 if MQ0 and MQ0 != '.':
                     t_bwa_MQ0 += int(MQ0)
+
+            else:
+                nNoCall += 1
 
 
         # Look for "PASS" calls, either model classified or consensus, in BOWTIE:
@@ -316,7 +320,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     elif samples[call_i].startswith('NC_'):
                         NC_classReject['bowtie'] += 1
                         bowtie_classReject['NC'] += 1
-                                            
+
                 n_tools = vcf_i.get_sample_value('NUM_TOOLS', call_i)
                 if n_tools and n_tools != '.' and int(n_tools) > ncallers:
 
@@ -349,6 +353,9 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                 MQ0 = vcf_i.get_sample_value('MQ0', call_i)
                 if MQ0 and MQ0 != '.':
                     t_bowtie_MQ0 += int(MQ0)
+                    
+            else:
+                nNoCall += 1
 
 
         # Look for "PASS" calls, either model classified or consensus, in NOVOALIGN:
@@ -394,7 +401,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     elif samples[call_i].startswith('NC_'):
                         NC_classReject['novo'] += 1
                         novo_classReject['NC'] += 1
-                        
+
                 n_tools = vcf_i.get_sample_value('NUM_TOOLS', call_i)
                 if n_tools and n_tools != '.' and int(n_tools) > ncallers:
 
@@ -427,6 +434,9 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                 MQ0 = vcf_i.get_sample_value('MQ0', call_i)
                 if MQ0 and MQ0 != '.':
                     t_novo_MQ0 += int(MQ0)
+
+            else:
+                nNoCall += 1
 
         # Combine some normal metrics
         n_bwa_refDP = n_bwa_altDP = 0
@@ -646,7 +656,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
             called_samples_string = ','.join(called_samples) if called_samples else '.'
             rejected_samples_string = ','.join(rejected_samples) if rejected_samples else '.'
             
-            info_column = 'calledSamples={calledSamples};rejectedSamples={rejectedSamples};IL_PASS={IL_PASS};NS_PASS={NS_PASS};EA_PASS={EA_PASS};NC_PASS={NC_PASS};IL_REJECT={IL_REJECT};NS_REJECT={NS_REJECT};EA_REJECT={EA_REJECT};NC_REJECT={NC_REJECT};IL_Consensus={IL_Consensus};NS_Consensus={NS_Consensus};EA_Consensus={EA_Consensus};NC_Consensus={NC_Consensus};bwa_PASS={bwa_PASS};bowtie_PASS={bowtie_PASS};novo_PASS={novo_PASS};bwa_REJECT={bwa_REJECT};bowtie_REJECT={bowtie_REJECT};novo_REJECT={novo_REJECT};bwa_Consensus={bwa_Consensus};bowtie_Consensus={bowtie_Consensus};novo_Consensus={novo_Consensus};bwaMQ0={bwaMQ0};bowtieMQ0={bowtieMQ0};novoMQ0={novoMQ0};MQ0={MQ0};bwaTVAF={bwaTVAF};bowtieTVAF={bowtieTVAF};novoTVAF={novoTVAF};TVAF={TVAF};bwaNVAF={bwaNVAF};bowtieNVAF={bowtieNVAF};novoNVAF={novoNVAF};NVAF={NVAF};nCalledSamples={nCalledSamples};nPASSES={nPasses};nREJECTS={nRejects};nCONSENSUS={nConsensus}'.format(calledSamples=called_samples_string, \
+            info_column = 'calledSamples={calledSamples};rejectedSamples={rejectedSamples};IL_PASS={IL_PASS};NS_PASS={NS_PASS};EA_PASS={EA_PASS};NC_PASS={NC_PASS};IL_REJECT={IL_REJECT};NS_REJECT={NS_REJECT};EA_REJECT={EA_REJECT};NC_REJECT={NC_REJECT};IL_Consensus={IL_Consensus};NS_Consensus={NS_Consensus};EA_Consensus={EA_Consensus};NC_Consensus={NC_Consensus};bwa_PASS={bwa_PASS};bowtie_PASS={bowtie_PASS};novo_PASS={novo_PASS};bwa_REJECT={bwa_REJECT};bowtie_REJECT={bowtie_REJECT};novo_REJECT={novo_REJECT};bwa_Consensus={bwa_Consensus};bowtie_Consensus={bowtie_Consensus};novo_Consensus={novo_Consensus};bwaMQ0={bwaMQ0};bowtieMQ0={bowtieMQ0};novoMQ0={novoMQ0};MQ0={MQ0};bwaTVAF={bwaTVAF};bowtieTVAF={bowtieTVAF};novoTVAF={novoTVAF};TVAF={TVAF};bwaNVAF={bwaNVAF};bowtieNVAF={bowtieNVAF};novoNVAF={novoNVAF};NVAF={NVAF};nCalledSamples={nCalledSamples};nPASSES={nPasses};nREJECTS={nRejects};nREJECTorNoCall={nREJECTorNoCall};nCONSENSUS={nConsensus}'.format(calledSamples=called_samples_string, \
             rejectedSamples=rejected_samples_string, \
             IL_PASS='{},{},{}'.format(IL_classPass['bwa'], IL_classPass['bowtie'], IL_classPass['novo']), \
             NS_PASS='{},{},{}'.format(NS_classPass['bwa'], NS_classPass['bowtie'], NS_classPass['novo']), \
@@ -672,7 +682,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
             bwaMQ0=t_bwa_MQ0, bowtieMQ0=t_bowtie_MQ0, novoMQ0=t_novo_MQ0, MQ0=t_bwa_MQ0+t_bowtie_MQ0+t_novo_MQ0, \
             bwaTVAF='%.3f' % t_bwa_vaf, bowtieTVAF='%.3f' % t_bowtie_vaf, novoTVAF='%.3f' % t_novo_vaf, TVAF='%.3f' % t_overall_vcf, \
             bwaNVAF='%.3f' % n_bwa_vaf, bowtieNVAF='%.3f' % n_bowtie_vaf, novoNVAF='%.3f' % n_novo_vaf, NVAF='%.3f' % n_overall_vcf, \
-            nCalledSamples=len(called_samples), nPasses=nPASS, nRejects=nREJECT, nConsensus=nConsensus )
+            nCalledSamples=len(called_samples), nPasses=nPASS, nRejects=nREJECT, nREJECTorNoCall=nNoCall+nREJECT, nConsensus=nConsensus )
             
             
             outline_i = '{CHROM}\t{POS}\t{ID}\t{REF}\t{ALT}\t{QUAL}\t{FILTER}\t{INFO}\t{FORMAT}'.format(CHROM=vcf_i.chromosome, POS=vcf_i.position, ID=vcf_i.identifier, REF=vcf_i.refbase, ALT=vcf_i.altbase, QUAL='.', FILTER=qual_i, INFO=info_column, FORMAT=vcf_i.field)
