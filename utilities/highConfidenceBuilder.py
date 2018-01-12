@@ -66,6 +66,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     
     vcfout.write('##INFO=<ID=calledSamples,Number=.,Type=String,Description="Sample names where this variant is called">\n')
     vcfout.write('##INFO=<ID=rejectedSamples,Number=.,Type=String,Description="Sample names classified as REJECT by SomaticSeq">\n')
+    vcfout.write('##INFO=<ID=noCallSamples,Number=.,Type=String,Description="Sample names where the variant is not called by any caller">\n')
     
     vcfout.write('##INFO=<ID=IL_PASS,Number=.,Type=Integer,Description="# samples PASS (SomaticSeq classified) belonging to IL by bwa, bowtie2, and novoalign">\n')
     vcfout.write('##INFO=<ID=NS_PASS,Number=.,Type=Integer,Description="# samples PASS (SomaticSeq classified) belonging to NS by bwa, bowtie2, and novoalign">\n')
@@ -111,6 +112,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     vcfout.write('##INFO=<ID=nCalledSamples,Number=1,Type=Integer,Description="number of called samples">\n')    
     vcfout.write('##INFO=<ID=nPASSES,Number=1,Type=Integer,Description="number of samples where the variant is classified as PASS by SomaticSeq">\n')
     vcfout.write('##INFO=<ID=nREJECTS,Number=1,Type=Integer,Description="number of samples where the variant is classified as REJECT by SomaticSeq">\n')
+    vcfout.write('##INFO=<ID=nNoCall,Number=1,Type=Integer,Description="number of samples where the variant is not called by any caller">\n')
     vcfout.write('##INFO=<ID=nREJECTorNoCall,Number=1,Type=Integer,Description="number of samples where the variant is classified as REJECT or not called at all">\n')
     vcfout.write('##INFO=<ID=nCONSENSUS,Number=1,Type=Integer,Description="number of samples where majority of callers agree">\n')
     
@@ -195,6 +197,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
         
         called_samples   = []
         rejected_samples = []
+        missing_samples  = []
         
         # Look for "PASS" calls, either model classified or consensus, in BWA:
         t_bwa_refDP = t_bwa_altDP = 0
@@ -275,7 +278,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
 
             else:
                 nNoCall += 1
-
+                missing_samples.append( samples[call_i] )
 
         # Look for "PASS" calls, either model classified or consensus, in BOWTIE:
         t_bowtie_refDP = t_bowtie_altDP = 0
@@ -356,7 +359,8 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     
             else:
                 nNoCall += 1
-
+                missing_samples.append( samples[call_i] )
+                
 
         # Look for "PASS" calls, either model classified or consensus, in NOVOALIGN:
         t_novo_refDP = t_novo_altDP = 0
@@ -437,7 +441,9 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
 
             else:
                 nNoCall += 1
-
+                missing_samples.append( samples[call_i] )
+                
+        
         # Combine some normal metrics
         n_bwa_refDP = n_bwa_altDP = 0
         n_bwa_dp4_1 = n_bwa_dp4_2 = n_bwa_dp4_3 = n_bwa_dp4_4 = 0
@@ -653,11 +659,14 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
             
             
             # INFO Column
-            called_samples_string = ','.join(called_samples) if called_samples else '.'
+            called_samples_string   = ','.join(called_samples)   if called_samples   else '.'
             rejected_samples_string = ','.join(rejected_samples) if rejected_samples else '.'
+            nocall_sample_string    = ','.join(missing_samples)  if missing_samples  else '.'
             
-            info_column = 'calledSamples={calledSamples};rejectedSamples={rejectedSamples};IL_PASS={IL_PASS};NS_PASS={NS_PASS};EA_PASS={EA_PASS};NC_PASS={NC_PASS};IL_REJECT={IL_REJECT};NS_REJECT={NS_REJECT};EA_REJECT={EA_REJECT};NC_REJECT={NC_REJECT};IL_Consensus={IL_Consensus};NS_Consensus={NS_Consensus};EA_Consensus={EA_Consensus};NC_Consensus={NC_Consensus};bwa_PASS={bwa_PASS};bowtie_PASS={bowtie_PASS};novo_PASS={novo_PASS};bwa_REJECT={bwa_REJECT};bowtie_REJECT={bowtie_REJECT};novo_REJECT={novo_REJECT};bwa_Consensus={bwa_Consensus};bowtie_Consensus={bowtie_Consensus};novo_Consensus={novo_Consensus};bwaMQ0={bwaMQ0};bowtieMQ0={bowtieMQ0};novoMQ0={novoMQ0};MQ0={MQ0};bwaTVAF={bwaTVAF};bowtieTVAF={bowtieTVAF};novoTVAF={novoTVAF};TVAF={TVAF};bwaNVAF={bwaNVAF};bowtieNVAF={bowtieNVAF};novoNVAF={novoNVAF};NVAF={NVAF};nCalledSamples={nCalledSamples};nPASSES={nPasses};nREJECTS={nRejects};nREJECTorNoCall={nREJECTorNoCall};nCONSENSUS={nConsensus}'.format(calledSamples=called_samples_string, \
+            info_column = 'calledSamples={calledSamples};rejectedSamples={rejectedSamples};noCallSamples={noCallSamples};IL_PASS={IL_PASS};NS_PASS={NS_PASS};EA_PASS={EA_PASS};NC_PASS={NC_PASS};IL_REJECT={IL_REJECT};NS_REJECT={NS_REJECT};EA_REJECT={EA_REJECT};NC_REJECT={NC_REJECT};IL_Consensus={IL_Consensus};NS_Consensus={NS_Consensus};EA_Consensus={EA_Consensus};NC_Consensus={NC_Consensus};bwa_PASS={bwa_PASS};bowtie_PASS={bowtie_PASS};novo_PASS={novo_PASS};bwa_REJECT={bwa_REJECT};bowtie_REJECT={bowtie_REJECT};novo_REJECT={novo_REJECT};bwa_Consensus={bwa_Consensus};bowtie_Consensus={bowtie_Consensus};novo_Consensus={novo_Consensus};bwaMQ0={bwaMQ0};bowtieMQ0={bowtieMQ0};novoMQ0={novoMQ0};MQ0={MQ0};bwaTVAF={bwaTVAF};bowtieTVAF={bowtieTVAF};novoTVAF={novoTVAF};TVAF={TVAF};bwaNVAF={bwaNVAF};bowtieNVAF={bowtieNVAF};novoNVAF={novoNVAF};NVAF={NVAF};nCalledSamples={nCalledSamples};nPASSES={nPasses};nREJECTS={nRejects};nNoCall={nNoCall};nREJECTorNoCall={nREJECTorNoCall};nCONSENSUS={nConsensus}'.format( \
+            calledSamples=called_samples_string, \
             rejectedSamples=rejected_samples_string, \
+            noCallSamples=nocall_sample_string, \
             IL_PASS='{},{},{}'.format(IL_classPass['bwa'], IL_classPass['bowtie'], IL_classPass['novo']), \
             NS_PASS='{},{},{}'.format(NS_classPass['bwa'], NS_classPass['bowtie'], NS_classPass['novo']), \
             EA_PASS='{},{},{}'.format(EA_classPass['bwa'], EA_classPass['bowtie'], EA_classPass['novo']), \
@@ -682,7 +691,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
             bwaMQ0=t_bwa_MQ0, bowtieMQ0=t_bowtie_MQ0, novoMQ0=t_novo_MQ0, MQ0=t_bwa_MQ0+t_bowtie_MQ0+t_novo_MQ0, \
             bwaTVAF='%.3f' % t_bwa_vaf, bowtieTVAF='%.3f' % t_bowtie_vaf, novoTVAF='%.3f' % t_novo_vaf, TVAF='%.3f' % t_overall_vcf, \
             bwaNVAF='%.3f' % n_bwa_vaf, bowtieNVAF='%.3f' % n_bowtie_vaf, novoNVAF='%.3f' % n_novo_vaf, NVAF='%.3f' % n_overall_vcf, \
-            nCalledSamples=len(called_samples), nPasses=nPASS, nRejects=nREJECT, nREJECTorNoCall=nNoCall+nREJECT, nConsensus=nConsensus )
+            nCalledSamples=len(called_samples), nPasses=nPASS, nRejects=nREJECT, nNoCall=nNoCall, nREJECTorNoCall=nNoCall+nREJECT, nConsensus=nConsensus )
             
             
             outline_i = '{CHROM}\t{POS}\t{ID}\t{REF}\t{ALT}\t{QUAL}\t{FILTER}\t{INFO}\t{FORMAT}'.format(CHROM=vcf_i.chromosome, POS=vcf_i.position, ID=vcf_i.identifier, REF=vcf_i.refbase, ALT=vcf_i.altbase, QUAL='.', FILTER=qual_i, INFO=info_column, FORMAT=vcf_i.field)
@@ -697,17 +706,67 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
             for i in novo_tumor_indices:
                 outline_i = outline_i + '\t' + sample_columns[i]
             
-            gt = '0/1' if n_bwa_vaf >0.01 else '0/0'
-            bwa_normal_column = '{GT}:{CD4a},{CD4b},{CD4c},{CD4d}:{DP4a},{DP4b},{DP4c},{DP4d}:{MQ0}:.:.:.:{VAF}'.format(GT=gt, CD4a=n_bwa_cd4_1, CD4b=n_bwa_cd4_2, CD4c=n_bwa_cd4_3, CD4d=n_bwa_cd4_4, DP4a=n_bwa_dp4_1, DP4b=n_bwa_dp4_2, DP4c=n_bwa_dp4_3, DP4d=n_bwa_dp4_4, MQ0=n_bwa_mq0, VAF='%.3f' % n_bwa_vaf)
             
-            gt = '0/1' if n_bowtie_vaf >0.01 else '0/0'
-            bowtie_normal_column = '{GT}:{CD4a},{CD4b},{CD4c},{CD4d}:{DP4a},{DP4b},{DP4c},{DP4d}:{MQ0}:.:.:.:{VAF}'.format(GT=gt, CD4a=n_bowtie_cd4_1, CD4b=n_bowtie_cd4_2, CD4c=n_bowtie_cd4_3, CD4d=n_bowtie_cd4_4, DP4a=n_bowtie_dp4_1, DP4b=n_bowtie_dp4_2, DP4c=n_bowtie_dp4_3, DP4d=n_bowtie_dp4_4, MQ0=n_bowtie_mq0, VAF='%.3f' % n_bowtie_vaf)
+            format_item = vcf_i.field.split(':')
+            'GT:CD4:DP4:MDK:MQ0:NUM_TOOLS:SCORE:VAF:altBQ:altMQ:altNM:fetCD:fetSB:refBQ:refMQ:refNM:zBQ:zMQ'
             
-            gt = '0/1' if n_novo_vaf >0.01 else '0/0'
-            novo_normal_column = '{GT}:{CD4a},{CD4b},{CD4c},{CD4d}:{DP4a},{DP4b},{DP4c},{DP4d}:{MQ0}:.:.:.:{VAF}'.format(GT=gt, CD4a=n_novo_cd4_1, CD4b=n_novo_cd4_2, CD4c=n_novo_cd4_3, CD4d=n_novo_cd4_4, DP4a=n_novo_dp4_1, DP4b=n_novo_dp4_2, DP4c=n_novo_dp4_3, DP4d=n_novo_dp4_4, MQ0=n_novo_mq0, VAF='%.3f' % n_novo_vaf)
+            bwa_normal_column_items = []
+            for format_item_i in format_item:
+                
+                if format_item_i == 'GT':
+                    bwa_normal_column_items.append('0/1') if n_bwa_vaf >0.01 else bwa_normal_column_items.append('0/0')
+                elif format_item_i == 'CD4':
+                    bwa_normal_column_items.append( '{},{},{},{}'.format(n_bwa_cd4_1, n_bwa_cd4_2, n_bwa_cd4_3, n_bwa_cd4_4) )
+                elif format_item_i == 'DP4':
+                    bwa_normal_column_items.append( '{},{},{},{}'.format(n_bwa_dp4_1, n_bwa_dp4_2, n_bwa_dp4_3, n_bwa_dp4_4) )
+                elif format_item_i == 'MQ0':
+                    bwa_normal_column_items.append( str(n_bwa_mq0) )
+                elif format_item_i == 'VAF':
+                    bwa_normal_column_items.append( '%.3f' % n_bwa_vaf )
+                    break
+                else:
+                    bwa_normal_column_items.append( '.' )
             
-            outline_i = outline_i + '\t{}\t{}\t{}'.format(bwa_normal_column, bowtie_normal_column, novo_normal_column)
+            bowtie_normal_column_items = []
+            for format_item_i in format_item:
+                
+                if format_item_i == 'GT':
+                    bowtie_normal_column_items.append('0/1') if n_bowtie_vaf >0.01 else bowtie_normal_column_items.append('0/0')
+                elif format_item_i == 'CD4':
+                    bowtie_normal_column_items.append( '{},{},{},{}'.format(n_bowtie_cd4_1, n_bowtie_cd4_2, n_bowtie_cd4_3, n_bowtie_cd4_4) )
+                elif format_item_i == 'DP4':
+                    bowtie_normal_column_items.append( '{},{},{},{}'.format(n_bowtie_dp4_1, n_bowtie_dp4_2, n_bowtie_dp4_3, n_bowtie_dp4_4) )
+                elif format_item_i == 'MQ0':
+                    bowtie_normal_column_items.append( str(n_bowtie_mq0) )
+                elif format_item_i == 'VAF':
+                    bowtie_normal_column_items.append( '%.3f' % n_bowtie_vaf )
+                    break
+                else:
+                    bowtie_normal_column_items.append( '.' )
             
+            novo_normal_column_items = []
+            for format_item_i in format_item:
+                
+                if format_item_i == 'GT':
+                    novo_normal_column_items.append('0/1') if n_novo_vaf >0.01 else novo_normal_column_items.append('0/0')
+                elif format_item_i == 'CD4':
+                    novo_normal_column_items.append( '{},{},{},{}'.format(n_novo_cd4_1, n_novo_cd4_2, n_novo_cd4_3, n_novo_cd4_4) )
+                elif format_item_i == 'DP4':
+                    novo_normal_column_items.append( '{},{},{},{}'.format(n_novo_dp4_1, n_novo_dp4_2, n_novo_dp4_3, n_novo_dp4_4) )
+                elif format_item_i == 'MQ0':
+                    novo_normal_column_items.append( str(n_novo_mq0) )
+                elif format_item_i == 'VAF':
+                    novo_normal_column_items.append( '%.3f' % n_novo_vaf )
+                    break
+                else:
+                    novo_normal_column_items.append( '.' )
+            
+            
+            bwa_normal_column    = ':'.join( bwa_normal_column_items )
+            bowtie_normal_column = ':'.join( bowtie_normal_column_items )
+            novo_normal_column   = ':'.join( novo_normal_column_items )
+            
+            outline_i = outline_i + '\t{}\t{}\t{}'.format(bwa_normal_column, bowtie_normal_column, novo_normal_column)            
             
             if len(called_samples) > 0:
                 vcfout.write( outline_i + '\n')
