@@ -134,11 +134,11 @@ echo "" >> $out_script
 
 echo "docker run --rm -v /:/mnt -u $UID --memory $(( MEM * threads ))G broadinstitute/gatk:4.0.0.0 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar gatk.jar Mutect2 \\" >> $out_script
-echo "--threads ${threads} \\" >> $out_script
+echo "--native-pair-hmm-threads ${threads} \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "$selector_text \\" >> $out_script
 echo "--input /mnt/${tumor_bam} \\" >> $out_script
-echo "--tumorSampleName \${tumor_name} \\" >> $out_script
+echo "--tumor-sample \${tumor_name} \\" >> $out_script
 echo "$dbsnp_text \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
 echo "--output /mnt/${outdir}/unfiltered.${outvcf}" >> $out_script
