@@ -115,7 +115,7 @@ pattern_chr_position = genome.pattern_chr_position
 
 
 # Header for the output data, created here so I won't have to indent this line:
-variant_identities = ['CHROM', 'POS', 'ID', 'REF', 'ALT', 'if_dbsnp', 'COMMON', 'if_COSMIC', 'COSMIC_CNT', 'MaxHomopolymer_Length', 'SiteHomopolymer_Length', 'InDel_Length', 'TrueVariant_or_False']
+variant_identities = ['CHROM', 'POS', 'ID', 'REF', 'ALT', 'FILTER', 'if_dbsnp', 'COMMON', 'if_COSMIC', 'COSMIC_CNT', 'MaxHomopolymer_Length', 'SiteHomopolymer_Length', 'InDel_Length', 'TrueVariant_or_False']
 out_header = '\t'.join( variant_identities )
 
 identity_format = '\t'.join( [ '{' + id_i + '}' for id_i in variant_identities] )
@@ -255,7 +255,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                 all_Callers  = []
                 
                 for variant_i in variants_at_my_coordinate:
-
+                    
+                    filter_i = variant_i.filters
                     ref_base = variant_i.refbase
                     first_alt = variant_i.altbase.split(',')[0]
                     indel_length = len(first_alt) - len(ref_base)
@@ -646,7 +647,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                     my_identifiers = '.'
                     
                 ### Partial output line for all information associated with a variant
-                out_line = identity_format.format(CHROM = my_coordinate[0], POS = my_coordinate[1], ID = my_identifiers, REF = ref_base, ALT = first_alt, if_dbsnp = if_dbsnp, COMMON = if_common, if_COSMIC = if_cosmic, COSMIC_CNT = num_cases, MaxHomopolymer_Length = homopolymer_length, SiteHomopolymer_Length = site_homopolymer_length, InDel_Length = indel_length, TrueVariant_or_False = judgement )
+                out_line = identity_format.format(CHROM = my_coordinate[0], POS = my_coordinate[1], ID = my_identifiers, REF = ref_base, ALT = first_alt, FILTER = filter_i, if_dbsnp = if_dbsnp, COMMON = if_common, if_COSMIC = if_cosmic, COSMIC_CNT = num_cases, MaxHomopolymer_Length = homopolymer_length, SiteHomopolymer_Length = site_homopolymer_length, InDel_Length = indel_length, TrueVariant_or_False = judgement )
                 
                 ### 3 metrics for each sample in the input VCF file:
                 vcf_metrics_items = []
