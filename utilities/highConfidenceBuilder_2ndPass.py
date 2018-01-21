@@ -25,6 +25,9 @@ pass_score     = args.pass_score
 reject_score   = args.reject_score
 ncallers       = args.num_callers
 
+def all_indices(pattern_to_be_matched, my_list):
+    return [ i for i,j in enumerate(my_list) if j == pattern_to_be_matched ]
+
 
 with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_in,  open(outfile, 'w') as vcfout:
     
@@ -90,8 +93,12 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             
         elif vcf_i.filters == 'Tier1':
             
+            nREJECTS = int( vcf_i.get_info_value('nREJECTS') )
+            nNoCall  = int( vcf_i.get_info_value('nNoCall') )
+            
+            # Get called samples stats (would by pass if no REJECT or NoCall)
             # Try to find reasons for REJECTS
-            if int( vcf_i.get_info_value('nREJECTS') ) > 0:
+            if nREJECTS > 0:
                 
                 # Get the samples that give REJECT calls:
                 rejects = vcf_i.get_info_value('rejectedSamples').split(',')
@@ -99,7 +106,13 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 # Is it aligner-specific?
                 rejected_aligners       = []
                 rejected_variant_depths = []
-                rejected_variant_sor    = []
+                rejected_tbq            = []
+                rejected_tmq            = []
+                rejected_tnm            = [] 
+                rejected_mq0            = []
+                rejected_poors          = []
+                rejected_others         = []
+                rejected_sor            = []
                 
                 for sample_i in rejects:
                     
@@ -107,12 +120,12 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     
                     i_alt_for = tsv_headers.index( sample_i+'_bam_ALT_FOR' )
                     i_alt_rev = tsv_headers.index( sample_i+'_bam_ALT_REV' )
-                    i_mq0     = tsv_headers.index( sample_i+'_bam_MQ0' )
                     i_tbq     = tsv_headers.index( sample_i+'_bam_ALT_BQ' )
                     i_tmq     = tsv_headers.index( sample_i+'_bam_ALT_MQ' )
+                    i_tnm     = tsv_headers.index( sample_i+'_bam_ALT_NM' )
+                    i_mq0     = tsv_headers.index( sample_i+'_bam_MQ0' )
                     i_poors   = tsv_headers.index( sample_i+'_bam_Poor_Reads' )
                     i_others  = tsv_headers.index( sample_i+'_bam_Poor_Reads' )
-                    i_nm      = tsv_headers.index( sample_i+'_bam_ALT_NM' )
                     i_sor     = tsv_headers.index( sample_i+'.'+matched_normal_i+'_bam_ALT_NM' )
                     
                     if   sample_i.endswith('.bwa'):
@@ -121,14 +134,68 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                         rejected_aligners.append('bowtie')
                     elif sample_i.endswith('.novo'):
                         rejected_aligners.append('novo')
-                    
-                    
-                
+
+                    rejected_variant_depths.append( int(tsv_items[i_alt_for]) + int(tsv_items[i_alt_rev]) )
+                    rejected_tbp.append(    int(tsv_items[i_tbq]    )
+                    rejected_tmq.append(    int(tsv_items[i_tmq]    )
+                    rejected_tnm.append(    int(tsv_items[i_tnm]    )
+                    rejected_mq0.append(    int(tsv_items[i_mq0]    )
+                    rejected_poors.append(  int(tsv_items[i_poors]  )
+                    rejected_others.append( int(tsv_items[i_others] )
+                    rejected_sor.append(    int(tsv_items[i_sor]    )
                     
             
             # Try to find reasons for missing call altogether
-            if int( vcf_i.get_info_value('nNoCall') ) > int(0):
+            if nNoCall > 0:
                 pass
+
+
+            # Extract stats from called samples so they can be a baseline for comparison
+            if nREJECTS or nNoCall:
+                called = vcf_i.get_info_value('calledSamples').split(',')
+                
+                called_aligners       = []
+                called_variant_depths = []
+                called_tbq            = []
+                called_tmq            = []
+                called_tnm            = [] 
+                called_mq0            = []
+                called_poors          = []
+                called_others         = []
+                called_sor            = []
+                
+                for sample_i in rejects:
+                    
+                    matched_normal_i = re.sub('_T_',  '_N_', sample_i)
+                    
+                    i_alt_for = tsv_headers.index( sample_i+'_bam_ALT_FOR' )
+                    i_alt_rev = tsv_headers.index( sample_i+'_bam_ALT_REV' )
+                    i_tbq     = tsv_headers.index( sample_i+'_bam_ALT_BQ' )
+                    i_tmq     = tsv_headers.index( sample_i+'_bam_ALT_MQ' )
+                    i_tnm     = tsv_headers.index( sample_i+'_bam_ALT_NM' )
+                    i_mq0     = tsv_headers.index( sample_i+'_bam_MQ0' )
+                    i_poors   = tsv_headers.index( sample_i+'_bam_Poor_Reads' )
+                    i_others  = tsv_headers.index( sample_i+'_bam_Poor_Reads' )
+                    i_sor     = tsv_headers.index( sample_i+'.'+matched_normal_i+'_bam_ALT_NM' )
+                    
+                    if   sample_i.endswith('.bwa'):
+                        called_aligners.append('bwa')
+                    elif sample_i.endswith('.bowtie'):
+                        called_aligners.append('bowtie')
+                    elif sample_i.endswith('.novo'):
+                        called_aligners.append('novo')
+
+                    called_variant_depths.append( int(tsv_items[i_alt_for]) + int(tsv_items[i_alt_rev]) )
+                    called_tbp.append(    int(tsv_items[i_tbq]    )
+                    called_tmq.append(    int(tsv_items[i_tmq]    )
+                    called_tnm.append(    int(tsv_items[i_tnm]    )
+                    called_mq0.append(    int(tsv_items[i_mq0]    )
+                    called_poors.append(  int(tsv_items[i_poors]  )
+                    called_others.append( int(tsv_items[i_others] )
+                    called_sor.append(    int(tsv_items[i_sor]    )
+                    
+            
+
 
 
         
