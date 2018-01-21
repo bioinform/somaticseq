@@ -45,6 +45,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
     bwa_tumors    = []
     bowtie_tumors = []
     novo_tumors   = []
+    
     for sample_i in samples:
         if   sample_i.endswith('.bwa'):
             bwa_tumors.append( sample_i )
@@ -90,11 +91,43 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         elif vcf_i.filters == 'Tier1':
             
             # Try to find reasons for REJECTS
-            if vcf_i.get_info_value('nREJECTS') > int(0):
-                pass
+            if int( vcf_i.get_info_value('nREJECTS') ) > 0:
+                
+                # Get the samples that give REJECT calls:
+                rejects = vcf_i.get_info_value('rejectedSamples').split(',')
+                
+                # Is it aligner-specific?
+                rejected_aligners       = []
+                rejected_variant_depths = []
+                rejected_variant_sor    = []
+                
+                for sample_i in rejects:
+                    
+                    matched_normal_i = re.sub('_T_',  '_N_', sample_i)
+                    
+                    i_alt_for = tsv_headers.index( sample_i+'_bam_ALT_FOR' )
+                    i_alt_rev = tsv_headers.index( sample_i+'_bam_ALT_REV' )
+                    i_mq0     = tsv_headers.index( sample_i+'_bam_MQ0' )
+                    i_tbq     = tsv_headers.index( sample_i+'_bam_ALT_BQ' )
+                    i_tmq     = tsv_headers.index( sample_i+'_bam_ALT_MQ' )
+                    i_poors   = tsv_headers.index( sample_i+'_bam_Poor_Reads' )
+                    i_others  = tsv_headers.index( sample_i+'_bam_Poor_Reads' )
+                    i_nm      = tsv_headers.index( sample_i+'_bam_ALT_NM' )
+                    i_sor     = tsv_headers.index( sample_i+'.'+matched_normal_i+'_bam_ALT_NM' )
+                    
+                    if   sample_i.endswith('.bwa'):
+                        rejected_aligners.append('bwa')
+                    elif sample_i.endswith('.bowtie'):
+                        rejected_aligners.append('bowtie')
+                    elif sample_i.endswith('.novo'):
+                        rejected_aligners.append('novo')
+                    
+                    
+                
+                    
             
             # Try to find reasons for missing call altogether
-            if vcf_i.get_info_value('nNoCall') > int(0):
+            if int( vcf_i.get_info_value('nNoCall') ) > int(0):
                 pass
 
 
