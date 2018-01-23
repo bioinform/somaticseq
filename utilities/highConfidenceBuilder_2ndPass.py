@@ -78,8 +78,9 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
     while vcf_line:
         
         # VCF
-        vcf_i = genome.Vcf_line( vcf_line )
-        sample_columns = vcf_line.split('\t')[9::]
+        vcf_items      = vcf_line.split('\t')
+        vcf_i          = genome.Vcf_line( vcf_line )
+        sample_columns = vcf_items[9::]
         
         # TSV
         tsv_items = tsv_line.split('\t')
@@ -241,7 +242,19 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     if int(tsv_items[i_others]) > 1:
                         nocall_highOthers += 1
             
-            
+                    
+                    # Replace ./. with info:
+                    col_i = vcf_header.index( sample_i )
+                    format_item = vcf_i.field.split(':')
+                    
+                    new_sample_item = []
+                    for format_item_i in format_item:
+                        if format_item_i == 'GT':
+                            new_sample_item.append( '0/0' )
+                        elif format_item_i == 'CD4':
+                            new_sample_item.append( '' )
+                    
+                    
             # Extract stats from called samples so they can be a baseline for comparison
             if nREJECTS or nNoCall:
                 called = vcf_i.get_info_value('calledSamples').split(',')
