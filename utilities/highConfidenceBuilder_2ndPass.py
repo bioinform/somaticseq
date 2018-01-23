@@ -91,7 +91,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         if vcf_i.filters == 'AllPASS':
             vcfout.write( vcf_line + '\n' )
             
-        elif vcf_i.filters == 'Tier1':
+        else:
             
             nREJECTS = int( vcf_i.get_info_value('nREJECTS') )
             nNoCall  = int( vcf_i.get_info_value('nNoCall') )
@@ -106,27 +106,29 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 # Is it aligner-specific?
                 rejected_aligners       = []
                 rejected_variant_depths = []
+                rejected_normal_vardp   = []
                 rejected_tbq            = []
                 rejected_tmq            = []
                 rejected_tnm            = [] 
                 rejected_mq0            = []
                 rejected_poors          = []
                 rejected_others         = []
-                rejected_sor            = []
                 
+                reject_lowVarDP = reject_germline = reject_lowBQ = reject_lowMQ = reject_highNM = reject_highMQ0 = reject_highPoors = reject_highOthers = 0
                 for sample_i in rejects:
                     
                     matched_normal_i = re.sub('_T_',  '_N_', sample_i)
                     
                     i_alt_for = tsv_headers.index( sample_i+'_bam_ALT_FOR' )
                     i_alt_rev = tsv_headers.index( sample_i+'_bam_ALT_REV' )
+                    i_n_alt1  = tsv_headers.index( matched_normal_i+'_bam_ALT_FOR' )
+                    i_n_alt2  = tsv_headers.index( matched_normal_i+'_bam_ALT_REV' )
                     i_tbq     = tsv_headers.index( sample_i+'_bam_ALT_BQ' )
                     i_tmq     = tsv_headers.index( sample_i+'_bam_ALT_MQ' )
                     i_tnm     = tsv_headers.index( sample_i+'_bam_ALT_NM' )
                     i_mq0     = tsv_headers.index( sample_i+'_bam_MQ0' )
                     i_poors   = tsv_headers.index( sample_i+'_bam_Poor_Reads' )
-                    i_others  = tsv_headers.index( sample_i+'_bam_Poor_Reads' )
-                    i_sor     = tsv_headers.index( sample_i+'.'+matched_normal_i+'_bam_ALT_NM' )
+                    i_others  = tsv_headers.index( sample_i+'_bam_Other_Reads' )
                     
                     if   sample_i.endswith('.bwa'):
                         rejected_aligners.append('bwa')
@@ -136,33 +138,123 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                         rejected_aligners.append('novo')
 
                     rejected_variant_depths.append( int(tsv_items[i_alt_for]) + int(tsv_items[i_alt_rev]) )
-                    rejected_tbp.append(    int(tsv_items[i_tbq]    )
-                    rejected_tmq.append(    int(tsv_items[i_tmq]    )
-                    rejected_tnm.append(    int(tsv_items[i_tnm]    )
+                    rejected_normal_vardep.append(  int(tsv_items[i_n_alt1]) + int(tsv_items[i_n_alt2]) )
+                    rejected_tbp.append(    float(tsv_items[i_tbq]  )
+                    rejected_tmq.append(    float(tsv_items[i_tmq]  )
+                    rejected_tnm.append(    float(tsv_items[i_tnm]  )
                     rejected_mq0.append(    int(tsv_items[i_mq0]    )
                     rejected_poors.append(  int(tsv_items[i_poors]  )
                     rejected_others.append( int(tsv_items[i_others] )
-                    rejected_sor.append(    int(tsv_items[i_sor]    )
                     
+                    if int(tsv_items[i_alt_for]) + int(tsv_items[i_alt_rev]) < 6:
+                        reject_lowVarDP += 1
+                    
+                    if int(tsv_items[i_n_alt1]) + int(tsv_items[i_n_alt2])   > 2:
+                        reject_germline += 1
+                    
+                    if float(tsv_items[i_tbq] < 34.5:
+                        reject_lowBQ += 1
+                    
+                    if (sample_i.endswith('.bwa') and float(tsv_items[i_tmq] < 36.3) or (sample_i.endswith('.bowtie') and float(tsv_items[i_tmq] < 8.4) or (sample_i.endswith('.novo') and float(tsv_items[i_tmq] < 53.8):
+                        reject_lowMQ += 1
+                        
+                    if float(tsv_items[i_tnm] > 3.2):
+                        reject_highNM += 1
+                        
+                    if int(tsv_items[i_mq0]) > 2:
+                        reject_highMQ0 += 1
+                        
+                    if int(tsv_items[i_poors]) > 1:
+                        reject_highPoors += 1
+                    
+                    if int(tsv_items[i_others]) > 1:
+                        reject_highOthers += 1
             
             # Try to find reasons for missing call altogether
             if nNoCall > 0:
-                pass
+                nocalls = vcf_i.get_info_value('noCallSamples').split(',')
 
+                # Is it aligner-specific?
+                nocalled_aligners       = []
+                nocalled_variant_depths = []
+                nocalled_normal_vardp   = []
+                nocalled_tbq            = []
+                nocalled_tmq            = []
+                nocalled_tnm            = [] 
+                nocalled_mq0            = []
+                nocalled_poors          = []
+                nocalled_others         = []
 
+                nocall_lowVarDP = nocall_germline = nocall_lowBQ = nocall_lowMQ = nocall_highNM = nocall_highMQ0 = nocall_highPoors = nocall_highOthers = 0
+                for sample_i in nocalls:
+                    
+                    matched_normal_i = re.sub('_T_',  '_N_', sample_i)
+                    
+                    i_alt_for = tsv_headers.index( sample_i+'_bam_ALT_FOR' )
+                    i_alt_rev = tsv_headers.index( sample_i+'_bam_ALT_REV' )
+                    i_n_alt1  = tsv_headers.index( matched_normal_i+'_bam_ALT_FOR' )
+                    i_n_alt2  = tsv_headers.index( matched_normal_i+'_bam_ALT_REV' )
+                    i_tbq     = tsv_headers.index( sample_i+'_bam_ALT_BQ' )
+                    i_tmq     = tsv_headers.index( sample_i+'_bam_ALT_MQ' )
+                    i_tnm     = tsv_headers.index( sample_i+'_bam_ALT_NM' )
+                    i_mq0     = tsv_headers.index( sample_i+'_bam_MQ0' )
+                    i_poors   = tsv_headers.index( sample_i+'_bam_Poor_Reads' )
+                    i_others  = tsv_headers.index( sample_i+'_bam_Other_Reads' )
+                    
+                    if   sample_i.endswith('.bwa'):
+                        nocalled_aligners.append('bwa')
+                    elif sample_i.endswith('.bowtie'):
+                        nocalled_aligners.append('bowtie')
+                    elif sample_i.endswith('.novo'):
+                        nocalled_aligners.append('novo')
+
+                    nocalled_variant_depths.append( int(tsv_items[i_alt_for]) + int(tsv_items[i_alt_rev]) )
+                    nocalled_normal_vardp.append(   int(tsv_items[i_n_alt1]) + int(tsv_items[i_n_alt2]) )
+                    nocalled_tbq.append(    int(tsv_items[i_tbq]    )
+                    nocalled_tmq.append(    int(tsv_items[i_tmq]    )
+                    nocalled_tnm.append(    int(tsv_items[i_tnm]    )
+                    nocalled_mq0.append(    int(tsv_items[i_mq0]    )
+                    nocalled_poors.append(  int(tsv_items[i_poors]  )
+                    nocalled_others.append( int(tsv_items[i_others] )
+                    
+                    if int(tsv_items[i_alt_for]) + int(tsv_items[i_alt_rev]) < 6:
+                        nocall_lowVarDP += 1
+                    
+                    if int(tsv_items[i_n_alt1]) + int(tsv_items[i_n_alt2])   > 2:
+                        nocall_germline += 1
+                    
+                    if float(tsv_items[i_tbq] < 34.5:
+                        reject_lowBQ += 1
+                    
+                    if (sample_i.endswith('.bwa') and float(tsv_items[i_tmq] < 36.3) or (sample_i.endswith('.bowtie') and float(tsv_items[i_tmq] < 8.4) or (sample_i.endswith('.novo') and float(tsv_items[i_tmq] < 53.8):
+                        nocall_lowMQ += 1
+                        
+                    if float(tsv_items[i_tnm] > 3.2):
+                        nocall_highNM += 1
+                        
+                    if int(tsv_items[i_mq0]) > 2:
+                        nocall_highMQ0 += 1
+                        
+                    if int(tsv_items[i_poors]) > 1:
+                        nocall_highPoors += 1
+                    
+                    if int(tsv_items[i_others]) > 1:
+                        nocall_highOthers += 1
+            
+            
             # Extract stats from called samples so they can be a baseline for comparison
             if nREJECTS or nNoCall:
                 called = vcf_i.get_info_value('calledSamples').split(',')
                 
                 called_aligners       = []
                 called_variant_depths = []
+                called_normal_vardp   = []
                 called_tbq            = []
                 called_tmq            = []
                 called_tnm            = [] 
                 called_mq0            = []
                 called_poors          = []
                 called_others         = []
-                called_sor            = []
                 
                 for sample_i in rejects:
                     
@@ -170,13 +262,14 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     
                     i_alt_for = tsv_headers.index( sample_i+'_bam_ALT_FOR' )
                     i_alt_rev = tsv_headers.index( sample_i+'_bam_ALT_REV' )
+                    i_n_alt1  = tsv_headers.index( matched_normal_i+'_bam_ALT_FOR' )
+                    i_n_alt2  = tsv_headers.index( matched_normal_i+'_bam_ALT_REV' )                    
                     i_tbq     = tsv_headers.index( sample_i+'_bam_ALT_BQ' )
                     i_tmq     = tsv_headers.index( sample_i+'_bam_ALT_MQ' )
                     i_tnm     = tsv_headers.index( sample_i+'_bam_ALT_NM' )
                     i_mq0     = tsv_headers.index( sample_i+'_bam_MQ0' )
                     i_poors   = tsv_headers.index( sample_i+'_bam_Poor_Reads' )
-                    i_others  = tsv_headers.index( sample_i+'_bam_Poor_Reads' )
-                    i_sor     = tsv_headers.index( sample_i+'.'+matched_normal_i+'_bam_ALT_NM' )
+                    i_others  = tsv_headers.index( sample_i+'_bam_Other_Reads' )
                     
                     if   sample_i.endswith('.bwa'):
                         called_aligners.append('bwa')
@@ -186,15 +279,21 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                         called_aligners.append('novo')
 
                     called_variant_depths.append( int(tsv_items[i_alt_for]) + int(tsv_items[i_alt_rev]) )
+                    called_normal_vardp.append(   int(tsv_items[i_n_alt1]) + int(tsv_items[i_n_alt2]) )
                     called_tbp.append(    int(tsv_items[i_tbq]    )
                     called_tmq.append(    int(tsv_items[i_tmq]    )
                     called_tnm.append(    int(tsv_items[i_tnm]    )
                     called_mq0.append(    int(tsv_items[i_mq0]    )
                     called_poors.append(  int(tsv_items[i_poors]  )
                     called_others.append( int(tsv_items[i_others] )
-                    called_sor.append(    int(tsv_items[i_sor]    )
                     
+                # Make some comments, highly likely true positive, likely true positive, ambigious, or likely false positive:
+                
             
+            
+            # If the only non-PASS calls are ambigious calls, count it likely true positive
+            else:
+                pass
 
 
 
