@@ -1,7 +1,7 @@
 <b>SomaticSeq: An ensemble approach to accurately detect somatic mutations</b>
 * Detailed documentation is included in the package. It's located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). Quick guide can be found [here](http://bioinform.github.io/somaticseq/).
 * SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
-* Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page.
+* Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
 
 <b>The following command is an example SomaticSeq command after mutation caller jobs are complete:</b>
 * If you're searching for pipelines to run those individual somatic mutation callers, consider our [dockerized somatic mutation pipelines](utilities/dockered_pipelines).
