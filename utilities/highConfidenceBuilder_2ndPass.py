@@ -36,6 +36,7 @@ MQ0_highEnd     = 2
 Poors_highEnd   = 1
 Others_highEnd  = 1
 
+nan = float('nan')
 
 def all_indices(pattern_to_be_matched, my_list):
     return [ i for i,j in enumerate(my_list) if j == pattern_to_be_matched ]
@@ -395,7 +396,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         
         # Make some comments, highly likely true positive, likely true positive, ambigious, or likely false positive:
         if vcf_i.filters == 'AllPASS' or \
-        (vcf_i.filters == 'Tier1' and ( nREJECTS+nNoCall <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ) ):
+        (re.match(r'Tier[123]', vcf_i.filters) and ( nREJECTS+nNoCall <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ) ):
             
             # High number of MQ0 reads in all aligners
             if    bwaMQ0 > total_tumor_samples  and bowtieMQ0 > total_tumor_samples and novoMQ0 > total_tumor_samples:
@@ -408,24 +409,24 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             else:
                 vcf_items[ i_qual ] = '3'
         
-        
-        elif vcf_i.filters == 'Tier1':
+        # If not the simplest "AllPASS" or its equivalent cases:
+        else:
             
             # Tier 1 with a few nNoCall/nREJECTS were already taken care of as equivalent of AllPASS
             if nNoCall or nREJECTS:
                 
-                ## variant DP
+                ##### variant DP #####
                 noncall_vardp         = nocalled_variant_depths + rejected_variant_depths
                 average_noncall_vardp = sum(noncall_vardp)/len(noncall_vardp)
                                 
                 # Sampling error?
-                if average_noncall_vardp < varDP_lowEnd and (average_calls_variant_depths < 2*varDP_lowEnd or nNoCall+nREJECTS <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ):
+                if average_noncall_vardp < varDP_lowEnd:
                     probableSamplingError = True
                 else:
                     probableSamplingError = False
+                ######################################################
                 
-                
-                ## Generally low BQ?
+                ###### Generally low BQ? #####
                 noncall_tbqs         = nocalled_tbq + rejected_tbq
                 average_noncall_tbqs = sum(noncall_tbqs) / len(noncall_tbqs)
                 average_called_bqs   = sum(called_tbq) / len(called_tbq)
@@ -435,9 +436,10 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     probableLowBQRegion = True
                 else:
                     probableLowBQRegion = False
+                ######################################################
                 
                 
-                ### Generally low mappable region? ###
+                ##### MAPPING ISSUES #####
                 # NonCalls
                 noncall_tmqs   = rejected_tmq + nocalled_tmq
                 noncall_aligner_lineup = rejected_aligners + nocalled_aligners
@@ -458,6 +460,21 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 for i in i_novo_noncall:
                     noncall_novo_tmq.append( noncall_tmqs[i] )
                 
+                try:
+                    average_nocalls_bwaMQ    = sum(noncall_bwa_tmq) / len(noncall_bwa_tmq)
+                except ZeroDivisionError:
+                    average_nocalls_bwaMQ = nan
+                    
+                try:
+                    average_nocalls_bowtieMQ = sum(noncall_bowtie_tmq) / len(noncall_bowtie_tmq)
+                except ZeroDivisionError:
+                    average_nocalls_bowtieMQ = nan
+                    
+                try:
+                    average_nocalls_novoMQ   = sum(noncall_novo_tmq) / len(noncall_novo_tmq)
+                except ZeroDivisionError:
+                    average_nocalls_novoMQ = nan
+                
                 # Called:
                 i_bwa_call    = all_indices('bwa', called_aligners)
                 i_bowtie_call = all_indices('bowtie', called_aligners)
@@ -475,50 +492,142 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 for i in i_novo_call:
                     called_novo_tmq.append( called_tmq[i] )
                 
+                try:
+                    average_called_bwaMQ    = sum(called_bwa_tmq) / len(called_bwa_tmq)
+                except ZeroDivisionError:
+                    average_called_bwaMQ = nan
                 
+                try:
+                    average_called_bowtieMQ = sum(called_bowtie_tmq) / len(called_bowtie_tmq)
+                except ZeroDivisionError:
+                    average_called_bowtieMQ = nan
                 
+                try:
+                    average_called_novoMQ   = sum(called_novo_tmq) / len(called_novo_tmq)
+                except ZeroDivisionError:
+                    average_called_novoMQ = nan
                 
-                
-                
-                
-            
-        elif vcf_i.filters == 'Tier2A':
-            # Are the sporadic reject/missing ones justifiable, or signs of false positives?
-            pass
-
-        elif vcf_i.filters == 'Tier2B':
-            # Are the sporadic reject/missing ones justifiable, or signs of false positives?
-            pass
-
-        elif vcf_i.filters == 'Tier3A':
-            # Are the sporadic reject/missing ones justifiable, or signs of false positives?
-            pass
-
-        elif vcf_i.filters == 'Tier3B':
-            # Are the sporadic reject/missing ones justifiable, or signs of false positives?
-            pass
-
-        elif vcf_i.filters == 'Tier4A':
-            # Are the sporadic reject/missing ones justifiable, or signs of false positives?
-            pass
-
-        elif vcf_i.filters == 'Tier4B':
-            # Are the sporadic reject/missing ones justifiable, or signs of false positives?
-            pass
-
-        elif vcf_i.filters == 'Tier5A':
-            # Are the sporadic reject/missing ones justifiable, or signs of false positives?
-            pass
-
-        elif vcf_i.filters == 'Tier5B':
-            # Are the sporadic reject/missing ones justifiable, or signs of false positives?
-            pass
-
-            
-        elif vcf_i.filters == 'REJECT':
-            # Are the sporadic called samples just wacky false positives, or low VAF samples happen to have high signal due to sampling?
-            pass
+                if ( average_nocalls_bwaMQ < bwaMQ_lowEnd and abs(average_nocalls_bwaMQ-average_called_bwaMQ)/average_called_bwaMQ < 0.1 ) or bwaMQ0 > total_tumor_samples:
+                    bwaMappingDifficulty = True
+                else:
+                    bwaMappingDifficulty = False
                     
+                if ( average_nocalls_bowtieMQ < bowtieMQ_lowEnd and abs(average_nocalls_bowtieMQ-average_called_bowtieMQ)/average_called_bowtieMQ < 0.1 ) or bowtieMQ0 > total_tumor_samples:
+                    bowtieMappingDifficulty = True
+                else:
+                    bowtieMappingDifficulty = False
+
+                if ( average_nocalls_novoMQ < novoMQ_lowEnd and abs(average_nocalls_novoMQ-average_called_novoMQ)/average_called_novoMQ < 0.1 ) or novoMQ0 > total_tumor_samples:
+                    novoMappingDifficulty = True
+                else:
+                    novoMappingDifficulty = False
+                ###################################################################
+
+
+                ##### ALIGNMENT MISMATCH ISSUES #####
+                # NonCalls
+                noncall_tnms   = rejected_tnm + nocalled_tnm
+
+                noncall_bwa_tnm    = []
+                noncall_bowtie_tnm = []
+                noncall_novo_tnm   = []
+                for i in i_bwa_noncall:
+                    noncall_bwa_tnm.append( noncall_tnms[i] )
+                
+                for i in i_bowtie_noncall:
+                    noncall_bowtie_tnm.append( noncall_tnms[i] )
+
+                for i in i_novo_noncall:
+                    noncall_novo_tnm.append( noncall_tnms[i] )
+                
+                try:
+                    average_nocalls_bwaNM    = sum(noncall_bwa_tnm) / len(noncall_bwa_tnm)
+                except ZeroDivisionError:
+                    average_nocalls_bwaNM = nan
+                    
+                try:
+                    average_nocalls_bowtieNM = sum(noncall_bowtie_tnm) / len(noncall_bowtie_tnm)
+                except ZeroDivisionError:
+                    average_nocalls_bowtieNM = nan
+                    
+                try:
+                    average_nocalls_novoNM   = sum(noncall_novo_tnm) / len(noncall_novo_tnm)
+                except ZeroDivisionError:
+                    average_nocalls_novoNM = nan
+                
+                # Called:
+                called_bwa_tnm    = []
+                called_bowtie_tnm = []
+                called_novo_tnm   = []
+                for i in i_bwa_call:
+                    called_bwa_tnm.append( called_tnm[i] )
+                
+                for i in i_bowtie_call:
+                    called_bowtie_tnm.append( called_tnm[i] )
+
+                for i in i_novo_call:
+                    called_novo_tnm.append( called_tnm[i] )
+                
+                try:
+                    average_called_bwaNM    = sum(called_bwa_tnm) / len(called_bwa_tnm)
+                except ZeroDivisionError:
+                    average_called_bwaNM = nan
+                
+                try:
+                    average_called_bowtieNM = sum(called_bowtie_tnm) / len(called_bowtie_tnm)
+                except ZeroDivisionError:
+                    average_called_bowtieNM = nan
+                
+                try:
+                    average_called_novoNM   = sum(called_novo_tnm) / len(called_novo_tnm)
+                except ZeroDivisionError:
+                    average_called_novoNM = nan
+                
+                if average_nocalls_bwaNM < NM_highEnd and abs(average_nocalls_bwaNM-average_called_bwaNM)/average_called_bwaNM < 0.1:
+                    bwaAlignmentDifficulty = True
+                else:
+                    bwaAlignmentDifficulty = False
+                    
+                if average_nocalls_bowtieNM < NM_highEnd and abs(average_nocalls_bowtieNM-average_called_bowtieNM)/average_called_bowtieNM < 0.1:
+                    bowtieAlignmentDifficulty = True
+                else:
+                    bowtieAlignmentDifficulty = False
+
+                if average_nocalls_novoNM < NM_highEnd and abs(average_nocalls_novoNM-average_called_novoNM)/average_called_novoNM < 0.1:
+                    novoAlignmentDifficulty = True
+                else:
+                    novoAlignmentDifficulty = False
+                ###################################################################
+
+
+
+
+
+
+                if vcf_i.filters == 'Tier1':
+                    
+                    # If samples are not called PASS only due to sampling error, then it's no issue
+                    if probableSamplingError and (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 0) and (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 0):
+                        vcf_items[ i_qual ] = '3'
+                        
+                    # If samples are not called due to low MQ across one aligner:
+                    elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
+                        vcf_items[ i_qual ] = '1'
+                        
+                    elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
+                        vcf_items[ i_qual ] = '0'
+                    
+
+
+
+            
+            
+            # All the nonPASS samples are 0.1 < SCORE < 0.7 samples
+            else:
+                pass    
+                
+                
+                                
         
         vcfout.write( '\t'.join( vcf_items ) + '\n' )
 
