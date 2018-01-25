@@ -114,6 +114,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         
         # Get called samples stats (would by pass if no REJECT or NoCall)
         # Try to find reasons for REJECTS
+        rejects                 = []
         rejected_aligners       = []
         rejected_variant_depths = []
         rejected_normal_vardp   = []
@@ -193,6 +194,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             
         
         # Try to find reasons for missing call altogether
+        nocalls                 = []
         nocalled_aligners       = []
         nocalled_variant_depths = []
         nocalled_normal_vardp   = []
@@ -341,22 +343,23 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             
             # Averaging over the no-called samples
             average_nocalls_varDP = sum(nocalled_variant_depths)/len(nocalled_variant_depths)    
-                
+        
+        
         # Extract stats from called samples so they can be a baseline for comparison
+        called_aligners       = []
+        called_variant_depths = []
+        called_normal_vardp   = []
+        called_tbq            = []
+        called_tmq            = []
+        called_tnm            = [] 
+        called_mq0            = []
+        called_poors          = []
+        called_others         = []
         if nREJECTS or nNoCall:
+            
             called = vcf_i.get_info_value('calledSamples').split(',')
             
-            called_aligners       = []
-            called_variant_depths = []
-            called_normal_vardp   = []
-            called_tbq            = []
-            called_tmq            = []
-            called_tnm            = [] 
-            called_mq0            = []
-            called_poors          = []
-            called_others         = []
-            
-            for sample_i in rejects:
+            for sample_i in called:
                 
                 matched_normal_i = re.sub('_T_',  '_N_', sample_i)
                 
@@ -408,35 +411,76 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         
         elif vcf_i.filters == 'Tier1':
             
-            if nNoCall and nREJECTS:
+            # Tier 1 with a few nNoCall/nREJECTS were already taken care of as equivalent of AllPASS
+            if nNoCall or nREJECTS:
                 
+                ## variant DP
+                noncall_vardp         = nocalled_variant_depths + rejected_variant_depths
+                average_noncall_vardp = sum(noncall_vardp)/len(noncall_vardp)
+                                
                 # Sampling error?
-                if average_nocalls_varDP < varDP_lowEnd and average_rejects_varDP < varDP_lowEnd and (average_calls_variant_depths < 2*varDP_lowEnd or nNoCall+nREJECTS <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ):
+                if average_noncall_vardp < varDP_lowEnd and (average_calls_variant_depths < 2*varDP_lowEnd or nNoCall+nREJECTS <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ):
                     probableSamplingError = True
                 else:
                     probableSamplingError = False
                 
-                # Occasional poor base quality?
                 
+                ## Generally low BQ?
+                noncall_tbqs         = nocalled_tbq + rejected_tbq
+                average_noncall_tbqs = sum(noncall_tbqs) / len(noncall_tbqs)
+                average_called_bqs   = sum(called_tbq) / len(called_tbq)
                 
-                
-                            
-            elif nNoCall:
-                
-                if average_nocalls_varDP < varDP_lowEnd and (average_calls_variant_depths < 2*varDP_lowEnd or nNoCall+nREJECTS <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ):
-                    probableSamplingError = True
+                # If average of nonPASS BQs are below a threshold, and is within 10% of the PASS calls:
+                if average_noncall_tbqs < BQ_lowEnd and abs(average_noncall_tbqs-average_called_bqs)/average_called_bqs < 0.1:
+                    probableLowBQRegion = True
                 else:
-                    probableSamplingError = False
-                    
-            elif nREJECTS:
+                    probableLowBQRegion = False
                 
-                if average_rejects_varDP < varDP_lowEnd and (average_calls_variant_depths < 2*varDP_lowEnd or nNoCall+nREJECTS <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ):
-                    probableSamplingError = True
-                else:
-                    probableSamplingError = False
-                    
                 
-                    
+                ### Generally low mappable region? ###
+                # NonCalls
+                noncall_tmqs   = rejected_tmq + nocalled_tmq
+                noncall_aligner_lineup = rejected_aligners + nocalled_aligners
+                
+                i_bwa_noncall    = all_indices('bwa', noncall_aligner_lineup)
+                i_bowtie_noncall = all_indices('bowtie', noncall_aligner_lineup)
+                i_novo_noncall   = all_indices('novo', noncall_aligner_lineup)
+
+                noncall_bwa_tmq    = []
+                noncall_bowtie_tmq = []
+                noncall_novo_tmq   = []
+                for i in i_bwa_noncall:
+                    noncall_bwa_tmq.append( noncall_tmqs[i] )
+                
+                for i in i_bowtie_noncall:
+                    noncall_bowtie_tmq.append( noncall_tmqs[i] )
+
+                for i in i_novo_noncall:
+                    noncall_novo_tmq.append( noncall_tmqs[i] )
+                
+                # Called:
+                i_bwa_call    = all_indices('bwa', called_aligners)
+                i_bowtie_call = all_indices('bowtie', called_aligners)
+                i_novo_call   = all_indices('novo', called_aligners)
+
+                called_bwa_tmq    = []
+                called_bowtie_tmq = []
+                called_novo_tmq   = []
+                for i in i_bwa_call:
+                    called_bwa_tmq.append( called_tmq[i] )
+                
+                for i in i_bowtie_call:
+                    called_bowtie_tmq.append( called_tmq[i] )
+
+                for i in i_novo_call:
+                    called_novo_tmq.append( called_tmq[i] )
+                
+                
+                
+                
+                
+                
+                
             
         elif vcf_i.filters == 'Tier2A':
             # Are the sporadic reject/missing ones justifiable, or signs of false positives?
