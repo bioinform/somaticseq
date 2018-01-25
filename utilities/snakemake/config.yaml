@@ -5,7 +5,7 @@ scalpel:  True
 sniper:  True
 strelka:  True
 vardict:  True
-varscan2:  True
+varscan:  True
 # The number of threads to use for each variant caller that supports
 # parallelization.
 caller_threads:  36
