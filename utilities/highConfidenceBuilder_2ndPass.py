@@ -398,14 +398,15 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         if vcf_i.filters == 'AllPASS' or \
         (re.match(r'Tier[123]', vcf_i.filters) and ( nREJECTS+nNoCall <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ) ):
             
-            # High number of MQ0 reads in all aligners
+            # If a bunch of MQ0 reads in all 3 aligners, considered "neutral"
             if    bwaMQ0 > total_tumor_samples  and bowtieMQ0 > total_tumor_samples and novoMQ0 > total_tumor_samples:
                 vcf_items[ i_qual ] = '0'
             
-            # High number of MQ0 reads in 2/3 aligners
+            # If high number of MQ0 reads in 2/3 aligners.
             elif (bwaMQ0 > total_tumor_samples) +  (bowtieMQ0 > total_tumor_samples) +  (novoMQ0 > total_tumor_samples) >= 2:
                 vcf_items[ i_qual ] = '1'
-                
+            
+            # In other words, if high number of MQ0 reads occur in only one aligner, it is considered multiple aligner support and good enough to be highest confidence. 
             else:
                 vcf_items[ i_qual ] = '3'
         
@@ -415,11 +416,10 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             # Tier 1 with a few nNoCall/nREJECTS were already taken care of as equivalent of AllPASS
             if nNoCall or nREJECTS:
                 
-                ##### variant DP #####
+                ##### SAMPLING ERROR DUE TO LOW VARIANT DP? #####
                 noncall_vardp         = nocalled_variant_depths + rejected_variant_depths
                 average_noncall_vardp = sum(noncall_vardp)/len(noncall_vardp)
                                 
-                # Sampling error?
                 if average_noncall_vardp < varDP_lowEnd:
                     probableSamplingError = True
                 else:
@@ -600,24 +600,36 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 ###################################################################
 
 
-
-
-
-
+                ##### GERMLINE SIGNAL? #####
+                num_samples_with_germline_signal = 0
+                normal_vardps = called_normal_vardp + nocalled_normal_vardp + rejected_normal_vardp
+                for nvar in normal_vardps:
+                    if nvar >= 2:
+                        num_samples_with_germline_signal += 1
+                ###################################################################
+                
+                
                 if vcf_i.filters == 'Tier1':
                     
-                    # If samples are not called PASS only due to sampling error, then it's no issue
-                    if probableSamplingError and (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 0) and (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 0):
-                        vcf_items[ i_qual ] = '3'
-                        
+                    # Tier1 is very high-confidence, so by default it is a "3." It can be lowered later.
+                    vcf_items[ i_qual ] = '3'
+                    
                     # If samples are not called due to low MQ across one aligner:
-                    elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
+                    if (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
                         vcf_items[ i_qual ] = '1'
                         
                     elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
                         vcf_items[ i_qual ] = '0'
                     
-
+                    # Look for disqualifying features that will make it lower confidence:
+                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                        vcf_items[ i_qual ] = '0'
+                    
+                    
+                elif vcf_i.filters == 'Tier2A':
+                    
+                    # Tier2A is also very high-confidence. Start with a "3", but find out which site/platform or aligner where it isn't considered PASS
+                    vcf_items[ i_qual ] = '3'
 
 
             
