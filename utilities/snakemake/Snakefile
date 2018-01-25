@@ -225,6 +225,8 @@ rule mpileup:
     output:
         temp("{name}.mpileup")
     threads: 1
+    resources:
+        mem_mb=2000
     shell:
         """
         samtools mpileup -B -q 25 -Q 20 -f {config[reference]} {input} \
