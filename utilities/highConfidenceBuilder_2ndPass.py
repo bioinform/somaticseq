@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, argparse, math, gzip, os, re, copy
+import sys, argparse, math, gzip, os, re, copy, math
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 PRE_DIR = os.path.join(MY_DIR, os.pardir)
@@ -24,6 +24,18 @@ outfile        = args.outfile
 pass_score     = args.pass_score
 reject_score   = args.reject_score
 ncallers       = args.num_callers
+
+# quasi-constants
+bwaMQ_lowEnd    = 36.3044289044
+bowtieMQ_lowEnd = 8.38334841629
+novoMQ_lowEnd   = 53.832183908
+varDP_lowEnd    = 1.2 * 6
+BQ_lowEnd       = 34.5
+NM_highEnd      = 3.2
+MQ0_highEnd     = 2
+Poors_highEnd   = 1
+Others_highEnd  = 1
+
 
 def all_indices(pattern_to_be_matched, my_list):
     return [ i for i,j in enumerate(my_list) if j == pattern_to_be_matched ]
@@ -67,6 +79,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
     novo_normal_index   = samples.index('combined_novo_normals')
     
     total_tumor_samples = len(bwa_tumors) + len(bowtie_tumors) + len(novo_tumors)
+    total_tumor_seq_sites = len(bwa_tumors)
     
     # GO THRU THE 1 TSV HEADER LINE
     tsv_headers = tsv_line.split('\t')
@@ -90,44 +103,36 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         
         # Make sure we're on the same line
         assert (tsv_items[i_tsv_chr], tsv_items[i_tsv_pos], tsv_items[i_tsv_ref], tsv_items[i_tsv_alt]) == (vcf_i.chromosome, str(vcf_i.position), vcf_i.refbase, vcf_i.altbase)
-            
+        
         bwaMQ0    = int( vcf_i.get_info_value('bwaMQ0')   )
         bowtieMQ0 = int( vcf_i.get_info_value('bowtieMQ0'))
         novoMQ0   = int( vcf_i.get_info_value('novoMQ0')  )
         
-        if bwaMQ0 > total_tumor_samples  and bowtieMQ0 > total_tumor_samples and novoMQ0 > total_tumor_samples:
-            vcf_items[ i_qual ] = '0'
-            
-        elif bwaMQ0 > total_tumor_samples or bowtieMQ0 > total_tumor_samples  or novoMQ0 > total_tumor_samples:
-            vcf_items[ i_qual ] = '1'
-            
-        else:
-            vcf_items[ i_qual ] = '3'
-    
+        nREJECTS  = int( vcf_i.get_info_value('nREJECTS') )
+        nNoCall   = int( vcf_i.get_info_value('nNoCall') )
         
-        nREJECTS = int( vcf_i.get_info_value('nREJECTS') )
-        nNoCall  = int( vcf_i.get_info_value('nNoCall') )
         
         # Get called samples stats (would by pass if no REJECT or NoCall)
         # Try to find reasons for REJECTS
+        rejected_aligners       = []
+        rejected_variant_depths = []
+        rejected_normal_vardp   = []
+        rejected_tbq            = []
+        rejected_tmq            = []
+        rejected_tnm            = [] 
+        rejected_mq0            = []
+        rejected_poors          = []
+        rejected_others         = []
+        reject_lowVarDP = reject_germline = reject_lowBQ = reject_lowMQ = reject_highNM = reject_highMQ0 = reject_highPoors = reject_highOthers = 0
+        reject_sites = set()
         if nREJECTS > 0:
             
             # Get the samples that give REJECT calls:
             rejects = vcf_i.get_info_value('rejectedSamples').split(',')
             
-            # Is it aligner-specific?
-            rejected_aligners       = []
-            rejected_variant_depths = []
-            rejected_normal_vardp   = []
-            rejected_tbq            = []
-            rejected_tmq            = []
-            rejected_tnm            = [] 
-            rejected_mq0            = []
-            rejected_poors          = []
-            rejected_others         = []
-            
-            reject_lowVarDP = reject_germline = reject_lowBQ = reject_lowMQ = reject_highNM = reject_highMQ0 = reject_highPoors = reject_highOthers = 0
             for sample_i in rejects:
+                
+                reject_sites.add( re.sub(r'\.(bwa|bowtie|novo)', '', sample_i) )
                 
                 matched_normal_i = re.sub('_T_',  '_N_', sample_i)
                 
@@ -158,47 +163,54 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 rejected_poors.append(  int(tsv_items[i_poors])  )
                 rejected_others.append( int(tsv_items[i_others]) )
                 
-                if int(tsv_items[i_alt_for]) + int(tsv_items[i_alt_rev]) < 6:
+                if int(tsv_items[i_alt_for]) + int(tsv_items[i_alt_rev]) < varDP_lowEnd:
                     reject_lowVarDP += 1
                 
                 if int(tsv_items[i_n_alt1]) + int(tsv_items[i_n_alt2])   > 2:
                     reject_germline += 1
                 
-                if float(tsv_items[i_tbq]) < 34.5:
+                if float(tsv_items[i_tbq]) < BQ_lowEnd:
                     reject_lowBQ += 1
                 
-                if (sample_i.endswith('.bwa') and float(tsv_items[i_tmq]) < 36.3) or (sample_i.endswith('.bowtie') and float(tsv_items[i_tmq]) < 8.4) or (sample_i.endswith('.novo') and float(tsv_items[i_tmq]) < 53.8):
+                if (sample_i.endswith('.bwa') and float(tsv_items[i_tmq]) < bwaMQ_lowEnd) or (sample_i.endswith('.bowtie') and float(tsv_items[i_tmq]) < bowtieMQ_lowEnd) or (sample_i.endswith('.novo') and float(tsv_items[i_tmq]) < novoMQ_lowEnd):
                     reject_lowMQ += 1
                     
-                if float(tsv_items[i_tnm]) > 3.2:
+                if float(tsv_items[i_tnm]) > NM_highEnd:
                     reject_highNM += 1
                     
-                if int(tsv_items[i_mq0]) > 2:
+                if int(tsv_items[i_mq0]) > MQ0_highEnd:
                     reject_highMQ0 += 1
                     
-                if int(tsv_items[i_poors]) > 1:
+                if int(tsv_items[i_poors]) > Poors_highEnd:
                     reject_highPoors += 1
                 
-                if int(tsv_items[i_others]) > 1:
+                if int(tsv_items[i_others]) > Others_highEnd:
                     reject_highOthers += 1
         
+            # Averaging over the rejected samples:
+            average_rejects_varDP = sum(rejected_variant_depths)/len(rejected_variant_depths)
+            
+            
+        
         # Try to find reasons for missing call altogether
+        nocalled_aligners       = []
+        nocalled_variant_depths = []
+        nocalled_normal_vardp   = []
+        nocalled_tbq            = []
+        nocalled_tmq            = []
+        nocalled_tnm            = [] 
+        nocalled_mq0            = []
+        nocalled_poors          = []
+        nocalled_others         = []
+        nocall_lowVarDP = nocall_germline = nocall_lowBQ = nocall_lowMQ = nocall_highNM = nocall_highMQ0 = nocall_highPoors = nocall_highOthers = 0
+        nocall_sites = set()
         if nNoCall > 0:
+            
             nocalls = vcf_i.get_info_value('noCallSamples').split(',')
-
-            # Is it aligner-specific?
-            nocalled_aligners       = []
-            nocalled_variant_depths = []
-            nocalled_normal_vardp   = []
-            nocalled_tbq            = []
-            nocalled_tmq            = []
-            nocalled_tnm            = [] 
-            nocalled_mq0            = []
-            nocalled_poors          = []
-            nocalled_others         = []
-
-            nocall_lowVarDP = nocall_germline = nocall_lowBQ = nocall_lowMQ = nocall_highNM = nocall_highMQ0 = nocall_highPoors = nocall_highOthers = 0
+            
             for sample_i in nocalls:
+                
+                nocall_sites.add( re.sub(r'\.(bwa|bowtie|novo)', '', sample_i) )
                 
                 matched_normal_i = re.sub('_T_',  '_N_', sample_i)
                 
@@ -256,28 +268,28 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 except ZeroDivisionError:
                     vaf_i = '0'
                 
-                if int(tsv_items[i_alt_for]) + int(tsv_items[i_alt_rev]) < 6:
+                if int(tsv_items[i_alt_for]) + int(tsv_items[i_alt_rev]) < varDP_lowEnd:
                     nocall_lowVarDP += 1
                 
                 if int(tsv_items[i_n_alt1]) + int(tsv_items[i_n_alt2])   > 2:
                     nocall_germline += 1
                 
-                if float(tsv_items[i_tbq]) < 34.5:
+                if float(tsv_items[i_tbq]) < BQ_lowEnd:
                     reject_lowBQ += 1
                 
-                if (sample_i.endswith('.bwa') and float(tsv_items[i_tmq]) < 36.3) or (sample_i.endswith('.bowtie') and float(tsv_items[i_tmq]) < 8.4) or (sample_i.endswith('.novo') and float(tsv_items[i_tmq]) < 53.8):
+                if (sample_i.endswith('.bwa') and float(tsv_items[i_tmq]) < bwaMQ_lowEnd) or (sample_i.endswith('.bowtie') and float(tsv_items[i_tmq]) < bowtieMQ_lowEnd) or (sample_i.endswith('.novo') and float(tsv_items[i_tmq]) < novoMQ_lowEnd):
                     nocall_lowMQ += 1
                     
-                if float(tsv_items[i_tnm]) > 3.2:
+                if float(tsv_items[i_tnm]) > NM_highEnd:
                     nocall_highNM += 1
                     
-                if int(tsv_items[i_mq0]) > 2:
+                if int(tsv_items[i_mq0]) > MQ0_highEnd:
                     nocall_highMQ0 += 1
                     
-                if int(tsv_items[i_poors]) > 1:
+                if int(tsv_items[i_poors]) > Poors_highEnd:
                     nocall_highPoors += 1
                 
-                if int(tsv_items[i_others]) > 1:
+                if int(tsv_items[i_others]) > Others_highEnd:
                     nocall_highOthers += 1
         
                 
@@ -326,7 +338,9 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 
                 # Replace the original ./. with this string:
                 vcf_items[col_i] = new_sample_string
-                
+            
+            # Averaging over the no-called samples
+            average_nocalls_varDP = sum(nocalled_variant_depths)/len(nocalled_variant_depths)    
                 
         # Extract stats from called samples so they can be a baseline for comparison
         if nREJECTS or nNoCall:
@@ -349,7 +363,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 i_alt_for = tsv_headers.index( sample_i+'_bam_ALT_FOR' )
                 i_alt_rev = tsv_headers.index( sample_i+'_bam_ALT_REV' )
                 i_n_alt1  = tsv_headers.index( matched_normal_i+'_bam_ALT_FOR' )
-                i_n_alt2  = tsv_headers.index( matched_normal_i+'_bam_ALT_REV' )                    
+                i_n_alt2  = tsv_headers.index( matched_normal_i+'_bam_ALT_REV' )
                 i_tbq     = tsv_headers.index( sample_i+'_bam_ALT_BQ' )
                 i_tmq     = tsv_headers.index( sample_i+'_bam_ALT_MQ' )
                 i_tnm     = tsv_headers.index( sample_i+'_bam_ALT_NM' )
@@ -373,15 +387,56 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 called_poors.append(  int(tsv_items[i_poors])  )
                 called_others.append( int(tsv_items[i_others]) )
             
+            # Averaging over the called samples
+            average_calls_variant_depths = sum(called_variant_depths)/len(called_variant_depths)
         
         # Make some comments, highly likely true positive, likely true positive, ambigious, or likely false positive:
-        if vcf_i.filters == 'AllPASS':
-            # Are the sporadic reject/missing ones justifiable, or signs of false positives?
-            pass
+        if vcf_i.filters == 'AllPASS' or \
+        (vcf_i.filters == 'Tier1' and ( nREJECTS+nNoCall <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ) ):
+            
+            # High number of MQ0 reads in all aligners
+            if    bwaMQ0 > total_tumor_samples  and bowtieMQ0 > total_tumor_samples and novoMQ0 > total_tumor_samples:
+                vcf_items[ i_qual ] = '0'
+            
+            # High number of MQ0 reads in 2/3 aligners
+            elif (bwaMQ0 > total_tumor_samples) +  (bowtieMQ0 > total_tumor_samples) +  (novoMQ0 > total_tumor_samples) >= 2:
+                vcf_items[ i_qual ] = '1'
+                
+            else:
+                vcf_items[ i_qual ] = '3'
+        
         
         elif vcf_i.filters == 'Tier1':
-            # Are the sporadic reject/missing ones justifiable, or signs of false positives?
-            pass
+            
+            if nNoCall and nREJECTS:
+                
+                # Sampling error?
+                if average_nocalls_varDP < varDP_lowEnd and average_rejects_varDP < varDP_lowEnd and (average_calls_variant_depths < 2*varDP_lowEnd or nNoCall+nREJECTS <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ):
+                    probableSamplingError = True
+                else:
+                    probableSamplingError = False
+                
+                # Occasional poor base quality?
+                
+                
+                
+                            
+            elif nNoCall:
+                
+                if average_nocalls_varDP < varDP_lowEnd and (average_calls_variant_depths < 2*varDP_lowEnd or nNoCall+nREJECTS <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ):
+                    probableSamplingError = True
+                else:
+                    probableSamplingError = False
+                    
+            elif nREJECTS:
+                
+                if average_rejects_varDP < varDP_lowEnd and (average_calls_variant_depths < 2*varDP_lowEnd or nNoCall+nREJECTS <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ):
+                    probableSamplingError = True
+                else:
+                    probableSamplingError = False
+                    
+                
+                    
             
         elif vcf_i.filters == 'Tier2A':
             # Are the sporadic reject/missing ones justifiable, or signs of false positives?
