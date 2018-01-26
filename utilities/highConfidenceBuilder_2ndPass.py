@@ -112,6 +112,8 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         nREJECTS  = int( vcf_i.get_info_value('nREJECTS') )
         nNoCall   = int( vcf_i.get_info_value('nNoCall') )
         
+        flag_string = vcf_i.get_info_value('FLAGS')
+        flags_i = flag_string.split(',') if flag_string else []
         
         # Get called samples stats (would by pass if no REJECT or NoCall)
         # Try to find reasons for REJECTS
@@ -409,8 +411,9 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             # In other words, if high number of MQ0 reads occur in only one aligner, it is considered multiple aligner support and good enough to be highest confidence. 
             else:
                 vcf_items[ i_qual ] = '3'
+                            
         
-        # If not the simplest "AllPASS" or its equivalent cases:
+        # If NOT the simplest "AllPASS" or its equivalent cases:
         else:
             
             # Tier 1 with a few nNoCall/nREJECTS were already taken care of as equivalent of AllPASS
@@ -507,17 +510,17 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 except ZeroDivisionError:
                     average_called_novoMQ = nan
                 
-                if ( average_nocalls_bwaMQ < bwaMQ_lowEnd and abs(average_nocalls_bwaMQ-average_called_bwaMQ)/average_called_bwaMQ < 0.1 ) or bwaMQ0 > total_tumor_samples:
+                if average_nocalls_bwaMQ < bwaMQ_lowEnd or bwaMQ0 > total_tumor_samples:
                     bwaMappingDifficulty = True
                 else:
                     bwaMappingDifficulty = False
                     
-                if ( average_nocalls_bowtieMQ < bowtieMQ_lowEnd and abs(average_nocalls_bowtieMQ-average_called_bowtieMQ)/average_called_bowtieMQ < 0.1 ) or bowtieMQ0 > total_tumor_samples:
+                if average_nocalls_bowtieMQ < bowtieMQ_lowEnd or bowtieMQ0 > total_tumor_samples:
                     bowtieMappingDifficulty = True
                 else:
                     bowtieMappingDifficulty = False
 
-                if ( average_nocalls_novoMQ < novoMQ_lowEnd and abs(average_nocalls_novoMQ-average_called_novoMQ)/average_called_novoMQ < 0.1 ) or novoMQ0 > total_tumor_samples:
+                if average_nocalls_novoMQ < novoMQ_lowEnd or novoMQ0 > total_tumor_samples:
                     novoMappingDifficulty = True
                 else:
                     novoMappingDifficulty = False
@@ -583,17 +586,17 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 except ZeroDivisionError:
                     average_called_novoNM = nan
                 
-                if average_nocalls_bwaNM < NM_highEnd and abs(average_nocalls_bwaNM-average_called_bwaNM)/average_called_bwaNM < 0.1:
+                if average_nocalls_bwaNM > NM_highEnd and abs(average_nocalls_bwaNM-average_called_bwaNM)/average_called_bwaNM < 0.1:
                     bwaAlignmentDifficulty = True
                 else:
                     bwaAlignmentDifficulty = False
                     
-                if average_nocalls_bowtieNM < NM_highEnd and abs(average_nocalls_bowtieNM-average_called_bowtieNM)/average_called_bowtieNM < 0.1:
+                if average_nocalls_bowtieNM > NM_highEnd and abs(average_nocalls_bowtieNM-average_called_bowtieNM)/average_called_bowtieNM < 0.1:
                     bowtieAlignmentDifficulty = True
                 else:
                     bowtieAlignmentDifficulty = False
 
-                if average_nocalls_novoNM < NM_highEnd and abs(average_nocalls_novoNM-average_called_novoNM)/average_called_novoNM < 0.1:
+                if average_nocalls_novoNM > NM_highEnd and abs(average_nocalls_novoNM-average_called_novoNM)/average_called_novoNM < 0.1:
                     novoAlignmentDifficulty = True
                 else:
                     novoAlignmentDifficulty = False
@@ -609,6 +612,55 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 ###################################################################
                 
                 
+                
+                ##### IDENTIFY Aligners or Platform/Sites that's not deemed PASS. Prioritize NS/IL #####
+                # ALIGNER: BWA
+                bwaSites = vcf_i.get_info_value('bwa_PASS').split(',')
+                bwaSites = [ int(bwaSites[i]) for i,j in enumerate(bwaSites) ]
+                
+                if not (bwaSites[0]>=2 and bwaSites[1]>=5):
+                    bwaNonSites = vcf_i.get_info_value('bwa_REJECT').split(',')
+                    bwaNonSites = [ int(bwaNonSites[i]) for i,j in enumerate(bwaNonSites) ]
+                    
+                # ALIGNER: BOWTIE
+                bowtieSites = vcf_i.get_info_value('bowtie_PASS').split(',')
+                bowtieSites = [ int(bowtieSites[i]) for i,j in enumerate(bowtieSites) ]
+                
+                if not (bowtieSites[0]>=2 and bowtieSites[1]>=5):
+                    bowtieNonSites = vcf_i.get_info_value('bowtie_REJECT').split(',')
+                    bowtieNonSites = [ int(bowtieNonSites[i]) for i,j in enumerate(bowtieNonSites) ]
+                
+                # ALIGNER: NOVOALIGN
+                novoSites = vcf_i.get_info_value('novo_PASS').split(',')
+                novoSites = [ int(novoSites[i]) for i,j in enumerate(novoSites) ]
+                
+                if not (novoSites[0]>=2 and novoSites[1]>=5):
+                    novoNonSites = vcf_i.get_info_value('novo_REJECT').split(',')
+                    novoNonSites = [ int(novoNonSites[i]) for i,j in enumerate(novoNonSites) ]
+                    
+                    
+                # SITE/PLATFORM:
+                IL_passes = vcf_i.get_info_value('IL_PASS').split(',')
+                IL_passes = [ int(IL_passes[i]) for i,j in enumerate(IL_passes) ]
+                    
+                NS_passes = vcf_i.get_info_value('NS_PASS').split(',')
+                NS_passes = [ int(NS_passes[i]) for i,j in enumerate(NS_passes) ]
+                
+                # Define "almost" IL/NS passes for the B-tiers:
+                # IL: 3 samples x 3 aligners: at least 3 total passes AND got pass in at least 2 aligners (so some aligner-diversity):
+                if ( IL_passes[0] + IL_passes[1] + IL_passes[2] >=3 ) and ( IL_passes[0]>=1 + IL_passes[1]>=1 + IL_passes[2]>=1 ) >= 2:
+                    IL_almostPass = True
+                else:
+                    IL_almostPass = False
+
+                if ( NS_passes[0] + NS_passes[1] + NS_passes[2] >=3 ) and ( NS_passes[0]>=1 + NS_passes[1]>=1 + NS_passes[2]>=1 ) >= 2:
+                    NS_almostPass = True
+                else:
+                    NS_almostPass = False
+                    
+                
+                
+                # Tier1: deemed pass by all sites and all aligners:
                 if vcf_i.filters == 'Tier1':
                     
                     # Tier1 is very high-confidence, so by default it is a "3." It can be lowered later.
@@ -625,18 +677,123 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
                         vcf_items[ i_qual ] = '0'
                     
-                    
+                
+                # Tier2: deemed pass by all aligner and majority sites, or majority aligner and all sites
                 elif vcf_i.filters == 'Tier2A':
                     
-                    # Tier2A is also very high-confidence. Start with a "3", but find out which site/platform or aligner where it isn't considered PASS
+                    # Tier2A is also very high-confidence. Start with a "3"
                     vcf_items[ i_qual ] = '3'
+                    
+                    # Find out which site/platform or aligner were not considered PASS, and see if it's specific to those site/aligner. Focus on NS and IL.
+                    # Look for disqualifying features that will make it lower confidence:
+                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                        vcf_items[ i_qual ] = '0'
+                        
+                    elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
+                        vcf_items[ i_qual ] = '1'
+                        
+                    elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
+                        vcf_items[ i_qual ] = '0'
+                
+                
+                elif vcf_i.filters == 'Tier2B':
+                    
+                    # Does not have an IL/NS deemed PASS (0 by default), but see if there is any that comes close:
+                    vcf_items[ i_qual ] = '1'
+
+                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                        vcf_items[ i_qual ] = '0'
+                    
+                    # Elevate to Tier2A status if can be deemed "almost" IL/NS PASS:
+                    elif IL_almostPass and NS_almostPass:
+                        vcf_items[ i_qual ] = '3'
+                        
+                        if (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
+                            vcf_items[ i_qual ] = '1'
+                        elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
+                            vcf_items[ i_qual ] = '0'
+                    
+
+                # Majority site/platform AND majority aligner
+                elif vcf_i.filters == 'Tier3A' or (vcf_i.filters == 'Tier3B' and (IL_almostPass and NS_almostPass) ):
+                    
+                    # Deemed high-confidence, but not highest confidence at default
+                    vcf_items[ i_qual ] = '1'
+                    
+                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                        vcf_items[ i_qual ] = '0'
+                    
+                    # If the only problem is low signal, elevate
+                    elif probableSamplingError and not (bwaMappingDifficulty or bowtieMappingDifficulty or novoMappingDifficulty or bwaAlignmentDifficulty or bowtieAlignmentDifficulty or novoAlignmentDifficulty):
+                        vcf_items[ i_qual ] = '3'
+                        
+                    elif probableSamplingError and ( (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) ) <= 1:
+                        vcf_items[ i_qual ] = '1'
+                        
+                    elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 2:
+                        vcf_items[ i_qual ] = '0'
+                        
+                    elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
+                        vcf_items[ i_qual ] = '-3'
+                        
+                
+                elif vcf_i.filters == 'Tier3B':
+                    vcf_items[ i_qual ] = '0'
+
+                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                        vcf_items[ i_qual ] = '0'
+
+                    if (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
+                        vcf_items[ i_qual ] = '-3'
 
 
+                # majority aligners or majority sites/platforms, but not both:                
+                elif vcf_i.filters == 'Tier4A' or (vcf_i.filters == 'Tier4B' and (IL_almostPass or NS_almostPass) ):
+                    vcf_items[ i_qual ] = '0'
+
+                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                        vcf_items[ i_qual ] = '-3'```````
+                    
+                    
+                elif vcf_i.filters == 'Tier4B':
+                    vcf_items[ i_qual ] = '0'
+
+                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                        vcf_items[ i_qual ] = '-3'
+
+                
+                
+                elif vcf_i.filters == 'Tier5A' or (vcf_i.filters == 'Tier5B' and (IL_almostPass or NS_almostPass) ):
+                    vcf_items[ i_qual ] = '0'
+                
+                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                        vcf_items[ i_qual ] = '-3'
+                
+                elif vcf_i.filters == 'Tier5B':
+                    vcf_items[ i_qual ] = '0'
+
+                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                        vcf_items[ i_qual ] = '-3'
+
+
+                # If REJECT
+                elif vcf_i.filters == 'REJECT':
+                    
+                    # Default to -3 (likely false positive)
+                    vcf_items[ i_qual ] = '-3'
+                                        
+                    # If not too many rejects/noCalls, and not crazy MQ0 stuff, elevate to (somewhat) high confidence or neutral
+                    if (not flags_i) and ( (bwaMQ0 > total_tumor_samples) +  (bowtieMQ0 > total_tumor_samples) +  (novoMQ0 > total_tumor_samples) <= 1 ):
+                        vcf_items[ i_qual ] = '1'
+                        
+                    elif ('RandN' not in flags_i) and ( (bwaMQ0 > total_tumor_samples) +  (bowtieMQ0 > total_tumor_samples) +  (novoMQ0 > total_tumor_samples) <= 1 ):
+                        vcf_items[ i_qual ] = '0'
             
             
-            # All the nonPASS samples are 0.1 < SCORE < 0.7 samples
+            
+            # All the nonPASS samples are 0.1 < SCORE < 0.7 samples, but only in Tier4 and 5. 
             else:
-                pass    
+                vcf_items[ i_qual ] = '1'    
                 
                 
                                 
