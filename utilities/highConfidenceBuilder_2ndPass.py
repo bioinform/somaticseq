@@ -748,19 +748,17 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
 
 
                 # majority aligners or majority sites/platforms, but not both:                
-                elif vcf_i.filters == 'Tier4A' or (vcf_i.filters == 'Tier4B' and (IL_almostPass or NS_almostPass) ):
-                    vcf_items[ i_qual ] = '0'
-
-                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
-                        vcf_items[ i_qual ] = '-3'```````
-                    
-                    
-                elif vcf_i.filters == 'Tier4B':
+                elif re.match(r'Tier4[AB]', vcf_i.filters):
                     vcf_items[ i_qual ] = '0'
 
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
                         vcf_items[ i_qual ] = '-3'
-
+                        
+                    elif NS_almostPass and IL_almostPass:
+                        vcf_items[ i_qual ] = '1'
+                        
+                    elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
+                        vcf_items[ i_qual ] = '-3'
                 
                 
                 elif vcf_i.filters == 'Tier5A' or (vcf_i.filters == 'Tier5B' and (IL_almostPass or NS_almostPass) ):
@@ -774,7 +772,9 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
 
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
                         vcf_items[ i_qual ] = '-3'
-
+                        
+                    elif NS_almostPass and IL_almostPass:
+                        vcf_items[ i_qual ] = '-3'
 
                 # If REJECT
                 elif vcf_i.filters == 'REJECT':
@@ -793,13 +793,12 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             
             # All the nonPASS samples are 0.1 < SCORE < 0.7 samples, but only in Tier4 and 5. 
             else:
-                vcf_items[ i_qual ] = '1'    
-                
-                
-                                
+                if vcf_i.filters == 'REJECT' or re.match(r'Tier5[AB]', vcf_i.filters):
+                    vcf_items[ i_qual ] = '0'
+                else:
+                    vcf_items[ i_qual ] = '1'
         
         vcfout.write( '\t'.join( vcf_items ) + '\n' )
-
         
         vcf_line = vcf_in.readline().rstrip()
         tsv_line = tsv_in.readline().rstrip()
