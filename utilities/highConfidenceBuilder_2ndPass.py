@@ -15,6 +15,7 @@ parser.add_argument('-outfile',  '--outfile',    type=str, help='VCF out', requi
 parser.add_argument('-pass',     '--pass-score',   type=float, help='PASS SCORE. Default=phred scaled 0.7',    required=False, default=5.228787452803376)
 parser.add_argument('-reject',   '--reject-score', type=float, help='REJECT SCORE. Default=phred scaled 0.1',  required=False, default=0.4575749056067512)
 parser.add_argument('-ncallers', '--num-callers',  type=int,   help='# callers to be considered PASS if untrained', required=False, default=3)
+parser.add_argument('-type',     '--variant-type', type=str, help='Either snv or indel. Required', required=True)
 
 args = parser.parse_args()
 
@@ -26,15 +27,27 @@ reject_score   = args.reject_score
 ncallers       = args.num_callers
 
 # quasi-constants
-bwaMQ_lowEnd    = 36.3044289044
-bowtieMQ_lowEnd = 8.38334841629
-novoMQ_lowEnd   = 53.832183908
-varDP_lowEnd    = 1.2 * 6
-BQ_lowEnd       = 34.5
-NM_highEnd      = 3.2
-MQ0_highEnd     = 2
-Poors_highEnd   = 1
-Others_highEnd  = 1
+if variant_type = 'snv':
+    bwaMQ_lowEnd    = 36.3044289044
+    bowtieMQ_lowEnd = 8.38334841629
+    novoMQ_lowEnd   = 53.832183908
+    varDP_lowEnd    = 1.2 * 6
+    BQ_lowEnd       = 34.5
+    NM_highEnd      = 3.2
+    MQ0_highEnd     = 2
+    Poors_highEnd   = 1
+    Others_highEnd  = 1
+elif variant_type = 'indel':
+    bwaMQ_lowEnd    = 53.5
+    bowtieMQ_lowEnd = 11.5522222222
+    novoMQ_lowEnd   = 63.5
+    varDP_lowEnd    = 1.2 * 5
+    BQ_lowEnd       = 35
+    NM_highEnd      = 22
+    MQ0_highEnd     = 2
+    Poors_highEnd   = 1
+    Others_highEnd  = 4
+    
 
 nan = float('nan')
 
