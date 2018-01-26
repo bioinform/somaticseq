@@ -27,7 +27,7 @@ reject_score   = args.reject_score
 ncallers       = args.num_callers
 
 # quasi-constants
-if variant_type = 'snv':
+if variant_type.upper() == 'SNV':
     bwaMQ_lowEnd    = 36.3044289044
     bowtieMQ_lowEnd = 8.38334841629
     novoMQ_lowEnd   = 53.832183908
@@ -37,7 +37,7 @@ if variant_type = 'snv':
     MQ0_highEnd     = 2
     Poors_highEnd   = 1
     Others_highEnd  = 1
-elif variant_type = 'indel':
+elif variant_type.upper() == 'INDEL':
     bwaMQ_lowEnd    = 53.5
     bowtieMQ_lowEnd = 11.5522222222
     novoMQ_lowEnd   = 63.5
@@ -47,6 +47,8 @@ elif variant_type = 'indel':
     MQ0_highEnd     = 2
     Poors_highEnd   = 1
     Others_highEnd  = 4
+else:
+    assert (variant_type.upper() == 'INDEL' or variant_type.upper() == 'SNV')
     
 
 nan = float('nan')
