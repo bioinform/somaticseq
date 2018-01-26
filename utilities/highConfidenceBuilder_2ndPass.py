@@ -574,47 +574,52 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     average_nocalls_novoNM = nan
                 
                 # Called:
-                called_bwa_tnm    = []
-                called_bowtie_tnm = []
-                called_novo_tnm   = []
-                for i in i_bwa_call:
-                    called_bwa_tnm.append( called_tnm[i] )
-                
-                for i in i_bowtie_call:
-                    called_bowtie_tnm.append( called_tnm[i] )
-
-                for i in i_novo_call:
-                    called_novo_tnm.append( called_tnm[i] )
-                
-                try:
-                    average_called_bwaNM    = sum(called_bwa_tnm) / len(called_bwa_tnm)
-                except ZeroDivisionError:
-                    average_called_bwaNM = nan
-                
-                try:
-                    average_called_bowtieNM = sum(called_bowtie_tnm) / len(called_bowtie_tnm)
-                except ZeroDivisionError:
-                    average_called_bowtieNM = nan
-                
-                try:
-                    average_called_novoNM   = sum(called_novo_tnm) / len(called_novo_tnm)
-                except ZeroDivisionError:
-                    average_called_novoNM = nan
-                
-                if average_nocalls_bwaNM > NM_highEnd and abs(average_nocalls_bwaNM-average_called_bwaNM)/average_called_bwaNM < 0.1:
-                    bwaAlignmentDifficulty = True
-                else:
-                    bwaAlignmentDifficulty = False
+                if args.variant_type == 'snv':
+                    called_bwa_tnm    = []
+                    called_bowtie_tnm = []
+                    called_novo_tnm   = []
+                    for i in i_bwa_call:
+                        called_bwa_tnm.append( called_tnm[i] )
                     
-                if average_nocalls_bowtieNM > NM_highEnd and abs(average_nocalls_bowtieNM-average_called_bowtieNM)/average_called_bowtieNM < 0.1:
-                    bowtieAlignmentDifficulty = True
+                    for i in i_bowtie_call:
+                        called_bowtie_tnm.append( called_tnm[i] )
+    
+                    for i in i_novo_call:
+                        called_novo_tnm.append( called_tnm[i] )
+                    
+                    try:
+                        average_called_bwaNM    = sum(called_bwa_tnm) / len(called_bwa_tnm)
+                    except ZeroDivisionError:
+                        average_called_bwaNM = nan
+                    
+                    try:
+                        average_called_bowtieNM = sum(called_bowtie_tnm) / len(called_bowtie_tnm)
+                    except ZeroDivisionError:
+                        average_called_bowtieNM = nan
+                    
+                    try:
+                        average_called_novoNM   = sum(called_novo_tnm) / len(called_novo_tnm)
+                    except ZeroDivisionError:
+                        average_called_novoNM = nan
+                    
+                    if average_nocalls_bwaNM > NM_highEnd and abs(average_nocalls_bwaNM-average_called_bwaNM)/average_called_bwaNM < 0.1:
+                        bwaAlignmentDifficulty = True
+                    else:
+                        bwaAlignmentDifficulty = False
+                        
+                    if average_nocalls_bowtieNM > NM_highEnd and abs(average_nocalls_bowtieNM-average_called_bowtieNM)/average_called_bowtieNM < 0.1:
+                        bowtieAlignmentDifficulty = True
+                    else:
+                        bowtieAlignmentDifficulty = False
+    
+                    if average_nocalls_novoNM > NM_highEnd and abs(average_nocalls_novoNM-average_called_novoNM)/average_called_novoNM < 0.1:
+                        novoAlignmentDifficulty = True
+                    else:
+                        novoAlignmentDifficulty = False
+                    
                 else:
-                    bowtieAlignmentDifficulty = False
-
-                if average_nocalls_novoNM > NM_highEnd and abs(average_nocalls_novoNM-average_called_novoNM)/average_called_novoNM < 0.1:
-                    novoAlignmentDifficulty = True
-                else:
-                    novoAlignmentDifficulty = False
+                    bwaAlignmentDifficulty = bowtieAlignmentDifficulty = novoAlignmentDifficulty = False
+                
                 ###################################################################
 
 
