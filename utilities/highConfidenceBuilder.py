@@ -17,13 +17,6 @@ parser.add_argument('-pass',     '--pass-score',   type=float, help='PASS SCORE.
 parser.add_argument('-reject',   '--reject-score', type=float, help='REJECT SCORE. Default=phred scaled 0.1',  required=False, default=0.4575749056067512)
 parser.add_argument('-ncallers', '--num-callers',  type=int,   help='# callers to be considered PASS if untrained', required=False, default=3)
 
-parser.add_argument('--bwa-tumors',     type=str, nargs='*', help='tumor sample name',  required=False, default=[])
-parser.add_argument('--bwa-normals',    type=str, nargs='*', help='normal sample name', required=False, default=[])
-parser.add_argument('--bowtie-tumors',  type=str, nargs='*', help='tumor sample name',  required=False, default=[])
-parser.add_argument('--bowtie-normals', type=str, nargs='*', help='normal sample name', required=False, default=[])
-parser.add_argument('--novo-tumors',    type=str, nargs='*', help='tumor sample name',  required=False, default=[])
-parser.add_argument('--novo-normals',   type=str, nargs='*', help='normal sample name', required=False, default=[])
-
 parser.add_argument('-all', '--print-all', action='store_true', help='Print everything', required=False, default=True)
 
 
@@ -68,33 +61,18 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     vcfout.write('##INFO=<ID=calledSamples,Number=.,Type=String,Description="Sample names where this variant is called">\n')
     vcfout.write('##INFO=<ID=rejectedSamples,Number=.,Type=String,Description="Sample names classified as REJECT by SomaticSeq">\n')
     vcfout.write('##INFO=<ID=noCallSamples,Number=.,Type=String,Description="Sample names where the variant is not called by any caller">\n')
-    
-    vcfout.write('##INFO=<ID=IL_PASS,Number=.,Type=Integer,Description="# samples PASS (SomaticSeq classified) belonging to IL by bwa, bowtie2, and novoalign">\n')
-    vcfout.write('##INFO=<ID=NS_PASS,Number=.,Type=Integer,Description="# samples PASS (SomaticSeq classified) belonging to NS by bwa, bowtie2, and novoalign">\n')
-    vcfout.write('##INFO=<ID=NC_PASS,Number=.,Type=Integer,Description="# samples PASS (SomaticSeq classified) belonging to NC by bwa, bowtie2, and novoalign">\n')
-    vcfout.write('##INFO=<ID=EA_PASS,Number=.,Type=Integer,Description="# samples PASS (SomaticSeq classified) belonging to EA by bwa, bowtie2, and novoalign">\n')
+        
+    vcfout.write('##INFO=<ID=bwa_PASS,Number=.,Type=Integer,Description="# samples PASS by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
+    vcfout.write('##INFO=<ID=bowtie_PASS,Number=.,Type=Integer,Description="# samples PASS by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
+    vcfout.write('##INFO=<ID=novo_PASS,Number=.,Type=Integer,Description="# samples PASS by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
 
-    vcfout.write('##INFO=<ID=IL_REJECT,Number=.,Type=Integer,Description="# samples REJECT (SomaticSeq classified) belonging to IL by bwa, bowtie2, and novoalign">\n')
-    vcfout.write('##INFO=<ID=NS_REJECT,Number=.,Type=Integer,Description="# samples REJECT (SomaticSeq classified) belonging to NS by bwa, bowtie2, and novoalign">\n')
-    vcfout.write('##INFO=<ID=NC_REJECT,Number=.,Type=Integer,Description="# samples REJECT (SomaticSeq classified) belonging to NC by bwa, bowtie2, and novoalign">\n')
-    vcfout.write('##INFO=<ID=EA_REJECT,Number=.,Type=Integer,Description="# samples REJECT (SomaticSeq classified) belonging to EA by bwa, bowtie2, and novoalign">\n')
+    vcfout.write('##INFO=<ID=bwa_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
+    vcfout.write('##INFO=<ID=bowtie_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
+    vcfout.write('##INFO=<ID=novo_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
 
-    vcfout.write('##INFO=<ID=IL_Consensus,Number=.,Type=Integer,Description="# samples by majority of callers belonging to IL by bwa, bowtie2, and novoalign">\n')
-    vcfout.write('##INFO=<ID=NS_Consensus,Number=.,Type=Integer,Description="# samples by majority of callers belonging to NS by bwa, bowtie2, and novoalign">\n')
-    vcfout.write('##INFO=<ID=NC_Consensus,Number=.,Type=Integer,Description="# samples by majority of callers belonging to NC by bwa, bowtie2, and novoalign">\n')
-    vcfout.write('##INFO=<ID=EA_Consensus,Number=.,Type=Integer,Description="# samples by majority of callers belonging to EA by bwa, bowtie2, and novoalign">\n')    
-    
-    vcfout.write('##INFO=<ID=bwa_PASS,Number=.,Type=Integer,Description="# samples PASS by IL, NS, EA, and NC">\n')
-    vcfout.write('##INFO=<ID=bowtie_PASS,Number=.,Type=Integer,Description="# samples PASS by IL, NS, EA, and NC">\n')
-    vcfout.write('##INFO=<ID=novo_PASS,Number=.,Type=Integer,Description="# samples PASS by IL, NS, EA, and NC">\n')
-
-    vcfout.write('##INFO=<ID=bwa_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NS, EA, and NC">\n')
-    vcfout.write('##INFO=<ID=bowtie_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NS, EA, and NC">\n')
-    vcfout.write('##INFO=<ID=novo_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NS, EA, and NC">\n')
-
-    vcfout.write('##INFO=<ID=bwa_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NS, EA, and NC">\n')
-    vcfout.write('##INFO=<ID=bowtie_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NS, EA, and NC">\n')
-    vcfout.write('##INFO=<ID=novo_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NS, EA, and NC">\n')
+    vcfout.write('##INFO=<ID=bwa_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
+    vcfout.write('##INFO=<ID=bowtie_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
+    vcfout.write('##INFO=<ID=novo_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
 
     vcfout.write('##INFO=<ID=bwaMQ0,Number=1,Type=Integer,Description="MQ0 reads in tumor by bwa">\n')
     vcfout.write('##INFO=<ID=bowtieMQ0,Number=1,Type=Integer,Description="MQ0 reads in tumor by bowtie">\n')
@@ -177,35 +155,19 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
             gt  = r'[0{}]/[0{}]'.format(g_i, g_i)
 
             sample_columns = copy( original_sample_columns )
-            
-            # 0 for each aligner: bwa, bowtie, and novo
-            IL_classPass   = {'bwa': 0, 'bowtie': 0, 'novo': 0}
-            NS_classPass   = {'bwa': 0, 'bowtie': 0, 'novo': 0}
-            EA_classPass   = {'bwa': 0, 'bowtie': 0, 'novo': 0}
-            NC_classPass   = {'bwa': 0, 'bowtie': 0, 'novo': 0}
-    
-            IL_classReject = {'bwa': 0, 'bowtie': 0, 'novo': 0}
-            NS_classReject = {'bwa': 0, 'bowtie': 0, 'novo': 0}
-            EA_classReject = {'bwa': 0, 'bowtie': 0, 'novo': 0}
-            NC_classReject = {'bwa': 0, 'bowtie': 0, 'novo': 0}
-    
-            IL_consensus   = {'bwa': 0, 'bowtie': 0, 'novo': 0}
-            NS_consensus   = {'bwa': 0, 'bowtie': 0, 'novo': 0}
-            EA_consensus   = {'bwa': 0, 'bowtie': 0, 'novo': 0}
-            NC_consensus   = {'bwa': 0, 'bowtie': 0, 'novo': 0}
-            
+                        
             # 0 for each site/platform
-            bwa_classPass      = {'IL': 0, 'NS': 0, 'EA': 0, 'NC': 0}
-            bowtie_classPass   = {'IL': 0, 'NS': 0, 'EA': 0, 'NC': 0}
-            novo_classPass     = {'IL': 0, 'NS': 0, 'EA': 0, 'NC': 0}
+            bwa_classPass      = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
+            bowtie_classPass   = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
+            novo_classPass     = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
     
-            bwa_classReject    = {'IL': 0, 'NS': 0, 'EA': 0, 'NC': 0}
-            bowtie_classReject = {'IL': 0, 'NS': 0, 'EA': 0, 'NC': 0}
-            novo_classReject   = {'IL': 0, 'NS': 0, 'EA': 0, 'NC': 0}
+            bwa_classReject    = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
+            bowtie_classReject = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
+            novo_classReject   = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
             
-            bwa_consensus      = {'IL': 0, 'NS': 0, 'EA': 0, 'NC': 0}
-            bowtie_consensus   = {'IL': 0, 'NS': 0, 'EA': 0, 'NC': 0}
-            novo_consensus     = {'IL': 0, 'NS': 0, 'EA': 0, 'NC': 0}
+            bwa_consensus      = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
+            bowtie_consensus   = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
+            novo_consensus     = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
             
             # Count classified PASS, classified REJECTS, and Consensus
             nPASS = nREJECT = nNoCall = nConsensus = 0
@@ -231,17 +193,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         called_samples.append( samples[call_i] )
     
                         if   samples[call_i].startswith('IL_'):
-                            IL_classPass['bwa'] += 1
                             bwa_classPass['IL'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            bwa_classPass['NV'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            bwa_classPass['FD'] += 1                        
                         elif samples[call_i].startswith('NS_'):
-                            NS_classPass['bwa'] += 1
                             bwa_classPass['NS'] += 1
-                        elif samples[call_i].startswith('EA_'):
-                            EA_classPass['bwa'] += 1
-                            bwa_classPass['EA'] += 1
-                        elif samples[call_i].startswith('NC_'):
-                            NC_classPass['bwa'] += 1
-                            bwa_classPass['NC'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            bwa_classPass['Others'] += 1
                         
                     elif score and score != '.' and float(score) < reject_score:
                         
@@ -249,17 +209,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         rejected_samples.append( samples[call_i] )
                         
                         if   samples[call_i].startswith('IL_'):
-                            IL_classReject['bwa'] += 1
                             bwa_classReject['IL'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            bwa_classReject['NV'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            bwa_classReject['FD'] += 1                        
                         elif samples[call_i].startswith('NS_'):
-                            NS_classReject['bwa'] += 1
                             bwa_classReject['NS'] += 1
-                        elif samples[call_i].startswith('EA_'):
-                            EA_classReject['bwa'] += 1
-                            bwa_classReject['EA'] += 1
-                        elif samples[call_i].startswith('NC_'):
-                            NC_classReject['bwa'] += 1
-                            bwa_classReject['NC'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            bwa_classReject['Others'] += 1
                             
                     n_tools = vcf_i.get_sample_value('NUM_TOOLS', call_i)
                     if n_tools and n_tools != '.' and int(n_tools) > ncallers:
@@ -269,17 +227,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                             called_samples.append( samples[call_i] )
                         
                         if   samples[call_i].startswith('IL_'):
-                            IL_consensus['bwa'] += 1
                             bwa_consensus['IL'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            bwa_consensus['NV'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            bwa_consensus['FD'] += 1                        
                         elif samples[call_i].startswith('NS_'):
-                            NS_consensus['bwa'] += 1
                             bwa_consensus['NS'] += 1
-                        elif samples[call_i].startswith('EA_'):
-                            EA_consensus['bwa'] += 1
-                            bwa_consensus['EA'] += 1
-                        elif samples[call_i].startswith('NC_'):
-                            NC_consensus['bwa'] += 1
-                            bwa_consensus['NC'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            bwa_consensus['Others'] += 1
                             
                     DP4 = vcf_i.get_sample_value('DP4', call_i)
                     if DP4 and DP4 != '.':
@@ -313,17 +269,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         called_samples.append( samples[call_i] )
                         
                         if   samples[call_i].startswith('IL_'):
-                            IL_classPass['bowtie'] += 1
                             bowtie_classPass['IL'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            bowtie_classPass['NV'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            bowtie_classPass['FD'] += 1                        
                         elif samples[call_i].startswith('NS_'):
-                            NS_classPass['bowtie'] += 1
                             bowtie_classPass['NS'] += 1
-                        elif samples[call_i].startswith('EA_'):
-                            EA_classPass['bowtie'] += 1
-                            bowtie_classPass['EA'] += 1
-                        elif samples[call_i].startswith('NC_'):
-                            NC_classPass['bowtie'] += 1
-                            bowtie_classPass['NC'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            bowtie_classPass['Others'] += 1
                         
                     elif score and score != '.' and float(score) < reject_score:
                         
@@ -331,17 +285,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         rejected_samples.append( samples[call_i] )
                         
                         if   samples[call_i].startswith('IL_'):
-                            IL_classReject['bowtie'] += 1
                             bowtie_classReject['IL'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            bowtie_classReject['NV'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            bowtie_classReject['FD'] += 1                        
                         elif samples[call_i].startswith('NS_'):
-                            NS_classReject['bowtie'] += 1
                             bowtie_classReject['NS'] += 1
-                        elif samples[call_i].startswith('EA_'):
-                            EA_classReject['bowtie'] += 1
-                            bowtie_classReject['EA'] += 1
-                        elif samples[call_i].startswith('NC_'):
-                            NC_classReject['bowtie'] += 1
-                            bowtie_classReject['NC'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            bowtie_classReject['Others'] += 1
     
                     n_tools = vcf_i.get_sample_value('NUM_TOOLS', call_i)
                     if n_tools and n_tools != '.' and int(n_tools) > ncallers:
@@ -351,17 +303,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                             called_samples.append( samples[call_i] )
                         
                         if   samples[call_i].startswith('IL_'):
-                            IL_consensus['bowtie'] += 1
                             bowtie_consensus['IL'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            bowtie_consensus['NV'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            bowtie_consensus['FD'] += 1                        
                         elif samples[call_i].startswith('NS_'):
-                            NS_consensus['bowtie'] += 1
                             bowtie_consensus['NS'] += 1
-                        elif samples[call_i].startswith('EA_'):
-                            EA_consensus['bowtie'] += 1
-                            bowtie_consensus['EA'] += 1
-                        elif samples[call_i].startswith('NC_'):
-                            NC_consensus['bowtie'] += 1
-                            bowtie_consensus['NC'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            bowtie_consensus['Others'] += 1
                     
                     DP4 = vcf_i.get_sample_value('DP4', call_i)
                     if DP4 and DP4 != '.':
@@ -395,17 +345,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         called_samples.append( samples[call_i] )
     
                         if   samples[call_i].startswith('IL_'):
-                            IL_classPass['novo'] += 1
                             novo_classPass['IL'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            novo_classPass['NV'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            novo_classPass['FD'] += 1                        
                         elif samples[call_i].startswith('NS_'):
-                            NS_classPass['novo'] += 1
                             novo_classPass['NS'] += 1
-                        elif samples[call_i].startswith('EA_'):
-                            EA_classPass['novo'] += 1
-                            novo_classPass['EA'] += 1
-                        elif samples[call_i].startswith('NC_'):
-                            NC_classPass['novo'] += 1
-                            novo_classPass['NC'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            novo_classPass['Others'] += 1
                         
                     elif score and score != '.' and float(score) < reject_score:
                         
@@ -413,17 +361,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         rejected_samples.append( samples[call_i] )
                         
                         if   samples[call_i].startswith('IL_'):
-                            IL_classReject['novo'] += 1
                             novo_classReject['IL'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            novo_classReject['NV'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            novo_classReject['FD'] += 1                        
                         elif samples[call_i].startswith('NS_'):
-                            NS_classReject['novo'] += 1
                             novo_classReject['NS'] += 1
-                        elif samples[call_i].startswith('EA_'):
-                            EA_classReject['novo'] += 1
-                            novo_classReject['EA'] += 1
-                        elif samples[call_i].startswith('NC_'):
-                            NC_classReject['novo'] += 1
-                            novo_classReject['NC'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            novo_classReject['Others'] += 1
     
                     n_tools = vcf_i.get_sample_value('NUM_TOOLS', call_i)
                     if n_tools and n_tools != '.' and int(n_tools) > ncallers:
@@ -433,17 +379,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                             called_samples.append( samples[call_i] )
                         
                         if   samples[call_i].startswith('IL_'):
-                            IL_consensus['novo'] += 1
                             novo_consensus['IL'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            novo_consensus['NV'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            novo_consensus['FD'] += 1                        
                         elif samples[call_i].startswith('NS_'):
-                            NS_consensus['novo'] += 1
                             novo_consensus['NS'] += 1
-                        elif samples[call_i].startswith('EA_'):
-                            EA_consensus['novo'] += 1
-                            novo_consensus['EA'] += 1
-                        elif samples[call_i].startswith('NC_'):
-                            NC_consensus['novo'] += 1
-                            novo_consensus['NC'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            novo_consensus['Others'] += 1
     
                     DP4 = vcf_i.get_sample_value('DP4', call_i)
                     if DP4 and DP4 != '.':
@@ -582,12 +526,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                 bwaSites    = (IL_classPass['bwa']   >=2) + (NS_classPass['bwa']   >=5) + (EA_consensus['bwa']   >=1) + (NC_consensus['bwa']   >=1)
                 bowtieSites = (IL_classPass['bowtie']>=2) + (NS_classPass['bowtie']>=5) + (EA_consensus['bowtie']>=1) + (NC_consensus['bowtie']>=1)
                 novoSites   = (IL_classPass['novo']  >=2) + (NS_classPass['novo']  >=5) + (EA_consensus['novo']  >=1) + (NC_consensus['novo']  >=1)
-                
-                ILcalls = (IL_classPass['bwa']>=2) + (IL_classPass['bowtie']>=2) + (IL_classPass['novo']>=2)
-                NScalls = (NS_classPass['bwa']>=5) + (NS_classPass['bowtie']>=5) + (NS_classPass['novo']>=5)
-                EAcalls = (EA_consensus['bwa']>=1) + (EA_consensus['bowtie']>=1) + (EA_consensus['novo']>=1)
-                NCcalls = (NC_consensus['bwa']>=1) + (NC_consensus['bowtie']>=1) + (NC_consensus['novo']>=1)
-                
+                                
                 # AllPASS are classified PASS (if possible) or called by Consensus (if no classiifer for the sample) by every single sample
                 if len(called_samples) == 42:
                     qual_i = 'AllPASS'
