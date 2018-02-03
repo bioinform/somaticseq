@@ -124,6 +124,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     novo_tumor_indices    = [ samples.index(i) for i in novo_tumors    ]
     novo_normal_indices   = [ samples.index(i) for i in novo_normals   ]
     
+    bwas    = ['bwa' for i in bwa_tumor_indices]
+    bowties = ['bowtie' for i in bowtie_tumor_indices]
+    novos   = ['novo' for i in novo_tumor_indices]
+    
+    aligners            = bwas + bowties + novos
+    all_tumor_indices   = bwa_tumor_indices + bowtie_tumor_indices + novo_tumor_indices
+    all_normal_indices  = bwa_normal_indices + bowtie_normal_indices + novo_normal_indices
+    total_tumor_samples = len(all_tumor_indices)
+    
     header_out = header[:9]
     [ header_out.append(i) for i in bwa_tumors ]
     [ header_out.append(i) for i in bowtie_tumors ]
@@ -157,265 +166,158 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
             sample_columns = copy( original_sample_columns )
                         
             # 0 for each site/platform
-            bwa_classPass      = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
-            bowtie_classPass   = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
-            novo_classPass     = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
-    
-            bwa_classReject    = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
-            bowtie_classReject = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
-            novo_classReject   = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
+            bwaClassification    = {'IL': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NV': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'FD': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NS': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'Others': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}}
+            bowtieClassification = {'IL': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NV': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'FD': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NS': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'Others': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}}
+            novoClassification   = {'IL': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NV': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'FD': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NS': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'Others': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}}
             
-            bwa_consensus      = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
-            bowtie_consensus   = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
-            novo_consensus     = {'IL': 0, 'NV': 0, 'FD': 0, 'NS': 0, 'Others': 0}
+            alignerClassifications = {'bwa': bwaClassification, 'bowtie': bowtieClassification, 'novo': novoClassification}
+            
             
             # Count classified PASS, classified REJECTS, and Consensus
             nPASS = nREJECT = nNoCall = nConsensus = 0
             
             # Count MQ0 reads
-            t_bwa_MQ0 = t_bowtie_MQ0 = t_novo_MQ0 = 0
+            t_MQ    = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+            t_refDP = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+            t_altDP = {'bwa': 0, 'bowtie': 0, 'novo': 0}
             
             called_samples   = []
             rejected_samples = []
             missing_samples  = []
             
-            # Look for "PASS" calls, either model classified or consensus, in BWA:
-            t_bwa_refDP = t_bwa_altDP = 0
-            for call_i in bwa_tumor_indices:
-                
-                if re.match( gt, vcf_i.get_sample_value('GT', call_i) ):
-                    
-                    score = vcf_i.get_sample_value('SCORE', call_i)
-                    
-                    if score and score != '.' and float(score) > pass_score:
-                        
-                        nPASS += 1
-                        called_samples.append( samples[call_i] )
-    
-                        if   samples[call_i].startswith('IL_'):
-                            bwa_classPass['IL'] += 1
-                        elif samples[call_i].startswith('NV_'):
-                            bwa_classPass['NV'] += 1
-                        elif samples[call_i].startswith('FD_'):
-                            bwa_classPass['FD'] += 1                        
-                        elif samples[call_i].startswith('NS_'):
-                            bwa_classPass['NS'] += 1
-                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
-                            bwa_classPass['Others'] += 1
-                        
-                    elif score and score != '.' and float(score) < reject_score:
-                        
-                        nREJECT += 1
-                        rejected_samples.append( samples[call_i] )
-                        
-                        if   samples[call_i].startswith('IL_'):
-                            bwa_classReject['IL'] += 1
-                        elif samples[call_i].startswith('NV_'):
-                            bwa_classReject['NV'] += 1
-                        elif samples[call_i].startswith('FD_'):
-                            bwa_classReject['FD'] += 1                        
-                        elif samples[call_i].startswith('NS_'):
-                            bwa_classReject['NS'] += 1
-                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
-                            bwa_classReject['Others'] += 1
-                            
-                    n_tools = vcf_i.get_sample_value('NUM_TOOLS', call_i)
-                    if n_tools and n_tools != '.' and int(n_tools) > ncallers:
-                        
-                        nConsensus += 1
-                        if (not score) or score == '.':
-                            called_samples.append( samples[call_i] )
-                        
-                        if   samples[call_i].startswith('IL_'):
-                            bwa_consensus['IL'] += 1
-                        elif samples[call_i].startswith('NV_'):
-                            bwa_consensus['NV'] += 1
-                        elif samples[call_i].startswith('FD_'):
-                            bwa_consensus['FD'] += 1                        
-                        elif samples[call_i].startswith('NS_'):
-                            bwa_consensus['NS'] += 1
-                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
-                            bwa_consensus['Others'] += 1
-                            
-                    DP4 = vcf_i.get_sample_value('DP4', call_i)
-                    if DP4 and DP4 != '.':
-                        
-                        ref_for, ref_rev, alt_for, alt_rev = DP4.split(',')
-                        ref_for, ref_rev, alt_for, alt_rev = int(ref_for), int(ref_rev), int(alt_for), int(alt_rev)
-                        
-                        t_bwa_refDP = t_bwa_refDP + ref_for + ref_rev
-                        t_bwa_altDP = t_bwa_altDP + alt_for + alt_rev
-                        
-                    MQ0 = vcf_i.get_sample_value('MQ0', call_i)
-                    if MQ0 and MQ0 != '.':
-                        t_bwa_MQ0 += int(MQ0)
-    
-                else:
-                    nNoCall += 1
-                    missing_samples.append( samples[call_i] )
-                    sample_columns[ call_i ] = './.'
-    
-            # Look for "PASS" calls, either model classified or consensus, in BOWTIE:
-            t_bowtie_refDP = t_bowtie_altDP = 0
-            for call_i in bowtie_tumor_indices:
-                
-                if re.match( gt, vcf_i.get_sample_value('GT', call_i) ):
-                    
-                    score = vcf_i.get_sample_value('SCORE', call_i)
-                    
-                    if score and score != '.' and float(score) > pass_score:
-                        
-                        nPASS += 1
-                        called_samples.append( samples[call_i] )
-                        
-                        if   samples[call_i].startswith('IL_'):
-                            bowtie_classPass['IL'] += 1
-                        elif samples[call_i].startswith('NV_'):
-                            bowtie_classPass['NV'] += 1
-                        elif samples[call_i].startswith('FD_'):
-                            bowtie_classPass['FD'] += 1                        
-                        elif samples[call_i].startswith('NS_'):
-                            bowtie_classPass['NS'] += 1
-                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
-                            bowtie_classPass['Others'] += 1
-                        
-                    elif score and score != '.' and float(score) < reject_score:
-                        
-                        nREJECT += 1
-                        rejected_samples.append( samples[call_i] )
-                        
-                        if   samples[call_i].startswith('IL_'):
-                            bowtie_classReject['IL'] += 1
-                        elif samples[call_i].startswith('NV_'):
-                            bowtie_classReject['NV'] += 1
-                        elif samples[call_i].startswith('FD_'):
-                            bowtie_classReject['FD'] += 1                        
-                        elif samples[call_i].startswith('NS_'):
-                            bowtie_classReject['NS'] += 1
-                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
-                            bowtie_classReject['Others'] += 1
-    
-                    n_tools = vcf_i.get_sample_value('NUM_TOOLS', call_i)
-                    if n_tools and n_tools != '.' and int(n_tools) > ncallers:
-    
-                        nConsensus += 1
-                        if (not score) or score == '.':
-                            called_samples.append( samples[call_i] )
-                        
-                        if   samples[call_i].startswith('IL_'):
-                            bowtie_consensus['IL'] += 1
-                        elif samples[call_i].startswith('NV_'):
-                            bowtie_consensus['NV'] += 1
-                        elif samples[call_i].startswith('FD_'):
-                            bowtie_consensus['FD'] += 1                        
-                        elif samples[call_i].startswith('NS_'):
-                            bowtie_consensus['NS'] += 1
-                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
-                            bowtie_consensus['Others'] += 1
-                    
-                    DP4 = vcf_i.get_sample_value('DP4', call_i)
-                    if DP4 and DP4 != '.':
-                        
-                        ref_for, ref_rev, alt_for, alt_rev = DP4.split(',')
-                        ref_for, ref_rev, alt_for, alt_rev = int(ref_for), int(ref_rev), int(alt_for), int(alt_rev)
-                        
-                        t_bowtie_refDP = t_bowtie_refDP + ref_for + ref_rev
-                        t_bowtie_altDP = t_bowtie_altDP + alt_for + alt_rev
-    
-                    MQ0 = vcf_i.get_sample_value('MQ0', call_i)
-                    if MQ0 and MQ0 != '.':
-                        t_bowtie_MQ0 += int(MQ0)
-                        
-                else:
-                    nNoCall += 1
-                    missing_samples.append( samples[call_i] )
-                    sample_columns[ call_i ] = './.'
-    
-            # Look for "PASS" calls, either model classified or consensus, in NOVOALIGN:
-            t_novo_refDP = t_novo_altDP = 0
-            for call_i in novo_tumor_indices:
-                
-                if re.match( gt, vcf_i.get_sample_value('GT', call_i) ):
-                    
-                    score = vcf_i.get_sample_value('SCORE', call_i)
-                    
-                    if score and score != '.' and float(score) > pass_score:
-                        
-                        nPASS += 1
-                        called_samples.append( samples[call_i] )
-    
-                        if   samples[call_i].startswith('IL_'):
-                            novo_classPass['IL'] += 1
-                        elif samples[call_i].startswith('NV_'):
-                            novo_classPass['NV'] += 1
-                        elif samples[call_i].startswith('FD_'):
-                            novo_classPass['FD'] += 1                        
-                        elif samples[call_i].startswith('NS_'):
-                            novo_classPass['NS'] += 1
-                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
-                            novo_classPass['Others'] += 1
-                        
-                    elif score and score != '.' and float(score) < reject_score:
-                        
-                        nREJECT += 1
-                        rejected_samples.append( samples[call_i] )
-                        
-                        if   samples[call_i].startswith('IL_'):
-                            novo_classReject['IL'] += 1
-                        elif samples[call_i].startswith('NV_'):
-                            novo_classReject['NV'] += 1
-                        elif samples[call_i].startswith('FD_'):
-                            novo_classReject['FD'] += 1                        
-                        elif samples[call_i].startswith('NS_'):
-                            novo_classReject['NS'] += 1
-                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
-                            novo_classReject['Others'] += 1
-    
-                    n_tools = vcf_i.get_sample_value('NUM_TOOLS', call_i)
-                    if n_tools and n_tools != '.' and int(n_tools) > ncallers:
-    
-                        nConsensus += 1
-                        if (not score) or score == '.':
-                            called_samples.append( samples[call_i] )
-                        
-                        if   samples[call_i].startswith('IL_'):
-                            novo_consensus['IL'] += 1
-                        elif samples[call_i].startswith('NV_'):
-                            novo_consensus['NV'] += 1
-                        elif samples[call_i].startswith('FD_'):
-                            novo_consensus['FD'] += 1                        
-                        elif samples[call_i].startswith('NS_'):
-                            novo_consensus['NS'] += 1
-                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
-                            novo_consensus['Others'] += 1
-    
-                    DP4 = vcf_i.get_sample_value('DP4', call_i)
-                    if DP4 and DP4 != '.':
-                        
-                        ref_for, ref_rev, alt_for, alt_rev = DP4.split(',')
-                        ref_for, ref_rev, alt_for, alt_rev = int(ref_for), int(ref_rev), int(alt_for), int(alt_rev)
-                        
-                        t_novo_refDP = t_novo_refDP + ref_for + ref_rev
-                        t_novo_altDP = t_novo_altDP + alt_for + alt_rev
-    
-                    MQ0 = vcf_i.get_sample_value('MQ0', call_i)
-                    if MQ0 and MQ0 != '.':
-                        t_novo_MQ0 += int(MQ0)
-    
-                else:
-                    nNoCall += 1
-                    missing_samples.append( samples[call_i] )
-                    sample_columns[ call_i ] = './.'
             
-            # If there is not a single called sample, then don't bother
+            # Look for "PASS" calls, either model classified or consensus, in BWA:
+            for aligner_i, call_i in zip(aligners, all_tumor_indices):
+                
+                if re.match( gt, vcf_i.get_sample_value('GT', call_i) ):
+                    
+                    score = vcf_i.get_sample_value('SCORE', call_i)
+                    
+                    if score and score != '.' and float(score) >= pass_score:
+                        
+                        nPASS += 1
+                        called_samples.append( samples[call_i] )
+    
+                        if   samples[call_i].startswith('IL_'):
+                            alignerClassifications[ aligner_i ]['IL']['PASS'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            alignerClassifications[ aligner_i ]['NV']['PASS'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            alignerClassifications[ aligner_i ]['FD']['PASS'] += 1                        
+                        elif samples[call_i].startswith('NS_'):
+                            alignerClassifications[ aligner_i ]['NS']['PASS'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            alignerClassifications[ aligner_i ]['Others']['PASS'] += 1
+                        else:
+                            raise Exception('Wrong Site Code')
+                        
+                    elif score and score != '.' and float(score) < reject_score:
+                        
+                        nREJECT += 1
+                        rejected_samples.append( samples[call_i] )
+                        
+                        if   samples[call_i].startswith('IL_'):
+                            alignerClassifications[ aligner_i ]['IL']['REJECT'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            alignerClassifications[ aligner_i ]['NV']['REJECT'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            alignerClassifications[ aligner_i ]['FD']['REJECT'] += 1                        
+                        elif samples[call_i].startswith('NS_'):
+                            alignerClassifications[ aligner_i ]['NS']['REJECT'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            alignerClassifications[ aligner_i ]['Others']['REJECT'] += 1
+
+                    elif score and score != '.' and (reject_score <= float(score) < reject_score):
+                                                
+                        if   samples[call_i].startswith('IL_'):
+                            alignerClassifications[ aligner_i ]['IL']['LowQual'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            alignerClassifications[ aligner_i ]['NV']['LowQual'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            alignerClassifications[ aligner_i ]['FD']['LowQual'] += 1                        
+                        elif samples[call_i].startswith('NS_'):
+                            alignerClassifications[ aligner_i ]['NS']['LowQual'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            alignerClassifications[ aligner_i ]['Others']['LowQual'] += 1
+
+                    n_tools = vcf_i.get_sample_value('NUM_TOOLS', call_i)
+                    if n_tools and n_tools != '.' and int(n_tools) > ncallers:
+                        
+                        nConsensus += 1
+                        if (not score) or score == '.':
+                            called_samples.append( samples[call_i] )
+                        
+                        if   samples[call_i].startswith('IL_'):
+                            alignerClassifications[ aligner_i ]['IL']['Consensus'] += 1
+                        elif samples[call_i].startswith('NV_'):
+                            alignerClassifications[ aligner_i ]['NV']['Consensus'] += 1
+                        elif samples[call_i].startswith('FD_'):
+                            alignerClassifications[ aligner_i ]['FD']['Consensus'] += 1                        
+                        elif samples[call_i].startswith('NS_'):
+                            alignerClassifications[ aligner_i ]['NS']['Consensus'] += 1
+                        elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                            alignerClassifications[ aligner_i ]['Others']['Consensus'] += 1
+                    
+                    DP4 = vcf_i.get_sample_value('DP4', call_i)
+                    if DP4 and DP4 != '.':
+                        
+                        ref_for, ref_rev, alt_for, alt_rev = DP4.split(',')
+                        ref_for, ref_rev, alt_for, alt_rev = int(ref_for), int(ref_rev), int(alt_for), int(alt_rev)
+                        
+                        t_refDP[ aligner_i ] = t_refDP[ aligner_i ] + ref_for + ref_rev
+                        t_altDP[ aligner_i ] = t_altDP[ aligner_i ] + alt_for + alt_rev
+                        
+                    MQ0 = vcf_i.get_sample_value('MQ0', call_i)
+                    if MQ0 and MQ0 != '.':
+                        t_MQ0[ aligner_i ] += int(MQ0)
+    
+                else:
+                    nNoCall += 1
+                    missing_samples.append( samples[call_i] )
+                    sample_columns[ call_i ] = './.'
+                    
+                    if   samples[call_i].startswith('IL_'):
+                        alignerClassifications[ aligner_i ]['IL']['Missing'] += 1
+                    elif samples[call_i].startswith('NV_'):
+                        alignerClassifications[ aligner_i ]['NV']['Missing'] += 1
+                    elif samples[call_i].startswith('FD_'):
+                        alignerClassifications[ aligner_i ]['FD']['Missing'] += 1                        
+                    elif samples[call_i].startswith('NS_'):
+                        alignerClassifications[ aligner_i ]['NS']['Missing'] += 1
+                    elif re.match(r'(EA|NC|LL)_', samples[call_i]):
+                        alignerClassifications[ aligner_i ]['Others']['Missing'] += 1
+            
+            
+            
+            # If there is not a single called sample, then don't even bother
             if len(called_samples) > 0:
             
                 # Combine some normal metrics
-                n_bwa_refDP = n_bwa_altDP = 0
-                n_bwa_dp4_1 = n_bwa_dp4_2 = n_bwa_dp4_3 = n_bwa_dp4_4 = 0
-                n_bwa_cd4_1 = n_bwa_cd4_2 = n_bwa_cd4_3 = n_bwa_cd4_4 = 0
-                n_bwa_mq0 = 0
-                for normal_i in bwa_normal_indices:
+                n_refDP = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+                n_altDP = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+                n_dp4_1 = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+                n_dp4_2 = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+                n_dp4_3 = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+                n_dp4_4 = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+                n_cd4_1 = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+                n_cd4_2 = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+                n_cd4_3 = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+                n_cd4_4 = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+                n_mq0   = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+                
+                for aligner_i, normal_i in zip(aligners, all_normal_indices):
                     
                     if re.match( gt, vcf_i.get_sample_value('GT', normal_i) ):
                                                 
@@ -425,110 +327,32 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                             ref_for, ref_rev, alt_for, alt_rev = DP4.split(',')
                             ref_for, ref_rev, alt_for, alt_rev = int(ref_for), int(ref_rev), int(alt_for), int(alt_rev)
                             
-                            n_bwa_refDP = n_bwa_refDP + ref_for + ref_rev
-                            n_bwa_altDP = n_bwa_altDP + alt_for + alt_rev
+                            n_refDP[ aligner_i ] = n_refDP[ aligner_i ] + ref_for + ref_rev
+                            n_altDP[ aligner_i ] = n_altDP[ aligner_i ] + alt_for + alt_rev
                             
-                            n_bwa_dp4_1 = n_bwa_dp4_1 + ref_for
-                            n_bwa_dp4_2 = n_bwa_dp4_2 + ref_rev
-                            n_bwa_dp4_3 = n_bwa_dp4_3 + alt_for
-                            n_bwa_dp4_4 = n_bwa_dp4_4 + alt_rev
+                            n_dp4_1[ aligner_i ] = n_dp4_1[ aligner_i ] + ref_for
+                            n_dp4_2[ aligner_i ] = n_dp4_2[ aligner_i ] + ref_rev
+                            n_dp4_3[ aligner_i ] = n_dp4_3[ aligner_i ] + alt_for
+                            n_dp4_4[ aligner_i ] = n_dp4_4[ aligner_i ] + alt_rev
                             
                         CD4 = vcf_i.get_sample_value('CD4', normal_i)
                         if CD4 and CD4 != '.':
                             cd4_1, cd4_2, cd4_3, cd4_4 = CD4.split(',')
                             cd4_1, cd4_2, cd4_3, cd4_4 = int(cd4_1), int(cd4_2), int(cd4_3), int(cd4_4)
                             
-                            n_bwa_cd4_1 = n_bwa_cd4_1 + cd4_1
-                            n_bwa_cd4_2 = n_bwa_cd4_2 + cd4_2
-                            n_bwa_cd4_3 = n_bwa_cd4_3 + cd4_3
-                            n_bwa_cd4_4 = n_bwa_cd4_4 + cd4_4
+                            n_cd4_1[ aligner_i ] = n_cd4_1[ aligner_i ] + cd4_1
+                            n_cd4_2[ aligner_i ] = n_cd4_2[ aligner_i ] + cd4_2
+                            n_cd4_3[ aligner_i ] = n_cd4_3[ aligner_i ] + cd4_3
+                            n_cd4_4[ aligner_i ] = n_cd4_4[ aligner_i ] + cd4_4
                             
                         MQ0 = vcf_i.get_sample_value('MQ0', normal_i)
                         if MQ0 and MQ0 != '.':
-                            n_bwa_mq0 = n_bwa_mq0 + int(MQ0)
+                            n_mq0[ aligner_i ] = n_mq0[ aligner_i ] + int(MQ0)
         
+
         
-                n_bowtie_refDP = n_bowtie_altDP = 0
-                n_bowtie_dp4_1 = n_bowtie_dp4_2 = n_bowtie_dp4_3 = n_bowtie_dp4_4 = 0
-                n_bowtie_cd4_1 = n_bowtie_cd4_2 = n_bowtie_cd4_3 = n_bowtie_cd4_4 = 0
-                n_bowtie_mq0 = 0
-                for normal_i in bowtie_normal_indices:
-                    
-                    if re.match( gt, vcf_i.get_sample_value('GT', normal_i) ):
-                                                
-                        DP4 = vcf_i.get_sample_value('DP4', normal_i)
-                        if DP4 and DP4 != '.':
-                            
-                            ref_for, ref_rev, alt_for, alt_rev = DP4.split(',')
-                            ref_for, ref_rev, alt_for, alt_rev = int(ref_for), int(ref_rev), int(alt_for), int(alt_rev)
-                            
-                            n_bowtie_refDP = n_bowtie_refDP + ref_for + ref_rev
-                            n_bowtie_altDP = n_bowtie_altDP + alt_for + alt_rev
-        
-                            n_bowtie_dp4_1 = n_bowtie_dp4_1 + ref_for
-                            n_bowtie_dp4_2 = n_bowtie_dp4_2 + ref_rev
-                            n_bowtie_dp4_3 = n_bowtie_dp4_3 + alt_for
-                            n_bowtie_dp4_4 = n_bowtie_dp4_4 + alt_rev
-        
-                        CD4 = vcf_i.get_sample_value('CD4', normal_i)
-                        if CD4 and CD4 != '.':
-                            cd4_1, cd4_2, cd4_3, cd4_4 = CD4.split(',')
-                            cd4_1, cd4_2, cd4_3, cd4_4 = int(cd4_1), int(cd4_2), int(cd4_3), int(cd4_4)
-                            
-                            n_bowtie_cd4_1 = n_bowtie_cd4_1 + cd4_1
-                            n_bowtie_cd4_2 = n_bowtie_cd4_2 + cd4_2
-                            n_bowtie_cd4_3 = n_bowtie_cd4_3 + cd4_3
-                            n_bowtie_cd4_4 = n_bowtie_cd4_4 + cd4_4
-        
-                        MQ0 = vcf_i.get_sample_value('MQ0', normal_i)
-                        if MQ0 and MQ0 != '.':
-                            n_bowtie_mq0 = n_bowtie_mq0 + int(MQ0)
-        
-        
-                n_novo_refDP = n_novo_altDP = 0
-                n_novo_dp4_1 = n_novo_dp4_2 = n_novo_dp4_3 = n_novo_dp4_4 = 0
-                n_novo_cd4_1 = n_novo_cd4_2 = n_novo_cd4_3 = n_novo_cd4_4 = 0
-                n_novo_mq0 = 0
-                for normal_i in novo_normal_indices:
-                    
-                    if re.match( gt, vcf_i.get_sample_value('GT', normal_i) ):
-                                                
-                        DP4 = vcf_i.get_sample_value('DP4', normal_i)
-                        if DP4 and DP4 != '.':
-                            
-                            ref_for, ref_rev, alt_for, alt_rev = DP4.split(',')
-                            ref_for, ref_rev, alt_for, alt_rev = int(ref_for), int(ref_rev), int(alt_for), int(alt_rev)
-                            
-                            n_novo_refDP = n_novo_refDP + ref_for + ref_rev
-                            n_novo_altDP = n_novo_altDP + alt_for + alt_rev
-        
-                            n_novo_dp4_1 = n_novo_dp4_1 + ref_for
-                            n_novo_dp4_2 = n_novo_dp4_2 + ref_rev
-                            n_novo_dp4_3 = n_novo_dp4_3 + alt_for
-                            n_novo_dp4_4 = n_novo_dp4_4 + alt_rev
-        
-                        CD4 = vcf_i.get_sample_value('CD4', normal_i)
-                        if CD4 and CD4 != '.':
-                            cd4_1, cd4_2, cd4_3, cd4_4 = CD4.split(',')
-                            cd4_1, cd4_2, cd4_3, cd4_4 = int(cd4_1), int(cd4_2), int(cd4_3), int(cd4_4)
-                            
-                            n_novo_cd4_1 = n_novo_cd4_1 + cd4_1
-                            n_novo_cd4_2 = n_novo_cd4_2 + cd4_2
-                            n_novo_cd4_3 = n_novo_cd4_3 + cd4_3
-                            n_novo_cd4_4 = n_novo_cd4_4 + cd4_4
-        
-                        MQ0 = vcf_i.get_sample_value('MQ0', normal_i)
-                        if MQ0 and MQ0 != '.':
-                            n_novo_mq0 = n_novo_mq0 + int(MQ0)
-        
-        
-                # Counting
-                bwaSites    = (IL_classPass['bwa']   >=2) + (NS_classPass['bwa']   >=5) + (EA_consensus['bwa']   >=1) + (NC_consensus['bwa']   >=1)
-                bowtieSites = (IL_classPass['bowtie']>=2) + (NS_classPass['bowtie']>=5) + (EA_consensus['bowtie']>=1) + (NC_consensus['bowtie']>=1)
-                novoSites   = (IL_classPass['novo']  >=2) + (NS_classPass['novo']  >=5) + (EA_consensus['novo']  >=1) + (NC_consensus['novo']  >=1)
-                                
                 # AllPASS are classified PASS (if possible) or called by Consensus (if no classiifer for the sample) by every single sample
-                if len(called_samples) == 42:
+                if len(called_samples) == total_tumor_samples:
                     qual_i = 'AllPASS'
                 
                 # Deemed PASS by every aligner and every site. 
