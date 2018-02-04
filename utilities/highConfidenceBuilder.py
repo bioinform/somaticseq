@@ -421,19 +421,19 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                 for aligner_i in alignerSiteClassification:
                     for site_i in alignerSiteClassification[ aligner_i ]:
                         if alignerSiteClassification[ aligner_i ][ site_i ] == 3:
-                            alignerCentricClassification[ aligner_i ][ site_i ]['highestConfidence'] += 1
-                            alignerCentricClassification[ aligner_i ][ site_i ]['TOTAL'] += 3
+                            alignerCentricClassification[ aligner_i ]['highestConfidence'] += 1
+                            alignerCentricClassification[ aligner_i ]['TOTAL'] += 3
                             
                         elif alignerSiteClassification[ aligner_i ][ site_i ] == 1:
-                            alignerCentricClassification[ aligner_i ][ site_i ]['highConfidence'] += 1
-                            alignerCentricClassification[ aligner_i ][ site_i ]['TOTAL'] += 1
+                            alignerCentricClassification[ aligner_i ]['highConfidence'] += 1
+                            alignerCentricClassification[ aligner_i ]['TOTAL'] += 1
                             
                         elif alignerSiteClassification[ aligner_i ][ site_i ] == 0:
-                            alignerCentricClassification[ aligner_i ][ site_i ]['lowQual'] += 1
-                            
+                            alignerCentricClassification[ aligner_i ]['lowQual'] += 1
+                        
                         elif alignerSiteClassification[ aligner_i ][ site_i ] == -3:
-                            alignerCentricClassification[ aligner_i ][ site_i ]['likelyFalsePositive'] += 1
-                            alignerCentricClassification[ aligner_i ][ site_i ]['TOTAL'] -= 1
+                            alignerCentricClassification[ aligner_i ]['likelyFalsePositive'] += 1
+                            alignerCentricClassification[ aligner_i ]['TOTAL'] -= 3
             
                 # AllPASS are classified PASS (if possible) or called by Consensus (if no classiifer for the sample) by every single sample
                 if len(called_samples) == total_tumor_samples:
@@ -441,8 +441,11 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                 
                 # Deemed PASS by every aligner/site combination;
                 elif alignerCentricClassification['bwa']['highestConfidence'] == alignerCentricClassification['bowtie']['highestConfidence'] == alignerCentricClassification['novo']['highestConfidence'] == 5:
-                    qual_i = 'Tier1'
-                                
+                    qual_i = 'Tier1A'
+                    
+                elif alignerCentricClassification['bwa']['TOTAL'] >= 5 and alignerCentricClassification['bowtie']['TOTAL'] >= 5 and alignerCentricClassification['novo']['TOTAL'] >= 5:
+                    qual_i = 'Tier1B'
+                    
                 # Tier 2 calls are by all aligners and majoirty sites, or majority aligners and all sites, and classified PASS at least once
                 elif ( ((bwaSites>=2 and bowtieSites>=2 and novoSites>=2) and ( (EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2 )) or \
                      (((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) and ( EAcalls>=2 and NCcalls>=2 and NScalls>=2 and ILcalls>=2 )) ) and \
