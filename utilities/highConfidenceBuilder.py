@@ -35,6 +35,10 @@ novo_tumors    = args.novo_tumors
 novo_normals   = args.novo_normals
 print_all      = args.print_all
 
+passAdditive    = 1
+lowQualAdditive = 0
+rejectAdditive  = -1
+
 with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     
     line_i = vcfin.readline().rstrip()
@@ -170,17 +174,17 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                                     'NV': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
                                     'FD': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
                                     'NS': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'Others': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}}
+                                'Others': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}}
             bowtieClassification = {'IL': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
                                     'NV': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
                                     'FD': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
                                     'NS': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'Others': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}}
+                                'Others': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}}
             novoClassification   = {'IL': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
                                     'NV': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
                                     'FD': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
                                     'NS': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'Others': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}}
+                                'Others': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}}
             
             alignerClassifications = {'bwa': bwaClassification, 'bowtie': bowtieClassification, 'novo': novoClassification}
             
@@ -350,13 +354,93 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                             n_mq0[ aligner_i ] = n_mq0[ aligner_i ] + int(MQ0)
         
 
+
+
+                alignerSiteScores = { 'bwa': {}, 'bowtie': {}, 'novo': {} }
+                for aligner_i in alignerClassifications:
+                    for site_i in alignerClassifications[ aligner_i ]:
+                        
+                        npass_i      = alignerClassifications[ aligner_i ][ site_i ][ 'PASS' ]
+                        nlowqual_i   = alignerClassifications[ aligner_i ][ site_i ][ 'LowQual' ]
+                        nreject_i    = alignerClassifications[ aligner_i ][ site_i ][ 'REJECT' ] + alignerClassifications[ aligner_i ][ site_i ][ 'Missing' ]
+                        nconsensus_i = alignerClassifications[ aligner_i ][ site_i ][ 'Consensus' ]
+                        
+                        if site_i != 'Others':
+                            alignerSiteScores[ aligner_i ][ site_i ] = npass_i*passAdditive + nlowqual_i*lowQualAdditive + nreject_i*rejectAdditive
+                        else:
+                            alignerSiteScores[ aligner_i ][ site_i ] = nconsensus_i*passAdditive + nreject_i*rejectAdditive
         
+                # highestConfidence = 3; highConfidence = 1; lowQual = 0; likelyFalsePositive = -3
+                alignerSiteClassification = { 'bwa': {}, 'bowtie': {}, 'novo': {} }
+                for aligner_i in alignerSiteScores:
+                    for site_i in alignerSiteScores[ aligner_i ]:
+                        
+                        if not (site_i == 'NS' or site_i == 'Others'): # NS has 9 replicates:
+                            
+                            if alignerSiteScores[ aligner_i ][ site_i ] >= 2:
+                                alignerSiteClassification[ aligner_i ][ site_i ] = 3
+                                
+                            elif 1 <= alignerSiteScores[ aligner_i ][ site_i ] < 2:
+                                alignerSiteClassification[ aligner_i ][ site_i ] = 1
+                                
+                            elif -1 < alignerSiteScores[ aligner_i ][ site_i ] < 1:
+                                alignerSiteClassification[ aligner_i ][ site_i ] = 0
+                                
+                            elif alignerSiteScores[ aligner_i ][ site_i ] =< -1:
+                                alignerSiteClassification[ aligner_i ][ site_i ] = -3
+                        
+                        elif site_i == 'NS':
+
+                            if alignerSiteScores[ aligner_i ][ site_i ] >= 3:
+                                alignerSiteClassification[ aligner_i ][ site_i ] = 3
+                                
+                            elif 1 <= alignerSiteScores[ aligner_i ][ site_i ] < 3:
+                                alignerSiteClassification[ aligner_i ][ site_i ] = 1
+                                
+                            elif -2 =< alignerSiteScores[ aligner_i ][ site_i ] < 1:
+                                alignerSiteClassification[ aligner_i ][ site_i ] = 0
+                                
+                            elif alignerSiteScores[ aligner_i ][ site_i ] < -2:
+                                alignerSiteClassification[ aligner_i ][ site_i ] = -3
+                                
+                        elif site_i == 'Others':
+                            
+                            if alignerSiteScores[ aligner_i ][ site_i ] >= 2:
+                                alignerSiteClassification[ aligner_i ][ site_i ] = 3
+                            elif alignerSiteScores[ aligner_i ][ site_i ] >= 1:
+                                alignerSiteClassification[ aligner_i ][ site_i ] = 1
+                            else:
+                                alignerSiteClassification[ aligner_i ][ site_i ] = 0
+                                
+                
+                
+                alignerCentricClassification = {'bwa': {'highestConfidence': 0, 'highConfidence': 0, 'lowQual': 0, 'likelyFalsePositive': 0, 'TOTAL': 0}, \
+                                             'bowtie': {'highestConfidence': 0, 'highConfidence': 0, 'lowQual': 0, 'likelyFalsePositive': 0, 'TOTAL': 0}, \
+                                               'novo': {'highestConfidence': 0, 'highConfidence': 0, 'lowQual': 0, 'likelyFalsePositive': 0, 'TOTAL': 0} }
+                
+                for aligner_i in alignerSiteClassification:
+                    for site_i in alignerSiteClassification[ aligner_i ]:
+                        if alignerSiteClassification[ aligner_i ][ site_i ] == 3:
+                            alignerCentricClassification[ aligner_i ][ site_i ]['highestConfidence'] += 1
+                            alignerCentricClassification[ aligner_i ][ site_i ]['TOTAL'] += 3
+                            
+                        elif alignerSiteClassification[ aligner_i ][ site_i ] == 1:
+                            alignerCentricClassification[ aligner_i ][ site_i ]['highConfidence'] += 1
+                            alignerCentricClassification[ aligner_i ][ site_i ]['TOTAL'] += 1
+                            
+                        elif alignerSiteClassification[ aligner_i ][ site_i ] == 0:
+                            alignerCentricClassification[ aligner_i ][ site_i ]['lowQual'] += 1
+                            
+                        elif alignerSiteClassification[ aligner_i ][ site_i ] == -3:
+                            alignerCentricClassification[ aligner_i ][ site_i ]['likelyFalsePositive'] += 1
+                            alignerCentricClassification[ aligner_i ][ site_i ]['TOTAL'] -= 1
+            
                 # AllPASS are classified PASS (if possible) or called by Consensus (if no classiifer for the sample) by every single sample
                 if len(called_samples) == total_tumor_samples:
                     qual_i = 'AllPASS'
                 
-                # Deemed PASS by every aligner and every site. 
-                elif bwaSites>=2 and bowtieSites>=2 and novoSites>=2 and EAcalls>=2 and NCcalls>=2 and NScalls>=2 and ILcalls>=2:
+                # Deemed PASS by every aligner/site combination;
+                elif alignerCentricClassification['bwa']['highestConfidence'] == alignerCentricClassification['bowtie']['highestConfidence'] == alignerCentricClassification['novo']['highestConfidence'] == 5:
                     qual_i = 'Tier1'
                                 
                 # Tier 2 calls are by all aligners and majoirty sites, or majority aligners and all sites, and classified PASS at least once
@@ -481,18 +565,6 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     calledSamples=called_samples_string, \
                     rejectedSamples=rejected_samples_string, \
                     noCallSamples=nocall_sample_string, \
-                    IL_PASS='{},{},{}'.format(IL_classPass['bwa'], IL_classPass['bowtie'], IL_classPass['novo']), \
-                    NS_PASS='{},{},{}'.format(NS_classPass['bwa'], NS_classPass['bowtie'], NS_classPass['novo']), \
-                    EA_PASS='{},{},{}'.format(EA_classPass['bwa'], EA_classPass['bowtie'], EA_classPass['novo']), \
-                    NC_PASS='{},{},{}'.format(NC_classPass['bwa'], NC_classPass['bowtie'], NC_classPass['novo']), \
-                    IL_REJECT='{},{},{}'.format(IL_classReject['bwa'], IL_classReject['bowtie'], IL_classReject['novo']), \
-                    NS_REJECT='{},{},{}'.format(NS_classReject['bwa'], NS_classReject['bowtie'], NS_classReject['novo']), \
-                    EA_REJECT='{},{},{}'.format(EA_classReject['bwa'], EA_classReject['bowtie'], EA_classReject['novo']), \
-                    NC_REJECT='{},{},{}'.format(NC_classReject['bwa'], NC_classReject['bowtie'], NC_classReject['novo']), \
-                    IL_Consensus='{},{},{}'.format(IL_consensus['bwa'], IL_consensus['bowtie'], IL_consensus['novo']), \
-                    NS_Consensus='{},{},{}'.format(NS_consensus['bwa'], NS_consensus['bowtie'], NS_consensus['novo']), \
-                    EA_Consensus='{},{},{}'.format(EA_consensus['bwa'], EA_consensus['bowtie'], EA_consensus['novo']), \
-                    NC_Consensus='{},{},{}'.format(NC_consensus['bwa'], NC_consensus['bowtie'], NC_consensus['novo']), \
                     bwa_PASS='{},{},{},{}'.format(bwa_classPass['IL'], bwa_classPass['NS'], bwa_classPass['EA'], bwa_classPass['NC']), \
                     bowtie_PASS='{},{},{},{}'.format(bowtie_classPass['IL'], bowtie_classPass['NS'], bowtie_classPass['EA'], bowtie_classPass['NC']), \
                     novo_PASS='{},{},{},{}'.format(novo_classPass['IL'], novo_classPass['NS'], novo_classPass['EA'], novo_classPass['NC']), \
