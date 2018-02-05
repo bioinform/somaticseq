@@ -27,12 +27,6 @@ outfile        = args.outfile
 ncallers       = args.num_callers
 pass_score     = args.pass_score
 reject_score   = args.reject_score
-bwa_tumors     = args.bwa_tumors
-bwa_normals    = args.bwa_normals
-bowtie_tumors  = args.bowtie_tumors
-bowtie_normals = args.bowtie_normals
-novo_tumors    = args.novo_tumors
-novo_normals   = args.novo_normals
 print_all      = args.print_all
 
 passAdditive    = 1
@@ -51,16 +45,19 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     
     # At this point, line_i starts with CHROM:
     vcfout.write('##FILTER=<ID=AllPASS,Description="Called PASS by every single sample set">\n')
-    vcfout.write('##FILTER=<ID=Tier1,Description="Deemed pass by all aligners and all sites, but not every single sample">\n')
-    vcfout.write('##FILTER=<ID=Tier2A,Description="Deemed pass by all aligners and majoirty sites, or majority aligners and all sites, and deemed pass by at least one of IL or NS">\n')
-    vcfout.write('##FILTER=<ID=Tier2B,Description="Deemed pass by all aligners and majoirty sites, or majority aligners and all sites, but never been deemed pass by IL or NS">\n')
-    vcfout.write('##FILTER=<ID=Tier3A,Description="Deemed pass by majority aligners and majoirty sites, and deemed pass by at least one of IL or NS">\n')
-    vcfout.write('##FILTER=<ID=Tier3B,Description="Deemed pass by majority aligners and majoirty sites, but never been deemed pass by IL or NS">\n')
-    vcfout.write('##FILTER=<ID=Tier4A,Description="Deemed pass by majority aligners or majoirty sites, and deemed pass by at least one of IL or NS">\n')
-    vcfout.write('##FILTER=<ID=Tier4B,Description="Deemed pass by majority aligners or majoirty sites, but never been deemed pass by IL or NS">\n')
-    vcfout.write('##FILTER=<ID=Tier5A,Description="Deemed pass by at least one aligner or one site, and deemed pass by at least one of IL or NS">\n')
-    vcfout.write('##FILTER=<ID=Tier5B,Description="Deemed pass by at least one aligner or one site, but never been deemed pass by IL or NS">\n')
-    vcfout.write('##FILTER=<ID=REJECT,Description="None of the above">\n')
+    vcfout.write('##FILTER=<ID=Tier1A,Description="For each of the 3 aligners, each of the 5 sites are deemed strongestEvidence, i.e., strongestEvidence for all 15 aligner/site combinations">\n')
+    vcfout.write('##FILTER=<ID=Tier1B,Description="Each of the 3 alignerCentric Classification is deemed strongestEvidence AND with at least 3/5 sites in each to be strongestEvidence as well">\n')
+    vcfout.write('##FILTER=<ID=Tier1C,Description="Each of the 3 alignerCentric Classification is deemed strongestEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier2A,Description="2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being merely strongEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier2B,Description="2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being weakEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier2C,Description="2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being insufficientEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier3A,Description="1 out of 3 alignerCentric Classification is strongestEvidence, with the other two deemed merely strongEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier3B,Description="1 out of 3 alignerCentric Classification is strongestEvidence, with one more deemed merely strongEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier3C,Description="1 out of 3 alignerCentric Classification is strongestEvidence, with no strongEvidence otherwise">\n')
+    vcfout.write('##FILTER=<ID=Tier4A,Description="No alignerCentric Classification is deemed strongestEvidence, but all 3 are deemed merely strongEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier4B,Description="No alignerCentric Classification is deemed strongestEvidence, but 2/3 are deemed merely strongEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier4C,Description="No alignerCentric Classification is deemed strongestEvidence">\n')
+    vcfout.write('##FILTER=<ID=REJECT,Description="REJECT">\n')
     
     vcfout.write('##INFO=<ID=calledSamples,Number=.,Type=String,Description="Sample names where this variant is called">\n')
     vcfout.write('##INFO=<ID=rejectedSamples,Number=.,Type=String,Description="Sample names classified as REJECT by SomaticSeq">\n')
@@ -104,6 +101,13 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     header = line_i.split('\t')
     samples=header[9::]
     
+    
+    bwa_tumors     = []
+    bwa_normals    = []
+    bowtie_tumors  = []
+    bowtie_normals = []
+    novo_tumors    = []
+    novo_normals   = []
     for i in samples:
         if 'bwa' in i:
             if '_T_' in i:
@@ -193,7 +197,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
             nPASS = nREJECT = nNoCall = nConsensus = 0
             
             # Count MQ0 reads
-            t_MQ    = {'bwa': 0, 'bowtie': 0, 'novo': 0}
+            t_MQ0   = {'bwa': 0, 'bowtie': 0, 'novo': 0}
             t_refDP = {'bwa': 0, 'bowtie': 0, 'novo': 0}
             t_altDP = {'bwa': 0, 'bowtie': 0, 'novo': 0}
             
@@ -370,7 +374,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         else:
                             alignerSiteScores[ aligner_i ][ site_i ] = nconsensus_i*passAdditive + nreject_i*rejectAdditive
         
-                # highestConfidence = 3; highConfidence = 1; lowQual = 0; likelyFalsePositive = -3
+                # strongestEvidence = 3; strongEvidence = 1; lowQual = 0; insufficientEvidence = -3
                 alignerSiteClassification = { 'bwa': {}, 'bowtie': {}, 'novo': {} }
                 for aligner_i in alignerSiteScores:
                     for site_i in alignerSiteScores[ aligner_i ]:
@@ -386,8 +390,11 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                             elif -1 < alignerSiteScores[ aligner_i ][ site_i ] < 1:
                                 alignerSiteClassification[ aligner_i ][ site_i ] = 0
                                 
-                            elif alignerSiteScores[ aligner_i ][ site_i ] =< -1:
+                            elif alignerSiteScores[ aligner_i ][ site_i ] <= -1:
                                 alignerSiteClassification[ aligner_i ][ site_i ] = -3
+                                
+                            else:
+                                raise Exception('Debug')
                         
                         elif site_i == 'NS':
 
@@ -397,11 +404,14 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                             elif 1 <= alignerSiteScores[ aligner_i ][ site_i ] < 3:
                                 alignerSiteClassification[ aligner_i ][ site_i ] = 1
                                 
-                            elif -2 =< alignerSiteScores[ aligner_i ][ site_i ] < 1:
+                            elif -2 <= alignerSiteScores[ aligner_i ][ site_i ] < 1:
                                 alignerSiteClassification[ aligner_i ][ site_i ] = 0
                                 
                             elif alignerSiteScores[ aligner_i ][ site_i ] < -2:
                                 alignerSiteClassification[ aligner_i ][ site_i ] = -3
+
+                            else:
+                                raise Exception('Debug')
                                 
                         elif site_i == 'Others':
                             
@@ -414,121 +424,149 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                                 
                 
                 
-                alignerCentricClassification = {'bwa': {'highestConfidence': 0, 'highConfidence': 0, 'lowQual': 0, 'likelyFalsePositive': 0, 'TOTAL': 0}, \
-                                             'bowtie': {'highestConfidence': 0, 'highConfidence': 0, 'lowQual': 0, 'likelyFalsePositive': 0, 'TOTAL': 0}, \
-                                               'novo': {'highestConfidence': 0, 'highConfidence': 0, 'lowQual': 0, 'likelyFalsePositive': 0, 'TOTAL': 0} }
+                alignerCentricClassification = {'bwa': {'strongestEvidence': 0, 'strongEvidence': 0, 'lowQual': 0, 'insufficientEvidence': 0, 'TOTAL': 0}, \
+                                             'bowtie': {'strongestEvidence': 0, 'strongEvidence': 0, 'lowQual': 0, 'insufficientEvidence': 0, 'TOTAL': 0}, \
+                                               'novo': {'strongestEvidence': 0, 'strongEvidence': 0, 'lowQual': 0, 'insufficientEvidence': 0, 'TOTAL': 0} }
                 
                 for aligner_i in alignerSiteClassification:
                     for site_i in alignerSiteClassification[ aligner_i ]:
                         if alignerSiteClassification[ aligner_i ][ site_i ] == 3:
-                            alignerCentricClassification[ aligner_i ]['highestConfidence'] += 1
+                            alignerCentricClassification[ aligner_i ]['strongestEvidence'] += 1
                             alignerCentricClassification[ aligner_i ]['TOTAL'] += 3
                             
                         elif alignerSiteClassification[ aligner_i ][ site_i ] == 1:
-                            alignerCentricClassification[ aligner_i ]['highConfidence'] += 1
+                            alignerCentricClassification[ aligner_i ]['strongEvidence'] += 1
                             alignerCentricClassification[ aligner_i ]['TOTAL'] += 1
                             
                         elif alignerSiteClassification[ aligner_i ][ site_i ] == 0:
                             alignerCentricClassification[ aligner_i ]['lowQual'] += 1
                         
                         elif alignerSiteClassification[ aligner_i ][ site_i ] == -3:
-                            alignerCentricClassification[ aligner_i ]['likelyFalsePositive'] += 1
+                            alignerCentricClassification[ aligner_i ]['insufficientEvidence'] += 1
                             alignerCentricClassification[ aligner_i ]['TOTAL'] -= 3
-            
+
+                        else:
+                            raise Exception('Debug')
+
+                
+                # Classify alignerCentric classification based on "TOTAL" scores:
+                for aligner_i in alignerCentricClassification:
+                    if alignerCentricClassification[ aligner_i ]['TOTAL'] >= 6:
+                        alignerCentricClassification[ aligner_i ]['Classification'] = 3
+                    elif 2 <= alignerCentricClassification[ aligner_i ]['TOTAL'] <= 5:
+                        alignerCentricClassification[ aligner_i ]['Classification'] = 1
+                    elif -1 <= alignerCentricClassification[ aligner_i ]['TOTAL'] < 2:
+                        alignerCentricClassification[ aligner_i ]['Classification'] = 0
+                    elif alignerCentricClassification[ aligner_i ]['TOTAL'] <= -2:
+                        alignerCentricClassification[ aligner_i ]['Classification'] = -3
+                    else:
+                        print( alignerCentricClassification[ aligner_i ]['TOTAL'] )
+                        print( line_i )
+                        raise Exception('Unexpected aligner TOTAL score')
+                        
+                threeAlignerCombined = alignerCentricClassification['bwa']['Classification'] + alignerCentricClassification['bowtie']['Classification'] + alignerCentricClassification['novo']['Classification']
+                
+                
                 # AllPASS are classified PASS (if possible) or called by Consensus (if no classiifer for the sample) by every single sample
                 if len(called_samples) == total_tumor_samples:
-                    qual_i = 'AllPASS'
+                    filterLabel_i = 'AllPASS'
                 
-                # Deemed PASS by every aligner/site combination;
-                elif alignerCentricClassification['bwa']['highestConfidence'] == alignerCentricClassification['bowtie']['highestConfidence'] == alignerCentricClassification['novo']['highestConfidence'] == 5:
-                    qual_i = 'Tier1A'
-                    
-                elif alignerCentricClassification['bwa']['TOTAL'] >= 5 and alignerCentricClassification['bowtie']['TOTAL'] >= 5 and alignerCentricClassification['novo']['TOTAL'] >= 5:
-                    qual_i = 'Tier1B'
-                    
-                # Tier 2 calls are by all aligners and majoirty sites, or majority aligners and all sites, and classified PASS at least once
-                elif ( ((bwaSites>=2 and bowtieSites>=2 and novoSites>=2) and ( (EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2 )) or \
-                     (((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) and ( EAcalls>=2 and NCcalls>=2 and NScalls>=2 and ILcalls>=2 )) ) and \
-                     (IL_classPass['bwa']>=2 or IL_classPass['bowtie']>=2 or IL_classPass['novo']>=2 or NS_classPass['bwa']>=5 or NS_classPass['bowtie']>=5 or NS_classPass['novo']>=5):
-                    qual_i = 'Tier2A'
-        
-                elif ( ((bwaSites>=2 and bowtieSites>=2 and novoSites>=2) and ( (EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2 )) or \
-                     (((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) and ( EAcalls>=2 and NCcalls>=2 and NScalls>=2 and ILcalls>=2 )) ):
-                    qual_i = 'Tier2B'
-        
-                # Tier 3 calls are majority sites and majority aligners, and classified PASS at least once
-                elif ((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) and ((EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2) and \
-                     (IL_classPass['bwa']>=2 or IL_classPass['bowtie']>=2 or IL_classPass['novo']>=2 or NS_classPass['bwa']>=5 or NS_classPass['bowtie']>=5 or NS_classPass['novo']>=5):
-                    qual_i = 'Tier3A'
-        
-                elif ((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) and ((EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2):
-                    qual_i = 'Tier3B'
-        
-                # Tier 4 are majority sites or majority aligners:
-                elif ( ((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) or ((EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2) ) and \
-                     (IL_classPass['bwa']>=2 or IL_classPass['bowtie']>=2 or IL_classPass['novo']>=2 or NS_classPass['bwa']>=5 or NS_classPass['bowtie']>=5 or NS_classPass['novo']>=5):
-                    qual_i = 'Tier4A'
-        
-                elif ( ((bwaSites>=2) + (bowtieSites>=2) + (novoSites>=2) >= 2) or ((EAcalls>=2) + (NCcalls>=2) + (NScalls>=2) + (ILcalls>=2) >= 2) ):
-                    qual_i = 'Tier4B'
-        
-                # Tier 5 are by either one aligner or one site:
-                elif (bwaSites>=2 or bowtieSites>=2 or novoSites>=2 or EAcalls>=2 or NCcalls>=2 or NScalls>=2 or ILcalls>=2) and \
-                     (IL_classPass['bwa']>=2 or IL_classPass['bowtie']>=2 or IL_classPass['novo']>=2 or NS_classPass['bwa']>=5 or NS_classPass['bowtie']>=5 or NS_classPass['novo']>=5):
-                    qual_i = 'Tier5A'
-                    
-                elif (bwaSites>=2 or bowtieSites>=2 or novoSites>=2 or EAcalls>=2 or NCcalls>=2 or NScalls>=2 or ILcalls>=2):
-                    qual_i = 'Tier5B'
+                # Tier1A: for each of the 3 aligners, each of the 5 sites are deemed "strongestEvidence"
+                elif alignerCentricClassification['bwa']['strongestEvidence'] == alignerCentricClassification['bowtie']['strongestEvidence'] == alignerCentricClassification['novo']['strongestEvidence'] == 5:
+                    filterLabel_i = 'Tier1A'
                 
-                # REJECT otherwise:
+                # Tier1B: Each of the 3 alignerCentric Classification is deemed "strongestEvidence" AND with at least 3/5 sites in each to be "strongestEvidence" as well
+                elif alignerCentricClassification['bwa']['Classification']    == 3 and alignerCentricClassification['bwa']['strongestEvidence']    >= 3 and \
+                     alignerCentricClassification['bowtie']['Classification'] == 3 and alignerCentricClassification['bowtie']['strongestEvidence'] >= 3 and \
+                     alignerCentricClassification['novo']['Classification']   == 3 and alignerCentricClassification['bowtie']['strongestEvidence'] >= 3:
+                    filterLabel_i = 'Tier1B'
+                
+                # Tier1C: each of the 3 alignerCentric Classification is deemed "strongestEvidence"
+                elif alignerCentricClassification['bwa']['Classification'] == alignerCentricClassification['bowtie']['Classification'] == alignerCentricClassification['novo']['Classification'] == 3:
+                    filterLabel_i = 'Tier1C'
+                    
+                # Tier2: 2 out of 3 alignerCentric Classification is strongestEvidence.... 
+                elif (alignerCentricClassification['bwa']['Classification'] == 3) + (alignerCentricClassification['bowtie']['Classification'] == 3) + (alignerCentricClassification['novo']['Classification'] == 3) == 2:
+                
+                    # Tier2A: ... with the other one being merely "strongEvidence":
+                    if (alignerCentricClassification['bwa']['Classification'] == 1) or (alignerCentricClassification['bowtie']['Classification'] == 1) or (alignerCentricClassification['novo']['Classification'] == 1):
+                        filterLabel_i = 'Tier2A'
+                        
+                    # Tier2B: 2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being merely "lowQual":
+                    elif (alignerCentricClassification['bwa']['Classification'] == 0) or (alignerCentricClassification['bowtie']['Classification'] == 0) or (alignerCentricClassification['novo']['Classification'] == 0):
+                        filterLabel_i = 'Tier2B'
+                    
+                    # Tier2C: 2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being merely "insufficientEvidence":
+                    else:
+                        filterLabel_i = 'Tier2C'
+                
+                # Tier3: Only 1 out of 3 alignerCentric classification is "strongestEvidence"
+                elif (alignerCentricClassification['bwa']['Classification'] == 3) + (alignerCentricClassification['bowtie']['Classification'] == 3) + (alignerCentricClassification['novo']['Classification'] == 3) == 1:
+                    
+                    # Tier3A: The other two are both "strongEvidence"
+                    if (alignerCentricClassification['bwa']['Classification'] == 1) + (alignerCentricClassification['bowtie']['Classification'] == 1) + (alignerCentricClassification['novo']['Classification'] == 1) == 2:
+                        filterLabel_i = 'Tier3A'
+                        
+                    # Tier3B: One of the other two is "strongEvidence"
+                    elif (alignerCentricClassification['bwa']['Classification'] == 1) + (alignerCentricClassification['bowtie']['Classification'] == 1) + (alignerCentricClassification['novo']['Classification'] == 1) == 1:
+                        filterLabel_i = 'Tier3B'
+                    
+                    # No lesser "strongEvidence" of the other two
+                    else:
+                        filterLabel_i = 'Tier3C'
+                        
+                # No "strongestEvidence" of any alignerCentric Classifications:
                 else:
-                    qual_i = 'REJECT'
+                    
+                    # Tier4A: all 3 are merely "strongEvidence":
+                    if (alignerCentricClassification['bwa']['Classification'] == 1) + (alignerCentricClassification['bowtie']['Classification'] == 1) + (alignerCentricClassification['novo']['Classification'] == 1) == 3:
+                        filterLabel_i = 'Tier4A'
+                        
+                    # Tier4B: 2/3 are merely "strongEvidence":
+                    elif (alignerCentricClassification['bwa']['Classification'] == 1) + (alignerCentricClassification['bowtie']['Classification'] == 1) + (alignerCentricClassification['novo']['Classification'] == 1) == 2:
+                        filterLabel_i = 'Tier4B'
+                        
+                    else:
+                        filterLabel_i = 'Tier4C'
                 
                 
-                if qual_i != 'REJECT' or print_all:
+                if ( not re.match(r'Tier4', filterLabel_i) ) or print_all:
                     
                     # VAFs of the tumors
-                    try:
-                        t_bwa_vaf = t_bwa_altDP / (t_bwa_altDP + t_bwa_refDP)
-                    except ZeroDivisionError:
-                        t_bwa_vaf = 0
-                        
-                    try:
-                        t_bowtie_vaf = t_bowtie_altDP / (t_bowtie_altDP + t_bowtie_refDP)
-                    except ZeroDivisionError:
-                        t_bowtie_vaf = 0
-                        
-                    try:
-                        t_novo_vaf = t_novo_altDP / (t_novo_altDP + t_novo_refDP)
-                    except ZeroDivisionError:
-                        t_novo_vaf = 0
+                    t_vaf = {}
+                    t_altCount = t_refCount = 0
+                    for aligner_i in ('bwa', 'bowtie', 'novo'):
+                        try:
+                            t_vaf[ aligner_i ] = t_altDP[ aligner_i ] / (t_altDP[ aligner_i ] + t_refDP[ aligner_i ])
+                        except ZeroDivisionError:
+                            t_vaf[ aligner_i ] = 0
+                            
+                        t_altCount = t_altCount + t_altDP[ aligner_i ]
+                        t_refCount = t_refCount + t_refDP[ aligner_i ]
                     
                     try:
-                        t_overall_vcf = (t_bwa_altDP + t_bowtie_altDP + t_novo_altDP) / (t_bwa_altDP + t_bowtie_altDP + t_novo_altDP + t_bwa_refDP + t_bowtie_refDP + t_novo_refDP)
+                        t_vaf[ 'Overall' ] = t_altCount / (t_altCount + t_refCount)
                     except ZeroDivisionError:
-                        t_overall_vcf = 0
+                        t_vaf[ 'Overall' ] = 0
                     
-                    # VAFs of the normals:
+                    # VAF of the normals combined for each aligner
+                    n_vaf = {}
+                    n_altCount = n_refCount = 0
+                    for aligner_i in ('bwa', 'bowtie', 'novo'):
+                        try:
+                            n_vaf[ aligner_i ] = n_altDP[ aligner_i ] / (n_altDP[ aligner_i ] + n_refDP[ aligner_i ])
+                        except ZeroDivisionError:
+                            n_vaf[ aligner_i ] = 0
+                            
+                        n_altCount = n_altCount + n_altDP[ aligner_i ]
+                        n_refCount = n_refCount + n_altDP[ aligner_i ]
+                    
                     try:
-                        n_bwa_vaf = n_bwa_altDP / (n_bwa_altDP + n_bwa_refDP)
+                        n_vaf[ 'Overall' ] = n_altCount / (n_altCount + n_refCount)
                     except ZeroDivisionError:
-                        n_bwa_vaf = 0
+                        n_vaf[ 'Overall' ] = 0
                         
-                    try:
-                        n_bowtie_vaf = n_bowtie_altDP / (n_bowtie_altDP + n_bowtie_refDP)
-                    except ZeroDivisionError:
-                        n_bowtie_vaf = 0
-                        
-                    try:
-                        n_novo_vaf = n_novo_altDP / (n_novo_altDP + n_novo_refDP)
-                    except ZeroDivisionError:
-                        n_novo_vaf = 0
-                    
-                    try:
-                        n_overall_vcf = (n_bwa_altDP + n_bowtie_altDP + n_novo_altDP) / (n_bwa_altDP + n_bowtie_altDP + n_novo_altDP + n_bwa_refDP + n_bowtie_refDP + n_novo_refDP)
-                    except ZeroDivisionError:
-                        n_overall_vcf = 0
-                    
+                                            
                     
                     # INFO Column
                     called_samples_string   = ','.join(called_samples)   if called_samples   else '.'
@@ -547,13 +585,16 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     elif nREJECT+nNoCall >= nPASS:
                         flags.append( 'RplusN' )
                     
-                    if t_bwa_MQ0    >= 0.1*(t_bwa_altDP + t_bwa_refDP):       flags.append( 'MQ0bwa' )
-                    if t_bowtie_MQ0 >= 0.1*(t_bowtie_altDP + t_bowtie_refDP): flags.append( 'MQ0bowtie' )
-                    if t_novo_MQ0   >= 0.1*(t_novo_altDP + t_novo_refDP):     flags.append( 'MQ0novo' )
+                    # If MQ0 reads are more than 10% of all the reads, MQ0 flag warning:
+                    if t_MQ0['bwa']    >= 0.1*(t_altDP['bwa']    + t_refDP['bwa']):    flags.append( 'MQ0bwa' )
+                    if t_MQ0['bowtie'] >= 0.1*(t_altDP['bowtie'] + t_refDP['bowtie']): flags.append( 'MQ0bowtie' )
+                    if t_MQ0['novo']   >= 0.1*(t_altDP['novo']   + t_refDP['novo']):   flags.append( 'MQ0novo' )
                     
-                    if bwa_classPass['IL']    + bwa_classPass['NS']    == 0: flags.append('bwa0')
-                    if bowtie_classPass['IL'] + bowtie_classPass['NS'] == 0: flags.append('bowtie0')
-                    if novo_classPass['IL']   + novo_classPass['NS']   == 0: flags.append('novo0')
+                    # If none of the SomaticSeq PASS belong to a particular aligner, aligner0 flag warning:
+                    if alignerClassifications['bwa']['IL']['PASS'] + alignerClassifications['bwa']['NV']['PASS'] + alignerClassifications['bwa']['FD']['PASS'] + alignerClassifications['bwa']['NS']['PASS'] == 0: flags.append('bwa0')
+                    if alignerClassifications['bowtie']['IL']['PASS'] + alignerClassifications['bowtie']['NV']['PASS'] + alignerClassifications['bowtie']['FD']['PASS'] + alignerClassifications['bowtie']['NS']['PASS'] == 0: flags.append('bowtie0')
+                    if alignerClassifications['novo']['IL']['PASS'] + alignerClassifications['novo']['NV']['PASS'] + alignerClassifications['novo']['FD']['PASS'] + alignerClassifications['novo']['NS']['PASS'] == 0: flags.append('novo0')
+                        
                     
                     if 'bwa0' in flags and 'bowtie0' in flags:
                         flags.append('novoOnly')
@@ -564,27 +605,27 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     
                     flag_string = ';FLAGS=' + ','.join(flags) if flags else ''
                     
-                    info_column = 'calledSamples={calledSamples};rejectedSamples={rejectedSamples};noCallSamples={noCallSamples};IL_PASS={IL_PASS};NS_PASS={NS_PASS};EA_PASS={EA_PASS};NC_PASS={NC_PASS};IL_REJECT={IL_REJECT};NS_REJECT={NS_REJECT};EA_REJECT={EA_REJECT};NC_REJECT={NC_REJECT};IL_Consensus={IL_Consensus};NS_Consensus={NS_Consensus};EA_Consensus={EA_Consensus};NC_Consensus={NC_Consensus};bwa_PASS={bwa_PASS};bowtie_PASS={bowtie_PASS};novo_PASS={novo_PASS};bwa_REJECT={bwa_REJECT};bowtie_REJECT={bowtie_REJECT};novo_REJECT={novo_REJECT};bwa_Consensus={bwa_Consensus};bowtie_Consensus={bowtie_Consensus};novo_Consensus={novo_Consensus};bwaMQ0={bwaMQ0};bowtieMQ0={bowtieMQ0};novoMQ0={novoMQ0};MQ0={MQ0};bwaTVAF={bwaTVAF};bowtieTVAF={bowtieTVAF};novoTVAF={novoTVAF};TVAF={TVAF};bwaNVAF={bwaNVAF};bowtieNVAF={bowtieNVAF};novoNVAF={novoNVAF};NVAF={NVAF};nCalledSamples={nCalledSamples};nPASSES={nPasses};nREJECTS={nRejects};nNoCall={nNoCall};nREJECTorNoCall={nREJECTorNoCall};nCONSENSUS={nConsensus}{FLAGS}'.format( \
+                    info_column = 'calledSamples={calledSamples};rejectedSamples={rejectedSamples};noCallSamples={noCallSamples};bwa_PASS={bwa_PASS};bowtie_PASS={bowtie_PASS};novo_PASS={novo_PASS};bwa_REJECT={bwa_REJECT};bowtie_REJECT={bowtie_REJECT};novo_REJECT={novo_REJECT};bwa_Consensus={bwa_Consensus};bowtie_Consensus={bowtie_Consensus};novo_Consensus={novo_Consensus};bwaMQ0={bwaMQ0};bowtieMQ0={bowtieMQ0};novoMQ0={novoMQ0};MQ0={MQ0};bwaTVAF={bwaTVAF};bowtieTVAF={bowtieTVAF};novoTVAF={novoTVAF};TVAF={TVAF};bwaNVAF={bwaNVAF};bowtieNVAF={bowtieNVAF};novoNVAF={novoNVAF};NVAF={NVAF};nCalledSamples={nCalledSamples};nPASSES={nPasses};nREJECTS={nRejects};nNoCall={nNoCall};nREJECTorNoCall={nREJECTorNoCall};nCONSENSUS={nConsensus}{FLAGS}'.format( \
                     calledSamples=called_samples_string, \
                     rejectedSamples=rejected_samples_string, \
                     noCallSamples=nocall_sample_string, \
-                    bwa_PASS='{},{},{},{}'.format(bwa_classPass['IL'], bwa_classPass['NS'], bwa_classPass['EA'], bwa_classPass['NC']), \
-                    bowtie_PASS='{},{},{},{}'.format(bowtie_classPass['IL'], bowtie_classPass['NS'], bowtie_classPass['EA'], bowtie_classPass['NC']), \
-                    novo_PASS='{},{},{},{}'.format(novo_classPass['IL'], novo_classPass['NS'], novo_classPass['EA'], novo_classPass['NC']), \
-                    bwa_REJECT='{},{},{},{}'.format(bwa_classReject['IL'], bwa_classReject['NS'], bwa_classReject['EA'], bwa_classReject['NC']), \
-                    bowtie_REJECT='{},{},{},{}'.format(bowtie_classReject['IL'], bowtie_classReject['NS'], bowtie_classReject['EA'], bowtie_classReject['NC']), \
-                    novo_REJECT='{},{},{},{}'.format(novo_classReject['IL'], novo_classReject['NS'], novo_classReject['EA'], novo_classReject['NC']), \
-                    bwa_Consensus='{},{},{},{}'.format(bwa_consensus['IL'], bwa_consensus['NS'], bwa_consensus['EA'], bwa_consensus['NC']), \
-                    bowtie_Consensus='{},{},{},{}'.format(bowtie_consensus['IL'], bowtie_consensus['NS'], bowtie_consensus['EA'], bowtie_consensus['NC']), \
-                    novo_Consensus='{},{},{},{}'.format(novo_consensus['IL'], novo_consensus['NS'], novo_consensus['EA'], novo_consensus['NC']), \
-                    bwaMQ0=t_bwa_MQ0, bowtieMQ0=t_bowtie_MQ0, novoMQ0=t_novo_MQ0, MQ0=t_bwa_MQ0+t_bowtie_MQ0+t_novo_MQ0, \
-                    bwaTVAF='%.3f' % t_bwa_vaf, bowtieTVAF='%.3f' % t_bowtie_vaf, novoTVAF='%.3f' % t_novo_vaf, TVAF='%.3f' % t_overall_vcf, \
-                    bwaNVAF='%.3f' % n_bwa_vaf, bowtieNVAF='%.3f' % n_bowtie_vaf, novoNVAF='%.3f' % n_novo_vaf, NVAF='%.3f' % n_overall_vcf, \
+                    bwa_PASS='{},{},{},{},{}'.format(alignerClassifications['bwa']['IL']['PASS'], alignerClassifications['bwa']['NV']['PASS'], alignerClassifications['bwa']['FD']['PASS'], alignerClassifications['bwa']['NS']['PASS'], alignerClassifications['bwa']['Others']['PASS']), \
+                    bowtie_PASS='{},{},{},{},{}'.format(alignerClassifications['bowtie']['IL']['PASS'], alignerClassifications['bowtie']['NV']['PASS'], alignerClassifications['bowtie']['FD']['PASS'], alignerClassifications['bowtie']['NS']['PASS'], alignerClassifications['bowtie']['Others']['PASS']), \
+                    novo_PASS='{},{},{},{},{}'.format(alignerClassifications['novo']['IL']['PASS'], alignerClassifications['novo']['NV']['PASS'], alignerClassifications['novo']['FD']['PASS'], alignerClassifications['novo']['NS']['PASS'], alignerClassifications['novo']['Others']['PASS']), \
+                    bwa_REJECT='{},{},{},{},{}'.format(alignerClassifications['bwa']['IL']['REJECT'], alignerClassifications['bwa']['NV']['REJECT'], alignerClassifications['bwa']['FD']['REJECT'], alignerClassifications['bwa']['NS']['REJECT'], alignerClassifications['bwa']['Others']['REJECT']), \
+                    bowtie_REJECT='{},{},{},{},{}'.format(alignerClassifications['bowtie']['IL']['REJECT'], alignerClassifications['bowtie']['NV']['REJECT'], alignerClassifications['bowtie']['FD']['REJECT'], alignerClassifications['bowtie']['NS']['REJECT'], alignerClassifications['bowtie']['Others']['REJECT']), \
+                    novo_REJECT='{},{},{},{},{}'.format(alignerClassifications['novo']['IL']['REJECT'], alignerClassifications['novo']['NV']['REJECT'], alignerClassifications['novo']['FD']['REJECT'], alignerClassifications['novo']['NS']['REJECT'], alignerClassifications['novo']['Others']['REJECT']), \
+                    bwa_Consensus='{},{},{},{},{}'.format(alignerClassifications['bwa']['IL']['Consensus'], alignerClassifications['bwa']['NV']['Consensus'], alignerClassifications['bwa']['FD']['Consensus'], alignerClassifications['bwa']['NS']['Consensus'], alignerClassifications['bwa']['Others']['Consensus']), \
+                    bowtie_Consensus='{},{},{},{},{}'.format(alignerClassifications['bowtie']['IL']['Consensus'], alignerClassifications['bowtie']['NV']['Consensus'], alignerClassifications['bowtie']['FD']['Consensus'], alignerClassifications['bowtie']['NS']['Consensus'], alignerClassifications['bowtie']['Others']['Consensus']), \
+                    novo_Consensus='{},{},{},{},{}'.format(alignerClassifications['novo']['IL']['Consensus'], alignerClassifications['novo']['NV']['Consensus'], alignerClassifications['novo']['FD']['Consensus'], alignerClassifications['novo']['NS']['Consensus'], alignerClassifications['novo']['Others']['Consensus']), \
+                    bwaMQ0=t_MQ0['bwa'], bowtieMQ0=t_MQ0['bowtie'], novoMQ0=t_MQ0['novo'], MQ0=t_MQ0['bwa']+t_MQ0['bowtie']+t_MQ0['novo'], \
+                    bwaTVAF='%.3f' % t_vaf['bwa'], bowtieTVAF='%.3f' % t_vaf['bowtie'], novoTVAF='%.3f' % t_vaf['novo'], TVAF='%.3f' % t_vaf['Overall'], \
+                    bwaNVAF='%.3f' % n_vaf['bwa'], bowtieNVAF='%.3f' % n_vaf['bowtie'], novoNVAF='%.3f' % n_vaf['novo'], NVAF='%.3f' % n_vaf['Overall'], \
                     nCalledSamples=len(called_samples), nPasses=nPASS, nRejects=nREJECT, nNoCall=nNoCall, nREJECTorNoCall=nNoCall+nREJECT, nConsensus=nConsensus, \
                     FLAGS=flag_string)
                     
                     
-                    outline_i = '{CHROM}\t{POS}\t{ID}\t{REF}\t{ALT}\t{QUAL}\t{FILTER}\t{INFO}\t{FORMAT}'.format(CHROM=vcf_i.chromosome, POS=vcf_i.position, ID=vcf_i.identifier, REF=vcf_i.refbase, ALT=vcf_i.altbase, QUAL='.', FILTER=qual_i, INFO=info_column, FORMAT=vcf_i.field)
+                    outline_i = '{CHROM}\t{POS}\t{ID}\t{REF}\t{ALT}\t{QUAL}\t{FILTER}\t{INFO}\t{FORMAT}'.format(CHROM=vcf_i.chromosome, POS=vcf_i.position, ID=vcf_i.identifier, REF=vcf_i.refbase, ALT=vcf_i.altbase, QUAL=threeAlignerCombined+9, FILTER=filterLabel_i, INFO=info_column, FORMAT=vcf_i.field)
                     
                                         
                     for i in bwa_tumor_indices:
@@ -611,15 +652,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     for format_item_i in format_item:
                         
                         if format_item_i == 'GT':
-                            bwa_normal_column_items.append('0/1') if n_bwa_vaf >0.01 else bwa_normal_column_items.append('0/0')
+                            bwa_normal_column_items.append('0/1') if n_vaf['bwa'] >0.01 else bwa_normal_column_items.append('0/0')
                         elif format_item_i == 'CD4':
-                            bwa_normal_column_items.append( '{},{},{},{}'.format(n_bwa_cd4_1, n_bwa_cd4_2, n_bwa_cd4_3, n_bwa_cd4_4) )
+                            bwa_normal_column_items.append( '{},{},{},{}'.format(n_cd4_1['bwa'], n_cd4_2['bwa'], n_cd4_3['bwa'], n_cd4_4['bwa']) )
                         elif format_item_i == 'DP4':
-                            bwa_normal_column_items.append( '{},{},{},{}'.format(n_bwa_dp4_1, n_bwa_dp4_2, n_bwa_dp4_3, n_bwa_dp4_4) )
+                            bwa_normal_column_items.append( '{},{},{},{}'.format(n_dp4_1['bwa'], n_dp4_2['bwa'], n_dp4_3['bwa'], n_dp4_4['bwa']) )
                         elif format_item_i == 'MQ0':
-                            bwa_normal_column_items.append( str(n_bwa_mq0) )
+                            bwa_normal_column_items.append( str(n_mq0['bwa']) )
                         elif format_item_i == 'VAF':
-                            bwa_normal_column_items.append( '%.3f' % n_bwa_vaf )
+                            bwa_normal_column_items.append( '%.3f' % n_vaf['bwa'] )
                             break
                         else:
                             bwa_normal_column_items.append( '.' )
@@ -628,15 +669,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     for format_item_i in format_item:
                         
                         if format_item_i == 'GT':
-                            bowtie_normal_column_items.append('0/1') if n_bowtie_vaf >0.01 else bowtie_normal_column_items.append('0/0')
+                            bowtie_normal_column_items.append('0/1') if n_vaf['bowtie'] >0.01 else bowtie_normal_column_items.append('0/0')
                         elif format_item_i == 'CD4':
-                            bowtie_normal_column_items.append( '{},{},{},{}'.format(n_bowtie_cd4_1, n_bowtie_cd4_2, n_bowtie_cd4_3, n_bowtie_cd4_4) )
+                            bowtie_normal_column_items.append( '{},{},{},{}'.format(n_cd4_1['bowtie'], n_cd4_2['bowtie'], n_cd4_3['bowtie'], n_cd4_4['bowtie']) )
                         elif format_item_i == 'DP4':
-                            bowtie_normal_column_items.append( '{},{},{},{}'.format(n_bowtie_dp4_1, n_bowtie_dp4_2, n_bowtie_dp4_3, n_bowtie_dp4_4) )
+                            bowtie_normal_column_items.append( '{},{},{},{}'.format(n_dp4_1['bowtie'], n_dp4_2['bowtie'], n_dp4_3['bowtie'], n_dp4_4['bowtie']) )
                         elif format_item_i == 'MQ0':
-                            bowtie_normal_column_items.append( str(n_bowtie_mq0) )
+                            bowtie_normal_column_items.append( str(n_mq0['bowtie']) )
                         elif format_item_i == 'VAF':
-                            bowtie_normal_column_items.append( '%.3f' % n_bowtie_vaf )
+                            bowtie_normal_column_items.append( '%.3f' % n_vaf['bowtie'] )
                             break
                         else:
                             bowtie_normal_column_items.append( '.' )
@@ -645,15 +686,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     for format_item_i in format_item:
                         
                         if format_item_i == 'GT':
-                            novo_normal_column_items.append('0/1') if n_novo_vaf >0.01 else novo_normal_column_items.append('0/0')
+                            novo_normal_column_items.append('0/1') if n_vaf['novo'] >0.01 else novo_normal_column_items.append('0/0')
                         elif format_item_i == 'CD4':
-                            novo_normal_column_items.append( '{},{},{},{}'.format(n_novo_cd4_1, n_novo_cd4_2, n_novo_cd4_3, n_novo_cd4_4) )
+                            novo_normal_column_items.append( '{},{},{},{}'.format(n_cd4_1['novo'], n_cd4_2['novo'], n_cd4_3['novo'], n_cd4_4['novo']) )
                         elif format_item_i == 'DP4':
-                            novo_normal_column_items.append( '{},{},{},{}'.format(n_novo_dp4_1, n_novo_dp4_2, n_novo_dp4_3, n_novo_dp4_4) )
+                            novo_normal_column_items.append( '{},{},{},{}'.format(n_dp4_1['novo'], n_dp4_2['novo'], n_dp4_3['novo'], n_dp4_4['novo']) )
                         elif format_item_i == 'MQ0':
-                            novo_normal_column_items.append( str(n_novo_mq0) )
+                            novo_normal_column_items.append( str(n_mq0['novo']) )
                         elif format_item_i == 'VAF':
-                            novo_normal_column_items.append( '%.3f' % n_novo_vaf )
+                            novo_normal_column_items.append( '%.3f' % n_vaf['novo'] )
                             break
                         else:
                             novo_normal_column_items.append( '.' )
