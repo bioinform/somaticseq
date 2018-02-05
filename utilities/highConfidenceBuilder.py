@@ -559,7 +559,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                             n_vaf[ aligner_i ] = 0
                             
                         n_altCount = n_altCount + n_altDP[ aligner_i ]
-                        n_refCount = n_refCount + n_altDP[ aligner_i ]
+                        n_refCount = n_refCount + n_refDP[ aligner_i ]
                     
                     try:
                         n_vaf[ 'Overall' ] = n_altCount / (n_altCount + n_refCount)
