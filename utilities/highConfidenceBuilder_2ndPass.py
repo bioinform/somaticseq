@@ -28,15 +28,16 @@ ncallers       = args.num_callers
 
 # quasi-constants
 if args.variant_type.upper() == 'SNV':
-    bwaMQ_lowEnd    = 36.3044289044
-    bowtieMQ_lowEnd = 8.38334841629
-    novoMQ_lowEnd   = 53.832183908
-    varDP_lowEnd    = 1.2 * 6
-    BQ_lowEnd       = 34.5
+    bwaMQ_lowEnd    = 40.1764705882
+    bowtieMQ_lowEnd = 10.7058823529
+    novoMQ_lowEnd   = 59.25
+    varDP_lowEnd    = 1.2 * 5
+    BQ_lowEnd       = 35
     NM_highEnd      = 3.2
-    MQ0_highEnd     = 2
+    MQ0_highEnd     = 2.5
     Poors_highEnd   = 1
     Others_highEnd  = 1
+    
 elif args.variant_type.upper() == 'INDEL':
     bwaMQ_lowEnd    = 53.5
     bowtieMQ_lowEnd = 11.5522222222
@@ -47,6 +48,7 @@ elif args.variant_type.upper() == 'INDEL':
     MQ0_highEnd     = 2
     Poors_highEnd   = 1
     Others_highEnd  = 4
+    
 else:
     assert (args.variant_type.upper() == 'INDEL' or args.variant_type.upper() == 'SNV')
     
@@ -411,9 +413,10 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             # Averaging over the called samples
             average_calls_variant_depths = sum(called_variant_depths)/len(called_variant_depths)
         
+        
         # Make some comments, highly likely true positive, likely true positive, ambigious, or likely false positive:
         if vcf_i.filters == 'AllPASS' or \
-        (re.match(r'Tier[123]', vcf_i.filters) and ( nREJECTS+nNoCall <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ) ):
+        (re.match(r'Tier1', vcf_i.filters) and ( nREJECTS+nNoCall <= math.ceil(0.1*total_tumor_samples) or len(nocall_sites) + len(reject_sites) <= math.ceil(0.1*total_tumor_seq_sites) ) ):
             
             # If a bunch of MQ0 reads in all 3 aligners, considered "neutral"
             if    bwaMQ0 > total_tumor_samples  and bowtieMQ0 > total_tumor_samples and novoMQ0 > total_tumor_samples:
