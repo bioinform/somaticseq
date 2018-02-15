@@ -1,4 +1,14 @@
-# Automated Pipeline based on Snakemake
+# Automated Pipeline based on [Snakemake](https://snakemake.readthedocs.io/en/latest)
+
+This workflow expects SomaticSeq and the desired suite of variant callers to be installed.
+That is, their executables should be found via the `PATH` environment variable.
+
+For SomaticSeq, it is sufficient to include the top-level directory and the utilities directory:
+
+```
+SOMATICSEQ_HOME=/path/to/somaticseq
+export PATH=$SOMATICSEQ_HOME:$SOMATICSEQ_HOME/utilities:$PATH
+```
 
 Example usage:
 
