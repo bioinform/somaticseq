@@ -657,8 +657,9 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 
                 # Tier2: deemed pass 2/3 alignerCentric Classifications
                 # And if there is minimal level of support for the other aligner, it's still pretty good
-                if re.match(r'Tier2', vcf_i.filters) not (vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS')) ):
-                    
+                if re.match(r'Tier2', vcf_i.filters) not ( vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS') ) ):
+                
+                
                     # Tier2 with at least some support from the 3rd aligner is still very high-confidence. Start with a "3"
                     vcf_items[ i_qual ] = '3'
                     
@@ -692,7 +693,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
 
 
                 # Only one alignerCentric Classification is "strongestEvidence", but have at least minimal evidence support from other aligners:
-                elif re.match(r'Tier3', vcf_i.filters) and not (vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS')) ):
+                elif re.match(r'Tier3', vcf_i.filters) and not ( vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS') ) ):
                     vcf_items[ i_qual ] = '1'
 
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
