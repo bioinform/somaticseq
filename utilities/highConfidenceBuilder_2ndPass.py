@@ -657,7 +657,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 
                 # Tier2: deemed pass 2/3 alignerCentric Classifications
                 # And if there is minimal level of support for the other aligner, it's still pretty good
-                if re.match(r'Tier2', vcf_i.filters) not ( vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS') ) ):
+                if re.match(r'Tier2', vcf_i.filters) and not ( vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS') ) ):
                 
                 
                     # Tier2 with at least some support from the 3rd aligner is still very high-confidence. Start with a "3"
