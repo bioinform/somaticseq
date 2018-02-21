@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Re-count MQ0's and re-calculate VAF's
+
 import sys, argparse, math, gzip, os, re, copy, math
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -69,7 +71,6 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         vcfout.write( vcf_line + '\n' )
         vcf_line = vcf_in.readline().rstrip()
         
-    vcfout.write('##INFO=<ID=VERDICT,Number=.,Type=String,Description="Reasons for PASS, LowQual, or REJECT">\n')
     vcfout.write( vcf_line + '\n' )
     
     vcf_header = vcf_line.split('\t')
@@ -105,6 +106,31 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
     i_tsv_pos = tsv_headers.index('POS')
     i_tsv_ref = tsv_headers.index('REF')
     i_tsv_alt = tsv_headers.index('ALT')
+
+    i_bwa_tDP        = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bwa_bam_DP',     item_i) ]
+    i_bwa_tVDPfor    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bwa_bam_ALT_FOR', item_i) ]
+    i_bwa_tVDPrev    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bwa_bam_ALT_REV', item_i) ]
+    i_bwa_nDP        = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_DP',      item_i) ]
+    i_bwa_nVDPfor    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_ALT_FOR', item_i) ]
+    i_bwa_nVDPrev    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_ALT_REV', item_i) ]
+    
+    i_bowtie_tDP     = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bowtie_bam_DP',      item_i) ]
+    i_bowtie_tVDPfor = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bowtie_bam_ALT_FOR', item_i) ]
+    i_bowtie_tVDPrev = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bowtie_bam_ALT_REV', item_i) ]
+    i_bowtie_nDP     = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_DP',      item_i) ]
+    i_bowtie_nVDPfor = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_ALT_FOR', item_i) ]
+    i_bowtie_nVDPrev = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_ALT_REV', item_i) ]
+    
+    i_novo_tDP       = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.novo_bam_DP',      item_i) ]
+    i_novo_tVDPfor   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.novo_bam_ALT_FOR', item_i) ]
+    i_novo_tVDPrev   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.novo_bam_ALT_REV', item_i) ]
+    i_novo_nDP       = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_DP',      item_i) ]
+    i_novo_nVDPfor   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_ALT_FOR', item_i) ]
+    i_novo_nVDPrev   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_ALT_REV', item_i) ]
+    
+    i_bwa_tMQ0    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bwa_bam_MQ0',    item_i) ]
+    i_bowtie_tMQ0 = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bowtie_bam_MQ0', item_i) ]
+    i_novo_tMQ0   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.novo_bam_MQ0',   item_i) ]
     
     vcf_line = vcf_in.readline().rstrip()
     tsv_line = tsv_in.readline().rstrip()
@@ -122,16 +148,54 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         # Make sure we're on the same line
         assert (tsv_items[i_tsv_chr], tsv_items[i_tsv_pos], tsv_items[i_tsv_ref], tsv_items[i_tsv_alt]) == (vcf_i.chromosome, str(vcf_i.position), vcf_i.refbase, vcf_i.altbase)
         
-        bwaMQ0    = int( vcf_i.get_info_value('bwaMQ0')   )
-        bowtieMQ0 = int( vcf_i.get_info_value('bowtieMQ0'))
-        novoMQ0   = int( vcf_i.get_info_value('novoMQ0')  )
+        bwaMQ0    = sum( [int(tsv_items[i]) for i in i_bwa_tMQ0] )
+        bowtieMQ0 = sum( [int(tsv_items[i]) for i in i_bowtie_tMQ0] )
+        novoMQ0   = sum( [int(tsv_items[i]) for i in i_novo_tMQ0] )
         
         nREJECTS  = int( vcf_i.get_info_value('nREJECTS') )
         nNoCall   = int( vcf_i.get_info_value('nNoCall') )
         
         flag_string = vcf_i.get_info_value('FLAGS')
         flags_i = flag_string.split(',') if flag_string else []
+
+
+        # Get more accurate VAF stats:
+        bwa_tDP     = [ int(tsv_items[i]) for i in i_bwa_tDP ]
+        bwa_tVDP    = [ int(tsv_items[i]) for i in i_bwa_tVDPfor ]    + [ int(tsv_items[i]) for i in i_bwa_tVDPrev ]
+        bwa_nDP     = [ int(tsv_items[i]) for i in i_bwa_nDP ]
+        bwa_nVDP    = [ int(tsv_items[i]) for i in i_bwa_nVDPfor ]    + [ int(tsv_items[i]) for i in i_bwa_nVDPrev ]        
         
+        bowtie_tDP  = [ int(tsv_items[i]) for i in i_bowtie_tDP ]
+        bowtie_tVDP = [ int(tsv_items[i]) for i in i_bowtie_tVDPfor ] + [ int(tsv_items[i]) for i in i_bowtie_tVDPrev ]
+        bowtie_nDP  = [ int(tsv_items[i]) for i in i_bowtie_nDP ]
+        bowtie_nVDP = [ int(tsv_items[i]) for i in i_bowtie_nVDPfor ] + [ int(tsv_items[i]) for i in i_bowtie_nVDPrev ]
+        
+        novo_tDP    = [ int(tsv_items[i]) for i in i_novo_tDP ]
+        novo_tVDP   = [ int(tsv_items[i]) for i in i_novo_tVDPfor ]   + [ int(tsv_items[i]) for i in i_novo_tVDPrev ]
+        novo_nDP    = [ int(tsv_items[i]) for i in i_novo_nDP ]
+        novo_nVDP   = [ int(tsv_items[i]) for i in i_novo_nVDPfor ]   + [ int(tsv_items[i]) for i in i_novo_nVDPrev ]
+        
+        
+        bwaTVAF = sum(bwa_tVDP)/sum(bwa_tDP) if sum(bwa_tDP) != 0 else 0
+        bwaNVAF = sum(bwa_nVDP)/sum(bwa_nDP) if sum(bwa_nDP) != 0 else 0
+
+        bowtieTVAF = sum(bowtie_tVDP)/sum(bowtie_tDP) if sum(bowtie_tDP) != 0 else 0
+        bowtieNVAF = sum(bowtie_nVDP)/sum(bowtie_nDP) if sum(bowtie_nDP) != 0 else 0
+
+        novoTVAF = sum(novo_tVDP)/sum(novo_tDP) if sum(novo_tDP) != 0 else 0
+        novoNVAF = sum(novo_nVDP)/sum(novo_nDP) if sum(novo_nDP) != 0 else 0
+        
+        try:
+            TVAF = ( sum(bwa_tVDP) + sum(bowtie_tVDP) + sum(novo_tVDP) ) / ( sum(bwa_tDP) + sum(bowtie_tDP) + sum(novo_tDP) )
+        except ZeroDivisionError:
+            TVAF = 0
+        
+        try:
+            NVAF = ( sum(bwa_nVDP) + sum(bowtie_nVDP) + sum(novo_nVDP) ) / ( sum(bwa_nDP) + sum(bowtie_nDP) + sum(novo_nDP) )
+        except ZeroDivisionError:
+            NVAF = 0
+
+
         # Get called samples stats (would by pass if no REJECT or NoCall)
         # Try to find reasons for REJECTS
         rejects                 = []
@@ -726,10 +790,45 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             
             # All the nonPASS samples are 0.1 < SCORE < 0.7 samples, but only in Tier4 and 5. 
             else:
-                if re.match(r'Tier4C', vcf_i.filters):
-                    vcf_items[ i_qual ] = '-3'
-                else:
+                if   re.match(r'Tier[12]', vcf_i.filters):
+                    vcf_items[ i_qual ] = '3'
+                elif re.match(r'Tier3', vcf_i.filters):
                     vcf_items[ i_qual ] = '1'
+                elif re.match(r'Tier4', vcf_i.filters):
+                    vcf_items[ i_qual ] = '0'
+                else:
+                    vcf_items[ i_qual ] = '-3'
+        
+        
+        vcf_info_item = vcf_items[7].split(';')
+        # Change bowtieNVAF=0.001;novoNVAF=0.001;NVAF=0.001
+        for i, info_item_i in enumerate(vcf_info_item):
+            if   info_item_i.startswith('bwaMQ0='):
+                vcf_info_item[i] = 'bwaMQ0={}'.format( bwaMQ0 )
+            elif info_item_i.startswith('bowtieMQ0='):
+                vcf_info_item[i] = 'bowtieMQ0={}'.format( bowtieMQ0 )
+            elif info_item_i.startswith('novoMQ0='):
+                vcf_info_item[i] = 'novoMQ0={}'.format( novoMQ0 )
+            elif info_item_i.startswith('MQ0='):
+                vcf_info_item[i] = 'MQ0={}'.format( bwaMQ0+bowtieMQ0+novoMQ0 )
+            elif info_item_i.startswith('bwaTVAF='):
+                vcf_info_item[i] = 'bwaTVAF={}'.format( '%.3f' % bwaTVAF )
+            elif info_item_i.startswith('bowtieTVAF='):
+                vcf_info_item[i] = 'bowtieTVAF={}'.format( '%.3f' % bowtieTVAF )
+            elif info_item_i.startswith('novoTVAF='):
+                vcf_info_item[i] = 'novoTVAF={}'.format( '%.3f' % novoTVAF )
+            elif info_item_i.startswith('TVAF='):
+                vcf_info_item[i] = 'TVAF={}'.format( '%.3f' % TVAF )
+            elif info_item_i.startswith('bwaNVAF='):
+                vcf_info_item[i] = 'bwaNVAF={}'.format( '%.3f' % bwaNVAF )
+            elif info_item_i.startswith('bowtieNVAF='):
+                vcf_info_item[i] = 'bowtieNVAF={}'.format( '%.3f' % bowtieNVAF )
+            elif info_item_i.startswith('novoNVAF='):
+                vcf_info_item[i] = 'novoNVAF={}'.format( '%.3f' % novoNVAF )
+            elif info_item_i.startswith('NVAF='):
+                vcf_info_item[i] = 'NVAF={}'.format( '%.3f' % NVAF )
+                
+        vcf_items[7] = ';'.join( vcf_info_item )
         
         
         vcfout.write( '\t'.join( vcf_items ) + '\n' )

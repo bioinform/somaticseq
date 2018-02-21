@@ -56,8 +56,8 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     vcfout.write('##FILTER=<ID=Tier3C,Description="1 out of 3 alignerCentric Classification is strongestEvidence, with no strongEvidence otherwise">\n')
     vcfout.write('##FILTER=<ID=Tier4A,Description="No alignerCentric Classification is deemed strongestEvidence, but all 3 are deemed merely strongEvidence">\n')
     vcfout.write('##FILTER=<ID=Tier4B,Description="No alignerCentric Classification is deemed strongestEvidence, but 2/3 are deemed merely strongEvidence">\n')
-    vcfout.write('##FILTER=<ID=Tier4C,Description="No alignerCentric Classification is deemed strongestEvidence">\n')
-    vcfout.write('##FILTER=<ID=REJECT,Description="REJECT">\n')
+    vcfout.write('##FILTER=<ID=Tier4C,Description="No alignerCentric Classification is deemed strongestEvidence, but 1/3 are deemed merely strongEvidence">\n')
+    vcfout.write('##FILTER=<ID=REJECT,Description="No strongestEvidence or strongEvidence of any kind">\n')
     
     vcfout.write('##INFO=<ID=calledSamples,Number=.,Type=String,Description="Sample names where this variant is called">\n')
     vcfout.write('##INFO=<ID=rejectedSamples,Number=.,Type=String,Description="Sample names classified as REJECT by SomaticSeq">\n')
@@ -525,12 +525,16 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     # Tier4B: 2/3 are merely "strongEvidence":
                     elif (alignerCentricClassification['bwa']['Classification'] == 1) + (alignerCentricClassification['bowtie']['Classification'] == 1) + (alignerCentricClassification['novo']['Classification'] == 1) == 2:
                         filterLabel_i = 'Tier4B'
-                        
-                    else:
+                    
+                    # Tier4C: 1/3 are merely "strongEvidence":    
+                    elif (alignerCentricClassification['bwa']['Classification'] == 1) + (alignerCentricClassification['bowtie']['Classification'] == 1) + (alignerCentricClassification['novo']['Classification'] == 1) == 1:
                         filterLabel_i = 'Tier4C'
+                    
+                    else:
+                        filterLabel_i = 'REJECT'
                 
                 
-                if ( not re.match(r'Tier4', filterLabel_i) ) or print_all:
+                if ( not re.match(r'REJECT', filterLabel_i) ) or print_all:
                     
                     # VAFs of the tumors
                     t_vaf = {}
