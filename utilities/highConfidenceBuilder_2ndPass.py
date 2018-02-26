@@ -76,6 +76,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
     vcf_header = vcf_line.split('\t')
     samples    = vcf_header[9::]
     i_qual     = vcf_header.index('QUAL')
+    i_filters  = vcf_header.index('FILTER')
     
     bwa_tumors    = []
     bowtie_tumors = []
@@ -128,9 +129,9 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
     i_novo_nVDPfor   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_ALT_FOR', item_i) ]
     i_novo_nVDPrev   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_ALT_REV', item_i) ]
     
-    i_bwa_tMQ0    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bwa_bam_MQ0',    item_i) ]
-    i_bowtie_tMQ0 = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bowtie_bam_MQ0', item_i) ]
-    i_novo_tMQ0   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.novo_bam_MQ0',   item_i) ]
+    i_bwa_tMQ0       = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bwa_bam_MQ0',    item_i) ]
+    i_bowtie_tMQ0    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bowtie_bam_MQ0', item_i) ]
+    i_novo_tMQ0      = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.novo_bam_MQ0',   item_i) ]
     
     vcf_line = vcf_in.readline().rstrip()
     tsv_line = tsv_in.readline().rstrip()
@@ -176,14 +177,14 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         novo_nVDP   = [ int(tsv_items[i]) for i in i_novo_nVDPfor ]   + [ int(tsv_items[i]) for i in i_novo_nVDPrev ]
         
         
-        bwaTVAF = sum(bwa_tVDP)/sum(bwa_tDP) if sum(bwa_tDP) != 0 else 0
-        bwaNVAF = sum(bwa_nVDP)/sum(bwa_nDP) if sum(bwa_nDP) != 0 else 0
-
+        bwaTVAF    = sum(bwa_tVDP)/sum(bwa_tDP) if sum(bwa_tDP) != 0 else 0
+        bwaNVAF    = sum(bwa_nVDP)/sum(bwa_nDP) if sum(bwa_nDP) != 0 else 0
+        
         bowtieTVAF = sum(bowtie_tVDP)/sum(bowtie_tDP) if sum(bowtie_tDP) != 0 else 0
         bowtieNVAF = sum(bowtie_nVDP)/sum(bowtie_nDP) if sum(bowtie_nDP) != 0 else 0
-
-        novoTVAF = sum(novo_tVDP)/sum(novo_tDP) if sum(novo_tDP) != 0 else 0
-        novoNVAF = sum(novo_nVDP)/sum(novo_nDP) if sum(novo_nDP) != 0 else 0
+        
+        novoTVAF   = sum(novo_tVDP)/sum(novo_tDP) if sum(novo_tDP) != 0 else 0
+        novoNVAF   = sum(novo_nVDP)/sum(novo_nDP) if sum(novo_nDP) != 0 else 0
         
         try:
             TVAF = ( sum(bwa_tVDP) + sum(bowtie_tVDP) + sum(novo_tVDP) ) / ( sum(bwa_tDP) + sum(bowtie_tDP) + sum(novo_tDP) )
@@ -476,10 +477,6 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             
             # Averaging over the called samples
             average_calls_variant_depths = sum(called_variant_depths)/len(called_variant_depths)
-        
-        
-        
-        
         
         
         # Make some comments, highly likely true positive, likely true positive, ambigious, or likely false positive:
