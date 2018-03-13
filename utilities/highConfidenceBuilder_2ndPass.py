@@ -824,7 +824,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 vcf_info_item[i] = 'novoNVAF={}'.format( '%.3f' % novoNVAF )
             elif info_item_i.startswith('NVAF='):
                 vcf_info_item[i] = 'NVAF={}'.format( '%.3f' % NVAF )
-                
+        
         vcf_items[7] = ';'.join( vcf_info_item )
         
         
