@@ -485,15 +485,18 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             
             # If a bunch of MQ0 reads in all 3 aligners, considered "neutral"
             if    bwaMQ0 > total_tumor_samples  and bowtieMQ0 > total_tumor_samples and novoMQ0 > total_tumor_samples:
-                vcf_items[ i_qual ] = '0'
-            
+                #vcf_items[ i_qual ] = '0'
+                vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                
             # If high number of MQ0 reads in 2/3 aligners.
             elif (bwaMQ0 > total_tumor_samples) +  (bowtieMQ0 > total_tumor_samples) +  (novoMQ0 > total_tumor_samples) >= 2:
-                vcf_items[ i_qual ] = '1'
-            
+                #vcf_items[ i_qual ] = '1'
+                vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
+                
             # In other words, if high number of MQ0 reads occur in only one aligner, it is considered multiple aligner support and good enough to be highest confidence. 
             else:
-                vcf_items[ i_qual ] = '3'
+                #vcf_items[ i_qual ] = '3'
+                vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongestEvidence')
                             
         
         # If NOT AllPASS or Tier1:
@@ -721,80 +724,110 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 if re.match(r'Tier2', vcf_i.filters) and not ( vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS') ) ):
                 
                 
-                    # Tier2 with at least some support from the 3rd aligner is still very high-confidence. Start with a "3"
-                    vcf_items[ i_qual ] = '3'
-                    
                     # Look for disqualifying features that will make it lower confidence:
                     if (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
-                        vcf_items[ i_qual ] = '1'
+                        #vcf_items[ i_qual ] = '1'
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
 
                     elif num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
-                        vcf_items[ i_qual ] = '0'
+                        #vcf_items[ i_qual ] = '0'
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
                         
                     elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
-                        vcf_items[ i_qual ] = '0'
+                        #vcf_items[ i_qual ] = '0'
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                    
+                    # If there is nothing "bad," it's still strongestEvidence like Tier1. 
+                    else:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongestEvidence')
                 
-                # Still Tier2, but zero support from the 3rd aligner:
+                # Still Tier2, but zero support from the 3rd aligner in any sample:
                 elif re.match(r'Tier2', vcf_i.filters):
                     
-                    # We have some level of "worry here," so start with 1.
-                    vcf_items[ i_qual ] = '1'
 
                     # Look for disqualifying features that will make it lower confidence:
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
-                        vcf_items[ i_qual ] = '0'
+                        #vcf_items[ i_qual ] = '0'
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
 
                     # Already with oen aligner completely down, if we find trouble with 2...
-                    if (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
-                        vcf_items[ i_qual ] = '0'
+                    elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
+                        #vcf_items[ i_qual ] = '0'
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
 
                     # If mapping problem for all 3
                     elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
-                        vcf_items[ i_qual ] = '-3'
+                        #vcf_items[ i_qual ] = '-3'
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
+                        
+                    else:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
 
 
                 # Only one alignerCentric Classification is "strongestEvidence", but have at least minimal evidence support from other aligners:
                 elif re.match(r'Tier3', vcf_i.filters) and not ( vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS') ) ):
-                    vcf_items[ i_qual ] = '1'
 
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
-                        vcf_items[ i_qual ] = '-3'
+                        #vcf_items[ i_qual ] = '-3'
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
                                                 
                     elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
-                        vcf_items[ i_qual ] = '-3'
+                        #vcf_items[ i_qual ] = '-3'
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
+                        
+                    else:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
+                
                 
                 elif re.match(r'Tier3', vcf_i.filters):
-                    vcf_items[ i_qual ] = '0'
                     
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
-                        vcf_items[ i_qual ] = '-3'
+                        #vcf_items[ i_qual ] = '-3'
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
                                                 
                     elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
-                        vcf_items[ i_qual ] = '-3'
+                        #vcf_items[ i_qual ] = '-3'
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
+                        
+                    else:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
                 
                 
                 # Tier 4 is lowest tier, but A/N have 3/3 or 2/3 of "mere" strongEvidence, but no strongest evidence
                 elif re.match(r'Tier4[AB]', vcf_i.filters):
                     
-                    # Default to -3 (likely false positive)
-                    vcf_items[ i_qual ] = '0'
+                    #vcf_items[ i_qual ] = '0'
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
                                         
             
                 elif vcf_i.filters == 'Tier4C':
                     
                     # Default to -3 (likely false positive)
-                    vcf_items[ i_qual ] = '-3'
+                    #vcf_items[ i_qual ] = '-3'
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
+                    
+                    
+                elif vcf_i.filters == 'REJECT':
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
+                    
             
             # All the nonPASS samples are 0.1 < SCORE < 0.7 samples, but only in Tier4 and 5. 
             else:
                 if   re.match(r'Tier[12]', vcf_i.filters):
-                    vcf_items[ i_qual ] = '3'
+                    #vcf_items[ i_qual ] = '3'
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongestEvidence')
+                    
                 elif re.match(r'Tier3', vcf_i.filters):
-                    vcf_items[ i_qual ] = '1'
+                    #vcf_items[ i_qual ] = '1'
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
+                    
                 elif re.match(r'Tier4', vcf_i.filters):
-                    vcf_items[ i_qual ] = '0'
+                    #vcf_items[ i_qual ] = '0'
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                    
                 else:
-                    vcf_items[ i_qual ] = '-3'
+                    #vcf_items[ i_qual ] = '-3'
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
         
         
         vcf_info_item = vcf_items[7].split(';')
@@ -827,6 +860,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         
         vcf_items[7] = ';'.join( vcf_info_item )
         
+        vcf_items[ i_qual ] = '.'
         
         vcfout.write( '\t'.join( vcf_items ) + '\n' )
         

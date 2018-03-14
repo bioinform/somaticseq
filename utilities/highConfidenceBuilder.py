@@ -57,7 +57,12 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     vcfout.write('##FILTER=<ID=Tier4A,Description="No alignerCentric Classification is deemed strongestEvidence, but all 3 are deemed merely strongEvidence">\n')
     vcfout.write('##FILTER=<ID=Tier4B,Description="No alignerCentric Classification is deemed strongestEvidence, but 2/3 are deemed merely strongEvidence">\n')
     vcfout.write('##FILTER=<ID=Tier4C,Description="No alignerCentric Classification is deemed strongestEvidence, but 1/3 are deemed merely strongEvidence">\n')
-    vcfout.write('##FILTER=<ID=REJECT,Description="No strongestEvidence or strongEvidence of any kind">\n')
+    vcfout.write('##FILTER=<ID=REJECT,Description="No strongestEvidence or strongEvidence for aligner-centric classification of any kind">\n')
+    
+    vcfout.write('##FILTER=<ID=strongestEvidence,Description="highly confident that it is a real somatic mutation">\n')
+    vcfout.write('##FILTER=<ID=strongEvidence,Description="confident that it is a real somatic mutation">\n')
+    vcfout.write('##FILTER=<ID=weakEvidence,Description="not very confident that it is a real somatic mutation">\n')
+    vcfout.write('##FILTER=<ID=insufficientEvidence,Description="likely not a real somatic mutation">\n')
     
     vcfout.write('##INFO=<ID=calledSamples,Number=.,Type=String,Description="Sample names where this variant is called">\n')
     vcfout.write('##INFO=<ID=rejectedSamples,Number=.,Type=String,Description="Sample names classified as REJECT by SomaticSeq">\n')
