@@ -826,7 +826,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     
                 elif vcf_i.filters == 'REJECT':
                     
-                    nPASSES > nREJECTS:
+                    if nPASSES > nREJECTS:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
                     else:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
