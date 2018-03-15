@@ -50,7 +50,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     vcfout.write('##FILTER=<ID=Tier1C,Description="Each of the 3 alignerCentric Classification is deemed strongestEvidence">\n')
     vcfout.write('##FILTER=<ID=Tier2A,Description="2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being merely strongEvidence">\n')
     vcfout.write('##FILTER=<ID=Tier2B,Description="2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being weakEvidence">\n')
-    vcfout.write('##FILTER=<ID=Tier2C,Description="2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being insufficientEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier2C,Description="2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being contraductingEvidence">\n')
     vcfout.write('##FILTER=<ID=Tier3A,Description="1 out of 3 alignerCentric Classification is strongestEvidence, with the other two deemed merely strongEvidence">\n')
     vcfout.write('##FILTER=<ID=Tier3B,Description="1 out of 3 alignerCentric Classification is strongestEvidence, with one more deemed merely strongEvidence">\n')
     vcfout.write('##FILTER=<ID=Tier3C,Description="1 out of 3 alignerCentric Classification is strongestEvidence, with no strongEvidence otherwise">\n')
@@ -62,7 +62,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     vcfout.write('##FILTER=<ID=strongestEvidence,Description="highly confident that it is a real somatic mutation">\n')
     vcfout.write('##FILTER=<ID=strongEvidence,Description="confident that it is a real somatic mutation">\n')
     vcfout.write('##FILTER=<ID=weakEvidence,Description="not very confident that it is a real somatic mutation">\n')
-    vcfout.write('##FILTER=<ID=insufficientEvidence,Description="likely not a real somatic mutation">\n')
+    vcfout.write('##FILTER=<ID=contraductingEvidence,Description="likely not a real somatic mutation">\n')
     
     vcfout.write('##INFO=<ID=calledSamples,Number=.,Type=String,Description="Sample names where this variant is called">\n')
     vcfout.write('##INFO=<ID=rejectedSamples,Number=.,Type=String,Description="Sample names classified as REJECT by SomaticSeq">\n')
@@ -179,21 +179,21 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
             sample_columns = copy( original_sample_columns )
                         
             # 0 for each site/platform
-            bwaClassification    = {'IL': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'NV': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'FD': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'NS': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                'Others': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}}
-            bowtieClassification = {'IL': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'NV': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'FD': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'NS': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                'Others': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}}
-            novoClassification   = {'IL': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'NV': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'FD': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'NS': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}, \
-                                'Others': {'PASS':0, 'REJECT': 0, 'LowQual': 0, 'Consensus': 0, 'Missing': 0}}
+            bwaClassification    = {'IL': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NV': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'FD': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NS': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                'Others': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}}
+            bowtieClassification = {'IL': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NV': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'FD': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NS': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                'Others': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}}
+            novoClassification   = {'IL': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NV': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'FD': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NS': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                'Others': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}}
             
             alignerClassifications = {'bwa': bwaClassification, 'bowtie': bowtieClassification, 'novo': novoClassification}
             
@@ -255,13 +255,13 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     elif score and score != '.' and (reject_score <= float(score) < reject_score):
                                                 
                         if   samples[call_i].startswith('IL_'):
-                            alignerClassifications[ aligner_i ]['IL']['LowQual'] += 1
+                            alignerClassifications[ aligner_i ]['IL']['weakEvidence'] += 1
                         elif samples[call_i].startswith('NV_'):
-                            alignerClassifications[ aligner_i ]['NV']['LowQual'] += 1
+                            alignerClassifications[ aligner_i ]['NV']['weakEvidence'] += 1
                         elif samples[call_i].startswith('FD_'):
-                            alignerClassifications[ aligner_i ]['FD']['LowQual'] += 1                        
+                            alignerClassifications[ aligner_i ]['FD']['weakEvidence'] += 1                        
                         elif samples[call_i].startswith('NS_'):
-                            alignerClassifications[ aligner_i ]['NS']['LowQual'] += 1
+                            alignerClassifications[ aligner_i ]['NS']['weakEvidence'] += 1
                         elif re.match(r'(EA|NC|LL)_', samples[call_i]):
                             alignerClassifications[ aligner_i ]['Others']['LowQual'] += 1
 
@@ -379,7 +379,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         else:
                             alignerSiteScores[ aligner_i ][ site_i ] = nconsensus_i*passAdditive + nreject_i*rejectAdditive
         
-                # strongestEvidence = 3; strongEvidence = 1; lowQual = 0; insufficientEvidence = -3
+                # strongestEvidence = 3; strongEvidence = 1; weakEvidence = 0; contraductingEvidence = -3
                 alignerSiteClassification = { 'bwa': {}, 'bowtie': {}, 'novo': {} }
                 for aligner_i in alignerSiteScores:
                     for site_i in alignerSiteScores[ aligner_i ]:
@@ -429,9 +429,9 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                                 
                 
                 
-                alignerCentricClassification = {'bwa': {'strongestEvidence': 0, 'strongEvidence': 0, 'lowQual': 0, 'insufficientEvidence': 0, 'TOTAL': 0}, \
-                                             'bowtie': {'strongestEvidence': 0, 'strongEvidence': 0, 'lowQual': 0, 'insufficientEvidence': 0, 'TOTAL': 0}, \
-                                               'novo': {'strongestEvidence': 0, 'strongEvidence': 0, 'lowQual': 0, 'insufficientEvidence': 0, 'TOTAL': 0} }
+                alignerCentricClassification = {'bwa': {'strongestEvidence': 0, 'strongEvidence': 0, 'weakEvidence': 0, 'contraductingEvidence': 0, 'TOTAL': 0}, \
+                                             'bowtie': {'strongestEvidence': 0, 'strongEvidence': 0, 'weakEvidence': 0, 'contraductingEvidence': 0, 'TOTAL': 0}, \
+                                               'novo': {'strongestEvidence': 0, 'strongEvidence': 0, 'weakEvidence': 0, 'contraductingEvidence': 0, 'TOTAL': 0} }
                 
                 for aligner_i in alignerSiteClassification:
                     for site_i in alignerSiteClassification[ aligner_i ]:
@@ -444,10 +444,10 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                             alignerCentricClassification[ aligner_i ]['TOTAL'] += 1
                             
                         elif alignerSiteClassification[ aligner_i ][ site_i ] == 0:
-                            alignerCentricClassification[ aligner_i ]['lowQual'] += 1
+                            alignerCentricClassification[ aligner_i ]['weakEvidence'] += 1
                         
                         elif alignerSiteClassification[ aligner_i ][ site_i ] == -3:
-                            alignerCentricClassification[ aligner_i ]['insufficientEvidence'] += 1
+                            alignerCentricClassification[ aligner_i ]['contraductingEvidence'] += 1
                             alignerCentricClassification[ aligner_i ]['TOTAL'] -= 3
 
                         else:
@@ -497,11 +497,11 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     if (alignerCentricClassification['bwa']['Classification'] == 1) or (alignerCentricClassification['bowtie']['Classification'] == 1) or (alignerCentricClassification['novo']['Classification'] == 1):
                         filterLabel_i = 'Tier2A'
                         
-                    # Tier2B: 2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being merely "lowQual":
+                    # Tier2B: 2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being merely "weakEvidence":
                     elif (alignerCentricClassification['bwa']['Classification'] == 0) or (alignerCentricClassification['bowtie']['Classification'] == 0) or (alignerCentricClassification['novo']['Classification'] == 0):
                         filterLabel_i = 'Tier2B'
                     
-                    # Tier2C: 2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being merely "insufficientEvidence":
+                    # Tier2C: 2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being merely "contraductingEvidence":
                     else:
                         filterLabel_i = 'Tier2C'
                 

@@ -153,6 +153,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         bowtieMQ0 = sum( [int(tsv_items[i]) for i in i_bowtie_tMQ0] )
         novoMQ0   = sum( [int(tsv_items[i]) for i in i_novo_tMQ0] )
         
+        nPASSES   = int( vcf_i.get_info_value('nPASSES') )
         nREJECTS  = int( vcf_i.get_info_value('nREJECTS') )
         nNoCall   = int( vcf_i.get_info_value('nNoCall') )
         
@@ -503,6 +504,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         else:
             
             # Tier 1 with a few nNoCall/nREJECTS were already taken care of as equivalent of AllPASS
+            # If there is some REJECT or MISSING calls
             if nNoCall or nREJECTS:
                 
                 ##### SAMPLING ERROR DUE TO LOW VARIANT DP? #####
@@ -736,6 +738,9 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
                         #vcf_items[ i_qual ] = '0'
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+
+                    elif nREJECTS > nPASSES:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')                        
                     
                     # If there is nothing "bad," it's still strongestEvidence like Tier1. 
                     else:
@@ -758,7 +763,10 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     # If mapping problem for all 3
                     elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                        
+                    elif nREJECTS > nPASSES:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
                         
                     else:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
@@ -769,11 +777,14 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
 
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
                                                 
                     elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
+                        
+                    elif nREJECTS > nPASSES:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
                         
                     else:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
@@ -783,11 +794,14 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
                                                 
                     elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
+                        
+                    elif nREJECTS > nPASSES:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
                         
                     else:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
@@ -796,22 +810,30 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 # Tier 4 is lowest tier, but A/N have 3/3 or 2/3 of "mere" strongEvidence, but no strongest evidence
                 elif re.match(r'Tier4[AB]', vcf_i.filters):
                     
-                    #vcf_items[ i_qual ] = '0'
-                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                    if nPASSES > nREJECTS:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                    else:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
                                         
             
                 elif vcf_i.filters == 'Tier4C':
                     
-                    # Default to -3 (likely false positive)
-                    #vcf_items[ i_qual ] = '-3'
-                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
+                    if nPASSES > nREJECTS:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                    else:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
                     
                     
                 elif vcf_i.filters == 'REJECT':
-                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
+                    
+                    nPASSES > nREJECTS:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                    else:
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
                     
             
-            # All the nonPASS samples are 0.1 < SCORE < 0.7 samples, but only in Tier4 and 5. 
+            # All the nonPASS samples are 0.1 < SCORE < 0.7 samples, but only in Tier4 and 5.
+            # There is actaully no REJECT call and no MISSING call
             else:
                 if   re.match(r'Tier[12]', vcf_i.filters):
                     #vcf_items[ i_qual ] = '3'
@@ -821,13 +843,9 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     #vcf_items[ i_qual ] = '1'
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
                     
-                elif re.match(r'Tier4', vcf_i.filters):
+                else:
                     #vcf_items[ i_qual ] = '0'
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
-                    
-                else:
-                    #vcf_items[ i_qual ] = '-3'
-                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'insufficientEvidence')
         
         
         vcf_info_item = vcf_items[7].split(';')
