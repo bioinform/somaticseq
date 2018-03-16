@@ -777,11 +777,11 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
 
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
                                                 
                     elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
                         
                     elif nREJECTS > nPASSES:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
@@ -794,14 +794,14 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
                                                 
                     elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
                         
                     elif nREJECTS > nPASSES:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
                         
                     else:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
@@ -813,7 +813,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     if nPASSES > nREJECTS:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
                     else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
                                         
             
                 elif vcf_i.filters == 'Tier4C':
@@ -821,7 +821,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     if nPASSES > nREJECTS:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
                     else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
                     
                     
                 elif vcf_i.filters == 'REJECT':
@@ -829,7 +829,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     if nPASSES > nREJECTS:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
                     else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contraductingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
                     
             
             # All the nonPASS samples are 0.1 < SCORE < 0.7 samples, but only in Tier4 and 5.
