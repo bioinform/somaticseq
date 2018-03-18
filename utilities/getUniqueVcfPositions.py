@@ -2,15 +2,16 @@
 
 # A simple and quick way to replace GATK3 CombineVariants
 
-
 import sys, argparse, gzip, re
 
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-vcfs',  '--input-vcfs', nargs='*', type=str, help='Input VCF file', required=True, default=None)
 parser.add_argument('-out',   '--output-vcf',            type=str, help='Output VCF file', required=True)
 
 args = parser.parse_args()
 
-vcfs_infiles  = args.input_vcfs
+vcfs_infiles = args.input_vcfs
+vcf_outfile  = args.output_vcf
 
 def open_textfile(file_name):
     
@@ -30,7 +31,7 @@ for file_i in vcfs_infiles:
         
         line_i = vcf.readline().rstrip()
         
-        while line_i.startswith('^#'):
+        while line_i.startswith('#'):
             line_i = vcf.readline().rstrip()
             
         
@@ -49,3 +50,10 @@ for file_i in vcfs_infiles:
             line_i = vcf.readline().rstrip()
 
 
+with open(vcf_outfile, 'w') as vcf_out:
+    vcf_out.write('##fileformat=VCFv4.1\n')
+    vcf_out.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n')
+
+    for variant_position_i in variant_positions:
+    
+        vcf_out.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(variant_position_i[0], variant_position_i[1], '.', variant_position_i[2], variant_position_i[3], '.', 'PASS', '.') )
