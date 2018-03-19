@@ -285,7 +285,6 @@ rule somaticseq:
         --output-dir SomaticSeq \
         --genome-reference {config[reference]} \
         --dbsnp {config[dbsnp]} \
-        --gatk {config[gatk]} \
         --tumor-bam {input.tumor} \
         --normal-bam {input.normal} \
         {params.inputflags}

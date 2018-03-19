@@ -374,7 +374,7 @@ then
     if [[ ${gatk} ]]; then
         java -Xmx4g -jar ${gatk} -T CombineVariants -R ${hg_ref} --setKey null --genotypemergeoption UNSORTED $mergesnp --out ${merged_dir}/CombineVariants_MVJSD.snp.vcf
     else
-        cat $all_snp | egrep -v '^#'  | awk -F "\t" '{print $1 "\t" $2 "\t.\t" $4 "\t" $5}' | sort | uniq | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" "." "\t" "PASS" "\t" "."}' | cat <(echo -e '##fileformat=VCFv4.1\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO') - | $MYDIR/utilities/vcfsorter.pl ${hg_dict} - > ${merged_dir}/CombineVariants_MVJSD.snp.vcf
+        $MYDIR/utilities/getUniqueVcfPositions.py -vcfs $all_snp -out /dev/stdout | $MYDIR/utilities/vcfsorter.pl ${hg_dict} - > ${merged_dir}/CombineVariants_MVJSD.snp.vcf
     fi
 
     files_to_delete="${merged_dir}/CombineVariants_MVJSD.snp.vcf ${merged_dir}/CombineVariants_MVJSD.snp.vcf.idx $files_to_delete"
@@ -510,10 +510,10 @@ then
         fi
     done
 
-    if [[ -r ${gatk} ]]; then
+    if [[ ${gatk} ]]; then
         java -Xmx4g -jar ${gatk} -T CombineVariants -R ${hg_ref} --setKey null --genotypemergeoption UNSORTED $mergeindel --out ${merged_dir}/CombineVariants_MVJSD.indel.vcf
     else
-        cat $all_indel | egrep -v '^#'  | awk -F "\t" '{print $1 "\t" $2 "\t.\t" $4 "\t" $5}' | sort | uniq | awk -F "\t" '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" "." "\t" "PASS" "\t" "."}' | cat <(echo -e '##fileformat=VCFv4.1\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO') - | $MYDIR/utilities/vcfsorter.pl ${hg_dict} - > ${merged_dir}/CombineVariants_MVJSD.indel.vcf
+        $MYDIR/utilities/getUniqueVcfPositions.py -vcfs $all_indel -out /dev/stdout | $MYDIR/utilities/vcfsorter.pl ${hg_dict} - > ${merged_dir}/CombineVariants_MVJSD.indel.vcf
     fi
 
     files_to_delete="${merged_dir}/CombineVariants_MVJSD.indel.vcf ${merged_dir}/CombineVariants_MVJSD.indel.vcf.idx $files_to_delete"
@@ -623,12 +623,10 @@ then
 
     for file in ${files_to_delete}
     do
-
         if [[ -e $file ]]
         then
             rm -v $file
         fi
-
     done
-
+    
 fi
