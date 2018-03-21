@@ -263,7 +263,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         elif samples[call_i].startswith('NS_'):
                             alignerClassifications[ aligner_i ]['NS']['weakEvidence'] += 1
                         elif re.match(r'(EA|NC|LL)_', samples[call_i]):
-                            alignerClassifications[ aligner_i ]['Others']['LowQual'] += 1
+                            alignerClassifications[ aligner_i ]['Others']['weakEvidence'] += 1
 
                     n_tools = vcf_i.get_sample_value('NUM_TOOLS', call_i)
                     if n_tools and n_tools != '.' and int(n_tools) > ncallers:
@@ -370,7 +370,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     for site_i in alignerClassifications[ aligner_i ]:
                         
                         npass_i      = alignerClassifications[ aligner_i ][ site_i ][ 'PASS' ]
-                        nlowqual_i   = alignerClassifications[ aligner_i ][ site_i ][ 'LowQual' ]
+                        nlowqual_i   = alignerClassifications[ aligner_i ][ site_i ][ 'weakEvidence' ]
                         nreject_i    = alignerClassifications[ aligner_i ][ site_i ][ 'REJECT' ] + alignerClassifications[ aligner_i ][ site_i ][ 'Missing' ]
                         nconsensus_i = alignerClassifications[ aligner_i ][ site_i ][ 'Consensus' ]
                         
