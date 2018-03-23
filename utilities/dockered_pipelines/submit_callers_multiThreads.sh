@@ -370,8 +370,8 @@ do
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --human-reference ${HUMAN_REFERENCE} \
         --dbsnp ${dbsnp} \
-        --extra-arguments ${input_mutect2_arguments} \
-        --extra-filter-arguments ${input_mutect2_filter_arguments} \
+        --extra-arguments "${input_mutect2_arguments}" \
+        --extra-filter-arguments "${input_mutect2_filter_arguments}" \
         --action $action
     
         mutect2_input="--mutect2 ${outdir}/${ith_thread}/MuTect2.vcf"
