@@ -739,7 +739,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                         #vcf_items[ i_qual ] = '0'
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
 
-                    elif nREJECTS > nPASSES:
+                    elif nREJECTS + nNoCall > nPASSES:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')                        
                     
                     # If there is nothing "bad," it's still StrongEvidence like Tier1. 
@@ -765,7 +765,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                         #vcf_items[ i_qual ] = '-3'
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                         
-                    elif nREJECTS > nPASSES:
+                    elif nREJECTS + nNoCall > nPASSES:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                         
                     else:
@@ -783,7 +783,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                         #vcf_items[ i_qual ] = '-3'
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                         
-                    elif nREJECTS > nPASSES:
+                    elif nREJECTS + nNoCall > nPASSES:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                         
                     else:
@@ -800,7 +800,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                         #vcf_items[ i_qual ] = '-3'
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                         
-                    elif nREJECTS > nPASSES:
+                    elif nREJECTS + nNoCall > nPASSES:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                         
                     else:
@@ -822,7 +822,6 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                     else:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
-                    
                     
                 elif vcf_i.filters == 'REJECT':
                     
