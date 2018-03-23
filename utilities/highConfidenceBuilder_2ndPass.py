@@ -810,7 +810,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 # Tier 4 is lowest tier, but A/N have 3/3 or 2/3 of "mere" WeakEvidence, but no strongest evidence
                 elif re.match(r'Tier4[AB]', vcf_i.filters):
                     
-                    if nPASSES > nREJECTS:
+                    if nPASSES > nREJECTS + nNoCall:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                     else:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
@@ -818,14 +818,14 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             
                 elif vcf_i.filters == 'Tier4C':
                     
-                    if nPASSES > nREJECTS:
+                    if nPASSES > nREJECTS + nNoCall:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                     else:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                     
                 elif vcf_i.filters == 'REJECT':
                     
-                    if nPASSES > nREJECTS:
+                    if nPASSES > nREJECTS + nNoCall:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                     else:
                         vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
