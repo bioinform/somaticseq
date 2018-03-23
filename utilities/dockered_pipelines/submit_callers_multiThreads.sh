@@ -354,12 +354,12 @@ do
         
         if [[ ${mutect2_arguments} ]]
         then
-            input_mutect2_arguments="'${mutect2_arguments}'"
+            input_mutect2_arguments="${mutect2_arguments}"
         fi
         
         if [[ ${mutect2_filter_arguments} ]]
         then
-            input_mutect2_filter_arguments="'${mutect2_filter_arguments}'"
+            input_mutect2_filter_arguments="${mutect2_filter_arguments}"
         fi
     
         $MYDIR/mutation_callers/submit_MuTect2.sh \
