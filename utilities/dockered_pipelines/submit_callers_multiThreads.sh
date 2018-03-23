@@ -354,12 +354,12 @@ do
         
         if [[ ${mutect2_arguments} ]]
         then
-            input_mutect2_arguments="--extra-arguments '${mutect2_arguments}'"
+            input_mutect2_arguments="'${mutect2_arguments}'"
         fi
         
         if [[ ${mutect2_filter_arguments} ]]
         then
-            input_mutect2_filter_arguments="--extra-filter-arguments '${mutect2_filter_arguments}'"
+            input_mutect2_filter_arguments="'${mutect2_filter_arguments}'"
         fi
     
         $MYDIR/mutation_callers/submit_MuTect2.sh \
@@ -370,8 +370,8 @@ do
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --human-reference ${HUMAN_REFERENCE} \
         --dbsnp ${dbsnp} \
-        ${input_mutect2_arguments} \
-        ${input_mutect2_filter_arguments} \
+        --extra-arguments ${input_mutect2_arguments} \
+        --extra-filter-arguments ${input_mutect2_filter_arguments} \
         --action $action
     
         mutect2_input="--mutect2 ${outdir}/${ith_thread}/MuTect2.vcf"

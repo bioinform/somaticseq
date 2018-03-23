@@ -158,6 +158,10 @@ fi
 
 echo "" >> $out_script
 
+
+
+
+
 echo "docker run --rm -v /:/mnt -u $UID --memory $(( MEM * threads ))G broadinstitute/gatk:4.0.0.0 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar gatk.jar Mutect2 \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
