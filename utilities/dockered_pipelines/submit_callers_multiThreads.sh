@@ -348,15 +348,18 @@ do
 
     if [[ $mutect2 -eq 1 ]]
     then
+                
+        input_mutect2_arguments=''
+        input_mutect2_filter_arguments=''
         
         if [[ ${mutect2_arguments} ]]
         then
-            input_mutect2_arguments="--extra-arguments ${mutect2_arguments}"
+            input_mutect2_arguments="--extra-arguments '${mutect2_arguments}'"
         fi
         
         if [[ ${mutect2_filter_arguments} ]]
         then
-            input_mutect2_filter_arguments="--extra-filter-arguments ${mutect2_filter_arguments}"
+            input_mutect2_filter_arguments="--extra-filter-arguments '${mutect2_filter_arguments}'"
         fi
     
         $MYDIR/mutation_callers/submit_MuTect2.sh \
@@ -380,12 +383,12 @@ do
     
         if [[ ${varscan_pileup_arguments} ]]
         then
-            input_varscan_pileup_arguments="--extra-pileup-arguments ${varscan_pileup_arguments}"
+            input_varscan_pileup_arguments="--extra-pileup-arguments '${varscan_pileup_arguments}'"
         fi
         
         if [[ ${varscan_arguments} ]]
         then
-            input_varscan_arguments="--extra-arguments ${varscan_arguments}"
+            input_varscan_arguments="--extra-arguments '${varscan_arguments}'"
         fi
     
         $MYDIR/mutation_callers/submit_VarScan2.sh \
@@ -410,7 +413,7 @@ do
     
         if [[ ${vardict_arguments} ]]
         then
-            input_vardict_arguments="--extra-arguments ${vardict_arguments}"
+            input_vardict_arguments="--extra-arguments '${vardict_arguments}'"
         fi
     
         $MYDIR/mutation_callers/submit_VarDictJava.sh \
@@ -450,7 +453,7 @@ do
     
         if [[ ${lofreq_arguments} ]]
         then
-            input_lofreq_arguments="--extra-arguments ${lofreq_arguments}"
+            input_lofreq_arguments="--extra-arguments '${lofreq_arguments}'"
         fi
     
         $MYDIR/mutation_callers/submit_LoFreq.sh \
@@ -479,12 +482,12 @@ do
 
         if [[ ${scalpel_discovery_arguments} ]]
         then
-            input_scalpel_discovery_arguments="--extra-discovery-arguments ${scalpel_discovery_arguments}"
+            input_scalpel_discovery_arguments="--extra-discovery-arguments '${scalpel_discovery_arguments}'"
         fi
         
         if [[ ${scalpel_export_arguments} ]]
         then
-            input_scalpel_export_arguments="--extra-export-arguments ${scalpel_export_arguments}"
+            input_scalpel_export_arguments="--extra-export-arguments '${scalpel_export_arguments}'"
         fi
     
         $MYDIR/mutation_callers/submit_Scalpel.sh \
@@ -513,12 +516,12 @@ do
     
         if [[ ${strelka_config_arguments} ]]
         then
-            input_strelka_config_arguments=" --extra-config-arguments ${strelka_config_arguments}"
+            input_strelka_config_arguments=" --extra-config-arguments '${strelka_config_arguments}'"
         fi
         
         if [[ ${strelka_run_arguments} ]]
         then
-            input_strelka_run_arguments="--extra-run-arguments ${strelka_run_arguments}"
+            input_strelka_run_arguments="--extra-run-arguments '${strelka_run_arguments}'"
         fi
     
         $MYDIR/mutation_callers/submit_Strelka.sh \
@@ -561,7 +564,7 @@ do
         
         if [[ ${somaticseq_arguments} ]]
         then
-            input_somaticseq_arguments="--extra-arguments ${somaticseq_arguments}"
+            input_somaticseq_arguments="--extra-arguments '${somaticseq_arguments}'"
         fi
         
         $MYDIR/mutation_callers/submit_SomaticSeq.sh \
@@ -608,12 +611,12 @@ then
 
     if [[ ${jsm_train_arguments} ]]
     then
-        input_jsm_train_arguments="--extra-train-arguments ${jsm_train_arguments}"
+        input_jsm_train_arguments="--extra-train-arguments '${jsm_train_arguments}'"
     fi
     
     if [[ ${jsm_classify_arguments} ]]
     then
-        input_jsm_classify_arguments="--extra-classify-arguments ${jsm_classify_arguments}"
+        input_jsm_classify_arguments="--extra-classify-arguments '${jsm_classify_arguments}'"
     fi
     
     $MYDIR/mutation_callers/submit_JointSNVMix2.sh \
@@ -634,7 +637,7 @@ then
 
     if [[ ${somaticsniper_arguments} ]]
     then
-        input_somaticsniper_arguments="--extra-arguments ${somaticsniper_arguments}"
+        input_somaticsniper_arguments="--extra-arguments '${somaticsniper_arguments}'"
     fi
 
     $MYDIR/mutation_callers/submit_SomaticSniper.sh \
