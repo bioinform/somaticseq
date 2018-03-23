@@ -45,24 +45,24 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     
     # At this point, line_i starts with CHROM:
     vcfout.write('##FILTER=<ID=AllPASS,Description="Called PASS by every single sample set">\n')
-    vcfout.write('##FILTER=<ID=Tier1A,Description="For each of the 3 aligners, each of the 5 sites are deemed strongestEvidence, i.e., strongestEvidence for all 15 aligner/site combinations">\n')
-    vcfout.write('##FILTER=<ID=Tier1B,Description="Each of the 3 alignerCentric Classification is deemed strongestEvidence AND with at least 3/5 sites in each to be strongestEvidence as well">\n')
-    vcfout.write('##FILTER=<ID=Tier1C,Description="Each of the 3 alignerCentric Classification is deemed strongestEvidence">\n')
-    vcfout.write('##FILTER=<ID=Tier2A,Description="2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being merely strongEvidence">\n')
-    vcfout.write('##FILTER=<ID=Tier2B,Description="2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being weakEvidence">\n')
-    vcfout.write('##FILTER=<ID=Tier2C,Description="2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being contradictingEvidence">\n')
-    vcfout.write('##FILTER=<ID=Tier3A,Description="1 out of 3 alignerCentric Classification is strongestEvidence, with the other two deemed merely strongEvidence">\n')
-    vcfout.write('##FILTER=<ID=Tier3B,Description="1 out of 3 alignerCentric Classification is strongestEvidence, with one more deemed merely strongEvidence">\n')
-    vcfout.write('##FILTER=<ID=Tier3C,Description="1 out of 3 alignerCentric Classification is strongestEvidence, with no strongEvidence otherwise">\n')
-    vcfout.write('##FILTER=<ID=Tier4A,Description="No alignerCentric Classification is deemed strongestEvidence, but all 3 are deemed merely strongEvidence">\n')
-    vcfout.write('##FILTER=<ID=Tier4B,Description="No alignerCentric Classification is deemed strongestEvidence, but 2/3 are deemed merely strongEvidence">\n')
-    vcfout.write('##FILTER=<ID=Tier4C,Description="No alignerCentric Classification is deemed strongestEvidence, but 1/3 are deemed merely strongEvidence">\n')
-    vcfout.write('##FILTER=<ID=REJECT,Description="No strongestEvidence or strongEvidence for aligner-centric classification of any kind">\n')
+    vcfout.write('##FILTER=<ID=Tier1A,Description="For each of the 3 aligners, each of the 5 sites are deemed StrongEvidence, i.e., StrongEvidence for all 15 aligner/site combinations">\n')
+    vcfout.write('##FILTER=<ID=Tier1B,Description="Each of the 3 alignerCentric Classification is deemed StrongEvidence AND with at least 3/5 sites in each to be StrongEvidence as well">\n')
+    vcfout.write('##FILTER=<ID=Tier1C,Description="Each of the 3 alignerCentric Classification is deemed StrongEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier2A,Description="2 out of 3 alignerCentric Classification is StrongEvidence, with the other one being merely WeakEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier2B,Description="2 out of 3 alignerCentric Classification is StrongEvidence, with the other one being NeutralEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier2C,Description="2 out of 3 alignerCentric Classification is StrongEvidence, with the other one being LikelyFalsePositive">\n')
+    vcfout.write('##FILTER=<ID=Tier3A,Description="1 out of 3 alignerCentric Classification is StrongEvidence, with the other two deemed merely WeakEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier3B,Description="1 out of 3 alignerCentric Classification is StrongEvidence, with one more deemed merely WeakEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier3C,Description="1 out of 3 alignerCentric Classification is StrongEvidence, with no WeakEvidence otherwise">\n')
+    vcfout.write('##FILTER=<ID=Tier4A,Description="No alignerCentric Classification is deemed StrongEvidence, but all 3 are deemed merely WeakEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier4B,Description="No alignerCentric Classification is deemed StrongEvidence, but 2/3 are deemed merely WeakEvidence">\n')
+    vcfout.write('##FILTER=<ID=Tier4C,Description="No alignerCentric Classification is deemed StrongEvidence, but 1/3 are deemed merely WeakEvidence">\n')
+    vcfout.write('##FILTER=<ID=REJECT,Description="No StrongEvidence or WeakEvidence for aligner-centric classification of any kind">\n')
     
-    vcfout.write('##FILTER=<ID=strongestEvidence,Description="highly confident that it is a real somatic mutation">\n')
-    vcfout.write('##FILTER=<ID=strongEvidence,Description="confident that it is a real somatic mutation">\n')
-    vcfout.write('##FILTER=<ID=weakEvidence,Description="not very confident that it is a real somatic mutation">\n')
-    vcfout.write('##FILTER=<ID=contradictingEvidence,Description="likely not a real somatic mutation">\n')
+    vcfout.write('##FILTER=<ID=StrongEvidence,Description="highly confident that it is a real somatic mutation">\n')
+    vcfout.write('##FILTER=<ID=WeakEvidence,Description="confident that it is a real somatic mutation">\n')
+    vcfout.write('##FILTER=<ID=NeutralEvidence,Description="not very confident that it is a real somatic mutation">\n')
+    vcfout.write('##FILTER=<ID=LikelyFalsePositive,Description="likely not a real somatic mutation">\n')
     
     vcfout.write('##INFO=<ID=calledSamples,Number=.,Type=String,Description="Sample names where this variant is called">\n')
     vcfout.write('##INFO=<ID=rejectedSamples,Number=.,Type=String,Description="Sample names classified as REJECT by SomaticSeq">\n')
@@ -179,21 +179,21 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
             sample_columns = copy( original_sample_columns )
                         
             # 0 for each site/platform
-            bwaClassification    = {'IL': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'NV': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'FD': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'NS': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
-                                'Others': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}}
-            bowtieClassification = {'IL': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'NV': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'FD': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'NS': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
-                                'Others': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}}
-            novoClassification   = {'IL': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'NV': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'FD': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
-                                    'NS': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
-                                'Others': {'PASS':0, 'REJECT': 0, 'weakEvidence': 0, 'Consensus': 0, 'Missing': 0}}
+            bwaClassification    = {'IL': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NV': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'FD': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NS': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                'Others': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}}
+            bowtieClassification = {'IL': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NV': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'FD': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NS': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                'Others': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}}
+            novoClassification   = {'IL': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NV': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'FD': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                    'NS': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}, \
+                                'Others': {'PASS':0, 'REJECT': 0, 'NeutralEvidence': 0, 'Consensus': 0, 'Missing': 0}}
             
             alignerClassifications = {'bwa': bwaClassification, 'bowtie': bowtieClassification, 'novo': novoClassification}
             
@@ -255,15 +255,15 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     elif score and score != '.' and (reject_score <= float(score) < reject_score):
                                                 
                         if   samples[call_i].startswith('IL_'):
-                            alignerClassifications[ aligner_i ]['IL']['weakEvidence'] += 1
+                            alignerClassifications[ aligner_i ]['IL']['NeutralEvidence'] += 1
                         elif samples[call_i].startswith('NV_'):
-                            alignerClassifications[ aligner_i ]['NV']['weakEvidence'] += 1
+                            alignerClassifications[ aligner_i ]['NV']['NeutralEvidence'] += 1
                         elif samples[call_i].startswith('FD_'):
-                            alignerClassifications[ aligner_i ]['FD']['weakEvidence'] += 1                        
+                            alignerClassifications[ aligner_i ]['FD']['NeutralEvidence'] += 1                        
                         elif samples[call_i].startswith('NS_'):
-                            alignerClassifications[ aligner_i ]['NS']['weakEvidence'] += 1
+                            alignerClassifications[ aligner_i ]['NS']['NeutralEvidence'] += 1
                         elif re.match(r'(EA|NC|LL)_', samples[call_i]):
-                            alignerClassifications[ aligner_i ]['Others']['weakEvidence'] += 1
+                            alignerClassifications[ aligner_i ]['Others']['NeutralEvidence'] += 1
 
                     n_tools = vcf_i.get_sample_value('NUM_TOOLS', call_i)
                     if n_tools and n_tools != '.' and int(n_tools) > ncallers:
@@ -370,7 +370,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     for site_i in alignerClassifications[ aligner_i ]:
                         
                         npass_i      = alignerClassifications[ aligner_i ][ site_i ][ 'PASS' ]
-                        nlowqual_i   = alignerClassifications[ aligner_i ][ site_i ][ 'weakEvidence' ]
+                        nlowqual_i   = alignerClassifications[ aligner_i ][ site_i ][ 'NeutralEvidence' ]
                         nreject_i    = alignerClassifications[ aligner_i ][ site_i ][ 'REJECT' ] + alignerClassifications[ aligner_i ][ site_i ][ 'Missing' ]
                         nconsensus_i = alignerClassifications[ aligner_i ][ site_i ][ 'Consensus' ]
                         
@@ -379,7 +379,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         else:
                             alignerSiteScores[ aligner_i ][ site_i ] = nconsensus_i*passAdditive + nreject_i*rejectAdditive
         
-                # strongestEvidence = 3; strongEvidence = 1; weakEvidence = 0; contradictingEvidence = -3
+                # StrongEvidence = 3; WeakEvidence = 1; NeutralEvidence = 0; LikelyFalsePositive = -3
                 alignerSiteClassification = { 'bwa': {}, 'bowtie': {}, 'novo': {} }
                 for aligner_i in alignerSiteScores:
                     for site_i in alignerSiteScores[ aligner_i ]:
@@ -429,25 +429,25 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                                 
                 
                 
-                alignerCentricClassification = {'bwa': {'strongestEvidence': 0, 'strongEvidence': 0, 'weakEvidence': 0, 'contradictingEvidence': 0, 'TOTAL': 0}, \
-                                             'bowtie': {'strongestEvidence': 0, 'strongEvidence': 0, 'weakEvidence': 0, 'contradictingEvidence': 0, 'TOTAL': 0}, \
-                                               'novo': {'strongestEvidence': 0, 'strongEvidence': 0, 'weakEvidence': 0, 'contradictingEvidence': 0, 'TOTAL': 0} }
+                alignerCentricClassification = {'bwa': {'StrongEvidence': 0, 'WeakEvidence': 0, 'NeutralEvidence': 0, 'LikelyFalsePositive': 0, 'TOTAL': 0}, \
+                                             'bowtie': {'StrongEvidence': 0, 'WeakEvidence': 0, 'NeutralEvidence': 0, 'LikelyFalsePositive': 0, 'TOTAL': 0}, \
+                                               'novo': {'StrongEvidence': 0, 'WeakEvidence': 0, 'NeutralEvidence': 0, 'LikelyFalsePositive': 0, 'TOTAL': 0} }
                 
                 for aligner_i in alignerSiteClassification:
                     for site_i in alignerSiteClassification[ aligner_i ]:
                         if alignerSiteClassification[ aligner_i ][ site_i ] == 3:
-                            alignerCentricClassification[ aligner_i ]['strongestEvidence'] += 1
+                            alignerCentricClassification[ aligner_i ]['StrongEvidence'] += 1
                             alignerCentricClassification[ aligner_i ]['TOTAL'] += 3
                             
                         elif alignerSiteClassification[ aligner_i ][ site_i ] == 1:
-                            alignerCentricClassification[ aligner_i ]['strongEvidence'] += 1
+                            alignerCentricClassification[ aligner_i ]['WeakEvidence'] += 1
                             alignerCentricClassification[ aligner_i ]['TOTAL'] += 1
                             
                         elif alignerSiteClassification[ aligner_i ][ site_i ] == 0:
-                            alignerCentricClassification[ aligner_i ]['weakEvidence'] += 1
+                            alignerCentricClassification[ aligner_i ]['NeutralEvidence'] += 1
                         
                         elif alignerSiteClassification[ aligner_i ][ site_i ] == -3:
-                            alignerCentricClassification[ aligner_i ]['contradictingEvidence'] += 1
+                            alignerCentricClassification[ aligner_i ]['LikelyFalsePositive'] += 1
                             alignerCentricClassification[ aligner_i ]['TOTAL'] -= 3
 
                         else:
@@ -476,62 +476,62 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                 if len(called_samples) == total_tumor_samples:
                     filterLabel_i = 'AllPASS'
                 
-                # Tier1A: for each of the 3 aligners, each of the 5 sites are deemed "strongestEvidence"
-                elif alignerCentricClassification['bwa']['strongestEvidence'] == alignerCentricClassification['bowtie']['strongestEvidence'] == alignerCentricClassification['novo']['strongestEvidence'] == 5:
+                # Tier1A: for each of the 3 aligners, each of the 5 sites are deemed "StrongEvidence"
+                elif alignerCentricClassification['bwa']['StrongEvidence'] == alignerCentricClassification['bowtie']['StrongEvidence'] == alignerCentricClassification['novo']['StrongEvidence'] == 5:
                     filterLabel_i = 'Tier1A'
                 
-                # Tier1B: Each of the 3 alignerCentric Classification is deemed "strongestEvidence" AND with at least 3/5 sites in each to be "strongestEvidence" as well
-                elif alignerCentricClassification['bwa']['Classification']    == 3 and alignerCentricClassification['bwa']['strongestEvidence']    >= 3 and \
-                     alignerCentricClassification['bowtie']['Classification'] == 3 and alignerCentricClassification['bowtie']['strongestEvidence'] >= 3 and \
-                     alignerCentricClassification['novo']['Classification']   == 3 and alignerCentricClassification['bowtie']['strongestEvidence'] >= 3:
+                # Tier1B: Each of the 3 alignerCentric Classification is deemed "StrongEvidence" AND with at least 3/5 sites in each to be "StrongEvidence" as well
+                elif alignerCentricClassification['bwa']['Classification']    == 3 and alignerCentricClassification['bwa']['StrongEvidence']    >= 3 and \
+                     alignerCentricClassification['bowtie']['Classification'] == 3 and alignerCentricClassification['bowtie']['StrongEvidence'] >= 3 and \
+                     alignerCentricClassification['novo']['Classification']   == 3 and alignerCentricClassification['bowtie']['StrongEvidence'] >= 3:
                     filterLabel_i = 'Tier1B'
                 
-                # Tier1C: each of the 3 alignerCentric Classification is deemed "strongestEvidence"
+                # Tier1C: each of the 3 alignerCentric Classification is deemed "StrongEvidence"
                 elif alignerCentricClassification['bwa']['Classification'] == alignerCentricClassification['bowtie']['Classification'] == alignerCentricClassification['novo']['Classification'] == 3:
                     filterLabel_i = 'Tier1C'
                     
-                # Tier2: 2 out of 3 alignerCentric Classification is strongestEvidence.... 
+                # Tier2: 2 out of 3 alignerCentric Classification is StrongEvidence.... 
                 elif (alignerCentricClassification['bwa']['Classification'] == 3) + (alignerCentricClassification['bowtie']['Classification'] == 3) + (alignerCentricClassification['novo']['Classification'] == 3) == 2:
                 
-                    # Tier2A: ... with the other one being merely "strongEvidence":
+                    # Tier2A: ... with the other one being merely "WeakEvidence":
                     if (alignerCentricClassification['bwa']['Classification'] == 1) or (alignerCentricClassification['bowtie']['Classification'] == 1) or (alignerCentricClassification['novo']['Classification'] == 1):
                         filterLabel_i = 'Tier2A'
                         
-                    # Tier2B: 2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being merely "weakEvidence":
+                    # Tier2B: 2 out of 3 alignerCentric Classification is StrongEvidence, with the other one being merely "NeutralEvidence":
                     elif (alignerCentricClassification['bwa']['Classification'] == 0) or (alignerCentricClassification['bowtie']['Classification'] == 0) or (alignerCentricClassification['novo']['Classification'] == 0):
                         filterLabel_i = 'Tier2B'
                     
-                    # Tier2C: 2 out of 3 alignerCentric Classification is strongestEvidence, with the other one being merely "contradictingEvidence":
+                    # Tier2C: 2 out of 3 alignerCentric Classification is StrongEvidence, with the other one being merely "LikelyFalsePositive":
                     else:
                         filterLabel_i = 'Tier2C'
                 
-                # Tier3: Only 1 out of 3 alignerCentric classification is "strongestEvidence"
+                # Tier3: Only 1 out of 3 alignerCentric classification is "StrongEvidence"
                 elif (alignerCentricClassification['bwa']['Classification'] == 3) + (alignerCentricClassification['bowtie']['Classification'] == 3) + (alignerCentricClassification['novo']['Classification'] == 3) == 1:
                     
-                    # Tier3A: The other two are both "strongEvidence"
+                    # Tier3A: The other two are both "WeakEvidence"
                     if (alignerCentricClassification['bwa']['Classification'] == 1) + (alignerCentricClassification['bowtie']['Classification'] == 1) + (alignerCentricClassification['novo']['Classification'] == 1) == 2:
                         filterLabel_i = 'Tier3A'
                         
-                    # Tier3B: One of the other two is "strongEvidence"
+                    # Tier3B: One of the other two is "WeakEvidence"
                     elif (alignerCentricClassification['bwa']['Classification'] == 1) + (alignerCentricClassification['bowtie']['Classification'] == 1) + (alignerCentricClassification['novo']['Classification'] == 1) == 1:
                         filterLabel_i = 'Tier3B'
                     
-                    # No lesser "strongEvidence" of the other two
+                    # No lesser "WeakEvidence" of the other two
                     else:
                         filterLabel_i = 'Tier3C'
                         
-                # No "strongestEvidence" of any alignerCentric Classifications:
+                # No "StrongEvidence" of any alignerCentric Classifications:
                 else:
                     
-                    # Tier4A: all 3 are merely "strongEvidence":
+                    # Tier4A: all 3 are merely "WeakEvidence":
                     if (alignerCentricClassification['bwa']['Classification'] == 1) + (alignerCentricClassification['bowtie']['Classification'] == 1) + (alignerCentricClassification['novo']['Classification'] == 1) == 3:
                         filterLabel_i = 'Tier4A'
                         
-                    # Tier4B: 2/3 are merely "strongEvidence":
+                    # Tier4B: 2/3 are merely "WeakEvidence":
                     elif (alignerCentricClassification['bwa']['Classification'] == 1) + (alignerCentricClassification['bowtie']['Classification'] == 1) + (alignerCentricClassification['novo']['Classification'] == 1) == 2:
                         filterLabel_i = 'Tier4B'
                     
-                    # Tier4C: 1/3 are merely "strongEvidence":    
+                    # Tier4C: 1/3 are merely "WeakEvidence":    
                     elif (alignerCentricClassification['bwa']['Classification'] == 1) + (alignerCentricClassification['bowtie']['Classification'] == 1) + (alignerCentricClassification['novo']['Classification'] == 1) == 1:
                         filterLabel_i = 'Tier4C'
                     

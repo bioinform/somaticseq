@@ -487,17 +487,17 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             # If a bunch of MQ0 reads in all 3 aligners, considered "neutral"
             if    bwaMQ0 > total_tumor_samples  and bowtieMQ0 > total_tumor_samples and novoMQ0 > total_tumor_samples:
                 #vcf_items[ i_qual ] = '0'
-                vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                 
             # If high number of MQ0 reads in 2/3 aligners.
             elif (bwaMQ0 > total_tumor_samples) +  (bowtieMQ0 > total_tumor_samples) +  (novoMQ0 > total_tumor_samples) >= 2:
                 #vcf_items[ i_qual ] = '1'
-                vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
+                vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
                 
             # In other words, if high number of MQ0 reads occur in only one aligner, it is considered multiple aligner support and good enough to be highest confidence. 
             else:
                 #vcf_items[ i_qual ] = '3'
-                vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongestEvidence')
+                vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'StrongEvidence')
                             
         
         # If NOT AllPASS or Tier1:
@@ -729,22 +729,22 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     # Look for disqualifying features that will make it lower confidence:
                     if (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
                         #vcf_items[ i_qual ] = '1'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
 
                     elif num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
                         #vcf_items[ i_qual ] = '0'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                         
                     elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
                         #vcf_items[ i_qual ] = '0'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
 
                     elif nREJECTS > nPASSES:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')                        
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')                        
                     
-                    # If there is nothing "bad," it's still strongestEvidence like Tier1. 
+                    # If there is nothing "bad," it's still StrongEvidence like Tier1. 
                     else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongestEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'StrongEvidence')
                 
                 # Still Tier2, but zero support from the 3rd aligner in any sample:
                 elif re.match(r'Tier2', vcf_i.filters):
@@ -753,83 +753,83 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     # Look for disqualifying features that will make it lower confidence:
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
                         #vcf_items[ i_qual ] = '0'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
 
                     # Already with oen aligner completely down, if we find trouble with 2...
                     elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
                         #vcf_items[ i_qual ] = '0'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
 
                     # If mapping problem for all 3
                     elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                         
                     elif nREJECTS > nPASSES:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                         
                     else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
 
 
-                # Only one alignerCentric Classification is "strongestEvidence", but have at least minimal evidence support from other aligners:
+                # Only one alignerCentric Classification is "StrongEvidence", but have at least minimal evidence support from other aligners:
                 elif re.match(r'Tier3', vcf_i.filters) and not ( vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS') ) ):
 
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                                                 
                     elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                         
                     elif nREJECTS > nPASSES:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                         
                     else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
                 
                 
                 elif re.match(r'Tier3', vcf_i.filters):
                     
                     if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                                                 
                     elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
                         #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                         
                     elif nREJECTS > nPASSES:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                         
                     else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                 
                 
-                # Tier 4 is lowest tier, but A/N have 3/3 or 2/3 of "mere" strongEvidence, but no strongest evidence
+                # Tier 4 is lowest tier, but A/N have 3/3 or 2/3 of "mere" WeakEvidence, but no strongest evidence
                 elif re.match(r'Tier4[AB]', vcf_i.filters):
                     
                     if nPASSES > nREJECTS:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                     else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                                         
             
                 elif vcf_i.filters == 'Tier4C':
                     
                     if nPASSES > nREJECTS:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                     else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                     
                     
                 elif vcf_i.filters == 'REJECT':
                     
                     if nPASSES > nREJECTS:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                     else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'contradictingEvidence')
+                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                     
             
             # All the nonPASS samples are 0.1 < SCORE < 0.7 samples, but only in Tier4 and 5.
@@ -837,15 +837,15 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             else:
                 if   re.match(r'Tier[12]', vcf_i.filters):
                     #vcf_items[ i_qual ] = '3'
-                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongestEvidence')
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'StrongEvidence')
                     
                 elif re.match(r'Tier3', vcf_i.filters):
                     #vcf_items[ i_qual ] = '1'
-                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'strongEvidence')
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
                     
                 else:
                     #vcf_items[ i_qual ] = '0'
-                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'weakEvidence')
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
         
         
         vcf_info_item = vcf_items[7].split(';')
