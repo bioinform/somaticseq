@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,dbsnp:,MEM:,threads:,extra-arguments:,extra-filter-arguments:,action: -n 'submit_MuTect.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,tumor-bam:,normal-bam:,tumor-name:,normal-name:,human-reference:,selector:,dbsnp:,MEM:,threads:,extra-arguments:,extra-filter-arguments:,action: -n 'submit_MuTect2.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -157,6 +157,10 @@ else
 fi
 
 echo "" >> $out_script
+
+
+
+
 
 echo "docker run --rm -v /:/mnt -u $UID --memory $(( MEM * threads ))G broadinstitute/gatk:4.0.0.0 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar gatk.jar Mutect2 \\" >> $out_script
