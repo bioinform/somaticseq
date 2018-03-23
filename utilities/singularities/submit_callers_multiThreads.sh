@@ -353,12 +353,12 @@ do
         
         if [[ ${mutect2_arguments} ]]
         then
-            input_mutect2_arguments="--extra-arguments '${mutect2_arguments}'"
+            input_mutect2_arguments="${mutect2_arguments}"
         fi
         
         if [[ ${mutect2_filter_arguments} ]]
         then
-            input_mutect2_filter_arguments="--extra-filter-arguments '${mutect2_filter_arguments}'"
+            input_mutect2_filter_arguments="${mutect2_filter_arguments}"
         fi
     
         $MYDIR/mutation_callers/submit_MuTect2.sh \
@@ -369,8 +369,8 @@ do
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --human-reference ${HUMAN_REFERENCE} \
         --dbsnp ${dbsnp} \
-        ${input_mutect2_arguments} \
-        ${input_mutect2_filter_arguments} \
+        --extra-arguments "${input_mutect2_arguments}" \
+        --extra-filter-arguments "${input_mutect2_filter_arguments}" \
         --action $action
     
         mutect2_input="--mutect2 ${outdir}/${ith_thread}/MuTect2.vcf"
@@ -380,14 +380,17 @@ do
     if [[ $varscan2 -eq 1 ]]
     then
     
+        input_varscan_pileup_arguments=''
+        input_varscan_arguments=''
+        
         if [[ ${varscan_pileup_arguments} ]]
         then
-            input_varscan_pileup_arguments="--extra-pileup-arguments '${varscan_pileup_arguments}'"
+            input_varscan_pileup_arguments="${varscan_pileup_arguments}"
         fi
         
         if [[ ${varscan_arguments} ]]
         then
-            input_varscan_arguments="--extra-arguments '${varscan_arguments}'"
+            input_varscan_arguments="${varscan_arguments}"
         fi
     
         $MYDIR/mutation_callers/submit_VarScan2.sh \
@@ -397,8 +400,8 @@ do
         --out-vcf VarScan2.vcf \
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --human-reference ${HUMAN_REFERENCE} \
-        ${input_varscan_pileup_arguments} \
-        ${input_varscan_arguments} \
+        --extra-pileup-arguments "${input_varscan_pileup_arguments}" \
+        --extra-arguments "${input_varscan_arguments}" \
         --action $action
     
         varscan_snv_input="--varscan-snv ${outdir}/${ith_thread}/VarScan2.snp.vcf"
@@ -410,9 +413,11 @@ do
     if [[ $vardict -eq 1 ]]
     then
     
+        input_vardict_arguments=''
+        
         if [[ ${vardict_arguments} ]]
         then
-            input_vardict_arguments="--extra-arguments '${vardict_arguments}'"
+            input_vardict_arguments="${vardict_arguments}"
         fi
     
         $MYDIR/mutation_callers/submit_VarDictJava.sh \
@@ -423,7 +428,7 @@ do
         --out-vcf VarDict.vcf \
         --human-reference ${HUMAN_REFERENCE} \
         --VAF ${min_vaf} \
-        ${input_vardict_arguments} \
+        --extra-arguments "${input_vardict_arguments}" \
         --action $action
         
         vardict_input="--vardict ${outdir}/${ith_thread}/VarDict.vcf"
@@ -450,9 +455,10 @@ do
     if [[ $lofreq -eq 1 ]]
     then
     
+        input_lofreq_arguments=''
         if [[ ${lofreq_arguments} ]]
         then
-            input_lofreq_arguments="--extra-arguments '${lofreq_arguments}'"
+            input_lofreq_arguments="${lofreq_arguments}"
         fi
     
         $MYDIR/mutation_callers/submit_LoFreq.sh \
@@ -463,7 +469,7 @@ do
         --out-vcf LoFreq.vcf \
         --human-reference ${HUMAN_REFERENCE} \
         --dbsnp ${dbsnp} \
-        ${input_lofreq_arguments} \
+        --extra-arguments "${input_lofreq_arguments}" \
         --action $action
         
         lofreq_snv_input="--lofreq-snv ${outdir}/${ith_thread}/LoFreq.somatic_final.snvs.vcf.gz"
@@ -479,14 +485,17 @@ do
             two_pass='--two-pass'
         fi    
 
+        input_scalpel_discovery_arguments=''
+        input_scalpel_export_arguments=''
+        
         if [[ ${scalpel_discovery_arguments} ]]
         then
-            input_scalpel_discovery_arguments="--extra-discovery-arguments '${scalpel_discovery_arguments}'"
+            input_scalpel_discovery_arguments="${scalpel_discovery_arguments}"
         fi
         
         if [[ ${scalpel_export_arguments} ]]
         then
-            input_scalpel_export_arguments="--extra-export-arguments '${scalpel_export_arguments}'"
+            input_scalpel_export_arguments="${scalpel_export_arguments}"
         fi
     
         $MYDIR/mutation_callers/submit_Scalpel.sh \
@@ -496,8 +505,8 @@ do
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --out-vcf Scalpel.vcf \
         --human-reference ${HUMAN_REFERENCE} \
-        ${input_scalpel_discovery_arguments} \
-        ${input_scalpel_export_arguments} \
+        --extra-discovery-arguments "${input_scalpel_discovery_arguments}" \
+        --extra-export-arguments "${input_scalpel_export_arguments}" \
         ${two_pass} \
         --action $action
         
@@ -513,14 +522,17 @@ do
             exome_stat='--exome'
         fi
     
+        input_strelka_config_arguments=''
+        input_strelka_run_arguments=''
+        
         if [[ ${strelka_config_arguments} ]]
         then
-            input_strelka_config_arguments=" --extra-config-arguments '${strelka_config_arguments}'"
+            input_strelka_config_arguments="${strelka_config_arguments}"
         fi
         
         if [[ ${strelka_run_arguments} ]]
         then
-            input_strelka_run_arguments="--extra-run-arguments '${strelka_run_arguments}'"
+            input_strelka_run_arguments="${strelka_run_arguments}"
         fi
     
         $MYDIR/mutation_callers/submit_Strelka.sh \
@@ -531,8 +543,8 @@ do
         --out-vcf Strelka.vcf \
         --human-reference ${HUMAN_REFERENCE} \
         $exome_stat \
-        ${input_strelka_config_arguments} \
-        ${input_strelka_run_arguments} \
+        --extra-config-arguments "${input_strelka_config_arguments}" \
+        --extra-run-arguments "${input_strelka_run_arguments}" \
         --action $action
         
         strelka_snv_input="--strelka-snv ${outdir}/${ith_thread}/Strelka/results/variants/somatic.snvs.vcf.gz"
@@ -561,9 +573,10 @@ do
             ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"
         fi
         
+        input_somaticseq_arguments=''
         if [[ ${somaticseq_arguments} ]]
         then
-            input_somaticseq_arguments="--extra-arguments '${somaticseq_arguments}'"
+            input_somaticseq_arguments="${somaticseq_arguments}"
         fi
         
         $MYDIR/mutation_callers/submit_SomaticSeq.sh \
@@ -594,7 +607,7 @@ do
         $truth_snv_text \
         $truth_indel_text \
         $ada_r_script_text \
-        ${input_somaticseq_arguments} \
+        --extra-arguments "${input_somaticseq_arguments}" \
         --action ${somaticseq_action}
     fi
         
@@ -608,14 +621,17 @@ done
 if [[ $jointsnvmix2 -eq 1 ]]
 then
 
+    input_jsm_train_arguments=''
+    input_jsm_classify_arguments=''
+
     if [[ ${jsm_train_arguments} ]]
     then
-        input_jsm_train_arguments="--extra-train-arguments '${jsm_train_arguments}'"
+        input_jsm_train_arguments="${jsm_train_arguments}"
     fi
     
     if [[ ${jsm_classify_arguments} ]]
     then
-        input_jsm_classify_arguments="--extra-classify-arguments '${jsm_classify_arguments}'"
+        input_jsm_classify_arguments="${jsm_classify_arguments}"
     fi
     
     $MYDIR/mutation_callers/submit_JointSNVMix2.sh \
@@ -624,8 +640,8 @@ then
     --out-dir ${outdir} \
     --out-vcf JointSNVMix2.vcf \
     --human-reference ${HUMAN_REFERENCE} \
-    ${input_jsm_train_arguments} \
-    ${input_jsm_classify_arguments} \
+    --extra-train-arguments "${input_jsm_train_arguments}" \
+    --extra-classify-arguments "${input_jsm_classify_arguments}" \
     --action $action
 fi
 
@@ -634,9 +650,11 @@ fi
 if [[ $somaticsniper -eq 1 ]]
 then
 
+    input_somaticsniper_arguments=''
+    
     if [[ ${somaticsniper_arguments} ]]
     then
-        input_somaticsniper_arguments="--extra-arguments '${somaticsniper_arguments}'"
+        input_somaticsniper_arguments="${somaticsniper_arguments}"
     fi
 
     $MYDIR/mutation_callers/submit_SomaticSniper.sh \
@@ -646,6 +664,6 @@ then
     --out-vcf SomaticSniper.vcf \
     --human-reference ${HUMAN_REFERENCE} \
     --split $threads \
-    ${input_somaticsniper_arguments} \
+    --extra-arguments "${input_somaticsniper_arguments}" \
     --action $action
 fi
