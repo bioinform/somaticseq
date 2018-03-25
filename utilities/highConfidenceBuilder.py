@@ -101,6 +101,10 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     vcfout.write('##INFO=<ID=nREJECTorNoCall,Number=1,Type=Integer,Description="number of samples where the variant is classified as REJECT or not called at all">\n')
     vcfout.write('##INFO=<ID=nCONSENSUS,Number=1,Type=Integer,Description="number of samples where majority of callers agree">\n')
     
+    vcfout.write('##INFO=<ID=bwaClassification,Number=1,Type=String,Description="Strong, Weak, Neutral, or Likely False Positive based on bwa-aligned data sets">\n')
+    vcfout.write('##INFO=<ID=bowtieClassification,Number=1,Type=String,Description="Strong, Weak, Neutral, or Likely False Positive based on bowtie-aligned data sets">\n')
+    vcfout.write('##INFO=<ID=novoClassification,Number=1,Type=String,Description="Strong, Weak, Neutral, or Likely False Positive based on novoalign-aligned data sets">\n')
+    
     vcfout.write('##INFO=<ID=FLAGS,Number=.,Type=String,Description="Flags: 1) RandN: nREJECTS and nNoCall greater than nPASS, 2) R: nREJECTS greater than nPASS, 3) N: nNoCall greater than nPASS, 4) RplusN: nREJECTS+nNoCall greater than nPASS, 5) MQ0bwa: bwa MQ0 reads more than 10% of bwa reads, 6) MQ0bowtie: bowtie MQ0 reads more than 10% of bowtie reads, 7) MQ0novo: novo MQ0 reads more than 10% of novo reads, 8) bwa0: no PASS sample in bwa, 9) bowtie0: no PASS sample in bowtie, 10) novo0: no PASS sample in novo, 11) bwaOnly: all PASS samples are aligned by bwa, 12) bowtieOnly: all PASS samples are by bowtie, 13) novoOnly: all PASS samples are by novoalign.">\n')
     
     header = line_i.split('\t')
@@ -456,14 +460,23 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                 
                 # Classify alignerCentric classification based on "TOTAL" scores:
                 for aligner_i in alignerCentricClassification:
+                    
                     if alignerCentricClassification[ aligner_i ]['TOTAL'] >= 6:
                         alignerCentricClassification[ aligner_i ]['Classification'] = 3
+                        alignerCentricClassification[ aligner_i ]['EvidenceLevel'] = 'Strong'
+                        
                     elif 2 <= alignerCentricClassification[ aligner_i ]['TOTAL'] <= 5:
                         alignerCentricClassification[ aligner_i ]['Classification'] = 1
+                        alignerCentricClassification[ aligner_i ]['EvidenceLevel'] = 'Weak'
+                        
                     elif -1 <= alignerCentricClassification[ aligner_i ]['TOTAL'] < 2:
                         alignerCentricClassification[ aligner_i ]['Classification'] = 0
+                        alignerCentricClassification[ aligner_i ]['EvidenceLevel'] = 'Neutral'
+                        
                     elif alignerCentricClassification[ aligner_i ]['TOTAL'] <= -2:
                         alignerCentricClassification[ aligner_i ]['Classification'] = -3
+                        alignerCentricClassification[ aligner_i ]['EvidenceLevel'] = 'LikelyFalsePositive'
+                        
                     else:
                         print( alignerCentricClassification[ aligner_i ]['TOTAL'] )
                         print( line_i )
@@ -614,7 +627,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     
                     flag_string = ';FLAGS=' + ','.join(flags) if flags else ''
                     
-                    info_column = 'calledSamples={calledSamples};rejectedSamples={rejectedSamples};noCallSamples={noCallSamples};bwa_PASS={bwa_PASS};bowtie_PASS={bowtie_PASS};novo_PASS={novo_PASS};bwa_REJECT={bwa_REJECT};bowtie_REJECT={bowtie_REJECT};novo_REJECT={novo_REJECT};bwa_Consensus={bwa_Consensus};bowtie_Consensus={bowtie_Consensus};novo_Consensus={novo_Consensus};bwaMQ0={bwaMQ0};bowtieMQ0={bowtieMQ0};novoMQ0={novoMQ0};MQ0={MQ0};bwaTVAF={bwaTVAF};bowtieTVAF={bowtieTVAF};novoTVAF={novoTVAF};TVAF={TVAF};bwaNVAF={bwaNVAF};bowtieNVAF={bowtieNVAF};novoNVAF={novoNVAF};NVAF={NVAF};nCalledSamples={nCalledSamples};nPASSES={nPasses};nREJECTS={nRejects};nNoCall={nNoCall};nREJECTorNoCall={nREJECTorNoCall};nCONSENSUS={nConsensus}{FLAGS}'.format( \
+                    info_column = 'calledSamples={calledSamples};rejectedSamples={rejectedSamples};noCallSamples={noCallSamples};bwa_PASS={bwa_PASS};bowtie_PASS={bowtie_PASS};novo_PASS={novo_PASS};bwa_REJECT={bwa_REJECT};bowtie_REJECT={bowtie_REJECT};novo_REJECT={novo_REJECT};bwa_Consensus={bwa_Consensus};bowtie_Consensus={bowtie_Consensus};novo_Consensus={novo_Consensus};bwaMQ0={bwaMQ0};bowtieMQ0={bowtieMQ0};novoMQ0={novoMQ0};MQ0={MQ0};bwaTVAF={bwaTVAF};bowtieTVAF={bowtieTVAF};novoTVAF={novoTVAF};TVAF={TVAF};bwaNVAF={bwaNVAF};bowtieNVAF={bowtieNVAF};novoNVAF={novoNVAF};NVAF={NVAF};nCalledSamples={nCalledSamples};nPASSES={nPasses};nREJECTS={nRejects};nNoCall={nNoCall};nREJECTorNoCall={nREJECTorNoCall};nCONSENSUS={nConsensus};bwaClassification={bwaClass};bowtieClassification={bowtieClass};novoClassification={novoClass}{FLAGS}'.format( \
                     calledSamples=called_samples_string, \
                     rejectedSamples=rejected_samples_string, \
                     noCallSamples=nocall_sample_string, \
@@ -631,6 +644,9 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     bwaTVAF='%.3f' % t_vaf['bwa'], bowtieTVAF='%.3f' % t_vaf['bowtie'], novoTVAF='%.3f' % t_vaf['novo'], TVAF='%.3f' % t_vaf['Overall'], \
                     bwaNVAF='%.3f' % n_vaf['bwa'], bowtieNVAF='%.3f' % n_vaf['bowtie'], novoNVAF='%.3f' % n_vaf['novo'], NVAF='%.3f' % n_vaf['Overall'], \
                     nCalledSamples=len(called_samples), nPasses=nPASS, nRejects=nREJECT, nNoCall=nNoCall, nREJECTorNoCall=nNoCall+nREJECT, nConsensus=nConsensus, \
+                    bwaClass=alignerCentricClassification[ 'bwa' ]['EvidenceLevel'], \
+                    bowtieClass=alignerCentricClassification[ 'bowtie' ]['EvidenceLevel'], \
+                    novoClass=alignerCentricClassification[ 'novo' ]['EvidenceLevel'], \
                     FLAGS=flag_string)
                     
                     

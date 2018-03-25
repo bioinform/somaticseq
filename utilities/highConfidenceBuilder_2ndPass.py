@@ -68,7 +68,8 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
     
     # GO THRU THE VCF HEADER
     while vcf_line.startswith('##'):
-        vcfout.write( vcf_line + '\n' )
+        if not vcf_line.startswith('##GATKCommandLine'):
+            vcfout.write( vcf_line + '\n' )
         vcf_line = vcf_in.readline().rstrip()
         
     vcfout.write( vcf_line + '\n' )
