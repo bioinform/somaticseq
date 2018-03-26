@@ -53,7 +53,7 @@ elif args.variant_type.upper() == 'INDEL':
 else:
     assert (args.variant_type.upper() == 'INDEL' or args.variant_type.upper() == 'SNV')
     
-
+threeSigma = 2*(1-stats.norm.cdf(3))
 nan = float('nan')
 
 def all_indices(pattern_to_be_matched, my_list):
@@ -905,21 +905,21 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             elif info_item_i.startswith('NVAF='):
                 vcf_info_item[i] = 'NVAF={}'.format( '%.3f' % NVAF )
             elif info_item_i.startswith('FLAGS='):
-                if bwa_bowtie_VAF_p < 0.01:
+                if bwa_bowtie_VAF_p < threeSigma:
                     vcf_info_item[i] = vcf_info_item[i] + ',bwa.bowtie.inconsistentVAF'
-                if bwa_novo_VAF_p < 0.01:
+                if bwa_novo_VAF_p < threeSigma:
                     vcf_info_item[i] = vcf_info_item[i] + ',bwa.novo.inconsistentVAF'
-                if bowtie_novo_VAF_p < 0.01:
+                if bowtie_novo_VAF_p < threeSigma:
                     vcf_info_item[i] = vcf_info_item[i] + ',bowtie.novo.inconsistentVAF'
         
         # If there is FLAGS in the input VCF file, those inconsistentVAF flags will be added, otherwise they may need to be added here:
         if not vcf_i.get_info_value('FLAGS'):
             inconsistentVAF_flags = []
-            if bwa_bowtie_VAF_p < 0.01:
+            if bwa_bowtie_VAF_p < threeSigma:
                 inconsistentVAF_flags.append('bwa.bowtie.inconsistentVAF')
-            if bwa_novo_VAF_p < 0.01:
+            if bwa_novo_VAF_p < threeSigma:
                 inconsistentVAF_flags.append('bwa.novo.inconsistentVAF')
-            if bowtie_novo_VAF_p < 0.01:
+            if bowtie_novo_VAF_p < threeSigma:
                 inconsistentVAF_flags.append('bowtie.novo.inconsistentVAF')
                 
             if inconsistentVAF_flags:
