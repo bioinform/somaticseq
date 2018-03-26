@@ -101,9 +101,9 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     vcfout.write('##INFO=<ID=nREJECTorNoCall,Number=1,Type=Integer,Description="number of samples where the variant is classified as REJECT or not called at all">\n')
     vcfout.write('##INFO=<ID=nCONSENSUS,Number=1,Type=Integer,Description="number of samples where majority of callers agree">\n')
     
-    vcfout.write('##INFO=<ID=bwaClassification,Number=1,Type=String,Description="Strong, Weak, Neutral, or Likely False Positive based on bwa-aligned data sets">\n')
-    vcfout.write('##INFO=<ID=bowtieClassification,Number=1,Type=String,Description="Strong, Weak, Neutral, or Likely False Positive based on bowtie-aligned data sets">\n')
-    vcfout.write('##INFO=<ID=novoClassification,Number=1,Type=String,Description="Strong, Weak, Neutral, or Likely False Positive based on novoalign-aligned data sets">\n')
+    vcfout.write('##INFO=<ID=bwaClassification,Number=1,Type=String,Description="bwa-centric classification: Strong, Weak, Neutral, or Likely False Positive based on bwa-aligned data sets">\n')
+    vcfout.write('##INFO=<ID=bowtieClassification,Number=1,Type=String,Description="bowtie-centric classification: Strong, Weak, Neutral, or Likely False Positive based on bowtie-aligned data sets">\n')
+    vcfout.write('##INFO=<ID=novoClassification,Number=1,Type=String,Description="novo-centric classification: Strong, Weak, Neutral, or Likely False Positive based on novoalign-aligned data sets">\n')
     
     vcfout.write('##INFO=<ID=FLAGS,Number=.,Type=String,Description="Flags: 1) RandN: nREJECTS and nNoCall greater than nPASS, 2) R: nREJECTS greater than nPASS, 3) N: nNoCall greater than nPASS, 4) RplusN: nREJECTS+nNoCall greater than nPASS, 5) MQ0bwa: bwa MQ0 reads more than 10% of bwa reads, 6) MQ0bowtie: bowtie MQ0 reads more than 10% of bowtie reads, 7) MQ0novo: novo MQ0 reads more than 10% of novo reads, 8) bwa0: no PASS sample in bwa, 9) bowtie0: no PASS sample in bowtie, 10) novo0: no PASS sample in novo, 11) bwaOnly: all PASS samples are aligned by bwa, 12) bowtieOnly: all PASS samples are by bowtie, 13) novoOnly: all PASS samples are by novoalign.">\n')
     

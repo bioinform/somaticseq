@@ -3,6 +3,7 @@
 # Re-count MQ0's and re-calculate VAF's
 
 import sys, argparse, math, gzip, os, re, copy, math
+import scipy.stats as stats
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 PRE_DIR = os.path.join(MY_DIR, os.pardir)
@@ -16,7 +17,6 @@ parser.add_argument('-tsvin',    '--tsv-infile', type=str, help='TSV in', requir
 parser.add_argument('-outfile',  '--outfile',    type=str, help='VCF out', required=True)
 parser.add_argument('-pass',     '--pass-score',   type=float, help='PASS SCORE. Default=phred scaled 0.7',    required=False, default=5.228787452803376)
 parser.add_argument('-reject',   '--reject-score', type=float, help='REJECT SCORE. Default=phred scaled 0.1',  required=False, default=0.4575749056067512)
-parser.add_argument('-ncallers', '--num-callers',  type=int,   help='# callers to be considered PASS if untrained', required=False, default=3)
 parser.add_argument('-type',     '--variant-type', type=str, help='Either snv or indel. Required', required=True)
 
 args = parser.parse_args()
@@ -26,7 +26,6 @@ tsvin          = args.tsv_infile
 outfile        = args.outfile
 pass_score     = args.pass_score
 reject_score   = args.reject_score
-ncallers       = args.num_callers
 
 # quasi-constants
 if args.variant_type.upper() == 'SNV':
@@ -71,7 +70,13 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         if not vcf_line.startswith('##GATKCommandLine'):
             vcfout.write( vcf_line + '\n' )
         vcf_line = vcf_in.readline().rstrip()
-        
+    
+    # Additional headers for VCF files:
+    vcfout.write('##INFO=<ID=bwaDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for bwa-aligned data sets">\n')
+    vcfout.write('##INFO=<ID=bowtieDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for bowtie-aligned data sets">\n')
+    vcfout.write('##INFO=<ID=novoDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for novo-aligned data sets">\n')
+    
+    
     vcfout.write( vcf_line + '\n' )
     
     vcf_header = vcf_line.split('\t')
@@ -178,15 +183,39 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         novo_nDP    = [ int(tsv_items[i]) for i in i_novo_nDP ]
         novo_nVDP   = [ int(tsv_items[i]) for i in i_novo_nVDPfor ]   + [ int(tsv_items[i]) for i in i_novo_nVDPrev ]
         
+        bwaTotalTumorVDP    = sum(bwa_tVDP)
+        bwaTotalTumorDP     = sum(bwa_tDP)
+        bwaTotalTumorRDP    = bwaTotalTumorDP - bwaTotalTumorVDP
+        bowtieTotalTumorVDP = sum(bowtie_tVDP)
+        bowtieTotalTumorDP  = sum(bowtie_tDP)
+        bowtieTotalTumorRDP = bowtieTotalTumorDP - bowtieTotalTumorVDP
+        novoTotalTumorVDP   = sum(novo_tVDP)
+        novoTotalTumorDP    = sum(novo_tDP)
+        novoTotalTumorRDP   = novoTotalTumorDP - novoTotalTumorVDP
         
-        bwaTVAF    = sum(bwa_tVDP)/sum(bwa_tDP) if sum(bwa_tDP) != 0 else 0
+        bwaTVAF    = bwaTotalTumorVDP/bwaTotalTumorDP if bwaTotalTumorDP != 0 else 0
         bwaNVAF    = sum(bwa_nVDP)/sum(bwa_nDP) if sum(bwa_nDP) != 0 else 0
         
-        bowtieTVAF = sum(bowtie_tVDP)/sum(bowtie_tDP) if sum(bowtie_tDP) != 0 else 0
+        bowtieTVAF = bowtieTotalTumorVDP/bowtieTotalTumorDP if bowtieTotalTumorDP != 0 else 0
         bowtieNVAF = sum(bowtie_nVDP)/sum(bowtie_nDP) if sum(bowtie_nDP) != 0 else 0
         
-        novoTVAF   = sum(novo_tVDP)/sum(novo_tDP) if sum(novo_tDP) != 0 else 0
+        novoTVAF   = novoTotalTumorVDP/novoTotalTumorDP if novoTotalTumorDP != 0 else 0
         novoNVAF   = sum(novo_nVDP)/sum(novo_nDP) if sum(novo_nDP) != 0 else 0
+        
+        try:
+            bwa_bowtie_VAF_p  = stats.chi2_contingency(([bwaTotalTumorVDP,bwaTotalTumorRDP], [bowtieTotalTumorVDP,bowtieTotalTumorRDP]))[1]
+        except ValueError:
+            bwa_bowtie_VAF_p  = nan
+        
+        try:
+            bwa_novo_VAF_p    = stats.chi2_contingency(([bwaTotalTumorVDP,bwaTotalTumorRDP], [novoTotalTumorVDP,novoTotalTumorRDP]))[1]
+        except ValueError:
+            bwa_novo_VAF_p    = nan
+        
+        try:
+            bowtie_novo_VAF_p = stats.chi2_contingency(([bowtieTotalTumorVDP,bowtieTotalTumorRDP], [novoTotalTumorVDP,novoTotalTumorRDP]))[1]
+        except ValueError:
+            bowtie_novo_VAF_p = nan
         
         try:
             TVAF = ( sum(bwa_tVDP) + sum(bowtie_tVDP) + sum(novo_tVDP) ) / ( sum(bwa_tDP) + sum(bowtie_tDP) + sum(novo_tDP) )
@@ -875,6 +904,30 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 vcf_info_item[i] = 'novoNVAF={}'.format( '%.3f' % novoNVAF )
             elif info_item_i.startswith('NVAF='):
                 vcf_info_item[i] = 'NVAF={}'.format( '%.3f' % NVAF )
+            elif info_item_i.startswith('FLAGS='):
+                if bwa_bowtie_VAF_p < 0.01:
+                    vcf_info_item[i] = vcf_info_item[i] + ',bwa.bowtie.inconsistentVAF'
+                if bwa_novo_VAF_p < 0.01:
+                    vcf_info_item[i] = vcf_info_item[i] + ',bwa.novo.inconsistentVAF'
+                if bowtie_novo_VAF_p < 0.01:
+                    vcf_info_item[i] = vcf_info_item[i] + ',bowtie.novo.inconsistentVAF'
+        
+        # If there is FLAGS in the input VCF file, those inconsistentVAF flags will be added, otherwise they may need to be added here:
+        if not vcf_i.get_info_value('FLAGS'):
+            inconsistentVAF_flags = []
+            if bwa_bowtie_VAF_p < 0.01:
+                inconsistentVAF_flags.append('bwa.bowtie.inconsistentVAF')
+            if bwa_novo_VAF_p < 0.01:
+                inconsistentVAF_flags.append('bwa.novo.inconsistentVAF')
+            if bowtie_novo_VAF_p < 0.01:
+                inconsistentVAF_flags.append('bowtie.novo.inconsistentVAF')
+                
+            if inconsistentVAF_flags:
+                vcf_info_item.append( 'FLAGS={}'.format( ','.join(inconsistentVAF_flags) ) )
+        
+        vcf_info_item.append( 'bwaDP={},{}'.format(bwaTotalTumorVDP, bwaTotalTumorDP) )
+        vcf_info_item.append( 'bowtieDP={},{}'.format(bowtieTotalTumorVDP, bowtieTotalTumorDP) )
+        vcf_info_item.append( 'novoDP={},{}'.format(novoTotalTumorVDP, novoTotalTumorDP) )
         
         vcf_items[7] = ';'.join( vcf_info_item )
         
