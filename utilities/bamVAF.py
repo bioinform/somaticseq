@@ -20,7 +20,7 @@ vcf_in   = args.vcf_infile
 bam_in   = args.bam_infile
 outname  = args.outfile
 
-with genome.open_textfile(vcf_in) as vcfin, open(outname, 'w') as outfile, pysam.AlignmentFile(bam_fn) as bamin:
+with genome.open_textfile(vcf_in) as vcfin, open(outname, 'w') as outfile, pysam.AlignmentFile(bam_in) as bamin:
     
     inline = vcfin.readline().rstrip()
     
