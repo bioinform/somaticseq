@@ -1051,6 +1051,18 @@ Have implemented the following improvement, mostly for indels:
 \end{itemize}
 
 
+\subsection{Version 2.7.1}
+
+\begin{itemize}
+
+  \item
+  Without --gatk \$PATH/TO/GenomeAnalysisTK.jar in the SomaticSeq.Wrapper.sh script, it will use utilities/getUniqueVcfPositions.py and utilities/vcfsorter.pl to (in lieu of GATK3 CombineVariants) to combine all the VCF files. 
+
+  \item
+  Fixed bugs in the docker/singularities scripts where extra arguments for the callers are not correctly passed onto the callers. 
+
+\end{itemize}
+
 
 \section{Contact Us}
 For suggestions, bug reports, or technical support, please post in \href{https://github.com/bioinform/somaticseq/issues}{https://github.com/bioinform/somaticseq/issues}. The developers are alerted when issues are created there. Alternatively, you may also email \href{mailto:li_tai.fang@roche.com}{li\_tai.fang@roche.com}. 
