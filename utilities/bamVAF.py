@@ -53,9 +53,9 @@ with genome.open_textfile(vcf_in) as vcfin, open(outname, 'w') as outfile, pysam
                                 
                 # Alternate calls:
                 # SNV, or Deletion, or Insertion where I do not check for matching indel length
-                elif (indel_length == 0 and code_i == 1 and base_call_i == altbase) or \
-                     (indel_length < 0  and code_i == 2 and indel_length == indel_length_i) or \
-                     (indel_length > 0  and code_i == 3):
+                if (indel_length == 0 and code_i == 1 and base_call_i == altbase) or \
+                   (indel_length < 0  and code_i == 2 and indel_length == indel_length_i) or \
+                   (indel_length > 0  and code_i == 3):
 
                     altCount += 1
 
