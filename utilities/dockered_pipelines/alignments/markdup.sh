@@ -21,7 +21,7 @@ while true; do
                 "") shift 2 ;;
                 *)  outdir=$2 ; shift 2 ;;
             esac ;;
-            
+
         --in-bam )
             case "$2" in
                 "") shift 2 ;;
@@ -55,7 +55,7 @@ if [[ ${out_script_name} ]]
 then
     out_script="${out_script_name}"
 else
-    out_script="${logdir}/markdup.${timestamp}.cmd"    
+    out_script="${logdir}/markdup.${timestamp}.cmd"
 fi
 
 if [ ! $outBam ]
@@ -78,11 +78,11 @@ fi
 echo "" >> $out_script
 
 echo "docker run --rm -v /:/mnt -u $UID lethalfang/picard:2.10.10 \\" >> $out_script
-echo "java -Xmx8g -jar /opt/picard.jar MarkDuplicatesWithMateCigar \\" >> $out_script
+echo "java -Xmx8g -jar /opt/picard.jar MarkDuplicates \\" >> $out_script
 echo "I=/mnt/${inBam} \\" >> $out_script
 echo "M=/mnt/${outdir}/${outBam%.bam} \\" >> $out_script
 echo "CREATE_INDEX=true \\" >> $out_script
-echo "MINIMUM_DISTANCE=1000 \\" >> $out_script
+#echo "MINIMUM_DISTANCE=1000 \\" >> $out_script
 echo "O=/mnt/${outdir}/${outBam}" >> $out_script
 
 echo "" >> $out_script
