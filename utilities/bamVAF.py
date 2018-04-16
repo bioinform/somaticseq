@@ -49,7 +49,7 @@ with genome.open_textfile(vcf_in) as vcfin, open(outname, 'w') as outfile, pysam
                 
                 dpCount += 1
                 
-                code_i, ith_base, base_call_i, indel_length_i, flanking_indel_i = position_of_aligned_read(chrom, position-1 )
+                code_i, ith_base, base_call_i, indel_length_i, flanking_indel_i = position_of_aligned_read(read_i, position-1 )
                                 
                 # Alternate calls:
                 # SNV, or Deletion, or Insertion where I do not check for matching indel length
