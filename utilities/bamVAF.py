@@ -12,13 +12,20 @@ from read_info_extractor import *
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-vcfin',    '--vcf-infile', type=str, help='VCF in', required=True)
 parser.add_argument('-bamin',    '--bam-infile', type=str, help='TSV in', required=True)
-parser.add_argument('-outfile',  '--outfile',    type=str, help='out',    required=True)
+parser.add_argument('-outfile',  '--outfile',    type=str, help='out',    required=False, default=None)
 
 args = parser.parse_args()
 
 vcf_in   = args.vcf_infile
 bam_in   = args.bam_infile
 outname  = args.outfile
+
+if not outname:
+    
+    bam_basename = os.path.basename(bam_in).replace('.bam', '')
+    vcf_basename = os.path.basename(vcf_in).replace('.vcf.gz', '')
+    outname = 'VAF.' + vcf_basename + '_' + bam_basename + '.txt'
+
 
 with genome.open_textfile(vcf_in) as vcfin, open(outname, 'w') as outfile, pysam.AlignmentFile(bam_in) as bam:
     
