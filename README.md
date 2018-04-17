@@ -25,8 +25,7 @@ $somaticseq/SomaticSeq.Wrapper.sh \
 --strelka-snv      /PATH/TO/RESULTS/Strelka/results/variants/somatic.snvs.vcf.gz \
 --strelka-indel    /PATH/TO/RESULTS/Strelka/results/variants/somatic.indels.vcf.gz \
 --inclusion-region /PATH/TO/RESULTS/captureRegion.bed \
---exclusion-region /PATH/TO/RESULTS/blackList.bed \
---gatk             /opt/GATK3/GenomeAnalysisTK.jar
+--exclusion-region /PATH/TO/RESULTS/blackList.bed
 ```
 * For all those input VCF files, either .vcf or .vcf.gz are acceptable. 
 * You must make sure all the input files (i.e., VCF, BAM, FASTA, etc.) are sorted identically. Otherwise, the results would not be valid, because the program does not check for proper ordering.
