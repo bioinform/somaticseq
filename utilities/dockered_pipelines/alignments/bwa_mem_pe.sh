@@ -28,7 +28,7 @@ while true; do
                 "") shift 2 ;;
                 *)  outdir=$2 ; shift 2 ;;
             esac ;;
-            
+
         --fq1 )
             case "$2" in
                 "") shift 2 ;;
@@ -110,7 +110,7 @@ if [[ ${out_script_name} ]]
 then
     out_script="${out_script_name}"
 else
-    out_script="${logdir}/bwa.mem.${timestamp}.cmd"    
+    out_script="${logdir}/bwa.mem.${timestamp}.cmd"
 fi
 
 if [[ $standalone ]]
@@ -132,7 +132,7 @@ then
     bamHeader="@RG\tID:${ID}\tLB:${LB}\tPL:${PL}\tSM:${SM}"
 fi
 
-echo "docker run --rm -v /:/mnt -u $UID lethalfang/bwa:0.7.15_samtools bash -c \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID lethalfang/bwa:0.7.17_samtools bash -c \\" >> $out_script
 echo "\"bwa mem \\" >> $out_script
 echo "-R '${bamHeader}' \\" >> $out_script
 echo "-t ${threads} \\" >> $out_script
