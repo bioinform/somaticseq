@@ -59,7 +59,7 @@ with genome.open_textfile(vcf_file) as vcfin,  open(outfile, 'w') as vcfout:
         
         
         # If VAF is not consistent with titration:
-        if expectationVector.count(True) >= ( len(expectationVector) - 1 ):
+        if not expectationVector.count(True) >= ( len(expectationVector) - 1 ):
             
             vcf_i = genome.Vcf_line( line_i )
             
