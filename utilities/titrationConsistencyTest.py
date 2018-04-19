@@ -50,7 +50,7 @@ with genome.open_textfile(vcf_file) as vcfin,  open(outfile, 'w') as vcfout:
         vaf_i = spp_vafs[0]
         for vaf_j in spp_vafs[1::]:
             
-            if vaf_j > vaf_i:
+            if vaf_j < vaf_i:
                 expectationVector.append(True)
             else:
                 expectationVector.append(False)
