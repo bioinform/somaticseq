@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import sys, argparse, math, gzip, os, re, math
-from copy import copy
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 PRE_DIR = os.path.join(MY_DIR, os.pardir)
@@ -45,12 +44,21 @@ with genome.open_textfile(vcf_file) as vcfin,  open(outfile, 'w') as vcfout:
             spp_variant = (spp_item[0], spp_item[1], spp_item[2], spp_item[3])
             assert variant_id == spp_variant
             spp_vafs.append( float(spp_item[6]) )
+                
+        expectationVector = []
+        vaf_i = spp_vafs[0]
+        for vaf_j in spp_vafs[1::]:
+            
+            if vaf_j > vaf_i:
+                expectationVector.append(True)
+            else:
+                expectationVector.append(False)
+                
+            vaf_i = vaf_j
         
-        hi2lo_vaf = copy( spp_vafs )
-        hi2lo_vaf.sort(reverse=True)
         
         # If VAF is not consistent with titration:
-        if hi2lo_vaf != spp_vafs:
+        if expectationVector.count(True) >= len(expectationVector)-2
             
             vcf_i = genome.Vcf_line( line_i )
             
