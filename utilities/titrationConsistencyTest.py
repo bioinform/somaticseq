@@ -2,7 +2,6 @@
 
 import sys, argparse, math, gzip, os, re, math
 from copy import copy
-import scipy.stats as stats
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 PRE_DIR = os.path.join(MY_DIR, os.pardir)
