@@ -29,8 +29,9 @@ with genome.open_textfile(vcf_file) as vcfin,  open(outfile, 'w') as vcfout:
     line_i = vcfin.readline().rstrip()
     
     while line_i.startswith('#'):
-        line_i = vcfin.readline().rstrip()
         vcfout.write( line_i + '\n' )
+        line_i = vcfin.readline().rstrip()
+        
     
     while line_i:
         
