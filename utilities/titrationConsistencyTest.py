@@ -58,8 +58,10 @@ with genome.open_textfile(vcf_file) as vcfin,  open(outfile, 'w') as vcfout:
             vaf_i = vaf_j
         
         
+        middle_index = int( len(spp_vafs)/2 )
+        
         # If VAF is not consistent with titration:
-        if not expectationVector.count(True) >= ( len(expectationVector) - 1 ):
+        if not ( expectationVector.count(True) >= ( len(expectationVector) - 1 ) or (spp_vafs[0] > spp_vafs[middle_index] > spp_vafs[-1]) ):
             
             vcf_i = genome.Vcf_line( line_i )
             
