@@ -43,7 +43,7 @@ with genome.open_textfile(vcf_file) as vcfin,  open(outfile, 'w') as vcfout:
         for file_i in vaf_fhandle:
             spp_line = file_i.readline()
             spp_item = spp_line.split('\t')
-            spp_variant = (spp_item[0], spp_item[1], spp_item[2], spp_item[3)
+            spp_variant = (spp_item[0], spp_item[1], spp_item[2], spp_item[3])
             assert variant_id == spp_variant
             spp_vafs.append( float(spp_item[6]) )
         
