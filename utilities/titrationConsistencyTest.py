@@ -58,9 +58,9 @@ with genome.open_textfile(vcf_file) as vcfin,  open(outfile, 'w') as vcfout:
                 
                 info_item = item_i[7].split(';')
                 
-                for info_i in info_item:
-                    if info_item.startswith('FLAGS='):
-                        info_item = info_item + ',inconsistentTitration'
+                for i,info_i in enumerate(info_item):
+                    if info_i.startswith('FLAGS='):
+                        info_item[i] = info_item[i] + ',inconsistentTitration'
                         
                 item_i[7] = ';'.join( info_item )
                 
