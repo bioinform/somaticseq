@@ -82,6 +82,7 @@ echo "java -Xmx8g -jar /opt/picard.jar MarkDuplicates \\" >> $out_script
 echo "I=/mnt/${inBam} \\" >> $out_script
 echo "M=/mnt/${outdir}/${outBam%.bam} \\" >> $out_script
 echo "CREATE_INDEX=true \\" >> $out_script
+echo "ASSUME_SORTED=true \\" >> $out_script
 #echo "MINIMUM_DISTANCE=1000 \\" >> $out_script
 echo "O=/mnt/${outdir}/${outBam}" >> $out_script
 
