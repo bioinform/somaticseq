@@ -46,6 +46,12 @@ def fai2bed(file_name):
 
 
 
+def collapseIdenticalBoundries(boundries, counters):
+    
+    assert len(boundries) == len(counters) + 1
+    
+
+
 def countIntersectedRegions(original_boundry, original_counter, additional_region):
     
     bedStart = additional_region[0]
@@ -59,7 +65,7 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
     boundry_i = next(region_iterator)
     
     # Add the preceding positions before hitting the added region
-    while boundry_i <= bedStart:
+    while boundry_i < bedStart:
         
         newBoundry.append( boundry_i )
             
@@ -73,12 +79,12 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
     # Insert the added start position:
     newBoundry.append( bedStart )
     
-    if ith_boundry + 1 < len(original_boundry):
+    if ith_boundry -1 + 1 < len(original_boundry):
         newCounter.append( original_counter[ith_boundry-1] + 1)
         
     
     # Add original boundries if they're no greater than the end position
-    while boundry_i <= bedEnd:
+    while boundry_i < bedEnd:
         
         newBoundry.append( boundry_i )
 
@@ -86,11 +92,7 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
             newCounter.append( original_counter[ith_boundry] + 1)
                 
         ith_boundry += 1
-        try:
-            boundry_i = next(region_iterator)
-        except StopIteration:
-            theEnd = True
-            break
+        boundry_i = next(region_iterator)
     
     
     # Add the end position:
@@ -109,13 +111,12 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
     
     
     # Add the rest:
-    if not theEnd:
-        for boundry_i in region_iterator:
-            newBoundry.append( boundry_i )
-            if ith_boundry + 1 < len(original_boundry):
-                newCounter.append( original_counter[ith_boundry] )
-            
-            ith_boundry += 1
+    for boundry_i in region_iterator:
+        newBoundry.append( boundry_i )
+        if ith_boundry + 1 < len(original_boundry):
+            newCounter.append( original_counter[ith_boundry] )
+        
+        ith_boundry += 1
     
         
     return newBoundry, newCounter
