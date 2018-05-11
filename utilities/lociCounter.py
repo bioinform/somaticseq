@@ -148,7 +148,7 @@ for bed_file_i in bed_files:
             item = line_i.split('\t')
         
             chrom  = item[0]
-            region = int( item[1] ), int( item[2] ) + 1
+            region = int( item[1] ), int( item[2] )
         
             contigBoundries[chrom], contigCounters[chrom] = countIntersectedRegions(contigBoundries[chrom], contigCounters[chrom], region)
             
@@ -162,6 +162,6 @@ for contig_i in orderedContigs:
         
         for i, count_i in enumerate( contigCounters[contig_i] ):
             
-            out_string = '{}\t{}\t{}\t{}'.format(contig_i, contigBoundries[contig_i][i], contigBoundries[contig_i][i+1]-1, count_i)
+            out_string = '{}\t{}\t{}\t{}'.format(contig_i, contigBoundries[contig_i][i], contigBoundries[contig_i][i+1], count_i)
             
             bed_out.write(out_string + '\n')
