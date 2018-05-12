@@ -1,4 +1,4 @@
-FROM lethalfang/somaticseq:base-1.0
+FROM lethalfang/somaticseq:base-1.1
 
 MAINTAINER Li Tai Fang <li_tai.fang@roche.com>
 
