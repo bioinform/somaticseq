@@ -2,18 +2,26 @@
 
 import argparse, gzip, re, sys
 from os.path import basename
+from copy import copy
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-fai',  '--fai-file',   type=str,  help='.fa.fai file',  required=True,  default=None)
-parser.add_argument('-beds', '--bed-files',  type=str,  help='BED files', nargs='*', required=True,  default=None)
-parser.add_argument('-out ', '--bed-out',    type=str,  help='BED file out', required=False,  default=sys.stdout)
+parser.add_argument('-fai',    '--fai-file',   type=str,  help='.fa.fai file',  required=True,  default=None)
+parser.add_argument('-beds',   '--bed-files',  type=str,  help='BED files', nargs='*', required=True,  default=None)
+parser.add_argument('-out',    '--bed-out',    type=str,  help='BED file out', required=False,  default=sys.stdout)
+parser.add_argument('-labels', '--bed-labels', type=str,  help='Use these labels instead of bed file names', nargs='*', required=False,  default=None)
+
 
 args = parser.parse_args()
 
-fai_file  = args.fai_file
-bed_files = args.bed_files
-bed_out   = args.bed_out
+fai_file   = args.fai_file
+bed_files  = args.bed_files
+bed_out    = args.bed_out
+bed_labels = args.bed_labels
 
+if bed_labels:
+    assert len(bed_labels) == len(bed_files)
+else:
+    bed_labels = [basename(bed_file_i) for bed_file_i in bed_files]
 
 def fai2bed(file_name):
         
@@ -126,9 +134,12 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
                 newBoundry.append( boundry_j )
                 
                 if j % 2 == 0:
+                    
                     newCounter.append( counter_i + 1 )
-                    label_i.append( new_label )
-                    newLabel.append( label_i )
+                    
+                    label_i_copy = copy(label_i)
+                    label_i_copy.append( new_label )
+                    newLabel.append( label_i_copy )
                     
                 elif j % 2 == 1:
                     newCounter.append( counter_i )
@@ -162,9 +173,10 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
         elif j % 2 == 1:
             if counter_i != None:
                 newCounter.append( counter_i + 1 )
-                label_i.append( new_label )
-                newLabel.append( label_i )
-                
+                label_i_copy = copy(label_i)
+                label_i_copy.append( new_label )
+                newLabel.append( label_i_copy )
+    
     consolidatedBoundries, consolidatedCounters, consolidatedLabels = collapseIdenticalBoundries(newBoundry, newCounter, newLabel)
     
     return consolidatedBoundries, consolidatedCounters, consolidatedLabels
@@ -176,14 +188,14 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
 contigBoundries, contigCounters, contigLabels, orderedContigs = fai2bed(fai_file)
 
 # Look at BED files
-for bed_file_i in bed_files:
+for i, bed_file_i in enumerate(bed_files):
     
     bedRegions = bed2regions(bed_file_i)
-    bed_file_name = basename( bed_file_i )
+    label_i    = bed_labels[i]
     
     for chrom in bedRegions:
         contigBoundries[chrom], contigCounters[chrom], contigLabels[chrom] \
-        = countIntersectedRegions(contigBoundries[chrom], contigCounters[chrom], bedRegions[chrom], contigLabels[chrom], bed_file_name)
+        = countIntersectedRegions(contigBoundries[chrom], contigCounters[chrom], bedRegions[chrom], contigLabels[chrom], label_i)
 
 
 
@@ -194,6 +206,8 @@ for contig_i in orderedContigs:
         
         for i, count_i in enumerate( contigCounters[contig_i] ):
             
-            out_string = '{}\t{}\t{}\t{}'.format(contig_i, contigBoundries[contig_i][i], contigBoundries[contig_i][i+1], count_i)
+            label_string = ','.join( contigLabels[contig_i][i] ) if contigLabels[contig_i][i] else '.'
+            
+            out_string = '{}\t{}\t{}\t{}\t{}'.format(contig_i, contigBoundries[contig_i][i], contigBoundries[contig_i][i+1], count_i, label_string)
             
             bed_out.write(out_string + '\n')
