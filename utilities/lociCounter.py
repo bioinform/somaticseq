@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse, gzip, re, sys
+from os.path import basename
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-fai',  '--fai-file',   type=str,  help='.fa.fai file',  required=True,  default=None)
@@ -21,7 +22,9 @@ def fai2bed(file_name):
         
         callableLociBoundries = {}
         callableLociCounters  = {}
+        callableLociLabels    = {}
         orderedContig = []
+        
         while line_i:
             
             contig_match = re.match(r'([^\t]+)\t', line_i)
@@ -35,22 +38,51 @@ def fai2bed(file_name):
                 
                 callableLociBoundries[contig_i] = [0, contig_size ]
                 callableLociCounters[contig_i] = [0]
+                callableLociLabels[contig_i] = [ [] ]
                 
             else:
                 raise Exception('.fai file format not as expected.')
             
             line_i = gfile.readline().rstrip('\n')
             
-    return callableLociBoundries, callableLociCounters, orderedContig
+    return callableLociBoundries, callableLociCounters, callableLociLabels, orderedContig
 
 
 
-def collapseIdenticalBoundries(boundries, counters):
+def bed2regions(bed_file):
     
-    assert len(boundries) == len(counters) + 1
+    regions = {}
+    
+    with open(bed_file) as gfile:
+        
+        line_i = gfile.readline().rstrip('\n')
+        
+        while line_i:
+            item = line_i.split('\t')
+            
+            chrom    = item[0]
+            startPos = int( item[1] )
+            endPos   = int( item[2] )
+            
+            try:
+                regions[chrom].append( (startPos, endPos) )
+            except KeyError:
+                regions[chrom] = []
+                regions[chrom].append( (startPos, endPos) )
+            
+            line_i = gfile.readline().rstrip('\n')
+        
+    return regions
+
+
+
+def collapseIdenticalBoundries(boundries, counters, labels):
+    
+    assert len(boundries) == len(counters) + 1 == len(labels) + 1
     
     outBoundries = []
     outCounters  = []
+    outLabels    = []
     
     outBoundries.append( boundries[0] )
     
@@ -61,98 +93,98 @@ def collapseIdenticalBoundries(boundries, counters):
         if boundries[i] != boundries[j]:
             outBoundries.append( boundries[j] )
             outCounters.append( counters[j-1] )
+            outLabels.append( labels[j-1] )
         
         i += 1
         
-    return outBoundries, outCounters
+    return outBoundries, outCounters, outLabels
 
 
 
-def countIntersectedRegions(original_boundry, original_counter, additional_region):
+def countIntersectedRegions(original_boundry, original_counter, additional_regions, original_label, new_label):
     
-    bedStart = additional_region[0]
-    bedEnd   = additional_region[1]
+    secondary_boundry = []
     
+    for region_i in additional_regions:
+        secondary_boundry.append( region_i[0] )
+        secondary_boundry.append( region_i[1] )
+        
     newBoundry = []
-    newCounter  = []
-    ith_boundry = 0
-        
-    region_iterator = iter(original_boundry)
-    boundry_i = next(region_iterator)
+    newCounter = []
+    newLabel   = []
     
-    # Add the preceding positions before hitting the added region
-    while boundry_i < bedStart:
-        
-        newBoundry.append( boundry_i )
-            
-        if ith_boundry + 1 < len(original_boundry):
-            newCounter.append( original_counter[ith_boundry] )
-                
-        ith_boundry += 1
-        boundry_i = next(region_iterator)
-    
-    # Insert the added start position:
-    newBoundry.append( bedStart )
-    
-    if ith_boundry -1 + 1 < len(original_boundry):
-        newCounter.append( original_counter[ith_boundry-1] + 1)
-        
-    # Add original boundries if they're no greater than the end position
-    while boundry_i < bedEnd:
-        
-        newBoundry.append( boundry_i )
+    secondaryIterator = iter( secondary_boundry )
+    boundry_j = next( secondaryIterator )
+    j = 0
+    secondaryMore = True
 
-        if ith_boundry + 1 < len(original_boundry):
-            newCounter.append( original_counter[ith_boundry] + 1)
+    for i, boundry_i in enumerate( original_boundry ):
+        
+        if secondaryMore:
+            while boundry_j < boundry_i:
                 
-        ith_boundry += 1
-        boundry_i = next(region_iterator)
+                newBoundry.append( boundry_j )
+                
+                if j % 2 == 0:
+                    newCounter.append( counter_i + 1 )
+                    label_i.append( new_label )
+                    newLabel.append( label_i )
+                    
+                elif j % 2 == 1:
+                    newCounter.append( counter_i )
+                    newLabel.append( label_i )
+                
+                try:
+                    boundry_j = next( secondaryIterator )
+                    j += 1
+                except StopIteration:
+                    secondaryMore = False
+                    break
     
-    # Add the end position:
-    ith_boundry = ith_boundry - 1
-    newBoundry.append( bedEnd )
-    if ith_boundry + 1 < len(original_boundry):
-        newCounter.append( original_counter[ith_boundry])
-        ith_boundry += 1
-    
-    # Add the boundry that passed the bedEnd:
-    newBoundry.append( boundry_i )
-    if ith_boundry + 1 < len(original_boundry):
-        newCounter.append( original_counter[ith_boundry] )
-        ith_boundry += 1
-    
-    # Add the rest:
-    for boundry_i in region_iterator:
+        # Move onto the next original boundry
         newBoundry.append( boundry_i )
-        if ith_boundry + 1 < len(original_boundry):
-            newCounter.append( original_counter[ith_boundry] )
         
-        ith_boundry += 1
+        try:
+            counter_i = original_counter[i]
+            label_i = original_label[i]
+        except IndexError:
+            counter_i = None
+            label_i = None
+        
+        if not secondaryMore and counter_i != None:
+            newCounter.append( counter_i )
+            newLabel.append( label_i )
+            
+        elif j % 2 == 0:
+            newCounter.append( counter_i )
+            newLabel.append( label_i )
+            
+        elif j % 2 == 1:
+            if counter_i != None:
+                newCounter.append( counter_i + 1 )
+                label_i.append( new_label )
+                newLabel.append( label_i )
+                
+    consolidatedBoundries, consolidatedCounters, consolidatedLabels = collapseIdenticalBoundries(newBoundry, newCounter, newLabel)
     
-    consolidatedBoundries, consolidatedCounters = collapseIdenticalBoundries(newBoundry, newCounter)
-    
-    return consolidatedBoundries, consolidatedCounters
+    return consolidatedBoundries, consolidatedCounters, consolidatedLabels
         
-        
+
+
 
 # Start routine:
-contigBoundries, contigCounters, orderedContigs = fai2bed(fai_file)
+contigBoundries, contigCounters, contigLabels, orderedContigs = fai2bed(fai_file)
 
+# Look at BED files
 for bed_file_i in bed_files:
     
-    with open(bed_file_i) as bed_i:
-        
-        line_i = bed_i.readline().rstrip()
-        
-        while line_i:
-            item = line_i.split('\t')
-        
-            chrom  = item[0]
-            region = int( item[1] ), int( item[2] )
-        
-            contigBoundries[chrom], contigCounters[chrom] = countIntersectedRegions(contigBoundries[chrom], contigCounters[chrom], region)
-            
-            line_i = bed_i.readline().rstrip()
+    bedRegions = bed2regions(bed_file_i)
+    bed_file_name = basename( bed_file_i )
+    
+    for chrom in bedRegions:
+        contigBoundries[chrom], contigCounters[chrom], contigLabels[chrom] \
+        = countIntersectedRegions(contigBoundries[chrom], contigCounters[chrom], bedRegions[chrom], contigLabels[chrom], bed_file_name)
+
 
 
 
