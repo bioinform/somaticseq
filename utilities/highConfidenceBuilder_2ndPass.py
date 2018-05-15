@@ -73,8 +73,6 @@ exclusions = BedFile(exclusionBed)
 callableLoci = BedFile(callableBed)
 
 
-
-
 with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_in,  open(outfile, 'w') as vcfout:
     
     vcf_line = vcf_in.readline().rstrip()
@@ -528,372 +526,346 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             average_calls_variant_depths = sum(called_variant_depths)/len(called_variant_depths)
         
         
-        # Make some comments, highly likely true positive, likely true positive, ambigious, or likely false positive:
-        # TierA: strongest Evidence in all 15 Aligner-Site combinations:
-        if (vcf_i.filters == 'AllPASS') or re.match(r'Tier1[ABC]', vcf_i.filters):
+        # For Tier 1 calls, assign "StrongestEvidence" unless bad mapping or something:
+        if (vcf_i.filters == 'AllPASS') or re.match(r'Tier1', vcf_i.filters):
             
-            # If a bunch of MQ0 reads in all 3 aligners, considered "neutral"
-            if    bwaMQ0 > total_tumor_samples  and bowtieMQ0 > total_tumor_samples and novoMQ0 > total_tumor_samples:
-                #vcf_items[ i_qual ] = '0'
-                vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-                
+            if not isCallable:
+                vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
+            
             # If high number of MQ0 reads in 2/3 aligners.
             elif (bwaMQ0 > total_tumor_samples) +  (bowtieMQ0 > total_tumor_samples) +  (novoMQ0 > total_tumor_samples) >= 2:
-                #vcf_items[ i_qual ] = '1'
                 vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
                 
             # In other words, if high number of MQ0 reads occur in only one aligner, it is considered multiple aligner support and good enough to be highest confidence. 
             else:
-                #vcf_items[ i_qual ] = '3'
                 vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'StrongEvidence')
                             
         
         # If NOT AllPASS or Tier1:
         else:
+                            
+            ##### SAMPLING ERROR DUE TO LOW VARIANT DP? #####
+            noncall_vardp         = nocalled_variant_depths + rejected_variant_depths
+            average_noncall_vardp = sum(noncall_vardp)/len(noncall_vardp)
             
-            # Tier 1 with a few nNoCall/nREJECTS were already taken care of as equivalent of AllPASS
-            # If there is some REJECT or MISSING calls
-            if nNoCall or nREJECTS:
-                
-                ##### SAMPLING ERROR DUE TO LOW VARIANT DP? #####
-                noncall_vardp         = nocalled_variant_depths + rejected_variant_depths
-                average_noncall_vardp = sum(noncall_vardp)/len(noncall_vardp)
-                
-                if average_noncall_vardp < varDP_lowEnd:
-                    probableSamplingError = True
-                else:
-                    probableSamplingError = False
-                ######################################################
-                
-                ###### Generally low BQ? #####
-                noncall_tbqs         = nocalled_tbq + rejected_tbq
-                average_noncall_tbqs = sum(noncall_tbqs) / len(noncall_tbqs)
-                average_called_bqs   = sum(called_tbq) / len(called_tbq)
-                
-                # If average of nonPASS BQs are below a threshold, and is within 10% of the PASS calls:
-                if average_noncall_tbqs < BQ_lowEnd and abs(average_noncall_tbqs-average_called_bqs)/average_called_bqs < 0.1:
-                    probableLowBQRegion = True
-                else:
-                    probableLowBQRegion = False
-                ######################################################
-                
-                
-                ##### MAPPING ISSUES #####
-                # NonCalls
-                noncall_tmqs   = rejected_tmq + nocalled_tmq
-                noncall_aligner_lineup = rejected_aligners + nocalled_aligners
-                
-                i_bwa_noncall    = all_indices('bwa', noncall_aligner_lineup)
-                i_bowtie_noncall = all_indices('bowtie', noncall_aligner_lineup)
-                i_novo_noncall   = all_indices('novo', noncall_aligner_lineup)
+            if average_noncall_vardp < varDP_lowEnd:
+                probableSamplingError = True
+            else:
+                probableSamplingError = False
+            ######################################################
+            
+            ###### Generally low BQ? #####
+            noncall_tbqs         = nocalled_tbq + rejected_tbq
+            average_noncall_tbqs = sum(noncall_tbqs) / len(noncall_tbqs)
+            average_called_bqs   = sum(called_tbq) / len(called_tbq)
+            
+            # If average of nonPASS BQs are below a threshold, and is within 10% of the PASS calls:
+            if average_noncall_tbqs < BQ_lowEnd and abs(average_noncall_tbqs-average_called_bqs)/average_called_bqs < 0.1:
+                probableLowBQRegion = True
+            else:
+                probableLowBQRegion = False
+            ######################################################
+            
+            
+            ##### MAPPING ISSUES #####
+            # NonCalls
+            noncall_tmqs   = rejected_tmq + nocalled_tmq
+            noncall_aligner_lineup = rejected_aligners + nocalled_aligners
+            
+            i_bwa_noncall    = all_indices('bwa', noncall_aligner_lineup)
+            i_bowtie_noncall = all_indices('bowtie', noncall_aligner_lineup)
+            i_novo_noncall   = all_indices('novo', noncall_aligner_lineup)
 
-                noncall_bwa_tmq    = []
-                noncall_bowtie_tmq = []
-                noncall_novo_tmq   = []
-                for i in i_bwa_noncall:
-                    noncall_bwa_tmq.append( noncall_tmqs[i] )
-                
-                for i in i_bowtie_noncall:
-                    noncall_bowtie_tmq.append( noncall_tmqs[i] )
+            noncall_bwa_tmq    = []
+            noncall_bowtie_tmq = []
+            noncall_novo_tmq   = []
+            for i in i_bwa_noncall:
+                noncall_bwa_tmq.append( noncall_tmqs[i] )
+            
+            for i in i_bowtie_noncall:
+                noncall_bowtie_tmq.append( noncall_tmqs[i] )
 
-                for i in i_novo_noncall:
-                    noncall_novo_tmq.append( noncall_tmqs[i] )
+            for i in i_novo_noncall:
+                noncall_novo_tmq.append( noncall_tmqs[i] )
+            
+            try:
+                average_nocalls_bwaMQ    = sum(noncall_bwa_tmq) / len(noncall_bwa_tmq)
+            except ZeroDivisionError:
+                average_nocalls_bwaMQ = nan
                 
-                try:
-                    average_nocalls_bwaMQ    = sum(noncall_bwa_tmq) / len(noncall_bwa_tmq)
-                except ZeroDivisionError:
-                    average_nocalls_bwaMQ = nan
-                    
-                try:
-                    average_nocalls_bowtieMQ = sum(noncall_bowtie_tmq) / len(noncall_bowtie_tmq)
-                except ZeroDivisionError:
-                    average_nocalls_bowtieMQ = nan
-                    
-                try:
-                    average_nocalls_novoMQ   = sum(noncall_novo_tmq) / len(noncall_novo_tmq)
-                except ZeroDivisionError:
-                    average_nocalls_novoMQ = nan
+            try:
+                average_nocalls_bowtieMQ = sum(noncall_bowtie_tmq) / len(noncall_bowtie_tmq)
+            except ZeroDivisionError:
+                average_nocalls_bowtieMQ = nan
                 
-                # Called:
-                i_bwa_call    = all_indices('bwa', called_aligners)
-                i_bowtie_call = all_indices('bowtie', called_aligners)
-                i_novo_call   = all_indices('novo', called_aligners)
+            try:
+                average_nocalls_novoMQ   = sum(noncall_novo_tmq) / len(noncall_novo_tmq)
+            except ZeroDivisionError:
+                average_nocalls_novoMQ = nan
+            
+            # Called:
+            i_bwa_call    = all_indices('bwa', called_aligners)
+            i_bowtie_call = all_indices('bowtie', called_aligners)
+            i_novo_call   = all_indices('novo', called_aligners)
 
-                called_bwa_tmq    = []
-                called_bowtie_tmq = []
-                called_novo_tmq   = []
+            called_bwa_tmq    = []
+            called_bowtie_tmq = []
+            called_novo_tmq   = []
+            for i in i_bwa_call:
+                called_bwa_tmq.append( called_tmq[i] )
+            
+            for i in i_bowtie_call:
+                called_bowtie_tmq.append( called_tmq[i] )
+
+            for i in i_novo_call:
+                called_novo_tmq.append( called_tmq[i] )
+            
+            try:
+                average_called_bwaMQ    = sum(called_bwa_tmq) / len(called_bwa_tmq)
+            except ZeroDivisionError:
+                average_called_bwaMQ = nan
+            
+            try:
+                average_called_bowtieMQ = sum(called_bowtie_tmq) / len(called_bowtie_tmq)
+            except ZeroDivisionError:
+                average_called_bowtieMQ = nan
+            
+            try:
+                average_called_novoMQ   = sum(called_novo_tmq) / len(called_novo_tmq)
+            except ZeroDivisionError:
+                average_called_novoMQ = nan
+            
+            if average_nocalls_bwaMQ < bwaMQ_lowEnd or bwaMQ0 > total_tumor_samples:
+                bwaMappingDifficulty = True
+            else:
+                bwaMappingDifficulty = False
+                
+            if average_nocalls_bowtieMQ < bowtieMQ_lowEnd or bowtieMQ0 > total_tumor_samples:
+                bowtieMappingDifficulty = True
+            else:
+                bowtieMappingDifficulty = False
+
+            if average_nocalls_novoMQ < novoMQ_lowEnd or novoMQ0 > total_tumor_samples:
+                novoMappingDifficulty = True
+            else:
+                novoMappingDifficulty = False
+            ###################################################################
+
+
+            ##### ALIGNMENT MISMATCH ISSUES #####
+            # NonCalls
+            noncall_tnms   = rejected_tnm + nocalled_tnm
+
+            noncall_bwa_tnm    = []
+            noncall_bowtie_tnm = []
+            noncall_novo_tnm   = []
+            for i in i_bwa_noncall:
+                noncall_bwa_tnm.append( noncall_tnms[i] )
+            
+            for i in i_bowtie_noncall:
+                noncall_bowtie_tnm.append( noncall_tnms[i] )
+
+            for i in i_novo_noncall:
+                noncall_novo_tnm.append( noncall_tnms[i] )
+            
+            try:
+                average_nocalls_bwaNM    = sum(noncall_bwa_tnm) / len(noncall_bwa_tnm)
+            except ZeroDivisionError:
+                average_nocalls_bwaNM = nan
+                
+            try:
+                average_nocalls_bowtieNM = sum(noncall_bowtie_tnm) / len(noncall_bowtie_tnm)
+            except ZeroDivisionError:
+                average_nocalls_bowtieNM = nan
+                
+            try:
+                average_nocalls_novoNM   = sum(noncall_novo_tnm) / len(noncall_novo_tnm)
+            except ZeroDivisionError:
+                average_nocalls_novoNM = nan
+            
+            # Called:
+            if args.variant_type == 'snv':
+                called_bwa_tnm    = []
+                called_bowtie_tnm = []
+                called_novo_tnm   = []
                 for i in i_bwa_call:
-                    called_bwa_tmq.append( called_tmq[i] )
+                    called_bwa_tnm.append( called_tnm[i] )
                 
                 for i in i_bowtie_call:
-                    called_bowtie_tmq.append( called_tmq[i] )
+                    called_bowtie_tnm.append( called_tnm[i] )
 
                 for i in i_novo_call:
-                    called_novo_tmq.append( called_tmq[i] )
+                    called_novo_tnm.append( called_tnm[i] )
                 
                 try:
-                    average_called_bwaMQ    = sum(called_bwa_tmq) / len(called_bwa_tmq)
+                    average_called_bwaNM    = sum(called_bwa_tnm) / len(called_bwa_tnm)
                 except ZeroDivisionError:
-                    average_called_bwaMQ = nan
+                    average_called_bwaNM = nan
                 
                 try:
-                    average_called_bowtieMQ = sum(called_bowtie_tmq) / len(called_bowtie_tmq)
+                    average_called_bowtieNM = sum(called_bowtie_tnm) / len(called_bowtie_tnm)
                 except ZeroDivisionError:
-                    average_called_bowtieMQ = nan
+                    average_called_bowtieNM = nan
                 
                 try:
-                    average_called_novoMQ   = sum(called_novo_tmq) / len(called_novo_tmq)
+                    average_called_novoNM   = sum(called_novo_tnm) / len(called_novo_tnm)
                 except ZeroDivisionError:
-                    average_called_novoMQ = nan
+                    average_called_novoNM = nan
                 
-                if average_nocalls_bwaMQ < bwaMQ_lowEnd or bwaMQ0 > total_tumor_samples:
-                    bwaMappingDifficulty = True
+                if average_nocalls_bwaNM > NM_highEnd and abs(average_nocalls_bwaNM-average_called_bwaNM)/average_called_bwaNM < 0.1:
+                    bwaAlignmentDifficulty = True
                 else:
-                    bwaMappingDifficulty = False
+                    bwaAlignmentDifficulty = False
                     
-                if average_nocalls_bowtieMQ < bowtieMQ_lowEnd or bowtieMQ0 > total_tumor_samples:
-                    bowtieMappingDifficulty = True
+                if average_nocalls_bowtieNM > NM_highEnd and abs(average_nocalls_bowtieNM-average_called_bowtieNM)/average_called_bowtieNM < 0.1:
+                    bowtieAlignmentDifficulty = True
                 else:
-                    bowtieMappingDifficulty = False
+                    bowtieAlignmentDifficulty = False
 
-                if average_nocalls_novoMQ < novoMQ_lowEnd or novoMQ0 > total_tumor_samples:
-                    novoMappingDifficulty = True
+                if average_nocalls_novoNM > NM_highEnd and abs(average_nocalls_novoNM-average_called_novoNM)/average_called_novoNM < 0.1:
+                    novoAlignmentDifficulty = True
                 else:
-                    novoMappingDifficulty = False
-                ###################################################################
-
-
-                ##### ALIGNMENT MISMATCH ISSUES #####
-                # NonCalls
-                noncall_tnms   = rejected_tnm + nocalled_tnm
-
-                noncall_bwa_tnm    = []
-                noncall_bowtie_tnm = []
-                noncall_novo_tnm   = []
-                for i in i_bwa_noncall:
-                    noncall_bwa_tnm.append( noncall_tnms[i] )
+                    novoAlignmentDifficulty = False
                 
-                for i in i_bowtie_noncall:
-                    noncall_bowtie_tnm.append( noncall_tnms[i] )
-
-                for i in i_novo_noncall:
-                    noncall_novo_tnm.append( noncall_tnms[i] )
-                
-                try:
-                    average_nocalls_bwaNM    = sum(noncall_bwa_tnm) / len(noncall_bwa_tnm)
-                except ZeroDivisionError:
-                    average_nocalls_bwaNM = nan
-                    
-                try:
-                    average_nocalls_bowtieNM = sum(noncall_bowtie_tnm) / len(noncall_bowtie_tnm)
-                except ZeroDivisionError:
-                    average_nocalls_bowtieNM = nan
-                    
-                try:
-                    average_nocalls_novoNM   = sum(noncall_novo_tnm) / len(noncall_novo_tnm)
-                except ZeroDivisionError:
-                    average_nocalls_novoNM = nan
-                
-                # Called:
-                if args.variant_type == 'snv':
-                    called_bwa_tnm    = []
-                    called_bowtie_tnm = []
-                    called_novo_tnm   = []
-                    for i in i_bwa_call:
-                        called_bwa_tnm.append( called_tnm[i] )
-                    
-                    for i in i_bowtie_call:
-                        called_bowtie_tnm.append( called_tnm[i] )
-    
-                    for i in i_novo_call:
-                        called_novo_tnm.append( called_tnm[i] )
-                    
-                    try:
-                        average_called_bwaNM    = sum(called_bwa_tnm) / len(called_bwa_tnm)
-                    except ZeroDivisionError:
-                        average_called_bwaNM = nan
-                    
-                    try:
-                        average_called_bowtieNM = sum(called_bowtie_tnm) / len(called_bowtie_tnm)
-                    except ZeroDivisionError:
-                        average_called_bowtieNM = nan
-                    
-                    try:
-                        average_called_novoNM   = sum(called_novo_tnm) / len(called_novo_tnm)
-                    except ZeroDivisionError:
-                        average_called_novoNM = nan
-                    
-                    if average_nocalls_bwaNM > NM_highEnd and abs(average_nocalls_bwaNM-average_called_bwaNM)/average_called_bwaNM < 0.1:
-                        bwaAlignmentDifficulty = True
-                    else:
-                        bwaAlignmentDifficulty = False
-                        
-                    if average_nocalls_bowtieNM > NM_highEnd and abs(average_nocalls_bowtieNM-average_called_bowtieNM)/average_called_bowtieNM < 0.1:
-                        bowtieAlignmentDifficulty = True
-                    else:
-                        bowtieAlignmentDifficulty = False
-    
-                    if average_nocalls_novoNM > NM_highEnd and abs(average_nocalls_novoNM-average_called_novoNM)/average_called_novoNM < 0.1:
-                        novoAlignmentDifficulty = True
-                    else:
-                        novoAlignmentDifficulty = False
-                    
-                else:
-                    bwaAlignmentDifficulty = bowtieAlignmentDifficulty = novoAlignmentDifficulty = False
-                
-                ###################################################################
-
-
-                ##### GERMLINE SIGNAL? #####
-                num_samples_with_germline_signal = 0
-                normal_vardps = called_normal_vardp + nocalled_normal_vardp + rejected_normal_vardp
-                for nvar in normal_vardps:
-                    if nvar >= 2:
-                        num_samples_with_germline_signal += 1
-                ###################################################################
-                
-                
-                
-                ##### IDENTIFY Aligners or Platform/Sites that's not deemed PASS. Prioritize NS/IL #####
-                # ALIGNER: BWA
-                bwaSites = vcf_i.get_info_value('bwa_PASS').split(',')
-                bwaSites = [ int(bwaSites[i]) for i,j in enumerate(bwaSites) ]
-                    
-                # ALIGNER: BOWTIE
-                bowtieSites = vcf_i.get_info_value('bowtie_PASS').split(',')
-                bowtieSites = [ int(bowtieSites[i]) for i,j in enumerate(bowtieSites) ]
-                
-                # ALIGNER: NOVOALIGN
-                novoSites = vcf_i.get_info_value('novo_PASS').split(',')
-                novoSites = [ int(novoSites[i]) for i,j in enumerate(novoSites) ]
-                
-
-                
-                # Tier2: deemed pass 2/3 alignerCentric Classifications
-                # And if there is minimal level of support for the other aligner, it's still pretty good
-                if re.match(r'Tier2', vcf_i.filters) and not ( vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS') ) ):
-                
-                
-                    # Look for disqualifying features that will make it lower confidence:
-                    if (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
-                        #vcf_items[ i_qual ] = '1'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
-
-                    elif num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
-                        #vcf_items[ i_qual ] = '0'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-                        
-                    elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
-                        #vcf_items[ i_qual ] = '0'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-
-                    elif nREJECTS + nNoCall > nPASSES:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')                        
-                    
-                    # If there is nothing "bad," it's still StrongEvidence like Tier1. 
-                    else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'StrongEvidence')
-                
-                # Still Tier2, but zero support from the 3rd aligner in any sample:
-                elif re.match(r'Tier2', vcf_i.filters):
-                    
-
-                    # Look for disqualifying features that will make it lower confidence:
-                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
-                        #vcf_items[ i_qual ] = '0'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-
-                    # Already with oen aligner completely down, if we find trouble with 2...
-                    elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
-                        #vcf_items[ i_qual ] = '0'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-
-                    # If mapping problem for all 3
-                    elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
-                        #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-                        
-                    elif nREJECTS + nNoCall > nPASSES:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-                        
-                    else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
-
-
-                # Only one alignerCentric Classification is "StrongEvidence", but have at least minimal evidence support from other aligners:
-                elif re.match(r'Tier3', vcf_i.filters) and not ( vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS') ) ):
-
-                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
-                        #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
-                                                
-                    elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
-                        #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
-                        
-                    elif nREJECTS + nNoCall > nPASSES:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-                        
-                    else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
-                
-                
-                elif re.match(r'Tier3', vcf_i.filters):
-                    
-                    if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
-                        #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
-                                                
-                    elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
-                        #vcf_items[ i_qual ] = '-3'
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
-                        
-                    elif nREJECTS + nNoCall > nPASSES:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
-                        
-                    else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-                
-                
-                # Tier 4 is lowest tier, but A/N have 3/3 or 2/3 of "mere" WeakEvidence, but no strongest evidence
-                elif re.match(r'Tier4[AB]', vcf_i.filters):
-                    
-                    if nPASSES > nREJECTS + nNoCall:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-                    else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
-                                        
-            
-                elif vcf_i.filters == 'Tier4C':
-                    
-                    if nPASSES > nREJECTS + nNoCall:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-                    else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
-                    
-                elif vcf_i.filters == 'REJECT':
-                    
-                    if nPASSES > nREJECTS + nNoCall:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-                    else:
-                        vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
-                    
-            
-            # All the nonPASS samples are 0.1 < SCORE < 0.7 samples, but only in Tier4 and 5.
-            # There is actaully no REJECT call and no MISSING call
             else:
-                if   re.match(r'Tier[12]', vcf_i.filters):
-                    #vcf_items[ i_qual ] = '3'
-                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'StrongEvidence')
+                bwaAlignmentDifficulty = bowtieAlignmentDifficulty = novoAlignmentDifficulty = False
+            
+            ###################################################################
+
+
+            ##### GERMLINE SIGNAL? #####
+            num_samples_with_germline_signal = 0
+            normal_vardps = called_normal_vardp + nocalled_normal_vardp + rejected_normal_vardp
+            for nvar in normal_vardps:
+                if nvar >= 2:
+                    num_samples_with_germline_signal += 1
+            ###################################################################
+            
+            
+            ##### IDENTIFY Aligners or Platform/Sites that's not deemed PASS.
+            # ALIGNER: BWA
+            bwaSites = vcf_i.get_info_value('bwa_PASS').split(',')
+            bwaSites = [ int(bwaSites[i]) for i,j in enumerate(bwaSites) ]
+                
+            # ALIGNER: BOWTIE
+            bowtieSites = vcf_i.get_info_value('bowtie_PASS').split(',')
+            bowtieSites = [ int(bowtieSites[i]) for i,j in enumerate(bowtieSites) ]
+            
+            # ALIGNER: NOVOALIGN
+            novoSites = vcf_i.get_info_value('novo_PASS').split(',')
+            novoSites = [ int(novoSites[i]) for i,j in enumerate(novoSites) ]
+            
+            
+            
+            # Tier2: deemed pass 2/3 alignerCentric Classifications, therefore considered StrongEvidence
+            # This section is for Tier2 and AT LEAST ONE PASS sample from the 3rd aligner:
+            if re.match(r'Tier2', vcf_i.filters) and not ( vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS') ) ):
+            
+
+                if not isCallable:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
+
+                elif num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                     
-                elif re.match(r'Tier3', vcf_i.filters):
-                    #vcf_items[ i_qual ] = '1'
+                elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
+
+                elif nREJECTS > nPASSES:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
+
+                elif nREJECTS + nNoCall > nPASSES:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
+                
+                elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
+
+                # If there is nothing "bad," it's still StrongEvidence like Tier1. 
+                else:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'StrongEvidence')
+            
+            # Still Tier2, but NOT A SINGLE PASS SAMPLE from the 3rd aligner:
+            elif re.match(r'Tier2', vcf_i.filters):
+
+                if not isCallable:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
+                
+                # Look for disqualifying features that will make it lower confidence:
+                elif num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
+
+                # Already with one aligner completely down, if we find trouble with 2...
+                elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
+
+                # If mapping problem for all 3
+                elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
+                    
+                elif nREJECTS + nNoCall > nPASSES:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                     
                 else:
-                    #vcf_items[ i_qual ] = '0'
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
+
+
+            # Tier 3 have only one alignerCentric Classification is "StrongEvidence" so is therefore "WeakEvidence." This section has at least one PASS sample out of either of the two other aligners.
+            elif re.match(r'Tier3', vcf_i.filters) and not ( vcf_i.get_info_value('FLAGS') and re.search(r'(bwa|bowtie|novo)0\b', vcf_i.get_info_value('FLAGS') ) ):
+
+                if not isCallable:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+
+                elif nREJECTS > nPASSES:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+                
+                elif num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+                                            
+                elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+
+                elif nREJECTS + nNoCall > nPASSES:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-        
+                    
+                else:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
+            
+            # Still Tier3, but NOT A SINGLE PASS SAMPLE from the other two aligner. So it's by default NeutralEvidence. 
+            elif re.match(r'Tier3', vcf_i.filters):
+
+                if not isCallable:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+                
+                elif num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+                                            
+                elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+                    
+                elif nREJECTS + nNoCall > nPASSES:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+                    
+                else:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
+            
+            
+            # Tier 4 is lowest tier, but A/B/C have 3/3 or 2/3 or 1/3 of "mere" WeakEvidence, but no strongest evidence
+            elif re.match(r'Tier4[ABC]', vcf_i.filters):
+                
+                if nPASSES > nREJECTS + nNoCall:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
+                else:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+                                    
+                            
+            elif vcf_i.filters == 'REJECT':
+                
+                if nPASSES > nREJECTS + nNoCall:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
+                else:
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+                    
+                    
         
         vcf_info_item = vcf_items[7].split(';')
         # Change bowtieNVAF=0.001;novoNVAF=0.001;NVAF=0.001
@@ -922,6 +894,8 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 vcf_info_item[i] = 'novoNVAF={}'.format( '%.3f' % novoNVAF )
             elif info_item_i.startswith('NVAF='):
                 vcf_info_item[i] = 'NVAF={}'.format( '%.3f' % NVAF )
+            
+            # Add flags here if FLAGS exist. Otherwise, add in the next batch of codes
             elif info_item_i.startswith('FLAGS='):
                 if bwa_bowtie_VAF_p < threeSigma:
                     vcf_info_item[i] = vcf_info_item[i] + ',bwa.bowtie.inconsistentVAF'
@@ -929,19 +903,28 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     vcf_info_item[i] = vcf_info_item[i] + ',bwa.novo.inconsistentVAF'
                 if bowtie_novo_VAF_p < threeSigma:
                     vcf_info_item[i] = vcf_info_item[i] + ',bowtie.novo.inconsistentVAF'
-        
+                if isIn3Arms:
+                    vcf_info_item[i] = vcf_info_item[i] + ',ArmLossInNormal'
+                if not isCallable:
+                    vcf_info_item[i] = vcf_info_item[i] + ',NonCallable'
+                            
         # If there is FLAGS in the input VCF file, those inconsistentVAF flags will be added, otherwise they may need to be added here:
         if not vcf_i.get_info_value('FLAGS'):
-            inconsistentVAF_flags = []
+            new_flags = []
             if bwa_bowtie_VAF_p < threeSigma:
-                inconsistentVAF_flags.append('bwa.bowtie.inconsistentVAF')
+                new_flags.append('bwa.bowtie.inconsistentVAF')
             if bwa_novo_VAF_p < threeSigma:
-                inconsistentVAF_flags.append('bwa.novo.inconsistentVAF')
+                new_flags.append('bwa.novo.inconsistentVAF')
             if bowtie_novo_VAF_p < threeSigma:
-                inconsistentVAF_flags.append('bowtie.novo.inconsistentVAF')
-                
-            if inconsistentVAF_flags:
-                vcf_info_item.append( 'FLAGS={}'.format( ','.join(inconsistentVAF_flags) ) )
+                new_flags.append('bowtie.novo.inconsistentVAF')
+            if isIn3Arms:
+                new_flags.append('ArmLossInNormal')
+            if not isCallable:
+                new_flags.append('NonCallable')
+            
+            if new_flags:
+                vcf_info_item.append( 'FLAGS={}'.format( ','.join(new_flags) ) )
+        
         
         vcf_info_item.append( 'bwaDP={},{}'.format(bwaTotalTumorVDP, bwaTotalTumorDP) )
         vcf_info_item.append( 'bowtieDP={},{}'.format(bowtieTotalTumorVDP, bowtieTotalTumorDP) )
