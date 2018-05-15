@@ -4,7 +4,7 @@
 
 import sys, argparse, math, gzip, os, re, copy, math
 import scipy.stats as stats
-from bedFileHander import BedFile
+from bedFileHandler import BedFile
 
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
