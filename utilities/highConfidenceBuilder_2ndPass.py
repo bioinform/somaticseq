@@ -546,8 +546,11 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                             
             ##### SAMPLING ERROR DUE TO LOW VARIANT DP? #####
             noncall_vardp         = nocalled_variant_depths + rejected_variant_depths
-            average_noncall_vardp = sum(noncall_vardp)/len(noncall_vardp)
-            
+            try:
+                average_noncall_vardp = sum(noncall_vardp)/len(noncall_vardp)
+            except ZeroDivisionError:
+                average_noncall_vardp = nan
+                
             if average_noncall_vardp < varDP_lowEnd:
                 probableSamplingError = True
             else:
@@ -556,8 +559,12 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             
             ###### Generally low BQ? #####
             noncall_tbqs         = nocalled_tbq + rejected_tbq
-            average_noncall_tbqs = sum(noncall_tbqs) / len(noncall_tbqs)
-            average_called_bqs   = sum(called_tbq) / len(called_tbq)
+            try:
+                average_noncall_tbqs = sum(noncall_tbqs) / len(noncall_tbqs)
+                average_called_bqs   = sum(called_tbq) / len(called_tbq)
+            except ZeroDivisionError:
+                average_noncall_tbqs = nan
+                average_called_bqs   = nan
             
             # If average of nonPASS BQs are below a threshold, and is within 10% of the PASS calls:
             if average_noncall_tbqs < BQ_lowEnd and abs(average_noncall_tbqs-average_called_bqs)/average_called_bqs < 0.1:
