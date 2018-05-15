@@ -4,6 +4,8 @@
 
 import sys, argparse, math, gzip, os, re, copy, math
 import scipy.stats as stats
+from bedFileHander import BedFile
+
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 PRE_DIR = os.path.join(MY_DIR, os.pardir)
@@ -12,9 +14,12 @@ sys.path.append( PRE_DIR )
 import genomic_file_handlers as genome
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-vcfin',    '--vcf-infile', type=str, help='VCF in', required=True)
-parser.add_argument('-tsvin',    '--tsv-infile', type=str, help='TSV in', required=True)
-parser.add_argument('-outfile',  '--outfile',    type=str, help='VCF out', required=True)
+parser.add_argument('-vcfin',    '--vcf-infile',   type=str, help='VCF in', required=True)
+parser.add_argument('-tsvin',    '--tsv-infile',   type=str, help='TSV in', required=True)
+parser.add_argument('-outfile',  '--outfile',      type=str, help='VCF out', required=True)
+parser.add_argument('-exclude',  '--exclude-bed',  type=str, help='BED file of 3 arms that can be excluded', required=True)
+parser.add_argument('-callable', '--callable-bed', type=str, help='BED file considered to be callable lock', required=True)
+
 parser.add_argument('-pass',     '--pass-score',   type=float, help='PASS SCORE. Default=phred scaled 0.7',    required=False, default=5.228787452803376)
 parser.add_argument('-reject',   '--reject-score', type=float, help='REJECT SCORE. Default=phred scaled 0.1',  required=False, default=0.4575749056067512)
 parser.add_argument('-type',     '--variant-type', type=str, help='Either snv or indel. Required', required=True)
@@ -24,6 +29,8 @@ args = parser.parse_args()
 vcfin          = args.vcf_infile
 tsvin          = args.tsv_infile
 outfile        = args.outfile
+exclusionBed   = args.exclude_bed
+callableBed    = args.callable_bed
 pass_score     = args.pass_score
 reject_score   = args.reject_score
 
@@ -52,12 +59,20 @@ elif args.variant_type.upper() == 'INDEL':
     
 else:
     assert (args.variant_type.upper() == 'INDEL' or args.variant_type.upper() == 'SNV')
-    
+
+
 threeSigma = 2*(1-stats.norm.cdf(3))
 nan = float('nan')
 
 def all_indices(pattern_to_be_matched, my_list):
     return [ i for i,j in enumerate(my_list) if j == pattern_to_be_matched ]
+
+
+# Load two bed files
+exclusions = BedFile(exclusionBed)
+callableLoci = BedFile(callableBed)
+
+
 
 
 with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_in,  open(outfile, 'w') as vcfout:
@@ -155,6 +170,10 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         # Make sure we're on the same line
         assert (tsv_items[i_tsv_chr], tsv_items[i_tsv_pos], tsv_items[i_tsv_ref], tsv_items[i_tsv_alt]) == (vcf_i.chromosome, str(vcf_i.position), vcf_i.refbase, vcf_i.altbase)
         
+        # Check if they're inside the 3 deleted arms or in callable regions
+        isIn3Arms = exclusions.inRegion(vcf_i.chromosome, vcf_i.position)
+        isCallable = callableLoci.inRegion(vcf_i.chromosome, vcf_i.position)
+        
         bwaMQ0    = sum( [int(tsv_items[i]) for i in i_bwa_tMQ0] )
         bowtieMQ0 = sum( [int(tsv_items[i]) for i in i_bowtie_tMQ0] )
         novoMQ0   = sum( [int(tsv_items[i]) for i in i_novo_tMQ0] )
@@ -165,7 +184,6 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         
         flag_string = vcf_i.get_info_value('FLAGS')
         flags_i = flag_string.split(',') if flag_string else []
-
 
         # Get more accurate VAF stats:
         bwa_tDP     = [ int(tsv_items[i]) for i in i_bwa_tDP ]
