@@ -44,7 +44,7 @@ class BedFile:
                         intersected =  True
                         break
                         
-                    elif (region_i[1] > position_i and region_i[0] > position_i):
+                    elif region_i[0] > position_i:
                         break
             
             # If the BED file is not ordered, then it needs to go all the way to the end every time
