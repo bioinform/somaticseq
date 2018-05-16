@@ -864,22 +864,16 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
             
             # Tier 4 is lowest tier, but A/B/C have 3/3 or 2/3 or 1/3 of "mere" WeakEvidence, but no strongest evidence
-            elif re.match(r'Tier4[ABC]', vcf_i.filters):
-                
-                if nPASSES > nREJECTS + nNoCall:
-                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-                else:
-                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
-                                    
+            elif vcf_i.filters == 'REJECT' or re.match(r'Tier4[ABC]', vcf_i.filters):
 
-            elif vcf_i.filters == 'REJECT':
-                
-                if nPASSES > nREJECTS + nNoCall:
+                if vcf_i.get_info_value('FLAGS') and 'inconsistentTitration' in vcf_i.get_info_value('FLAGS'):
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+                elif nPASSES > nREJECTS + nNoCall:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                 else:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
-                    
-                    
+        
+        
         vcf_info_item = vcf_items[7].split(';')
         # Change bowtieNVAF=0.001;novoNVAF=0.001;NVAF=0.001
         for i, info_item_i in enumerate(vcf_info_item):
