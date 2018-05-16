@@ -780,6 +780,9 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
 
                 elif nREJECTS > nPASSES:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
+                    
+                elif vcf_i.get_info_value('FLAGS') and 'inconsistentTitration' in vcf_i.get_info_value('FLAGS'):
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
 
                 elif nREJECTS + nNoCall > nPASSES:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
@@ -805,8 +808,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty >= 2) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty >= 2):
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
 
-                # If mapping problem for all 3
-                elif (bwaMappingDifficulty + bowtieMappingDifficulty + novoMappingDifficulty == 3) or (bwaAlignmentDifficulty + bowtieAlignmentDifficulty + novoAlignmentDifficulty == 3):
+                elif vcf_i.get_info_value('FLAGS') and 'inconsistentTitration' in vcf_i.get_info_value('FLAGS'):
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                     
                 elif nREJECTS + nNoCall > nPASSES:
@@ -831,6 +833,9 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
 
+                elif vcf_i.get_info_value('FLAGS') and 'inconsistentTitration' in vcf_i.get_info_value('FLAGS'):
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+
                 elif nREJECTS + nNoCall > nPASSES:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                     
@@ -851,10 +856,12 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     
                 elif nREJECTS + nNoCall > nPASSES:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
+
+                elif vcf_i.get_info_value('FLAGS') and 'inconsistentTitration' in vcf_i.get_info_value('FLAGS'):
+                    vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                     
                 else:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
-            
             
             # Tier 4 is lowest tier, but A/B/C have 3/3 or 2/3 or 1/3 of "mere" WeakEvidence, but no strongest evidence
             elif re.match(r'Tier4[ABC]', vcf_i.filters):
@@ -864,7 +871,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 else:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                                     
-                            
+
             elif vcf_i.filters == 'REJECT':
                 
                 if nPASSES > nREJECTS + nNoCall:
@@ -873,7 +880,6 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                     
                     
-        
         vcf_info_item = vcf_items[7].split(';')
         # Change bowtieNVAF=0.001;novoNVAF=0.001;NVAF=0.001
         for i, info_item_i in enumerate(vcf_info_item):
