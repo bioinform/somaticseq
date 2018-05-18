@@ -78,14 +78,16 @@ fi
 echo "" >> $out_script
 
 echo "docker run --rm -v /:/mnt -u $UID lethalfang/picard:2.10.10 \\" >> $out_script
-echo "java -Xmx8g -jar /opt/picard.jar MarkDuplicates \\" >> $out_script
+echo "java -Xmx16g -jar /opt/picard.jar MarkDuplicates \\" >> $out_script
 echo "I=/mnt/${inBam} \\" >> $out_script
 echo "M=/mnt/${outdir}/${outBam%.bam} \\" >> $out_script
 echo "CREATE_INDEX=true \\" >> $out_script
 echo "ASSUME_SORTED=true \\" >> $out_script
+echo "TMP_DIR=/mnt/${outdir}/${timestamp}.temp \\" >> $out_script
 #echo "MINIMUM_DISTANCE=1000 \\" >> $out_script
 echo "O=/mnt/${outdir}/${outBam}" >> $out_script
 
 echo "" >> $out_script
 
 echo "mv ${outdir}/${outBam%.bam}.bai ${outdir}/${outBam}.bai" >> $out_script
+echo "rm -r ${outdir}/${timestamp}.temp"
