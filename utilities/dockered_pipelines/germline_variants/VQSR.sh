@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-vcf:,in-vcf:,human-reference:,selector:,dbsnp:,hapmap:,omni:,thousandG:,mills:,extra-arguments:,action:,MEM:,threads:,out-script: -n 'gatk_haplotypecaller.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,in-vcf:,human-reference:,selector:,dbsnp:,hapmap:,omni:,thousandG:,mills:,extra-arguments:,action:,MEM:,threads:,out-script:,standalone -n 'gatk_vqsr.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -109,6 +109,9 @@ while true; do
             *)  action=$2 ; shift 2 ;;
         esac ;;
 
+    --standalone )
+        standalone=1 ; shift ;;
+
     -- ) shift; break ;;
     * ) break ;;
     esac
@@ -122,7 +125,7 @@ if [[ ${out_script_name} ]]
 then
     out_script="${out_script_name}"
 else
-    out_script="${logdir}/HaplotypeCaller.${timestamp}.cmd"    
+    out_script="${logdir}/vqsr.${timestamp}.cmd"
 fi
 
 
