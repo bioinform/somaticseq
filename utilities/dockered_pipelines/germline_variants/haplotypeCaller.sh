@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-vcf:,bam:,human-reference:,selector:,dbsnp:,extra-arguments:,action:,MEM:,threads:,out-script: -n 'gatk_haplotypecaller.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,out-vcf:,bam:,human-reference:,selector:,dbsnp:,extra-arguments:,action:,MEM:,threads:,out-script:,standalone -n 'gatk_haplotypecaller.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -85,6 +85,9 @@ while true; do
             "") shift 2 ;;
             *)  action=$2 ; shift 2 ;;
         esac ;;
+
+    --standalone )
+        standalone=1 ; shift ;;
 
     -- ) shift; break ;;
     * ) break ;;
