@@ -143,7 +143,7 @@ echo "--native-pair-hmm-threads ${threads} \\" >> $out_script
 echo "$selector_text \\" >> $out_script
 echo "$dbsnp_text \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
-echo "--output /mnt/${outVcfName}" >> $out_script
+echo "--output /mnt/${outdir}/${outVcfName}" >> $out_script
 
 echo "" >> $out_script
 
