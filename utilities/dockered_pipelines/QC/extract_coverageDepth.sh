@@ -107,6 +107,8 @@ then
     selector_text="-L /mnt/${SELECTOR}"
 fi
 
+bamFileName=`basename ${bamFile}`
+
 echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.7-0 \\" >> $out_script
 echo "java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T DepthOfCoverage \\" >> $out_script
@@ -116,7 +118,7 @@ echo "${selector_text} \\" >> $out_script
 echo "--minBaseQuality ${minBaseQuality} \\" >> $out_script
 echo "--minMappingQuality ${minMappingQuality} \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
-echo "-o /mnt/${bamFile}.depth" >> $out_script
+echo "-o /mnt/${outdir}/${bamFileName}.depth" >> $out_script
 
 echo "" >> $out_script
 
