@@ -214,8 +214,8 @@ echo "\"vcf-concat /mnt/${outdir}/snp.vqsr.${timestamp}.vcf /mnt/${outdir}/indel
 
 
 echo '' >> $out_script
-echo "for file in ${outdir}/snp.${timestamp}.recal ${outdir}/snp.${timestamp}.tranches ${outdir}/indel.${timestamp}.recal ${outdir}/indel.${timestamp}.tranches ${outdir}/snp.vqsr.${timestamp}.vcf ${outdir}/indel.vqsr.${timestamp}.vcf" >> $out_script
-echo '    do rm -v $file' >> $out_script
+echo "for file in ${outdir}/snp.${timestamp}.recal ${outdir}/snp.${timestamp}.tranches ${outdir}/indel.${timestamp}.recal ${outdir}/indel.${timestamp}.tranches ${outdir}/snp.vqsr.${timestamp}.vcf ${outdir}/indel.vqsr.${timestamp}.vcf ${outdir}/snp.${timestamp}.recal.idx ${outdir}/indel.${timestamp}.recal.idx ${outdir}/snp.vqsr.${timestamp}.vcf.idx ${outdir}/indel.vqsr.${timestamp}.vcf.idx" >> $out_script
+echo '    do rm -fv $file' >> $out_script
 echo "done" >> $out_script
 
 
