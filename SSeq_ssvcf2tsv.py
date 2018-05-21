@@ -187,7 +187,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         
     my_line = my_sites.readline().rstrip()
     
-    bam    = pysam.AlignmentFile(bam_fn)
+    bam    = pysam.AlignmentFile(bam_fn, reference_filename=ref_fa)
     ref_fa = pysam.FastaFile(ref_fa)
     
     if truth:
