@@ -669,6 +669,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         strelka_classification = 0
                         somatic_evs = qss = tqss = nan
                         
+                    num_callers += strelka_classification
+                        
                 else:
                     strelka_classification = nan
                     somatic_evs = qss = tqss = nan
