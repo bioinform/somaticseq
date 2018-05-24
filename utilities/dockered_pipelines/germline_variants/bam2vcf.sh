@@ -147,6 +147,8 @@ $MYDIR/haplotypeCaller.sh \
 --human-reference ${GENOME_REFERENCE} \
 --dbsnp           ${dbsnp} \
 --out-vcf         preVQSR.${outVcf} \
+--threads         ${threads} \
+--MEM             ${MEM} \
 --out-script      ${out_script}
 
 $MYDIR/VQSR.sh \
