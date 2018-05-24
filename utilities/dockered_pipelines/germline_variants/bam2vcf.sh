@@ -151,6 +151,7 @@ $MYDIR/haplotypeCaller.sh \
 
 $MYDIR/VQSR.sh \
 --out-dir         ${outdir} \
+--in-vcf          ${outdir}/preVQSR.${outVcf} \
 --human-reference ${GENOME_REFERENCE} \
 --dbsnp           ${dbsnp} \
 --hapmap          ${hapmapFile} \
