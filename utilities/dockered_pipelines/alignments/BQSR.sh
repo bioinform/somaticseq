@@ -100,7 +100,7 @@ echo "-T BaseRecalibrator \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${inBam} \\" >> $out_script
 echo "-knownSites /mnt/${dbsnp} \\" >> $out_script
-echo "-BQSR /mnt/${outdir}/BQSR.${timestamp}.table" >> $out_script
+echo "-BQSR /mnt/${outdir}/BQSR.${timestamp}.table \\" >> $out_script
 echo "-o /mnt/${outdir}/post_BQSR.${timestamp}.table" >> $out_script
 
 echo "" >> $out_script
