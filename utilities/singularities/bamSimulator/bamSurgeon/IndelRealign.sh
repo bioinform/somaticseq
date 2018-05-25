@@ -24,7 +24,7 @@ while true; do
                 "") shift 2 ;;
                 *)  outdir=$2 ; shift 2 ;;
             esac ;;
-            
+
         --tumor-bam )
             case "$2" in
                 "") shift 2 ;;
@@ -82,7 +82,7 @@ if [[ ${out_script_name} ]]
 then
     out_script="${out_script_name}"
 else
-    out_script="${logdir}/indelRealign.${timestamp}.cmd"    
+    out_script="${logdir}/indelRealign.${timestamp}.cmd"
 fi
 
 if [[ $standalone ]]
@@ -103,7 +103,7 @@ then
     selector_input="-L /mnt/${SELECTOR}"
 fi
 
-echo "singularity exec --bind /:/mnt docker://broadinstitute/gatk3:3.7-0 java -Xmx9g -jar /usr/GenomeAnalysisTK.jar \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://broadinstitute/gatk3:3.8-0 java -Xmx9g -jar /usr/GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T RealignerTargetCreator \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${tbam} \\" >> $out_script
@@ -112,7 +112,7 @@ echo "$selector_input \\" >> $out_script
 echo "-o /mnt/${outdir}/T.N.intervals" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt --pwd /mnt/${outdir} docker://broadinstitute/gatk3:3.7-0 \\" >> $out_script
+echo "singularity exec --bind /:/mnt --pwd /mnt/${outdir} docker://broadinstitute/gatk3:3.8-0 \\" >> $out_script
 echo "java -Xmx9g -jar /usr/GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T IndelRealigner \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script

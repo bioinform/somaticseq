@@ -142,7 +142,7 @@ then
     selector_text="-L /mnt/${SELECTOR}"
 fi
 
-echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.7-0 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-0 \\" >> $out_script
 echo "java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T CallableLoci \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
