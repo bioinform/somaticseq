@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,in-bam:,out-bam:,genome-reference:,dbsnp:,out-script:,standalone, -n 'BQSR.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,in-bam:,out-bam:,genome-reference:,dbsnp:,out-script:,standalone,plot, -n 'BQSR.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -97,7 +97,7 @@ echo "-o /mnt/${outdir}/BQSR.${timestamp}.table" >> $out_script
 
 echo "" >> $out_script
 
-if [[ $plotBQSR }}
+if [[ $plotBQSR ]]
 then
     echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-0 \\" >> $out_script
     echo "java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
