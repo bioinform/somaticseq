@@ -110,13 +110,14 @@ then
     
     echo "" >> $out_script
     
-    echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-0 \\" >> $out_script
-    echo "java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
-    echo "-T AnalyzeCovariates \\" >> $out_script
-    echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
-    echo "-before /mnt/${outdir}/BQSR.${timestamp}.table \\" >> $out_script
-    echo "-after /mnt/${outdir}/post_BQSR.${timestamp}.table \\" >> $out_script
-    echo "-plots /mnt/${outdir}/BQSR.plot.${timestamp}.pdf" >> $out_script
+    echo "# The GATK docker doesn't have all the R packages to do the plotting" >> $out_script
+    echo "#docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-0 \\" >> $out_script
+    echo "#java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
+    echo "#-T AnalyzeCovariates \\" >> $out_script
+    echo "#-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
+    echo "#-before /mnt/${outdir}/BQSR.${timestamp}.table \\" >> $out_script
+    echo "#-after /mnt/${outdir}/post_BQSR.${timestamp}.table \\" >> $out_script
+    echo "#-plots /mnt/${outdir}/BQSR.plot.${timestamp}.pdf" >> $out_script
     
     echo "" >> $out_script
 fi
