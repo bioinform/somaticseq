@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,in-bam:,out-bam:,genome-reference:,dbsnp:,out-script:,standalone, -n 'BQSR.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,in-bam:,out-bam:,genome-reference:,dbsnp:,out-script:,standalone,plot, -n 'BQSR.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -55,6 +55,9 @@ while true; do
         --standalone )
             standalone=1 ; shift ;;
 
+        --plot )
+            plotBQSR=1 ; shift ;;
+
         -- ) shift; break ;;
         * ) break ;;
     esac
@@ -94,26 +97,29 @@ echo "-o /mnt/${outdir}/BQSR.${timestamp}.table" >> $out_script
 
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-0 \\" >> $out_script
-echo "java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
-echo "-T BaseRecalibrator \\" >> $out_script
-echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
-echo "-I /mnt/${inBam} \\" >> $out_script
-echo "-knownSites /mnt/${dbsnp} \\" >> $out_script
-echo "-BQSR /mnt/${outdir}/BQSR.${timestamp}.table \\" >> $out_script
-echo "-o /mnt/${outdir}/post_BQSR.${timestamp}.table" >> $out_script
-
-echo "" >> $out_script
-
-echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-0 \\" >> $out_script
-echo "java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
-echo "-T AnalyzeCovariates \\" >> $out_script
-echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
-echo "-before /mnt/${outdir}/BQSR.${timestamp}.table \\" >> $out_script
-echo "-after /mnt/${outdir}/post_BQSR.${timestamp}.table \\" >> $out_script
-echo "-plots /mnt/${outdir}/BQSR.plot.${timestamp}.pdf" >> $out_script
-
-echo "" >> $out_script
+if [[ $plotBQSR ]]
+then
+    echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-0 \\" >> $out_script
+    echo "java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
+    echo "-T BaseRecalibrator \\" >> $out_script
+    echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
+    echo "-I /mnt/${inBam} \\" >> $out_script
+    echo "-knownSites /mnt/${dbsnp} \\" >> $out_script
+    echo "-BQSR /mnt/${outdir}/BQSR.${timestamp}.table \\" >> $out_script
+    echo "-o /mnt/${outdir}/post_BQSR.${timestamp}.table" >> $out_script
+    
+    echo "" >> $out_script
+    
+    echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-0 \\" >> $out_script
+    echo "java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
+    echo "-T AnalyzeCovariates \\" >> $out_script
+    echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
+    echo "-before /mnt/${outdir}/BQSR.${timestamp}.table \\" >> $out_script
+    echo "-after /mnt/${outdir}/post_BQSR.${timestamp}.table \\" >> $out_script
+    echo "-plots /mnt/${outdir}/BQSR.plot.${timestamp}.pdf" >> $out_script
+    
+    echo "" >> $out_script
+fi
 
 echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-0 \\" >> $out_script
 echo "java -Xmx8g -jar /usr/GenomeAnalysisTK.jar \\" >> $out_script
