@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,bam:,genome-reference:,selector:,maxDepth:,maxFractionOfReadsWithLowMAPQ:,maxLowMAPQ:,minBaseQuality:,minMappingQuality:,minDepth:,minDepthForLowMAPQ:,extra-arguments:,out-script:,standalone, -n 'callableLoci.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,bam:,genome-reference:,out-prefix:,selector:,maxDepth:,maxFractionOfReadsWithLowMAPQ:,maxLowMAPQ:,minBaseQuality:,minMappingQuality:,minDepth:,minDepthForLowMAPQ:,extra-arguments:,out-script:,standalone, -n 'callableLoci.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -35,6 +35,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  bamFile=$2 ; shift 2 ;;
+            esac ;;
+
+        --out-prefix )
+            case "$2" in
+                "") shift 2 ;;
+                *)  outPrefix=$2 ; shift 2 ;;
             esac ;;
 
         --genome-reference )
@@ -154,10 +160,10 @@ echo "--minBaseQuality ${minBaseQuality} \\" >> $out_script
 echo "--minMappingQuality ${minMappingQuality} \\" >> $out_script
 echo "--minDepth ${minDepth} \\" >> $out_script
 echo "--minDepthForLowMAPQ ${minDepthForLowMAPQ} \\" >> $out_script
-echo "--summary /mnt/${bamFile}.summary \\" >> $out_script
+echo "--summary /mnt/${outdir}.${outPrefix}.summary \\" >> $out_script
 echo "${selector_text} \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
-echo "-o /mnt/${bamFile}.callable.bed" >> $out_script
+echo "-o /mnt/${outdir}.${outPrefix}.Callable.bed" >> $out_script
 
 echo "" >> $out_script
 
