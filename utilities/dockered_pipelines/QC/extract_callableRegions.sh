@@ -160,10 +160,10 @@ echo "--minBaseQuality ${minBaseQuality} \\" >> $out_script
 echo "--minMappingQuality ${minMappingQuality} \\" >> $out_script
 echo "--minDepth ${minDepth} \\" >> $out_script
 echo "--minDepthForLowMAPQ ${minDepthForLowMAPQ} \\" >> $out_script
-echo "--summary /mnt/${outdir}.${outPrefix}.summary \\" >> $out_script
+echo "--summary /mnt/${outdir}/${outPrefix}.summary \\" >> $out_script
 echo "${selector_text} \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
-echo "-o /mnt/${outdir}.${outPrefix}.Callable.bed" >> $out_script
+echo "-o /mnt/${outdir}/${outPrefix}.Callable.bed" >> $out_script
 
 echo "" >> $out_script
 
