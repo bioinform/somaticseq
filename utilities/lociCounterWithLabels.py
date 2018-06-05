@@ -7,7 +7,7 @@ from copy import copy
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-fai',    '--fai-file',   type=str,  help='.fa.fai file',  required=True,  default=None)
 parser.add_argument('-beds',   '--bed-files',  type=str,  help='BED files', nargs='*', required=True,  default=None)
-parser.add_argument('-out',    '--bed-out',    type=str,  help='BED file out', required=False,  default=sys.stdout)
+parser.add_argument('-out',    '--bed-out',    type=str,  help='BED file out', required=False,  default=None)
 parser.add_argument('-labels', '--bed-labels', type=str,  help='Use these labels instead of bed file names', nargs='*', required=False,  default=None)
 
 
@@ -17,6 +17,8 @@ fai_file   = args.fai_file
 bed_files  = args.bed_files
 bed_out    = args.bed_out
 bed_labels = args.bed_labels
+
+bed_out = args.bed_out if args.bed_out else sys.stdout
 
 if bed_labels:
     assert len(bed_labels) == len(bed_files)
@@ -198,7 +200,8 @@ for i, bed_file_i in enumerate(bed_files):
         = countIntersectedRegions(contigBoundries[chrom], contigCounters[chrom], bedRegions[chrom], contigLabels[chrom], label_i)
 
 
-
+if args.bed_out:
+	bed_out = open(bed_out, 'w')
 
 for contig_i in orderedContigs:
     
@@ -211,3 +214,6 @@ for contig_i in orderedContigs:
             out_string = '{}\t{}\t{}\t{}\t{}'.format(contig_i, contigBoundries[contig_i][i], contigBoundries[contig_i][i+1], count_i, label_string)
             
             bed_out.write(out_string + '\n')
+
+if args.bed_out:
+	bed_out.close()
