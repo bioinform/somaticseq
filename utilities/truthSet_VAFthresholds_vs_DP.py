@@ -12,13 +12,19 @@ from read_info_extractor import *
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-vcfin',    '--vcf-infile',  type=str, help='VCF in', required=True)
 parser.add_argument('-filters',  '--vcf-filters', type=str, nargs='*', help='Does not actually work, hard coded actually', required=False, default=['StrongEvidence', 'WeakEvidence'])
+parser.add_argument('-sample',    '--sample-out',  type=str, help='sample out', required=True)
+parser.add_argument('-total',     '--total-out',   type=str, help='total out', required=True)
 
 
 args = parser.parse_args()
 
 vcf_in      = args.vcf_infile
 vcf_filters = args.vcf_filters
+sampleout   = args.sample_out
+totalout    = args.total_out
 
+increment = 100
+nan = float('nan')
 
 with genome.open_textfile(vcf_in) as vcfin:
     
@@ -53,8 +59,11 @@ with genome.open_textfile(vcf_in) as vcfin:
     line_i = vcfin.readline().rstrip()
     
     
-    dp2vaf = { 'bwa': {}, 'bowtie': {}, 'novo': {}, }
+    dp2vaf   = { 'bwa': {}, 'bowtie': {}, 'novo': {}, }
     dp2altdp = { 'bwa': {}, 'bowtie': {}, 'novo': {}, }
+    
+    totaldp2vaf   = { 'bwa': {}, 'bowtie': {}, 'novo': {}, }
+    totaldp2altdp = { 'bwa': {}, 'bowtie': {}, 'novo': {}, }
     
     while line_i:
         
@@ -63,8 +72,19 @@ with genome.open_textfile(vcf_in) as vcfin:
         
         if re.search(r'(Strong|Weak)Evidence', my_vcf.filters):
             
-            
             for aligner_i in ('bwa', 'bowtie', 'novo'):
+                
+                total_altdp, total_dp = my_vcf.get_info_value( '{}DP'.format(aligner_i) ).split(',')
+                total_altdp, total_dp = int(total_altdp), int(total_dp)
+                
+                overall_vaf = float(my_vcf.get_info_value( '{}TVAF'.format(aligner_i) ))
+                
+                if total_dp not in totaldp2altdp:
+                    totaldp2altdp[ aligner_i ][ total_dp ] = set()
+                    totaldp2vaf[ aligner_i ][ total_dp ] = set()
+                    
+                totaldp2altdp[ aligner_i ][ total_dp ].add(total_altdp)
+                totaldp2vaf[ aligner_i ][ total_dp ].add(overall_vaf)
             
                 for sample_i in tumor_indices[aligner_i]:
                     
@@ -100,7 +120,10 @@ with genome.open_textfile(vcf_in) as vcfin:
         line_i = vcfin.readline().rstrip()
 
 
-    print('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format('DP', 'bwa.minAltDP', 'bowtie.minAltDP', 'novo.minAltDP', 'MinAltDP', 'bwa.minVAF', 'bowtie.minVAF', 'novo.minVAF', 'MinVAF') )
+
+with open(sampleout, 'w') as sampleout:
+    
+    print('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format('DP', 'bwa.minAltDP', 'bowtie.minAltDP', 'novo.minAltDP', 'MinAltDP', 'bwa.minVAF', 'bowtie.minVAF', 'novo.minVAF', 'MinVAF'), file=sampleout )
 
 
     for dp_i in range(10,150):
@@ -115,6 +138,68 @@ with genome.open_textfile(vcf_in) as vcfin:
         novoMinVAF = min( dp2vaf['novo'][dp_i] )
         MinVAF = min( bwaMinVAF, bowtieMinVAF, novoMinVAF)
         
-        print('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(dp_i, bwaMinDP, bowtieMinDP, novoMinDP, MinDP, bwaMinVAF, bowtieMinVAF, novoMinVAF, MinVAF) )
+        print('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(dp_i, bwaMinDP, bowtieMinDP, novoMinDP, MinDP, bwaMinVAF, bowtieMinVAF, novoMinVAF, MinVAF), file=sampleout )
+        
+
+
+
+
+with open(totalout, 'w') as totalout:
+    
+    print('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format('DP', 'bwa.minAltDP', 'bowtie.minAltDP', 'novo.minAltDP', 'MinAltDP', 'bwa.minVAF', 'bowtie.minVAF', 'novo.minVAF', 'MinVAF'), file=totalout )
+
+
+    for dp_i in range(500,5000,increment):
         
         
+        bwaMinDPs = set()
+        bowtieMinDPs = set()
+        novoMinDPs = set ()
+        
+        bwaMinVAFs = set()
+        bowtieMinVAFs = set()
+        novoMinVAFs = set ()
+        
+        
+        for dp_j in range(dp_i, dp_i+increment):
+        
+            if dp_j in totaldp2altdp['bwa']:
+                bwaMinDPs.add( min( totaldp2altdp['bwa'][dp_j] ) )
+            
+            if dp_j in totaldp2altdp['bowtie']:
+                bowtieMinDPs.add( min( totaldp2altdp['bowtie'][dp_j] ) )
+            
+            if dp_j in totaldp2altdp['novo']:
+                novoMinDPs.add( min( totaldp2altdp['novo'][dp_j] ) )
+            
+            
+            if dp_j in totaldp2vaf['bwa']:
+                bwaMinVAFs.add( min( totaldp2vaf['bwa'][dp_j] ) )
+            
+            if dp_j in totaldp2altdp['bowtie']:
+                bowtieMinVAFs.add( min( totaldp2vaf['bowtie'][dp_j] ) )
+            
+            if dp_j in totaldp2altdp['novo']:
+                novoMinVAFs.add( min( totaldp2vaf['novo'][dp_j] ) )
+            
+            
+        
+        bwaMinDP = min( bwaMinDPs ) if bwaMinDPs else nan
+        bowtieMinDP = min( bowtieMinDPs ) if bowtieMinDPs else nan
+        novoMinDP = min( novoMinDPs ) if novoMinDPs else nan
+        
+        MinDPs = set.union( bwaMinDPs, bowtieMinDPs , novoMinDPs)
+        MinDP = min(MinDPs) if MinDPs else nan
+        
+        
+        bwaMinVAF = min( bwaMinVAFs ) if bwaMinVAFs else nan
+        bowtieMinVAF = min( bowtieMinVAFs ) if bowtieMinVAFs else nan
+        novoMinVAF = min( novoMinVAFs ) if novoMinVAFs else nan
+        
+        MinVAFs = set.union( bwaMinVAFs, bowtieMinVAFs , novoMinVAFs)
+        MinVAF = min( MinVAFs ) if MinVAFs else nan
+        
+        print('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(dp_i, bwaMinDP, bowtieMinDP, novoMinDP, MinDP, bwaMinVAF, bowtieMinVAF, novoMinVAF, MinVAF), file=totalout )
+        
+        
+
