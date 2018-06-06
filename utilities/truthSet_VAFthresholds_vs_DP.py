@@ -149,7 +149,7 @@ with open(totalout, 'w') as totalout:
     print('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format('DP', 'bwa.minAltDP', 'bowtie.minAltDP', 'novo.minAltDP', 'MinAltDP', 'bwa.minVAF', 'bowtie.minVAF', 'novo.minVAF', 'MinVAF'), file=totalout )
 
 
-    for dp_i in range(500,5000,increment):
+    for dp_i in range(100,10000,increment):
         
         
         bwaMinDPs = set()
