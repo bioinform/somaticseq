@@ -492,7 +492,8 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
                         
                     else:
                         strelka_classification = 0
-                        
+                    
+                    num_callers += strelka_classification
                 else:
                     strelka_classification = nan
                 
