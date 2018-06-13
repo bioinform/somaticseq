@@ -274,6 +274,11 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
     while my_line.startswith('#') or my_line.startswith('track='):
         my_line = my_sites.readline().rstrip()
     
+    
+    # First coordinate:
+    coordinate_i = re.match( genome.pattern_chr_position, my_line )
+    coordinate_i = coordinate_i.group() if coordinate_i else ''
+    
     # First line:
     outhandle.write( out_header.replace('{','').replace('}','')  + '\n' )
     
@@ -283,6 +288,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         if is_vcf:
             
             my_vcf = genome.Vcf_line( my_line )
+            
             my_coordinates = [(my_vcf.chromosome, my_vcf.position)]
             
             variants_at_my_coordinate = []
@@ -299,6 +305,14 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
 
                 my_line = my_sites.readline().rstrip()
                 my_vcf = genome.Vcf_line( my_line )
+                
+                coordinate_j = re.match( genome.pattern_chr_position, my_line )
+                coordinate_j = coordinate_j.group() if coordinate_j else ''
+                    
+                if genome.whoisbehind(coordinate_i, coordinate_j, chrom_seq) == 1:
+                    raise Exception( '{} does not seem to be properly sorted.'.format(mysites) )
+                    
+                coordinate_i = coordinate_j
 
                 if my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
                     
@@ -323,7 +337,7 @@ with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
         
         ##### ##### ##### ##### ##### #####
         for my_coordinate in my_coordinates:
-            
+                        
             ######## If VCF, can get ref base, variant base, as well as other identifying information ######## 
             if is_vcf:
                 
