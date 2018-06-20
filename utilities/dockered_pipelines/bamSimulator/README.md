@@ -3,6 +3,8 @@
 * After the *in silico* data are generated, you can use the [somatic mutation pipeline](..) on the training data to generate the SomaticSeq classifiers.
 * Classifiers built on training data only work if the training data is similar to the data you want to predict. Ideally, the training data are sequenced on the same platform, same sample prep, and similar depth of coverage as the data of interest.
 * This method is based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon), slightly modified into [our own fork](https://github.com/ltfang-bina/bamsurgeon) for some speedups. 
+* The proper citation for BAMSurgeon is [Ewing AD, Houlahan KE, Hu Y, et al. Combining tumor genome simulation with crowdsourcing to benchmark somatic single-nucleotide-variant detection. Nat Methods. 2015;12(7):623-30.](http://doi.org/10.1038/nmeth.3407)
+
 
 **Requirement**
 * Have internet connection, and able to pull and run docker images from Docker Hub, as we have dockerized the entire BAMSurgeon workflow. 
@@ -28,7 +30,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 --min-variant-reads 2 \
 --output-dir        /ABSOLUTE/PATH/TO/trainingSet \
 --threads           36 \
---action            qsub
+--action            qsub \
 --merge-bam --split-bam --indel-realign --merge-output-bams
 ```
 
@@ -37,7 +39,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 
 **The following parameters for the script:**
 * ```--genome-reference``` /ABSOLUTE/PATH/TO/human_reference.fa (Required)
-* ```--selector``` /ABSOLUTE/PATH/TO/capture_region.bed (Required)
+* ```--selector``` /ABSOLUTE/PATH/TO/capture_region.bed (BED file to limit where mutation spike in will be attempted)
 * ```--tumor-bam-in``` Input BAM file (Required)
 * ```--normal-bam-in``` Input BAM file (Optional, but required if you want to merge it with the tumor input)
 * ```--tumor-bam-out``` Output BAM file for the designated tumor after BAMSurgeon mutation spike in
