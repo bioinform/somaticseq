@@ -30,7 +30,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 --min-variant-reads 2 \
 --output-dir        /ABSOLUTE/PATH/TO/trainingSet \
 --threads           36 \
---action            qsub
+--action            qsub \
 --merge-bam --split-bam --indel-realign --merge-output-bams
 ```
 
@@ -39,7 +39,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 
 **The following parameters for the script:**
 * ```--genome-reference``` /ABSOLUTE/PATH/TO/human_reference.fa (Required)
-* ```--selector``` /ABSOLUTE/PATH/TO/capture_region.bed (Required)
+* ```--selector``` /ABSOLUTE/PATH/TO/capture_region.bed (BED file to limit where mutation spike in will be attempted)
 * ```--tumor-bam-in``` Input BAM file (Required)
 * ```--normal-bam-in``` Input BAM file (Optional, but required if you want to merge it with the tumor input)
 * ```--tumor-bam-out``` Output BAM file for the designated tumor after BAMSurgeon mutation spike in
