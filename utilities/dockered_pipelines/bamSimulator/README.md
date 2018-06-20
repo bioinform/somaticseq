@@ -3,6 +3,8 @@
 * After the *in silico* data are generated, you can use the [somatic mutation pipeline](..) on the training data to generate the SomaticSeq classifiers.
 * Classifiers built on training data only work if the training data is similar to the data you want to predict. Ideally, the training data are sequenced on the same platform, same sample prep, and similar depth of coverage as the data of interest.
 * This method is based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon), slightly modified into [our own fork](https://github.com/ltfang-bina/bamsurgeon) for some speedups. 
+* The proper citation for BAMSurgeon is [Ewing AD, Houlahan KE, Hu Y, et al. Combining tumor genome simulation with crowdsourcing to benchmark somatic single-nucleotide-variant detection. Nat Methods. 2015;12(7):623-30.](http://doi.org/10.1038/nmeth.3407)
+
 
 **Requirement**
 * Have internet connection, and able to pull and run docker images from Docker Hub, as we have dockerized the entire BAMSurgeon workflow. 
