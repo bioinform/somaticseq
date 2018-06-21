@@ -10,11 +10,10 @@
 * Have internet connection, and able to pull and run docker images from Docker Hub, as we have dockerized the entire BAMSurgeon workflow. 
 * **Recommended**: Have cluster management system with valid "qsub" command, such as Sun Grid Engine (SGE).
 
-**Example Command for multi-thread jobs**
+**Example Command for multi-thread jobs that merge and then split the input tumor and normal BAM files**
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multiThreads.sh \
 --genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
---selector          /ABSOLUTE/PATH/TO/Exome_Capture.GRCh38.bed \
 --tumor-bam-in      /ABSOLUTE/PATH/TO/Tumor_Sample.bam \
 --normal-bam-in     /ABSOLUTE/PATH/TO/Normal_Sample.bam \
 --tumor-bam-out     syntheticTumor.bam \
@@ -29,13 +28,34 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 --right-beta        5 \
 --min-variant-reads 2 \
 --output-dir        /ABSOLUTE/PATH/TO/trainingSet \
---threads           36 \
+--threads           24 \
 --action            qsub \
 --merge-bam --split-bam --indel-realign --merge-output-bams
 ```
 
 * **BamSimulator_.sh** creates semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**, **synthetic_indels.vcf**, and **synthetic_svs.vcf**.
 * For single-thread job (WES), use BamSimulator_singleThread.sh instead. 
+
+**An example Command (single-thread) of an ideal situation when there are sequencing replicates of the same samples**
+```
+$PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_singleThread.sh \
+--genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
+--tumor-bam-in      /ABSOLUTE/PATH/TO/Replicate_001.bam \
+--normal-bam-in     /ABSOLUTE/PATH/TO/Replicate_002.bam \
+--tumor-bam-out     syntheticTumor.bam \
+--normal-bam-out    syntheticNormal.bam \
+--split-proportion  0.5 \
+--num-snvs          30000 \
+--num-indels        10000 \
+--num-svs           1500 \
+--min-vaf           0.0 \
+--max-vaf           1.0 \
+--left-beta         2 \
+--right-beta        5 \
+--min-variant-reads 2 \
+--output-dir        /ABSOLUTE/PATH/TO/trainingSet \
+--action            qsub
+```
 
 **The following parameters for the script:**
 * ```--genome-reference``` /ABSOLUTE/PATH/TO/human_reference.fa (Required)
@@ -105,10 +125,9 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_multiThreads.sh 
 --tumor-bam       /ABSOLUTE/PATH/TO/trainingSet/syntheticTumor.bam \
 --human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
 --dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
---min-vaf         0.05 \
---thread          36 \
+--thread          24 \
 --truth-snv       /ABSOLUTE/PATH/TO/trainingSet/synthetic_snvs.vcf \
 --truth-indel     /ABSOLUTE/PATH/TO/trainingSet/synthetic_indels.leftAlign.vcf \
 --action          echo \
---mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+--mutect2 --somaticsniper --vardict --muse --lofreq --strelka --somaticseq
 ```
