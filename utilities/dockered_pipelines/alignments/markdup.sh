@@ -90,4 +90,4 @@ echo "O=/mnt/${outdir}/${outBam}" >> $out_script
 echo "" >> $out_script
 
 echo "mv ${outdir}/${outBam%.bam}.bai ${outdir}/${outBam}.bai" >> $out_script
-echo "rm -r ${outdir}/${timestamp}.temp"
+echo "rm -r ${outdir}/${timestamp}.temp" >> $out_script
