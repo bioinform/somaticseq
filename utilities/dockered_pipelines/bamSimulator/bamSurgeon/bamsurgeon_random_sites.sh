@@ -132,7 +132,7 @@ fi
 echo "" >> $out_script
 
 #1) Generate mutation sites and VAF's
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-4 bash -c \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1 bash -c \\" >> $out_script
 echo "\"/usr/local/bamsurgeon/scripts/randomsites.py \\" >> $out_script
 echo "--genome /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
@@ -147,7 +147,7 @@ echo "| bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai > /mnt/${outdir
 echo "" >> $out_script
 
 
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-4 bash -c \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1 bash -c \\" >> $out_script
 echo "\"/usr/local/bamsurgeon/scripts/randomsites.py \\" >> $out_script
 echo "--genome /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
@@ -162,7 +162,7 @@ echo "| vcfsorter.pl /mnt/${hg_dict} - > /mnt/${outdir}/random_sINDEL.bed\"" >> 
 echo "" >> $out_script
 
 
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.0.0-4 bash -c \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1 bash -c \\" >> $out_script
 echo "\"/usr/local/bamsurgeon/scripts/randomsites.py \\" >> $out_script
 echo "--genome /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
