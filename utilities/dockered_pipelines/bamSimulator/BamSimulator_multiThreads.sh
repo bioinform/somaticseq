@@ -14,7 +14,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 action=echo
-seed=$( date +"%Y" )
+seed=$RANDOM
 min_depth=5
 max_depth=5000
 min_var_reads=1
