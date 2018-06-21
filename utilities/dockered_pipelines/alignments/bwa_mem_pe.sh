@@ -135,7 +135,7 @@ fi
 echo "docker run --rm -v /:/mnt -u $UID lethalfang/bwa:0.7.17_samtools bash -c \\" >> $out_script
 echo "\"bwa mem \\" >> $out_script
 echo "-R '${bamHeader}' \\" >> $out_script
-echo "-t ${threads} \\" >> $out_script
+echo "-M -t ${threads} \\" >> $out_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "/mnt/${fq1} \\" >> $out_script
 echo "/mnt/${fq2} \\" >> $out_script
