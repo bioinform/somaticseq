@@ -145,7 +145,7 @@ fi
 
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --memory 14g --workdir=/mnt/${outdir} lethalfang/bamsurgeon:1.1 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 14g --workdir=/mnt/${outdir} lethalfang/bamsurgeon:1.1-2 \\" >> $out_script
 echo "/usr/local/bamsurgeon/bin/addindel.py \\" >> $out_script
 echo "--snvfrac 0.1 --mutfrac 0.5 --coverdiff 0.9 --procs 1 \\" >> $out_script
 echo "--varfile /mnt/${indels} \\" >> $out_script
@@ -153,7 +153,7 @@ echo "--bamfile /mnt/${inbam} \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--cnvfile /mnt/${cnvfile} \\" >> $out_script
 echo "--outbam /mnt/${outdir}/unsorted.${outbam} \\" >> $out_script
-echo "--picardjar /usr/local/picard-tools-1.131/picard.jar \\" >> $out_script
+echo "--picardjar /usr/local/bin/picard.jar \\" >> $out_script
 echo "--mindepth $min_depth \\" >> $out_script
 echo "--maxdepth $max_depth \\" >> $out_script
 echo "--minmutreads $min_var_reads \\" >> $out_script
@@ -162,7 +162,7 @@ echo "--tagreads --force \\" >> $out_script
 echo "--aligner "${aligner}"" >> $out_script
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1-2 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/makevcf_indels.py \\" >> $out_script
 echo "/mnt/${outdir}/addindel_logs_unsorted.${outbam} /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/bedtools:2.26.0 \\" >> $out_script
