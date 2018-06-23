@@ -71,7 +71,7 @@ fi
 echo "" >> $out_script
 
 # To split a BAM file, first you must sort by name:
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1-2 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/remove_reads_with_many_qnames_or_bad_CIGAR.py \\" >> $out_script
 echo "-bamin /mnt/${inbam} \\" >> $out_script
 echo "-bamout /mnt/${outdir}/${outbam}" >> $out_script
