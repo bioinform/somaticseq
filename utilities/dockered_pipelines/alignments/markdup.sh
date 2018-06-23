@@ -77,6 +77,9 @@ fi
 
 echo "" >> $out_script
 
+echo "mkdir -p ${outdir}/${timestamp}.temp" >> $out_script
+echo "" >> $out_script
+
 echo "docker run --rm -v /:/mnt -u $UID lethalfang/picard:2.18.4 \\" >> $out_script
 echo "java -Xmx16g -jar /opt/picard.jar MarkDuplicates \\" >> $out_script
 echo "I=/mnt/${inBam} \\" >> $out_script

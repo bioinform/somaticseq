@@ -80,8 +80,8 @@ do
 done
 
 # Merge the BAM files
-echo "docker run -v /:/mnt -u $UID --memory 8g --rm lethalfang/bamsurgeon:1.1 \\" >> $out_script
-echo "java -Xmx8g -jar /usr/local/picard-tools-1.131/picard.jar MergeSamFiles \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --memory 8g --rm lethalfang/bamsurgeon:1.1-2 \\" >> $out_script
+echo "java -Xmx8g -jar /usr/local/bin/picard.jar MergeSamFiles \\" >> $out_script
 echo "${input_file_string} \\" >> $out_script
 echo "ASSUME_SORTED=true \\" >> $out_script
 echo "CREATE_INDEX=true \\" >> $out_script
