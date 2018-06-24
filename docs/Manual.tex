@@ -89,26 +89,23 @@ R, plus the ada package in R.
 BEDTools (if there is an inclusion and/or an exclusion region file)
 
 \item
-Optional: Free GATK version 3. You can use GATK CombineVariants to merge VCF files if the jar file is provided to \texttt{--}gatk. Otherwise, the sorting is done by the vcfsort.pl script written by German Gaston Leparc. 
+Optional: dbSNP and COSMIC files in VCF format (if you want to use dbSNP features as a part of the training).
 
 \item
-Optional: dbSNP and COSMIC files in VCF format (if you want to use these features as a part of the training).
-
-\item
-At least one of MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and/or Strelka2. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
+At least one of MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2 and/or TNscope. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
 
 \end{itemize}
 
 
 \subsection{Docker repos}
 
-SomaticSeq and (almost) all the somatic mutation callers we have incorporated are now dockerized. The exception is VarScan2 because we do not have distribution rights. 
+SomaticSeq and most somatic mutation callers we have incorporated are now dockerized. The exceptions are VarScan2 and TNscope because we do not have distribution rights. 
 
 \begin{itemize}
 
   \item SomaticSeq is dockerized at https://hub.docker.com/r/lethalfang/somaticseq/.
   
-  \item MuTect2 (tested with GATK:4.beta.6): https://hub.docker.com/r/broadinstitute/gatk
+  \item MuTect2 (tested with GATK4): https://hub.docker.com/r/broadinstitute/gatk
 
   \item VarScan2 (untested): https://hub.docker.com/r/djordjeklisic/sbg-varscan2/
 
@@ -166,7 +163,6 @@ SomaticSeq.Wrapper.sh \
 --genome-reference  human_b37.fasta \
 --cosmic            cosmic.b37.v71.vcf \
 --dbsnp             dbSNP.b37.v141.vcf \
---gatk              $PATH/TO/GenomeAnalysisTK.jar \
 --exclusion-region  ignore.bed \
 --inclusion-region  validated.bed
 --truth-snv         truth.snp.vcf \
@@ -209,7 +205,6 @@ SomaticSeq.Wrapper.sh \
 --cosmic            cosmic.b37.v71.vcf \
 --dbsnp             dbSNP.b37.v141.vcf \
 --snpeff-dir        $PATH/TO/DIR/snpSift \
---gatk              $PATH/TO/GenomeAnalysisTK.jar \
 --exclusion-region  ignore.bed \
 --inclusion-region  validated.bed
 --classifier-snv    sSNV.Classifier.RData \
@@ -236,12 +231,9 @@ We'll describe the workflow here, so you may modify the workflow and/or create y
 
 
 \subsection{Combine the call sets}
-	We use GATK CombineVariants to combine the VCF files fkeep-intermediates:rom different callers, although it does not matter what tools are used to merge VCF files. We GATK CombineVariants because it's quite fast. To make them compatible with GATK, the VCF files are modified.
+	We use utilities/getUniqueVcfPositions.py and vcfsorter.pl to combine the VCF files from different callers. The intermediate VCF files were modified to separate SNVs and INDELs.
 
-	A simple alternative method is to use GNU sort and uniq in Linux to list all the unique first-5-column (i.e., CHROM, POS, ID, REF, and ALT) from all the VCF files, and then fill the remaining required VCF columns with whatever string and sort it according to the reference. That VCF file will do the job just fine. 
-
-For our GATK CombineVariants procedure:
-
+VCF modifications were previously done to primarily make them compatible with GATK CombineVariants. We no longer depend on CombineVariants, so some of the steps are legacy. 
 \begin{enumerate}
 
 % MuTect and Indelocator
@@ -1077,6 +1069,18 @@ Have implemented the following improvement, mostly for indels:
   Fixed a bug where Strelka-only calls are not considered by SomaticSeq. 
   
 \end{itemize}
+
+
+
+\subsection{Version 2.8.0}
+
+\begin{itemize}
+
+  \item
+  The program will now throw an exception and crash if the VCF file(s) are not sorted according to the .fasta reference file. 
+  
+\end{itemize}
+
 
 
 \section{Contact Us}
