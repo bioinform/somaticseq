@@ -121,8 +121,8 @@ then
 fi
 
 
-echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/vardictjava:1.5.1 bash -c \\" >> $out_script
-echo "\"/opt/VarDict-1.5.1/bin/VarDict \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/vardictjava:1.5.2 bash -c \\" >> $out_script
+echo "\"/opt/VarDict-1.5.2/bin/VarDict \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
 echo "-G /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-f $VAF -h \\" >> $out_script
@@ -131,7 +131,7 @@ echo "-Q 1 -c 1 -S 2 -E 3 -g 4 /mnt/${input_bed} \\" >> $out_script
 echo "> /mnt/${outdir}/${timestamp}.var\"" >> $out_script
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/vardictjava:1.5.1 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/vardictjava:1.5.2 \\" >> $out_script
 echo "bash -c \"cat /mnt/${outdir}/${timestamp}.var | awk 'NR!=1' | /opt/VarDict/testsomatic.R | /opt/VarDict/var2vcf_paired.pl -N 'TUMOR|NORMAL' -f $VAF \\" >> $out_script
 echo "> /mnt/${outdir}/${outvcf}\"" >> $out_script
 
