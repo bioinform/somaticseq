@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,tumor-bam:,genome-reference:,selector:,extra-arguments:,out-script:,standalone, -n 'singleIndelRealign.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,tumor-bam:,genome-reference:,selector:,threads:,extra-arguments:,out-script:,standalone, -n 'singleIndelRealign.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -13,6 +13,7 @@ eval set -- "$OPTS"
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
+threads=1
 
 while true; do
     case "$1" in
@@ -38,6 +39,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  SELECTOR=$2 ; shift 2 ;;
+            esac ;;
+
+        --threads )
+            case "$2" in
+                "") shift 2 ;;
+                *)  threads=$2 ; shift 2 ;;
             esac ;;
 
         --extra-arguments )
@@ -96,6 +103,7 @@ echo "java -Xmx8g -jar GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T RealignerTargetCreator \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-I /mnt/${tumorBam} \\" >> $out_script
+echo "-nt ${threads} \\" >> $out_script
 echo "${selector_text} \\" >> $out_script
 echo "-o /mnt/${outdir}/indelRealign.${timestamp}.intervals" >> $out_script
 
