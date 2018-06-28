@@ -260,6 +260,7 @@ then
         --normal-bam       ${latest_normal_bam} \
         --tumor-bam        ${latest_tumor_bam} \
         --genome-reference ${GENOME_REFERENCE} \
+        --threads          ${threads} \        
         --out-script       ${out_script}
         
         latest_normal_bam=${latest_normal_bam%.bam}.jointRealigned.bam
@@ -272,6 +273,7 @@ then
         --output-dir       ${outdir} \
         --tumor-bam        ${latest_tumor_bam} \
         --genome-reference ${GENOME_REFERENCE} \
+        --threads          ${threads} \
         --out-script       ${out_script}
         
         latest_tumor_bam=${latest_tumor_bam%.bam}.indelRealigned.bam
@@ -283,6 +285,7 @@ then
         --output-dir       ${outdir} \
         --tumor-bam        ${latest_normal_bam} \
         --genome-reference ${GENOME_REFERENCE} \
+        --threads          ${threads} \        
         --out-script       ${out_script}
         
         latest_normal_bam=${latest_normal_bam%.bam}.indelRealigned.bam

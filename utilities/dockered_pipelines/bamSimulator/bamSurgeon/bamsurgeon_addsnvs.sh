@@ -170,10 +170,10 @@ echo "bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_scrip
 echo "> ${outdir}/synthetic_snvs.vcf" >> $out_script
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/samtools:1.7 \\" >> $out_script
 echo "samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} -o /mnt/${outdir}/${outbam} /mnt/${outdir}/unsorted.${outbam}" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam}" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/samtools:1.7 samtools index /mnt/${outdir}/${outbam}" >> $out_script
 
 echo "" >> $out_script
 echo "rm ${outdir}/unsorted.${outbam}" >> $out_script

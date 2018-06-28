@@ -122,6 +122,6 @@ echo "--pick2 /mnt/${outdir}/${outbam2} \\" >> $out_script
 echo "--seed ${seed}" >> $out_script
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --memory 8g lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam1}" >> $out_script
-echo "docker run -v /:/mnt -u $UID --rm --memory 8g lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam2}" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g lethalfang/samtools:1.7 samtools index /mnt/${outdir}/${outbam1}" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 8g lethalfang/samtools:1.7 samtools index /mnt/${outdir}/${outbam2}" >> $out_script
 echo "" >> $out_script
