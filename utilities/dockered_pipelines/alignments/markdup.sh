@@ -60,7 +60,8 @@ fi
 
 if [ ! $outBam ]
 then
-    outBam=${inBam%.bam}.markdup.bam
+    inBamName=`basename ${inBam}`
+    outBam=${inBamName%.bam}.markdup.bam
 fi
 
 
