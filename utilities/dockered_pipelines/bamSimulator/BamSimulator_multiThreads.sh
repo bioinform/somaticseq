@@ -24,9 +24,11 @@ num_svs=0
 min_vaf=0.05
 max_vaf=0.5
 min_var_reads=1
+proportion=0.5
 down_sample=1
 left_beta=2
 right_beta=2
+
 aligner='mem'
 
 threads=12
@@ -357,7 +359,7 @@ do
     
         bam_file_for_spikein="${outdir}/Designated.Tumor.bam"
         final_normal_bam="${outdir}/Designated.Normal.bam"
-        files_to_deletThufir Hawate="${outdir}/Designated.Tumor.bam ${outdir}/Designated.Tumor.bam.bai ${outdir}/Designated.Normal.bam ${outdir}/Designated.Normal.bam.bai $files_to_delete"
+        files_to_delete="${outdir}/Designated.Tumor.bam ${outdir}/Designated.Tumor.bam.bai ${outdir}/Designated.Normal.bam ${outdir}/Designated.Normal.bam.bai $files_to_delete"
     
     # If DO NOT SPLIT, then need to use the original "in_tumor" for spikein. Without splitting, the original normal is the output normal
     else
