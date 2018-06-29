@@ -145,7 +145,7 @@ fi
 
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --memory 14g --workdir=/mnt/${outdir} lethalfang/bamsurgeon:1.1-2 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 14g --workdir=/mnt/${outdir} lethalfang/bamsurgeon:1.1-3 \\" >> $out_script
 echo "/usr/local/bamsurgeon/bin/addsnv.py \\" >> $out_script
 echo "--snvfrac 0.1 --mutfrac 0.5 --coverdiff 0.9 --procs 1 \\" >> $out_script
 echo "--varfile /mnt/${snvs} \\" >> $out_script
@@ -162,7 +162,7 @@ echo "--ignoresnps --force --tagreads \\" >> $out_script
 echo "--aligner "${aligner}"" >> $out_script
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1-2 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1-3 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/makevcf.py \\" >> $out_script
 echo "/mnt/${outdir}/addsnv_logs_unsorted.${outbam} \\" >> $out_script
 echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/bedtools:2.26.0 \\" >> $out_script
