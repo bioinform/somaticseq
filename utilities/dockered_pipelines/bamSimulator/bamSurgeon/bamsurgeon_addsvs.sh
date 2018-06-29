@@ -111,7 +111,7 @@ fi
 
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm --memory 14g --workdir=/mnt/${outdir} lethalfang/bamsurgeon:1.1-2 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm --memory 14g --workdir=/mnt/${outdir} lethalfang/bamsurgeon:1.1-3 \\" >> $out_script
 echo "/usr/local/bamsurgeon/bin/addsv.py \\" >> $out_script
 echo "--svfrac 0.1 --procs 1 \\" >> $out_script
 echo "--varfile /mnt/${svs} \\" >> $out_script
@@ -126,7 +126,7 @@ echo "--aligner "${aligner}"" >> $out_script
 echo "" >> $out_script
 
 
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1-2 \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1-3 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/makevcf_sv.py -l /mnt/${outdir}/addsv_logs_unsorted.${outbam} \\" >> $out_script
 echo "-r /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "| docker run -v /:/mnt -u $UID --rm --memory 8g -i lethalfang/bedtools:2.26.0 \\" >> $out_script
