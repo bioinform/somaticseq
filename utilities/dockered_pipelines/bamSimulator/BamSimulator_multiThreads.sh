@@ -24,9 +24,11 @@ num_svs=0
 min_vaf=0.05
 max_vaf=0.5
 min_var_reads=1
+proportion=0.5
 down_sample=1
 left_beta=2
 right_beta=2
+
 aligner='mem'
 
 threads=12
