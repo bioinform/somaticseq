@@ -557,6 +557,7 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, chrom_sequence):
         
         
     # If file_j is behind, then needs to catch up:
+    # This is an opportunity to check if the vcf_j file is properly sorted, by asserting current line cannot be "behind" a subsequent line
     elif is_behind == 1:
         
         # Keep at it until line_j is no longer behind:
@@ -565,8 +566,11 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, chrom_sequence):
             # Catch up
             line_j = filehandle_j.readline().rstrip()
             next_coord = re.match( pattern_chr_position, line_j )
-                
+            
             if next_coord:
+                if whoisbehind(coordinate_j, next_coord.group(), chrom_sequence) == 1:
+                    raise Exception('{} does not seem to be properly sorted'.format(filehandle_j.name) )
+                    
                 coordinate_j = next_coord.group()
             else:
                 coordinate_j = ''
