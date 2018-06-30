@@ -146,8 +146,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
         <li>Python3, plus regex, numpy, scipy, and pysam packages</li>
         <li>R and ada package</li>
         <li>BEDtools if inclusion and/or exclusion regions are used</li>
-        <li>Optional: free GATK (We use GATK CombineVariants. You may find other ways to combine VCF files.)</li>
-        <li>Optional: dbSNP and COSMIC file (if you want to use those information as a part of your training set)</li>
+        <li>Optional: dbSNP and COSMIC VCF file (if you want to use those information as a part of your training set)</li>
     </ul>
 
 
@@ -163,8 +162,6 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     
     <h3>Command-line options for SomaticSeq.Wrapper.sh:</h3>
     <ul>
-        <li><code>--mutect</code>: MuTect's output VCF (Optional)</li>
-        <li><code>--indelocator</code>: Indelocator's output VCF (Optional)</li>
         <li><code>--mutect2</code>: MuTect2's output VCF (Optional)</li>
         <li><code>--varscan-snv</code>: VarScan2's output SNV VCF (Optional)</li>
         <li><code>--varscan-indel</code>: VarScan2's output INDEL VCF (Optional)</li>
@@ -185,7 +182,6 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
         <li><code>--genome-reference</code>: Genome reference FASTA file</li>
         <li><code>--cosmic</code>: COSMIC VCF file</li>
         <li><code>--dbsnp</code>: dbSNP VCF file</li>
-        <li><code>--gatk</code>: GATK's java executable file</li>
         <li><code>--inclusion-region</code>: Only include those regions in analysis</li>
         <li><code>--exclusion-region</code>: Regions to toss out in the final VCF files (Optional)</li>
         <li><code>--truth-snv</code>: A VCF file containing true sSNVs, and everything else is true negative. (Optional. If provided with builder.R, SomaticSeq will train the model.)</li>
@@ -203,9 +199,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     
     <code>
     SomaticSeq.Wrapper.sh                                 \<br>
-    --mutect $PATH/TO/MuTect/variants.snv.vcf             \<br>
     --mutect2 $PATH/TO/MuTect2/variants.vcf               \<br>
-    --indelocator $PATH/TO/Indelocator/variants.indel.vcf \<br>
     --varscan-snv $PATH/TO/VarScan/variants.snv.vcf       \<br>
     --varscan-indel $PATH/TO/Varscan/variants.indel.vcf   \<br>
     --jsm $PATH/TO/JointSNVMix/variants.snv.vcf           \<br>
@@ -229,7 +223,6 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     --dbsnp dbSNP.b37.v141.vcf                            \<br>
     --inclusion-region validated.bed                      \<br>
     --exclusion-region blacklist.bed                      \<br>
-    --gatk $PATH/TO/GenomeAnalysisTK.jar                  \<br>
     --output-dir $OUTPUT_DIR
     </code>    
     </li>
