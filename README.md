@@ -28,7 +28,6 @@ $somaticseq/SomaticSeq.Wrapper.sh \
 --exclusion-region /PATH/TO/RESULTS/blackList.bed
 ```
 * For all those input VCF files, either .vcf or .vcf.gz are acceptable. 
-* You must make sure all the input files (i.e., VCF, BAM, FASTA, etc.) are sorted identically. Otherwise, the results would not be valid, because the program does not check for proper ordering.
 * Additional parameters for training/prediction:
     * ```--truth-snv```:        if you have ground truth VCF file for SNV
     * ```--truth-indel```:      if you have a ground truth VCF file for INDEL
