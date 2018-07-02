@@ -67,9 +67,9 @@
 
 
 
-\section{Introduction}
+\section{Introduction} \label{Introduction}
 
-SomaticSeq is a flexible post-somatic-mutation-calling workflow for improved accuracy. We have incorporated multiple somatic mutation caller(s) to obtain a combined call set, and then it uses machine learning to distinguish true mutations from false positives from that call set. We have incorporated the following somatic mutation caller: MuTect/Indelocator, MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, and Scalpel. You may incorporate some or all of those callers into your own pipeline with SomaticSeq.
+SomaticSeq is a flexible post-somatic-mutation-calling workflow for improved accuracy. We have incorporated multiple somatic mutation caller(s) to obtain a combined call set, and then it uses machine learning to distinguish true mutations from false positives from that call set. We have incorporated the following somatic mutation caller: MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka, and TNscope. You may incorporate some or all of those callers into your own pipeline with SomaticSeq.
 
 The manuscript, An ensemble approach to accurately detect somatic mutations using SomaticSeq, is published in \href{http://dx.doi.org/10.1186/s13059-015-0758-2}{Genome Biology 2015, 16:197}. The SomaticSeq project is located at \href{http://bioinform.github.io/somaticseq/}{\textit{http://bioinform.github.io/somaticseq/}}. The data described in the manuscript is also described at \href{http://bioinform.github.io/somaticseq/data.html}{\textit{http://bioinform.github.io/somaticseq/data.html}}. There have been some major improvements since the publication. 
 
@@ -89,26 +89,23 @@ R, plus the ada package in R.
 BEDTools (if there is an inclusion and/or an exclusion region file)
 
 \item
-Optional: Free GATK version 3. You can use GATK CombineVariants to merge VCF files if the jar file is provided to \texttt{--}gatk. Otherwise, the sorting is done by the vcfsort.pl script written by German Gaston Leparc. 
+Optional: dbSNP and COSMIC files in VCF format (if you want to use dbSNP features as a part of the training).
 
 \item
-Optional: dbSNP and COSMIC files in VCF format (if you want to use these features as a part of the training).
-
-\item
-At least one of MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and/or Strelka2. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
+At least one of MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2 and/or TNscope. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
 
 \end{itemize}
 
 
 \subsection{Docker repos}
 
-SomaticSeq and (almost) all the somatic mutation callers we have incorporated are now dockerized. The exception is VarScan2 because we do not have distribution rights. 
+SomaticSeq and most somatic mutation callers we have incorporated are now dockerized. The exceptions are VarScan2 and TNscope because we do not have distribution rights. 
 
 \begin{itemize}
 
   \item SomaticSeq is dockerized at https://hub.docker.com/r/lethalfang/somaticseq/.
   
-  \item MuTect2 (tested with GATK:4.beta.3): https://hub.docker.com/r/broadinstitute/gatk
+  \item MuTect2 (tested with GATK4): https://hub.docker.com/r/broadinstitute/gatk
 
   \item VarScan2 (untested): https://hub.docker.com/r/djordjeklisic/sbg-varscan2/
 
@@ -129,14 +126,14 @@ SomaticSeq and (almost) all the somatic mutation callers we have incorporated ar
 \end{itemize}
 
 
-\section{To use SomaticSeq.Wrapper.sh}
+\section{To use SomaticSeq.Wrapper.sh} \label{Wrapper_script}
 
-The SomaticSeq.Wrapper.sh is a wrapper script that calls a series of programs and procedures \textbf{after} you have run your individual somatic mutation callers. In the next section, we will describe the workflow in more detail, so you may not be dependent on this wrapper script. You can either modify this wrapper script or create your own workflow. 
+The SomaticSeq.Wrapper.sh is a wrapper script that calls a series of programs and procedures \textbf{after} you have run your individual somatic mutation callers. Section \ref{dockerized_callers} will teach you how to run those callers that we have dockerized, plus ways to create semi-simulated training data. In next section, we will describe the workflow in this wrapper script in detail, so you may not be dependent on this wrapper script. You can either modify this wrapper script or create your own workflow using whatever workflow language you want. 
 
 
 \subsection{To train data set into a classifier}
 
-To create a trained classifier, ground truth files are required for the data sets. There is also an option to include a list of regions to include and/or exclude. The exclusion or inclusion regions can be VCF or BED files. An inclusion region may be subset of the call sets where you have validated their true/false mutation status, so that only those regions will be used for training. An exclusion region can be regions where the ``truth'' is ambigious. 
+To create SomaticSeq classifiers, ground truth VCF files are required for the data sets. There is also an option to include a list of regions to include and/or exclude. The exclusion or inclusion regions can be VCF or BED files. An inclusion region may be subset of the call sets where you have validated their true/false mutation status, so that only those regions will be used for training. An exclusion region can be regions where the ``truth'' is ambigious. 
 
 All the output VCF files from individual callers are optional. Those VCF files can be bgzipped if they have .vcf.gz extensions. It is imperative that the parameters used for the training and prediction are identical. 
 
@@ -159,13 +156,13 @@ SomaticSeq.Wrapper.sh \
 --scalpel           Scalpel/variants.indel.vcf \
 --strelka-snv       Strelka/variants.snv.vcf \
 --strelka-indel     Strelka/variants.indel.vcf \
+--tnscope           TNscope.vcf.gz \
 --normal-bam        matched_normal.bam \
 --tumor-bam         tumor.bam \
 --ada-r-script      ada_model_builder.R \
 --genome-reference  human_b37.fasta \
 --cosmic            cosmic.b37.v71.vcf \
 --dbsnp             dbSNP.b37.v141.vcf \
---gatk              $PATH/TO/GenomeAnalysisTK.jar \
 --exclusion-region  ignore.bed \
 --inclusion-region  validated.bed
 --truth-snv         truth.snp.vcf \
@@ -200,6 +197,7 @@ SomaticSeq.Wrapper.sh \
 --scalpel           Scalpel/variants.indel.vcf \
 --strelka-snv       Strelka/variants.snv.vcf \
 --strelka-indel     Strelka/variants.indel.vcf \
+--tnscope           TNscope.vcf.gz \
 --normal-bam        matched_normal.bam \
 --tumor-bam         tumor.bam \
 --ada-r-script      ada_model_predictor.R \
@@ -207,7 +205,6 @@ SomaticSeq.Wrapper.sh \
 --cosmic            cosmic.b37.v71.vcf \
 --dbsnp             dbSNP.b37.v141.vcf \
 --snpeff-dir        $PATH/TO/DIR/snpSift \
---gatk              $PATH/TO/GenomeAnalysisTK.jar \
 --exclusion-region  ignore.bed \
 --inclusion-region  validated.bed
 --classifier-snv    sSNV.Classifier.RData \
@@ -228,17 +225,15 @@ Same as the command previously, but not including the R script or the ground tru
 
 
 
-\section{The step-by-step SomaticSeq Workflow}
+\section{The step-by-step SomaticSeq Workflow} \label{step_by_step_procedures}
 
 We'll describe the workflow here, so you may modify the workflow and/or create your own workflow instead of using the wrapper script described previously. 
 
 
 \subsection{Combine the call sets}
-	We use GATK CombineVariants to combine the VCF files fkeep-intermediates:rom different callers, although it does not matter what tools are used to merge VCF files. We GATK CombineVariants because it's quite fast. To make them compatible with GATK, the VCF files are modified.
+We use utilities/getUniqueVcfPositions.py and vcfsorter.pl to combine the VCF files from different callers. The intermediate VCF files were modified to separate SNVs and INDELs.
 
-	A simple alternative method is to use GNU sort and uniq in Linux to list all the unique first-5-column (i.e., CHROM, POS, ID, REF, and ALT) from all the VCF files, and then fill the remaining required VCF columns with whatever string and sort it according to the reference. That VCF file will do the job just fine. 
-
-For our GATK CombineVariants procedure:
+VCF modifications were previously done to primarily make them compatible with GATK CombineVariants. We no longer use CombineVariants, so some of them are legacy, but this step also serves to remove some REJECT calls from some callers, in order to reduce their sizes. 
 
 \begin{enumerate}
 
@@ -495,7 +490,7 @@ SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0
 
 
 
-\section{To run the dockerized somatic mutation callers}
+\section{To run the dockerized somatic mutation callers} \label{dockerized_callers}
 
 For your convenience, we have created a couple of scripts that can generate run script for the dockerized somatic mutation callers. 
 
@@ -544,6 +539,57 @@ utilities/dockered_pipelines/multiThreads/submit_callers_multiThreads.sh \
 --threads         36 \
 --action          qsub \
 --mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+\end{lstlisting}
+
+
+\subsubsection{Parameters}
+
+\begin{lstlisting}
+--normal-bam                  /ABSOLUTE/PATH/TO/normal_sample.bam (Required)
+--tumor-bam                   /ABSOLUTE/PATH/TO/tumor_sample.bam  (Required)
+--human-reference             /ABSOLUTE/PATH/TO/human_reference.fa (Required)
+--dbsnp                       /ABSOLUTE/PATH/TO/dbsnp.vcf (Required for MuSE and LoFreq)
+--cosmic                      /ABSOLUTE/PATH/TO/cosmic.vcf (Optional)
+--selector                    /ABSOLUTE/PATH/TO/Capture_region.bed (Optional. Will assume whole genome from the .fai file without it.)
+--exclude                     /ABSOLUTE/PATH/TO/Blacklist_region.bed (Optional)
+--min-af                      (Optional. The minimum VAF cutoff for VarDict and VarScan2. Defaults are 0.10 for VarScan2 and 0.05 for VarDict).
+--action                      qsub (Optional: the command preceding the .cmd scripts. Default is echo)
+--threads                     36 (Optional for multiThreads and invalid for singleThread: evenly split the genome into 36 BED files. Default = 12).
+--mutect2                     (Optional flag to invoke MuTect2)
+--varscan2                    (Optional flag to invoke VarScan2)
+--jointsnvmix2                (Optional flag to invoke JointSNVMix2)
+--somaticsniper               (Optional flag to invoke SomaticSniper)
+--vardict                     (Optional flag to invoke VarDict)
+--muse                        (Optional flag to invoke MuSE)
+--lofreq                      (Optional flag to invoke LoFreq)
+--scalpel                     (Optional flag to invoke Scalpel)
+--strelka                     (Optional flag to invoke Strelka)
+--somaticseq                  (Optional flag to invoke SomaticSeq. This script always be echo'ed, as it should not be submitted until all the callers above complete).
+--output-dir                  /ABSOLUTE/PATH/TO/OUTPUT_DIRECTORY (Required)
+--somaticseq-dir              SomaticSeq_Output_Directory (Optional. The directory name of the SomaticSeq output. Default = SomaticSeq).
+--somaticseq-train            (Optional flag to invoke SomaticSeq to produce classifiers if ground truth VCF files are provided. Only recommended in singleThread mode, because otherwise it's better to combine the output TSV files first, and then train classifiers.)
+--somaticseq-action           (Optional. What to do with the somaticseq.cmd. Default is echo. Only do "qsub" if you have already completed all the mutation callers, but want to run SomaticSeq at a different setting.)
+--classifier-snv              Trained_sSNV_Classifier.RData (Optional if there is a classifer you want to use)
+--classifier-indel            Trained_sINDEL_Classifier.RData (Optional if there is a classifer you want to use)
+--truth-snv                   sSNV_ground_truth.vcf (Optional if there is a ground truth, and everything else will be labeled false positive)
+--truth-indel                 sINDEL_ground_truth.vcf (Optional if there is a ground truth, and everything else will be labeled false positive)
+--exome                       (Optional flag for Strelka)
+--scalpel-two-pass            (Optional parameter for Scalpel. Default = false.)
+--mutect2-arguments           (Extra parameters to pass onto Mutect2, e.g., --mutect2-arguments '--initial_tumor_lod 3.0 --log_somatic_prior -5.0 --min_base_quality_score 20')
+--mutect2-filter-arguments    (Extra parameters to pass onto FilterMutectCalls)
+--varscan-arguments           (Extra parameters to pass onto VarScan2)
+--varscan-pileup-arguments    (Extra parameters to pass onto samtools mpileup that creates pileup files for VarScan)
+--jsm-train-arguments         (Extra parameters to pass onto JointSNVMix2's train command)
+--jsm-classify-arguments      (Extra parameters to pass onto JointSNVMix2's classify command)
+--somaticsniper-arguments     (Extra parameters to pass onto SomaticSniper)
+--vardict-arguments           (Extra parameters to pass onto VarDict)
+--muse-arguments              (Extra parameters to pass onto MuSE)
+--lofreq-arguments            (Extra parameters to pass onto LoFreq)
+--scalpel-discovery-arguments (Extra parameters to pass onto Scalpel's discovery command)
+--scalpel-export-arguments    (Extra parameters to pass onto Scalpel's export command)
+--strelka-config-arguments    (Extra parameters to pass onto Strelka's config command)
+--strelka-run-arguments       (Extra parameters to pass onto Strekla's run command)
+--somaticseq-arguments        (Extra parameters to pass onto SomaticSeq.Wrapper.sh)
 \end{lstlisting}
 
 
@@ -923,6 +969,9 @@ Have implemented the following improvement, mostly for indels:
   Changed the output file names from Trained.s(SNV$\vert$INDEL).vcf and Untrained.s(SNV$\vert$INDEL).vcf to SSeq.Classified.s(SNV$\vert$INDE).vcf and Consensus.s(SNV$\vert$INDEL).vcf. No change to the actual tumor-normal SomaticSeq algorithm.
   
   \item
+  Added utilities/modify\_VarDict.py to VarDict's ``complex'' variant calls (e.g., GCA>TAC) into SNVs when possible. 
+  
+  \item
   Modified r\_scripts/ada\_model\_builder\_ntChange.R to allow you to ignore certain features, e.g., r\_scripts/ada\_model\_builder\_ntChange.R Training\_Data.tsv nBAM\_REF\_BQ tBAM\_REF\_BQ SiteHomopolymer\_Length ...
   
   Everything after the input file are features to be ignored during training.
@@ -933,8 +982,105 @@ Have implemented the following improvement, mostly for indels:
 
 
 
+\subsection{Version 2.5.1}
+
+\begin{itemize}
+  \item
+  Additional passable parameters options to pass extra parameters to somatic mutation callers. Fixed a bug where the ``two-pass'' parameter is not passed onto Scalpel in multiThreads scripts. 
+  
+  \item
+  Ignore Strelka\_QSS and Strelka\_TQSS for indel training in the SomaticSeq.Wrapper.sh script.
+  
+\end{itemize}
 
 
+
+\subsection{Version 2.5.2}
+
+\begin{itemize}
+  \item
+  Ported some pipeline scripts to singularities at utilities/singularities.
+  
+\end{itemize}
+
+
+\subsection{Version 2.6.0}
+
+\begin{itemize}
+  \item
+  VarScan2\_Score is no longer extracted from VarScan's output. Rather, it's now calculated directly using Fisher's Exact Test, which reproduces VarScan's output, but will have a real value when VarScan2 does not output a particular variant. 
+  
+  \item
+  Incorporate TNscope's output VCF into SomaticSeq, but did not incorporate TNscope caller into the dockerized workflow because we don't have distribution license. 
+  
+\end{itemize}
+
+
+
+\subsection{Version 2.6.1}
+
+\begin{itemize}
+  \item
+  Optimized memory for singularity scripts.
+  
+  \item
+  Updated utilities/bamQC.py and added utilities/trimSoftClippedReads.py (removed soft-clipped bases on soft-clipped reads)
+  
+  \item
+  Added some docker scripts at utilities/dockered\_pipelines/QC
+
+\end{itemize}
+
+
+\subsection{Version 2.7.0}
+
+\begin{itemize}
+  \item
+  Added another feature: consistent/inconsistent calls for paired reads if the position is covered by both forward and reverse reads. However, they're excluded as training features in SomaticSeq.Wrapper.sh script for the time being. 
+  
+  \item
+  Change non-GCTA characters to N in VarDict.vcf file to make it conform to VCF file specifications. 
+
+\end{itemize}
+
+
+\subsection{Version 2.7.1}
+
+\begin{itemize}
+
+  \item
+  Without --gatk \$PATH/TO/GenomeAnalysisTK.jar in the SomaticSeq.Wrapper.sh script, it will use utilities/getUniqueVcfPositions.py and utilities/vcfsorter.pl to (in lieu of GATK3 CombineVariants) to combine all the VCF files. 
+
+  \item
+  Fixed bugs in the docker/singularities scripts where extra arguments for the callers are not correctly passed onto the callers. 
+
+\end{itemize}
+
+
+
+
+\subsection{Version 2.7.2}
+
+\begin{itemize}
+
+  \item
+  Make compatible with .cram format
+  
+  \item
+  Fixed a bug where Strelka-only calls are not considered by SomaticSeq. 
+  
+\end{itemize}
+
+
+
+\subsection{Version 2.8.0}
+
+\begin{itemize}
+
+  \item
+  The program will now throw an exception and crash if the VCF file(s) are not sorted according to the .fasta reference file. 
+  
+\end{itemize}
 
 
 
