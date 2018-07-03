@@ -126,12 +126,11 @@ echo "--aligner "${aligner}"" >> $out_script
 echo "" >> $out_script
 
 
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1-3 \\" >> $out_script
-echo "/usr/local/bamsurgeon/scripts/makevcf_sv.py -l /mnt/${outdir}/addsv_logs_unsorted.${outbam} \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1-3 bash -c \\" >> $out_script
+echo "\"/usr/local/bamsurgeon/scripts/makevcf_sv.py -l /mnt/${outdir}/addsv_logs_unsorted.${outbam} \\" >> $out_script
 echo "-r /mnt/${HUMAN_REFERENCE} \\" >> $out_script
-echo "| docker run -v /:/mnt -u $UID --rm --memory 8g -i lethalfang/bedtools:2.26.0 \\" >> $out_script
-echo "bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_script
-echo "> ${outdir}/synthetic_svs.vcf" >> $out_script
+echo "| bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_script
+echo "> /mnt/${outdir}/synthetic_svs.vcf\"" >> $out_script
 echo "" >> $out_script
 
 

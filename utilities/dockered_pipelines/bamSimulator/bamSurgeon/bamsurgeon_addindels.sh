@@ -162,19 +162,18 @@ echo "--tagreads --force \\" >> $out_script
 echo "--aligner "${aligner}"" >> $out_script
 echo "" >> $out_script
 
-echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1-3 \\" >> $out_script
-echo "/usr/local/bamsurgeon/scripts/makevcf_indels.py \\" >> $out_script
+echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1-3 bash -c \\" >> $out_script
+echo "\"/usr/local/bamsurgeon/scripts/makevcf_indels.py \\" >> $out_script
 echo "/mnt/${outdir}/addindel_logs_unsorted.${outbam} /mnt/${HUMAN_REFERENCE} \\" >> $out_script
-echo "| docker run -v /:/mnt -u $UID --rm -i lethalfang/bedtools:2.26.0 \\" >> $out_script
-echo "bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_script
-echo "> ${outdir}/synthetic_indels.vcf" >> $out_script
+echo "| bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_script
+echo "> /mnt/${outdir}/synthetic_indels.vcf\"" >> $out_script
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID lethalfang/somaticseq:latest \\" >> $out_script
-echo "java -jar /opt/GATK/GenomeAnalysisTK.jar -T LeftAlignAndTrimVariants \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID lethalfang/somaticseq:base-1.1 bash -c \\" >> $out_script
+echo "\"java -jar /opt/GATK/GenomeAnalysisTK.jar -T LeftAlignAndTrimVariants \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--variant /mnt/${outdir}/synthetic_indels.vcf \\" >> $out_script
-echo "| egrep -v '^[0-9]+ variants|^INFO' > ${outdir}/synthetic_indels.leftAlign.vcf" >> $out_script
+echo "| egrep -v '^[0-9]+ variants|^INFO' > /mnt/${outdir}/synthetic_indels.leftAlign.vcf\"" >> $out_script
 echo "" >> $out_script
 
 echo "docker run -v /:/mnt -u $UID --rm lethalfang/samtools:1.7 \\" >> $out_script
