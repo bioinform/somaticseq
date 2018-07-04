@@ -94,16 +94,16 @@ while true; do
                 *)  min_var_reads=$2 ; shift 2 ;;
             esac ;;
 
-        --aligner )
-            case "$2" in
-                "") shift 2 ;;
-                *)  aligner=$2 ; shift 2 ;;
-            esac ;;
-
         --out-script )
             case "$2" in
                 "") shift 2 ;;
                 *)  out_script_name=$2 ; shift 2 ;;
+            esac ;;
+
+        --aligner )
+            case "$2" in
+                "") shift 2 ;;
+                *)  aligner=$2 ; shift 2 ;;
             esac ;;
 
         --seed )
@@ -145,7 +145,7 @@ fi
 
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt --pwd /mnt/${outdir} docker://lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
+echo "singularity exec --bind /:/mnt  --pwd /mnt/${outdir} docker://lethalfang/bamsurgeon:1.1-3 \\" >> $out_script
 echo "/usr/local/bamsurgeon/bin/addindel.py \\" >> $out_script
 echo "--snvfrac 0.1 --mutfrac 0.5 --coverdiff 0.9 --procs 1 \\" >> $out_script
 echo "--varfile /mnt/${indels} \\" >> $out_script
@@ -153,7 +153,7 @@ echo "--bamfile /mnt/${inbam} \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--cnvfile /mnt/${cnvfile} \\" >> $out_script
 echo "--outbam /mnt/${outdir}/unsorted.${outbam} \\" >> $out_script
-echo "--picardjar /usr/local/picard-tools-1.131/picard.jar \\" >> $out_script
+echo "--picardjar /usr/local/bin/picard.jar \\" >> $out_script
 echo "--mindepth $min_depth \\" >> $out_script
 echo "--maxdepth $max_depth \\" >> $out_script
 echo "--minmutreads $min_var_reads \\" >> $out_script
@@ -162,24 +162,24 @@ echo "--tagreads --force \\" >> $out_script
 echo "--aligner "${aligner}"" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 bash -c \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/bamsurgeon:1.1-3 bash -c \\" >> $out_script
 echo "\"/usr/local/bamsurgeon/scripts/makevcf_indels.py \\" >> $out_script
 echo "/mnt/${outdir}/addindel_logs_unsorted.${outbam} /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "| bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_script
 echo "> /mnt/${outdir}/synthetic_indels.vcf\"" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/somaticseq:latest bash -c \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/somaticseq:base-1.1 bash -c \\" >> $out_script
 echo "\"java -jar /opt/GATK/GenomeAnalysisTK.jar -T LeftAlignAndTrimVariants \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--variant /mnt/${outdir}/synthetic_indels.vcf \\" >> $out_script
 echo "| egrep -v '^[0-9]+ variants|^INFO' > /mnt/${outdir}/synthetic_indels.leftAlign.vcf\"" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/samtools:1.7 \\" >> $out_script
 echo "samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} -o /mnt/${outdir}/${outbam} /mnt/${outdir}/unsorted.${outbam}" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam}" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/samtools:1.7 samtools index /mnt/${outdir}/${outbam}" >> $out_script
 
 echo "" >> $out_script
 echo "rm ${outdir}/unsorted.${outbam}" >> $out_script

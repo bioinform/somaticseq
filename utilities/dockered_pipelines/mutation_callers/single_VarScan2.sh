@@ -120,7 +120,7 @@ echo "" >> $out_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
-echo "docker run --rm -u $UID -v /:/mnt --memory ${MEM}G lethalfang/samtools:0.1.19 bash -c \\" >> $out_script
+echo "docker run --rm -u $UID -v /:/mnt --memory ${MEM}G lethalfang/samtools:1.7 bash -c \\" >> $out_script
 echo "\"samtools mpileup \\" >> $out_script
 echo "-B -q ${minMQ} -Q ${minBQ} ${extra_pileup_arguments} $selector_text -f \\" >> $out_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
@@ -130,7 +130,7 @@ echo "> /mnt/${outdir}/tumor.pileup\"" >> $out_script
 echo "" >> $out_script
 
 echo "docker run --rm -u $UID -v /:/mnt --memory ${MEM}G djordjeklisic/sbg-varscan2:v1 bash -c \\" >> $out_script
-echo "\"java -Xmx${MEM}g -jar VarScan2.3.7.jar mpileup2cns \\" >> $out_script
+echo "\"java -Xmx${MEM}g -jar /VarScan2.3.7.jar mpileup2cns \\" >> $out_script
 echo "/mnt/${outdir}/tumor.pileup \\" >> $out_script
 echo "--variants ${extra_arguments} --min-var-freq $VAF --output-vcf 1 \\" >> $out_script
 echo "> /mnt/${outdir}/${outvcf}\"" >> $out_script

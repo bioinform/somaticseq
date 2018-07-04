@@ -99,7 +99,7 @@ echo "" >> $out_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/lofreq:2.1.3.1 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/lofreq:2.1.3.1-1 \\" >> $out_script
 echo "lofreq call \\" >> $out_script
 echo "--call-indels \\" >> $out_script
 echo "--min-mq 1 \\" >> $out_script

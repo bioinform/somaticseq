@@ -116,7 +116,7 @@ echo "" >> $out_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/jointsnvmix2:0.7.5-1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/jointsnvmix2:0.7.5 \\" >> $out_script
 echo "/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py train joint_snv_mix_two \\" >> $out_script
 echo "--convergence_threshold $convergence_threshold \\" >> $out_script
 echo "--skip_size $skip_size \\" >> $out_script
@@ -137,7 +137,7 @@ echo "echo -e '##FORMAT=<ID=AD,Number=1,Type=Integer,Description=\"Depth of vari
 echo "echo -e '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNORMAL\tTUMOR' >> ${outdir}/${outvcf}" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/jointsnvmix2:0.7.5-1 bash -c \\"  >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/jointsnvmix2:0.7.5 bash -c \\"  >> $out_script
 echo \""/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py classify joint_snv_mix_two \\" >> $out_script
 echo "${extra_classify_arguments} \\" >> $out_script
 echo "/mnt/${HUMAN_REFERENCE} \\" >> $out_script
@@ -154,7 +154,7 @@ then
     echo "i=1" >> $out_script
     echo "while [[ \$i -le $split ]]" >> $out_script
     echo "do" >> $out_script
-    echo "    singularity exec --bind /:/mnt docker://lethalfang/bedtools:2.26.0 bash -c \"bedtools intersect -a /mnt/${outdir}/${outvcf} -b /mnt/${outdir}/\${i}/\${i}.bed -header | uniq > /mnt/${outdir}/\${i}/${outvcf}\"" >> $out_script
+    echo "    singularity exec --bind /:/mnt   docker://lethalfang/bedtools:2.26.0 bash -c \"bedtools intersect -a /mnt/${outdir}/${outvcf} -b /mnt/${outdir}/\${i}/\${i}.bed -header | uniq > /mnt/${outdir}/\${i}/${outvcf}\"" >> $out_script
     echo "    i=\$(( \$i + 1 ))" >> $out_script
     echo "done" >> $out_script
 fi

@@ -132,7 +132,7 @@ then
     bamHeader="@RG\tID:${ID}\tLB:${LB}\tPL:${PL}\tSM:${SM}"
 fi
 
-echo "docker run --rm -v /:/mnt -u $UID lethalfang/bwa:0.7.17_samtools bash -c \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/bwa:0.7.17_samtools bash -c \\" >> $out_script
 echo "\"bwa mem \\" >> $out_script
 echo "-R '${bamHeader}' \\" >> $out_script
 echo "-M -t ${threads} \\" >> $out_script
@@ -144,5 +144,5 @@ echo "| samtools sort -m 4G --threads ${threads} -o /mnt/${outdir}/${outBam}\"" 
 
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID lethalfang/bwa:0.7.17_samtools \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/bwa:0.7.17_samtools \\" >> $out_script
 echo "samtools index /mnt/${outdir}/${outBam}" >> $out_script

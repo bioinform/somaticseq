@@ -106,7 +106,7 @@ num_lines=`cat ${SELECTOR} | wc -l`
 input_bed=${SELECTOR}
 if [[ $(( $total_bases / $num_lines )) -gt 50000 ]]
 then
-    echo "singularity exec --bind /:/mnt docker://lethalfang/somaticseq:${VERSION} \\" >> $out_script
+    echo "singularity exec --bind /:/mnt   docker://lethalfang/somaticseq:${VERSION} \\" >> $out_script
     echo "/opt/somaticseq/utilities/split_mergedBed.py \\" >> $out_script
     echo "-infile /mnt/${SELECTOR} -outfile /mnt/${outdir}/split_regions.bed" >> $out_script
     echo "" >> $out_script
@@ -115,8 +115,8 @@ then
 fi
 
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/vardictjava:1.5.1 bash -c \\" >> $out_script
-echo "\"/opt/VarDict-1.5.1/bin/VarDict \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/vardictjava:1.5.2 bash -c \\" >> $out_script
+echo "\"/opt/VarDict-1.5.2/bin/VarDict \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
 echo "-G /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-f $VAF -h \\" >> $out_script
@@ -125,7 +125,7 @@ echo "-Q 1 -c 1 -S 2 -E 3 -g 4 /mnt/${input_bed} \\" >> $out_script
 echo "> /mnt/${outdir}/${timestamp}.var\"" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/vardictjava:1.5.1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/vardictjava:1.5.2 \\" >> $out_script
 echo "bash -c \"cat /mnt/${outdir}/${timestamp}.var | awk 'NR!=1' | /opt/VarDict/teststrandbias.R | /opt/VarDict/var2vcf_valid.pl -N 'TUMOR' -f $VAF \\" >> $out_script
 echo "> /mnt/${outdir}/${outvcf}\"" >> $out_script
 

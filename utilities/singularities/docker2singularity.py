@@ -22,6 +22,8 @@ def docker2singularity(line_i):
         workdir_i = re.search(r'(-w|--workdir)[\s=]+([^\s:]+)', docker_options)
         if workdir_i:
             workdir_i = '--pwd ' + workdir_i.groups()[1]
+        else:
+            workdir_i = ''
         
         line_j = '{PRIOR}singularity exec {MOUNT} {WORKDIR} docker://{IMAGE} {CMD}\n'.format(PRIOR=content_prior, MOUNT=mount_i, WORKDIR=workdir_i, IMAGE=docker_image, CMD=docker_command)
         
@@ -39,7 +41,7 @@ sh_files = sh_files.split('\n')
 
 for file_i in sh_files:
     
-    file_j = re.sub(r'../dockered_pipelines', 'singularities', file_i)
+    file_j = re.sub(r'../dockered_pipelines', '.', file_i)
     directory_j = os.sep.join( file_j.split(os.sep)[:-1] )
     os.system( 'mkdir -p {}'.format( directory_j ) )
     

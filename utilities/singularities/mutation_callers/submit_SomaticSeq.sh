@@ -14,7 +14,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 action=echo
-MEM=10
+MEM=6
 
 while true; do
     case "$1" in
@@ -270,10 +270,11 @@ echo "" >> $out_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
+echo "docker pull lethalfang/somaticseq:${VERSION}" >> $out_script
+echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/somaticseq:${VERSION} \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/somaticseq:${VERSION} \\" >> $out_script
 echo "/opt/somaticseq/SomaticSeq.Wrapper.sh \\" >> $out_script
-echo "--output-dir       /mnt/${outdir} \\" >> $out_script
 echo "--genome-reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--tumor-bam        /mnt/${tumor_bam} \\" >> $out_script
 echo "--normal-bam       /mnt/${normal_bam} \\" >> $out_script
@@ -301,7 +302,8 @@ echo "$truth_snv_text \\" >> $out_script
 echo "$truth_indel_text \\" >> $out_script
 echo "$ada_r_script_text \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
-echo "--gatk /opt/GATK/GenomeAnalysisTK.jar" >> $out_script
+echo "--output-dir /mnt/${outdir}" >> $out_script
+
 
 echo "" >> $out_script
 echo 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script

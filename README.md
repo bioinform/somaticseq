@@ -43,10 +43,10 @@ $somaticseq/SomaticSeq.Wrapper.sh \
 
 <b>Pipelines and Workflows</b>
 * We have dockerized pipeline that runs all the somatic mutation callers and SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines).
-* We also have dockerized pipeline for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator). This pipeline is based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). It can be used to create training set to build SomaticSeq classifiers.
-* Those two pipelines are also ported to singularity at [**utilities/singularities**](utilities/singularities), although they may not be as extensively tested or optimized as the dockered ones. Read the pages at the dockered pipelines for descriptions and how-to's. 
+* We have also dockerized pipeline for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator). This pipeline is based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). It can be used to create training set to build SomaticSeq classifiers.
 * A [Snakemake](https://snakemake.readthedocs.io/en/latest/) workflow to run the somatic mutation callers and SomaticSeq, created by [Afif Elghraoui](https://github.com/0xaf1f), is at [**utilities/snakemake**](utilities/snakemake).
-* The limited pipeline to generate BAM files based on GATK's best practices is at [utilities/dockered_pipelines/alignments](utilities/dockered_pipelines/alignments) (dockers only, no singularity yet).
+* The limited pipeline to generate BAM files based on GATK's best practices is at [utilities/dockered_pipelines/alignments](utilities/dockered_pipelines/alignments).
+* All docker pipelines have their corresponding singularity versions at [**utilities/singularities**](utilities/singularities). They're created automatically with [this script](utilities/singularities/docker2singularity.py). They are not as extensively tested or optimized as the dockered ones. Read the pages at the dockered pipelines for descriptions and how-to's. Please let us know at [Issues](../../issues "Issues") if any of them does not work.
 
 
 <b>For a quick description of SomaticSeq, you may watch this 8-minute video:</b>

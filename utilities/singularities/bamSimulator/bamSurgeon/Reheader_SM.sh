@@ -81,8 +81,8 @@ fi
 echo "" >> $out_script
 
 # Uniform sample and read group names in the merged file
-echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
-echo "java -Xmx6g -jar /usr/local/picard-tools-1.131/picard.jar AddOrReplaceReadGroups \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/bamsurgeon:1.1-3 \\" >> $out_script
+echo "java -Xmx6g -jar /usr/local/bin/picard.jar AddOrReplaceReadGroups \\" >> $out_script
 echo "I=/mnt/${outdir}/${inbam} \\" >> $out_script
 echo "RGID=BAMSurgeon \\" >> $out_script
 echo "RGLB=TNMerged \\" >> $out_script

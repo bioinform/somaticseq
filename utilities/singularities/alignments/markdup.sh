@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,bam-out:,bam-in:,genome-reference:,out-script:,standalone -n 'SortByCoordinate.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,in-bam:,out-bam:,out-script:,standalone, -n 'markdup.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -14,8 +14,6 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 
-seed=$( date +"%Y" )
-
 while true; do
     case "$1" in
         -o | --output-dir )
@@ -24,22 +22,16 @@ while true; do
                 *)  outdir=$2 ; shift 2 ;;
             esac ;;
 
-        --bam-in )
+        --in-bam )
             case "$2" in
                 "") shift 2 ;;
-                *)  inbam=$2 ; shift 2 ;;
+                *)  inBam=$2 ; shift 2 ;;
             esac ;;
 
-        --bam-out )
+        --out-bam )
             case "$2" in
                 "") shift 2 ;;
-                *)  outbam=$2 ; shift 2 ;;
-            esac ;;
-
-        --genome-reference )
-            case "$2" in
-                "") shift 2 ;;
-                *)  HUMAN_REFERENCE=$2 ; shift 2 ;;
+                *)  outBam=$2 ; shift 2 ;;
             esac ;;
 
         --out-script )
@@ -56,8 +48,6 @@ while true; do
     esac
 done
 
-hg_dict=${HUMAN_REFERENCE%\.fa*}.dict
-
 logdir=${outdir}/logs
 mkdir -p ${logdir}
 
@@ -65,7 +55,13 @@ if [[ ${out_script_name} ]]
 then
     out_script="${out_script_name}"
 else
-    out_script="${logdir}/sort.coordinates.${timestamp}.cmd"    
+    out_script="${logdir}/markdup.${timestamp}.cmd"
+fi
+
+if [ ! $outBam ]
+then
+    inBamName=`basename ${inBam}`
+    outBam=${inBamName%.bam}.markdup.bam
 fi
 
 
@@ -76,17 +72,26 @@ then
     echo "#$ -o ${logdir}" >> $out_script
     echo "#$ -e ${logdir}" >> $out_script
     echo "#$ -S /bin/bash" >> $out_script
-    echo '#$ -l h_vmem=8G' >> $out_script
+    echo '#$ -l h_vmem=16G' >> $out_script
     echo 'set -e' >> $out_script
 fi
 
+echo "" >> $out_script
+
+echo "mkdir -p ${outdir}/${timestamp}.temp" >> $out_script
+echo "" >> $out_script
+
+echo "singularity exec --bind /:/mnt   docker://lethalfang/picard:2.18.4 \\" >> $out_script
+echo "java -Xmx16g -jar /opt/picard.jar MarkDuplicates \\" >> $out_script
+echo "I=/mnt/${inBam} \\" >> $out_script
+echo "M=/mnt/${outdir}/${outBam%.bam} \\" >> $out_script
+echo "CREATE_INDEX=true \\" >> $out_script
+echo "ASSUME_SORTED=true \\" >> $out_script
+echo "TMP_DIR=/mnt/${outdir}/${timestamp}.temp \\" >> $out_script
+#echo "MINIMUM_DISTANCE=1000 \\" >> $out_script
+echo "O=/mnt/${outdir}/${outBam}" >> $out_script
 
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt   docker://lethalfang/samtools:1.7 \\" >> $out_script
-echo "samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
-echo "-o /mnt/${outdir}/${outbam} /mnt/${inbam}" >> $out_script
-echo "" >> $out_script
-
-echo "singularity exec --bind /:/mnt   docker://lethalfang/samtools:1.7 \\" >> $out_script
-echo "samtools index /mnt/${outdir}/${outbam}" >> $out_script
+echo "mv ${outdir}/${outBam%.bam}.bai ${outdir}/${outBam}.bai" >> $out_script
+echo "rm -r ${outdir}/${timestamp}.temp" >> $out_script

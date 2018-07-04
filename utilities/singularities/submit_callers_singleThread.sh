@@ -397,7 +397,7 @@ if [[ $somaticsniper -eq 1 ]]
 then
 
     input_somaticsniper_arguments=''
-    
+
     if [[ ${somaticsniper_arguments} ]]
     then
         input_somaticsniper_arguments="${somaticsniper_arguments}"
@@ -459,7 +459,7 @@ if [[ $lofreq -eq 1 ]]
 then
 
     input_lofreq_arguments=''
-    
+
     if [[ ${lofreq_arguments} ]]
     then
         input_lofreq_arguments="${lofreq_arguments}"

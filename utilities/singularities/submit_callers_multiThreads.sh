@@ -297,16 +297,17 @@ then
 else
     cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
 fi
-
+    
 
 if [[ `which python3` ]]
 then
     $MYDIR/../split_Bed_into_equal_regions.py -infile ${outdir}/genome.bed -num $threads -outfiles ${outdir}/bed
 else
-    singularity exec --bind /:/mnt docker://lethalfang/somaticseq:${VERSION} \
+    singularity exec --bind /:/mnt   docker://lethalfang/somaticseq:${VERSION} \
     /opt/somaticseq/utilities/split_Bed_into_equal_regions.py \
     -infile /mnt/${outdir}/genome.bed -num $threads -outfiles /mnt/${outdir}/bed
 fi
+
 
 
 ith_thread=1
@@ -347,7 +348,7 @@ do
 
     if [[ $mutect2 -eq 1 ]]
     then
-        
+                
         input_mutect2_arguments=''
         input_mutect2_filter_arguments=''
         
@@ -379,7 +380,7 @@ do
 
     if [[ $varscan2 -eq 1 ]]
     then
-    
+        
         input_varscan_pileup_arguments=''
         input_varscan_arguments=''
         
@@ -412,7 +413,7 @@ do
         
     if [[ $vardict -eq 1 ]]
     then
-    
+        
         input_vardict_arguments=''
         
         if [[ ${vardict_arguments} ]]
@@ -456,6 +457,7 @@ do
     then
     
         input_lofreq_arguments=''
+        
         if [[ ${lofreq_arguments} ]]
         then
             input_lofreq_arguments="${lofreq_arguments}"
@@ -484,7 +486,7 @@ do
         then
             two_pass='--two-pass'
         fi    
-
+        
         input_scalpel_discovery_arguments=''
         input_scalpel_export_arguments=''
         
@@ -521,7 +523,7 @@ do
         then
             exome_stat='--exome'
         fi
-    
+        
         input_strelka_config_arguments=''
         input_strelka_run_arguments=''
         
@@ -574,6 +576,7 @@ do
         fi
         
         input_somaticseq_arguments=''
+        
         if [[ ${somaticseq_arguments} ]]
         then
             input_somaticseq_arguments="${somaticseq_arguments}"
@@ -623,7 +626,7 @@ then
 
     input_jsm_train_arguments=''
     input_jsm_classify_arguments=''
-
+    
     if [[ ${jsm_train_arguments} ]]
     then
         input_jsm_train_arguments="${jsm_train_arguments}"

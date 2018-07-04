@@ -67,7 +67,7 @@ then
     echo "#$ -o ${logdir}" >> $out_script
     echo "#$ -e ${logdir}" >> $out_script
     echo "#$ -S /bin/bash" >> $out_script
-    echo '#$ -l h_vmem=4G' >> $out_script
+    echo '#$ -l h_vmem=2G' >> $out_script
     echo 'set -e' >> $out_script
 fi
 
@@ -80,7 +80,7 @@ do
 done
 
 # Merge the BAM files
-echo "singularity exec --bind /:/mnt docker://lethalfang/vcftools:0.1.14 bash -c \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/vcftools:0.1.15 bash -c \\" >> $out_script
 echo "\"vcf-concat \\" >> $out_script
 echo "${input_file_string} \\" >> $out_script
 echo "> /mnt/${outdir}/${outvcf}\"" >> $out_script
