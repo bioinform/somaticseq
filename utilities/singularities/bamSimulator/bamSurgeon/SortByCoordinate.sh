@@ -83,10 +83,10 @@ fi
 
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/samtools:1.7 \\" >> $out_script
 echo "samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "-o /mnt/${outdir}/${outbam} /mnt/${inbam}" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/samtools:1.7 \\" >> $out_script
 echo "samtools index /mnt/${outdir}/${outbam}" >> $out_script

@@ -79,11 +79,11 @@ fi
 echo "" >> $out_script
 
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:1.3.1 bash -c \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/samtools:1.7 bash -c \\" >> $out_script
 echo "\"samtools view /mnt/${inbam} -L /mnt/${SELECTOR} -Sbh \\" >> $out_script
 echo "> /mnt/${outdir}/${outbam}\"" >> $out_script
 
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/samtools:1.7 \\" >> $out_script
 echo "samtools index /mnt/${outdir}/${outbam}" >> $out_script

@@ -157,7 +157,7 @@ fi
 
 
 # VariantRecalibrator for SNP
-echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.4.0 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.5.2 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar /gatk/gatk.jar VariantRecalibrator \\" >> $out_script
 echo "--variant /mnt/${inputVcfFile} \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
@@ -172,7 +172,7 @@ echo "-resource dbsnp,known=true,training=false,truth=false,prior=2.0:/mnt/${dbs
 echo "" >> $out_script
 
 # VariantRecalibrator for INDEL
-echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.4.0 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.5.2 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar /gatk/gatk.jar VariantRecalibrator \\" >> $out_script
 echo "--variant /mnt/${inputVcfFile} \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
@@ -186,7 +186,7 @@ echo "" >> $out_script
 
 
 # Apply VQSR for SNP
-echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.4.0 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.5.2 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar /gatk/gatk.jar ApplyVQSR \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--recal-file /mnt/${outdir}/snp.${timestamp}.recal \\" >> $out_script
@@ -197,7 +197,7 @@ echo "-mode SNP" >> $out_script
 echo "" >> $out_script
 
 # Apply VQSR for INDEL
-echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.4.0 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.5.2 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar /gatk/gatk.jar ApplyVQSR \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--recal-file /mnt/${outdir}/indel.${timestamp}.recal \\" >> $out_script
@@ -209,7 +209,7 @@ echo "" >> $out_script
 
 
 # Combine SNP and INDEL VCF files:
-echo "docker run --rm -v /:/mnt -u $UID lethalfang/vcftools:0.1.14-2 bash -c \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID lethalfang/vcftools:0.1.15 bash -c \\" >> $out_script
 echo "\"vcf-concat /mnt/${outdir}/snp.vqsr.${timestamp}.vcf /mnt/${outdir}/indel.vqsr.${timestamp}.vcf | egrep '^#|VQSLOD' | /opt/vcfsorter.pl /mnt/${HUMAN_REFERENCE%\.fa*}.dict - > /mnt/${outdir}/${outVcfName}\"" >> $out_script
 
 

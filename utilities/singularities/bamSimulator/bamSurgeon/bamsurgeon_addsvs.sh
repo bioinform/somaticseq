@@ -111,7 +111,7 @@ fi
 
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt --pwd /mnt/${outdir} docker://lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
+echo "singularity exec --bind /:/mnt  --pwd /mnt/${outdir} docker://lethalfang/bamsurgeon:1.1-3 \\" >> $out_script
 echo "/usr/local/bamsurgeon/bin/addsv.py \\" >> $out_script
 echo "--svfrac 0.1 --procs 1 \\" >> $out_script
 echo "--varfile /mnt/${svs} \\" >> $out_script
@@ -126,7 +126,7 @@ echo "--aligner "${aligner}"" >> $out_script
 echo "" >> $out_script
 
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 bash -c \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/bamsurgeon:1.1-3 bash -c \\" >> $out_script
 echo "\"/usr/local/bamsurgeon/scripts/makevcf_sv.py -l /mnt/${outdir}/addsv_logs_unsorted.${outbam} \\" >> $out_script
 echo "-r /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "| bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_script
@@ -134,10 +134,10 @@ echo "> /mnt/${outdir}/synthetic_svs.vcf\"" >> $out_script
 echo "" >> $out_script
 
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:1.3.1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/samtools:1.7 \\" >> $out_script
 echo "samtools sort -m 4G --reference /mnt/${HUMAN_REFERENCE} -o /mnt/${outdir}/${outbam} /mnt/${outdir}/unsorted.${outbam}" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam}" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/samtools:1.7 samtools index /mnt/${outdir}/${outbam}" >> $out_script
 
 echo "" >> $out_script
 echo "rm ${outdir}/unsorted.${outbam}" >> $out_script

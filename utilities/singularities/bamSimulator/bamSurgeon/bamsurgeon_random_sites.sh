@@ -132,7 +132,7 @@ fi
 echo "" >> $out_script
 
 #1) Generate mutation sites and VAF's
-echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 bash -c \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/bamsurgeon:1.1-3 bash -c \\" >> $out_script
 echo "\"/usr/local/bamsurgeon/scripts/randomsites.py \\" >> $out_script
 echo "--genome /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
@@ -146,7 +146,8 @@ echo "--avoidN snv \\" >> $out_script
 echo "| bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai > /mnt/${outdir}/random_sSNV.bed\"" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 bash -c \\" >> $out_script
+
+echo "singularity exec --bind /:/mnt   docker://lethalfang/bamsurgeon:1.1-3 bash -c \\" >> $out_script
 echo "\"/usr/local/bamsurgeon/scripts/randomsites.py \\" >> $out_script
 echo "--genome /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
@@ -160,7 +161,8 @@ echo "--avoidN indel --maxlen 18  \\" >> $out_script
 echo "| vcfsorter.pl /mnt/${hg_dict} - > /mnt/${outdir}/random_sINDEL.bed\"" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 bash -c \\" >> $out_script
+
+echo "singularity exec --bind /:/mnt   docker://lethalfang/bamsurgeon:1.1-3 bash -c \\" >> $out_script
 echo "\"/usr/local/bamsurgeon/scripts/randomsites.py \\" >> $out_script
 echo "--genome /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--seed $seed \\" >> $out_script
@@ -174,10 +176,12 @@ echo "sv --cnvfile /mnt/${outdir}/cnvfile.bed \\" >> $out_script
 echo "| vcfsorter.pl /mnt/${hg_dict} - > /mnt/${outdir}/random_sSV.bed\"" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/bedtools:2.26.0 bash -c \\" >> $out_script
+
+echo "singularity exec --bind /:/mnt   docker://lethalfang/bedtools:2.26.0 bash -c \\" >> $out_script
 echo "\"bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai -i /mnt/${outdir}/cnvfile.bed \\" >> $out_script
 echo "> /mnt/${outdir}/sorted.cnvfile.bed\"" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/tabix:1.2.1 bgzip -f /mnt/${outdir}/sorted.cnvfile.bed" >> $out_script
-echo "singularity exec --bind /:/mnt docker://lethalfang/tabix:1.2.1 tabix -f /mnt/${outdir}/sorted.cnvfile.bed.gz" >> $out_script
+
+echo "singularity exec --bind /:/mnt   docker://lethalfang/tabix:1.7 bgzip -f /mnt/${outdir}/sorted.cnvfile.bed" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/tabix:1.7 tabix -f /mnt/${outdir}/sorted.cnvfile.bed.gz" >> $out_script

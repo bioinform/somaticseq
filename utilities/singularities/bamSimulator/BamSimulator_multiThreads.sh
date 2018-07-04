@@ -14,7 +14,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 action=echo
-seed=$( date +"%Y" )
+seed=$RANDOM
 min_depth=5
 max_depth=5000
 min_var_reads=1
@@ -24,9 +24,11 @@ num_svs=0
 min_vaf=0.05
 max_vaf=0.5
 min_var_reads=1
+proportion=0.5
 down_sample=1
 left_beta=2
 right_beta=2
+
 aligner='mem'
 
 threads=12
@@ -221,14 +223,16 @@ else
     cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XY]+$/' > ${parent_outdir}/genome.bed
 fi
 
+
 if [[ `which python3` ]]
 then
      $MYDIR/../../split_Bed_into_equal_regions.py -infile ${parent_outdir}/genome.bed -num $threads -outfiles ${parent_outdir}/bed
 else
-    singularity exec --bind /:/mnt docker://lethalfang/somaticseq:${VERSION} \
+    singularity exec --bind /:/mnt   docker://lethalfang/somaticseq:${VERSION} \
     /opt/somaticseq/utilities/split_Bed_into_equal_regions.py \
     -infile /mnt/${parent_outdir}/genome.bed -num $threads -outfiles /mnt/${parent_outdir}/bed
 fi
+
 
 ith_thread=1
 while [[ $ith_thread -le $threads ]]
@@ -256,7 +260,7 @@ do
     echo "#$ -o ${logdir}" >> $out_script
     echo "#$ -e ${logdir}" >> $out_script
     echo "#$ -S /bin/bash" >> $out_script
-    echo '#$ -l h_vmem=36G' >> $out_script
+    echo '#$ -l h_vmem=14G' >> $out_script
     echo 'set -e' >> $out_script
     echo "" >> $out_script
     

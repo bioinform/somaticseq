@@ -134,7 +134,7 @@ if [[ ${dbsnp} ]]; then
 fi
 
 
-echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.4.0 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.5.2 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar /gatk/gatk.jar \\" >> $out_script
 echo "HaplotypeCaller \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script

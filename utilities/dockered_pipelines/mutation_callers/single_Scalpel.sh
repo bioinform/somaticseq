@@ -107,15 +107,15 @@ fi
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/scalpel:0.5.3-1 bash -c \\" >> $out_script
-echo "\"/opt/scalpel-0.5.3/scalpel-discovery --single \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G lethalfang/scalpel:0.5.4 bash -c \\" >> $out_script
+echo "\"/opt/scalpel/scalpel-discovery --single \\" >> $out_script
 echo "--ref /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--bed /mnt/${SELECTOR} \\" >> $out_script
 echo "--bam /mnt/${tumor_bam} \\" >> $out_script
 echo "--window 600 \\" >> $out_script
 echo "${extra_discovery_arguments} \\" >> $out_script
 echo "--dir /mnt/${outdir}/scalpel && \\" >> $out_script
-echo "/opt/scalpel-0.5.3/scalpel-export --single \\" >> $out_script
+echo "/opt/scalpel/scalpel-export --single \\" >> $out_script
 echo "--db /mnt/${outdir}/scalpel/variants.db.dir \\" >> $out_script
 echo "--ref /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--bed /mnt/${SELECTOR} \\" >> $out_script
@@ -123,7 +123,7 @@ echo "${extra_export_arguments} \\" >> $out_script
 echo "> /mnt/${outdir}/scalpel/scalpel.vcf\"" >> $out_script
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID lethalfang/scalpel:0.5.3-1 bash -c \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID lethalfang/scalpel:0.5.4 bash -c \\" >> $out_script
 echo "\"cat /mnt/${outdir}/scalpel/scalpel.vcf | /opt/vcfsorter.pl /mnt/${HUMAN_REFERENCE%\.fa*}.dict - \\" >> $out_script
 echo "> /mnt/${outdir}/${outvcf}\"" >> $out_script
 

@@ -105,7 +105,7 @@ echo "" >> $out_script
 echo 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2' >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/lofreq:2.1.3.1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/lofreq:2.1.3.1-1 \\" >> $out_script
 echo "lofreq somatic \\" >> $out_script
 echo "-t /mnt/${tumor_bam} \\" >> $out_script
 echo "-n /mnt/${normal_bam} \\" >> $out_script

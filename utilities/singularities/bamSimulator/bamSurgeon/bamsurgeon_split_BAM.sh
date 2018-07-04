@@ -112,7 +112,7 @@ echo "" >> $out_script
 
 
 # Then you can split
-echo "singularity exec --bind /:/mnt docker://lethalfang/bamsurgeon:1.0.0-4 \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/bamsurgeon:1.1-3 \\" >> $out_script
 echo "/usr/local/bamsurgeon/scripts/sortedBamSplit.py \\" >> $out_script
 echo "--bam /mnt/${inbam} \\" >> $out_script
 echo "--proportion ${proportion} \\" >> $out_script
@@ -122,6 +122,6 @@ echo "--pick2 /mnt/${outdir}/${outbam2} \\" >> $out_script
 echo "--seed ${seed}" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam1}" >> $out_script
-echo "singularity exec --bind /:/mnt docker://lethalfang/samtools:1.3.1 samtools index /mnt/${outdir}/${outbam2}" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/samtools:1.7 samtools index /mnt/${outdir}/${outbam1}" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://lethalfang/samtools:1.7 samtools index /mnt/${outdir}/${outbam2}" >> $out_script
 echo "" >> $out_script

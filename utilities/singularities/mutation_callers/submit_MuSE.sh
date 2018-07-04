@@ -106,7 +106,7 @@ echo "" >> $out_script
 echo "cat ${SELECTOR} | awk -F \"\t\" '{print \$1 \"\t\" \$2 \"\t\" \$3}' > ${outdir}/bed_3columns.bed" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://marghoob/muse:1.0rc_c \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://marghoob/muse:1.0rc_c \\" >> $out_script
 echo "MuSEv1.0rc_submission_c039ffa call \\" >> $out_script
 echo "-O /mnt/${outdir}/MuSE \\" >> $out_script
 echo "-l /mnt/${outdir}/bed_3columns.bed \\" >> $out_script
@@ -115,7 +115,7 @@ echo "/mnt/${tumor_bam} \\" >> $out_script
 echo "/mnt/${normal_bam}" >> $out_script
 echo "" >> $out_script
 
-echo "singularity exec --bind /:/mnt docker://marghoob/muse:1.0rc_c \\" >> $out_script
+echo "singularity exec --bind /:/mnt   docker://marghoob/muse:1.0rc_c \\" >> $out_script
 echo "MuSEv1.0rc_submission_c039ffa sump \\" >> $out_script
 echo "-I /mnt/${outdir}/MuSE.MuSE.txt \\" >> $out_script
 echo "${extra_arguments} -O /mnt/${outdir}/${outvcf} \\" >> $out_script

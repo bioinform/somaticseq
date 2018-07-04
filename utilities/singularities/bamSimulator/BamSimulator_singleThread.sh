@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,down-sample:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,left-beta:,right-beta:,min-depth:,max-depth:,min-variant-reads:,aligner:,out-script:,seed:,action:,merge-bam,split-bam,clean-bam,indel-realign,keep-intermediates -n 'BamSimulator.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,down-sample:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,left-beta:,right-beta:,min-depth:,max-depth:,aligner:,min-variant-reads:,out-script:,seed:,action:,merge-bam,split-bam,clean-bam,indel-realign,keep-intermediates -n 'BamSimulator.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -14,7 +14,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 timestamp=$( date +"%Y-%m-%d_%H-%M-%S_%N" )
 action=echo
-seed=$( date +"%Y" )
+seed=$RANDOM
 min_depth=5
 max_depth=5000
 min_var_reads=1
@@ -24,6 +24,7 @@ num_svs=0
 min_vaf=0.05
 max_vaf=0.5
 min_var_reads=1
+proportion=0.5
 down_sample=1
 left_beta=2
 right_beta=2
@@ -217,7 +218,7 @@ echo "" >> $out_script
 echo "#$ -o ${logdir}" >> $out_script
 echo "#$ -e ${logdir}" >> $out_script
 echo "#$ -S /bin/bash" >> $out_script
-echo '#$ -l h_vmem=36G' >> $out_script
+echo '#$ -l h_vmem=14G' >> $out_script
 echo 'set -e' >> $out_script
 echo "" >> $out_script
 

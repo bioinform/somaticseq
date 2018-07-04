@@ -126,26 +126,24 @@ if [[ $tumor_name ]]
 then
     echo "tumor_name=${tumor_name}" >> $out_script
 else
-    echo "tumor_name=\`docker run --rm -v /:/mnt -u $UID --memory 1g lethalfang/samtools:0.1.19 samtools view -H /mnt/${tumor_bam} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//'\`" >> $out_script
+    echo "tumor_name=\`docker run --rm -v /:/mnt -u $UID --memory 1g lethalfang/samtools:1.7 samtools view -H /mnt/${tumor_bam} | egrep -w '^@RG' | grep -Po 'SM:[^\t$]+' | sed 's/SM://' | uniq | sed -e 's/[[:space:]]*$//'\`" >> $out_script
 fi
-
 
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory $(( MEM * threads ))G broadinstitute/gatk:4.0.0.0 \\" >> $out_script
-echo "java -Xmx${MEM}g -jar gatk.jar Mutect2 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory $(( MEM * threads ))G broadinstitute/gatk:4.0.5.2 \\" >> $out_script
+echo "java -Xmx${MEM}g -jar /gatk/gatk.jar Mutect2 \\" >> $out_script
 echo "--native-pair-hmm-threads ${threads} \\" >> $out_script
 echo "--reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "$selector_text \\" >> $out_script
 echo "--input /mnt/${tumor_bam} \\" >> $out_script
 echo "--tumor-sample \${tumor_name} \\" >> $out_script
-echo "$dbsnp_text \\" >> $out_script
 echo "${extra_arguments} \\" >> $out_script
 echo "--output /mnt/${outdir}/unfiltered.${outvcf}" >> $out_script
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G broadinstitute/gatk:4.0.0.0 \\" >> $out_script
-echo "java -Xmx${MEM}g -jar gatk.jar FilterMutectCalls \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID --memory ${MEM}G broadinstitute/gatk:4.0.5.2 \\" >> $out_script
+echo "java -Xmx${MEM}g -jar /gatk/gatk.jar FilterMutectCalls \\" >> $out_script
 echo "--variant /mnt/${outdir}/unfiltered.${outvcf} \\" >> $out_script
 echo "--output /mnt/${outdir}/${outvcf}" >> $out_script
 

@@ -180,7 +180,7 @@ if [[ `which python3` ]]
 then
      $MYDIR/../split_Bed_into_equal_regions.py -infile ${outdir}/genome.bed -num $threads -outfiles ${outdir}/bed
 else
-    singularity exec --bind /:/mnt docker://lethalfang/somaticseq:${VERSION} \
+    singularity exec --bind /:/mnt   docker://lethalfang/somaticseq:${VERSION} \
     /opt/somaticseq/utilities/split_Bed_into_equal_regions.py \
     -infile /mnt/${outdir}/genome.bed -num $threads -outfiles /mnt/${outdir}/bed
 fi
