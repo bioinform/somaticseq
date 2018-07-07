@@ -34,7 +34,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_singl
 ```
 
 This is a workflow created using modified [BAMSurgeon](https://github.com/ltfang-bina/bamsurgeon).
-* **BamSimulator_.sh** creates semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**,$
+* **BamSimulator_.sh** creates semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**, **synthetic_indels.vcf**, and **synthetic_svs.vcf**.
 * For multi-thread job (WGS), use BamSimulator_multiThreads.sh instead. See below for additional options and parameters.
 
 
