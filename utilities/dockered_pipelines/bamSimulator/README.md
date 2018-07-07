@@ -61,24 +61,7 @@ The ```--split-bem``` will randomly split the high coverage BAM file into two BA
 
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multiThreads.sh \
---genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
---tumor-bam-in      /ABSOLUTE/PATH/TO/Tumor_Sample.bam \
---normal-bam-in     /ABSOLUTE/PATH/TO/Normal_Sample.bam \
---tumor-bam-out     syntheticTumor.bam \
---normal-bam-out    syntheticNormal.bam \
---split-proportion  0.5 \
---num-snvs          30000 \
---num-indels        10000 \
---num-svs           1500 \
---min-vaf           0.0 \
---max-vaf           1.0 \
---left-beta         2 \
---right-beta        5 \
---min-variant-reads 2 \
---output-dir        /ABSOLUTE/PATH/TO/trainingSet \
---threads           24 \
---action            qsub \
---merge-bam --split-bam --indel-realign --merge-output-bams
+--genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa --tumor-bam-in /ABSOLUTE/PATH/TO/Tumor_Sample.bam --normal-bam-in /ABSOLUTE/PATH/TO/Normal_Sample.bam --tumor-bam-out syntheticTumor.bam --normal-bam-out    syntheticNormal.bam --split-proportion  0.5 --num-snvs 30000 --num-indels 10000 --num-svs 1500 --min-vaf 0.0 --max-vaf 1.0 --left-beta 2 --right-beta 5 --min-variant-reads 2 --output-dir /ABSOLUTE/PATH/TO/trainingSet --threads 24 --action qsub --merge-bam --split-bam --indel-realign --merge-output-bams
 ```
 
 **What does that command do**
@@ -139,7 +122,6 @@ This is the approach described in our [2017 AACR Abstract](http://dx.doi.org/10.
     _ = plt.plot(x, y)
 ```
 * In some BAM files, there are reads where read lengths and CIGAR strings don't match. Spike in will fail in these cases, and you'll need to invoke ```--clean-bam``` to get rid of these problematic reads. 
-
 
 
 
