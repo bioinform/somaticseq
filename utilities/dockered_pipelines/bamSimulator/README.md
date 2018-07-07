@@ -1,7 +1,7 @@
 <b>Dockerized *in silico* somatic mutation spike in pipeline to generate training data set with ground truths</b>
-* This pipeline is used to spike in *in silico* somatic mutations into existing BAM files to create semi-synthetic data set.
+* This pipeline is used to spike in *in silico* somatic mutations into existing BAM files in order to create a training set for somatic mutations.
 * After the *in silico* data are generated, you can use the [somatic mutation pipeline](..) on the training data to generate the SomaticSeq classifiers.
-* Classifiers built on training data only work if the training data is similar to the data you want to predict. Ideally, the training data are sequenced on the same platform, same sample prep, and similar depth of coverage as the data of interest.
+* Classifiers built on training data work if the training data is similar to the data you want to predict. Ideally, the training data are sequenced on the same platform, same sample prep, and similar depth of coverage as the data of interest.
 * This method is based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon), slightly modified into [our own fork](https://github.com/ltfang-bina/bamsurgeon) for some speedups. 
 * The proper citation for BAMSurgeon is [Ewing AD, Houlahan KE, Hu Y, et al. Combining tumor genome simulation with crowdsourcing to benchmark somatic single-nucleotide-variant detection. Nat Methods. 2015;12(7):623-30.](http://doi.org/10.1038/nmeth.3407)
 
@@ -10,9 +10,36 @@
 * Have internet connection, and able to pull and run docker images from Docker Hub, as we have dockerized the entire BAMSurgeon workflow. 
 * **Recommended**: Have cluster management system with valid "qsub" command, such as Sun Grid Engine (SGE).
 
+**An ideal example (single-thread) when you have sequencing replicates of the same samples**
+
+In this case, *in silico* mutations will be spiked into Replicate_002.bam. Since Replicate_002.bam and Replicate_001.bam are otherwise the same sample, any mutations detected that you did not spike in are false positives. 
+
+```
+$PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_singleThread.sh \
+--genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
+--tumor-bam-in      /ABSOLUTE/PATH/TO/Replicate_001.bam \
+--normal-bam-in     /ABSOLUTE/PATH/TO/Replicate_002.bam \
+--tumor-bam-out     syntheticTumor.bam \
+--normal-bam-out    syntheticNormal.bam \
+--split-proportion  0.5 \
+--num-snvs          20000 \
+--num-indels        8000 \
+--min-vaf           0.0 \
+--max-vaf           1.0 \
+--left-beta         2 \
+--right-beta        5 \
+--min-variant-reads 2 \
+--output-dir        /ABSOLUTE/PATH/TO/trainingSet \
+--action            qsub
+```
+
+This is a workflow created using modified [BAMSurgeon](https://github.com/ltfang-bina/bamsurgeon).
+* **BamSimulator_.sh** creates semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**,$
+* For multi-thread job (WGS), use BamSimulator_multiThreads.sh instead. See below for additional options and parameters.
 
 
-**An example Command that mimicks DREAM Challenge**
+**This example mimicks [DREAM Challenge](https://www.synapse.org/#!Synapse:syn312572/wiki/70726)**
+In this case, a high-coverage BAM file is randomly split into two. One of which is designated normal, and the other one is designated tumor where mutations will be spiked in. Like the previous example, any mutations found between the designated tumor and designated normal are false positive, since not only are they from the same sample, but from the same sequencing run. This example will not capture false positives as a result of run-to-run biases if they exist in your sequencing data. It will, however, still capture artefacts related to sequencing errors, sampling errors, mapping errors, etc.  
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multiThreads.sh \
 --genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
@@ -34,16 +61,12 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 --split-bam --indel-realign --merge-output-bams
 ```
 
-**What does that command do**
+**What does the command above do**
 
-This is a workflow created using modified [BAMSurgeon](https://github.com/ltfang-bina/bamsurgeon).
 The ```--split-bem``` will randomly split the high coverage BAM file into two BAM files, one of which is designated normal and the other one designated tumor for mutation spike in.
 
-<b>A schematic of the simulation procedure</b>
+<b>A schematic of the DREAM Challenge simulation procedure</b>
   ![DREAM Simulation](dream_sim.jpg)
-
-
-
 
 
 
@@ -72,12 +95,8 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 --merge-bam --split-bam --indel-realign --merge-output-bams
 ```
 
-* **BamSimulator_.sh** creates semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**, **synthetic_indels.vcf**, and **synthetic_svs.vcf**.
-* For single-thread job (WES), use BamSimulator_singleThread.sh instead. 
-
 **What does that command do**
 
-This is a workflow created using modified [BAMSurgeon](https://github.com/ltfang-bina/bamsurgeon).
 The ```--merge-bam``` will merge the normal and tumor BAM files into a single BAM file. Then, ```--split-bem``` will randomly split the merged BAM file into two BAM files.
 One of which is designated normal, and one of which is designated tumor.
 Synthetic mutations will then be spiked into the designated tumor to create "real" mutations.
@@ -87,28 +106,6 @@ This is the approach described in our [2017 AACR Abstract](http://dx.doi.org/10.
   ![Onkoinsight Simulation](onkoinsight_sim.png)
 
 
-
-
-**An example Command (single-thread) of an ideal situation when there are sequencing replicates of the same samples**
-```
-$PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_singleThread.sh \
---genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
---tumor-bam-in      /ABSOLUTE/PATH/TO/Replicate_001.bam \
---normal-bam-in     /ABSOLUTE/PATH/TO/Replicate_002.bam \
---tumor-bam-out     syntheticTumor.bam \
---normal-bam-out    syntheticNormal.bam \
---split-proportion  0.5 \
---num-snvs          30000 \
---num-indels        10000 \
---num-svs           1500 \
---min-vaf           0.0 \
---max-vaf           1.0 \
---left-beta         2 \
---right-beta        5 \
---min-variant-reads 2 \
---output-dir        /ABSOLUTE/PATH/TO/trainingSet \
---action            qsub
-```
 
 **The following parameters for the script:**
 * ```--genome-reference``` /ABSOLUTE/PATH/TO/human_reference.fa (Required)
