@@ -40,7 +40,7 @@ This is a workflow created using modified [BAMSurgeon](https://github.com/ltfang
 The ```--split-bem``` will randomly split the high coverage BAM file into two BAM files, one of which is designated normal and the other one designated tumor for mutation spike in.
 
 <b>A schematic of the simulation procedure</b>
-  ![DREAM Simulation](dream_sim.jpg)
+  ![DREAM Simulation](dream_sim.jpg =250x)
 
 
 
