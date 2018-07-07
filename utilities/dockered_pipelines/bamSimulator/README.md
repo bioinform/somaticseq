@@ -10,7 +10,7 @@
 * Have internet connection, and able to pull and run docker images from Docker Hub, as we have dockerized the entire BAMSurgeon workflow. 
 * **Recommended**: Have cluster management system with valid "qsub" command, such as Sun Grid Engine (SGE).
 
-**An ideal example (single-thread) when you have sequencing replicates of the same samples**
+**1) An ideal example (single-thread) when you have sequencing replicates of the same samples**
 
 In this case, *in silico* mutations will be spiked into Replicate_002.bam. Since Replicate_002.bam and Replicate_001.bam are otherwise the same sample, any mutations detected that you did not spike in are false positives. 
 
@@ -38,7 +38,8 @@ This is a workflow created using modified [BAMSurgeon](https://github.com/ltfang
 * For multi-thread job (WGS), use BamSimulator_multiThreads.sh instead. See below for additional options and parameters.
 
 
-**This example mimicks [DREAM Challenge](https://www.synapse.org/#!Synapse:syn312572/wiki/70726)**
+**2) This example mimicks [DREAM Challenge](https://www.synapse.org/#!Synapse:syn312572/wiki/70726)**
+
 In this case, a high-coverage BAM file is randomly split into two. One of which is designated normal, and the other one is designated tumor where mutations will be spiked in. Like the previous example, any mutations found between the designated tumor and designated normal are false positive, since not only are they from the same sample, but from the same sequencing run. This example will not capture false positives as a result of run-to-run biases if they exist in your sequencing data. It will, however, still capture artefacts related to sequencing errors, sampling errors, mapping errors, etc.  
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multiThreads.sh \
@@ -72,7 +73,8 @@ The ```--split-bem``` will randomly split the high coverage BAM file into two BA
 
 
 
-**Example Command for multi-thread jobs that merge and then split the input tumor and normal BAM files**
+**3) Example Command for multi-thread jobs that merge and then split the input tumor and normal BAM files**
+
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multiThreads.sh \
 --genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
