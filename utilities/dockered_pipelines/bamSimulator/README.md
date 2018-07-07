@@ -43,23 +43,7 @@ This is a workflow created using modified [BAMSurgeon](https://github.com/ltfang
 In this case, a high-coverage BAM file is randomly split into two. One of which is designated normal, and the other one is designated tumor where mutations will be spiked in. Like the previous example, any mutations found between the designated tumor and designated normal are false positive, since not only are they from the same sample, but from the same sequencing run. This example will not capture false positives as a result of run-to-run biases if they exist in your sequencing data. It will, however, still capture artefacts related to sequencing errors, sampling errors, mapping errors, etc.  
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multiThreads.sh \
---genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
---tumor-bam-in      /ABSOLUTE/PATH/TO/highCoverageGenome.bam \
---tumor-bam-out     syntheticTumor.bam \
---normal-bam-out    syntheticNormal.bam \
---split-proportion  0.5 \
---num-snvs          10000 \
---num-indels        8000 \
---num-svs           1500 \
---min-vaf           0.0 \
---max-vaf           1.0 \
---left-beta         2 \
---right-beta        5 \
---min-variant-reads 2 \
---output-dir        /ABSOLUTE/PATH/TO/trainingSet \
---threads           24 \
---action            qsub \
---split-bam --indel-realign --merge-output-bams
+--genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa --tumor-bam-in /ABSOLUTE/PATH/TO/highCoverageGenome.bam --tumor-bam-out syntheticTumor.bam --normal-bam-out syntheticNormal.bam --split-proportion  0.5 --num-snvs 10000 --num-indels 8000 --num-svs 1500 --min-vaf 0.0 --max-vaf 1.0 --left-beta 2 --right-beta 5 --min-variant-reads 2 --output-dir /ABSOLUTE/PATH/TO/trainingSet --threads 24 --action qsub --split-bam --indel-realign --merge-output-bams
 ```
 
 **What does the command above do**
