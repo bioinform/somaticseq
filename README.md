@@ -1,12 +1,12 @@
 ## SomaticSeq: An ensemble approach to accurately detect somatic mutations
 
-* Detailed documentation is included in the package, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). Quick guide can also be found [here](http://bioinform.github.io/somaticseq/).
+* SomaticSeq is an ensemble caller, and uses machine learning to filter out false positives. Detailed documentation is included in the package, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). Quick guide can also be found [here](http://bioinform.github.io/somaticseq/).
 * SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
 
-## Example command
-* The following is an example SomaticSeq command after the individual mutation caller jobs are complete
-* If you're searching for pipelines to run those individual somatic mutation callers, consider our [dockerized somatic mutation scripts](utilities/dockered_pipelines).
+## Example commands
+* The following is a SomaticSeq command **after** the individual mutation caller jobs are complete
+* If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [dockerized somatic mutation scripts](utilities/dockered_pipelines).
 ```
 $somaticseq/SomaticSeq.Wrapper.sh \
 --output-dir       /PATH/TO/RESULTS/SomaticSeq_MVSDULPK \
@@ -43,20 +43,21 @@ $somaticseq/SomaticSeq.Wrapper.sh \
      z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
    ```
 
-## Dockerized pipelines and workflows
+## Pipelines and workflows to run dockerized applications
 
 ### Somatic mutation callers
-We have dockerized pipeline that runs all the somatic mutation callers and SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines).
+We have dockerized pipelines that run all the somatic mutation callers and SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines).
 
 ### To create training data set
-We have also dockerized pipeline for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator). This pipeline is based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). It can be used to create training set to build SomaticSeq classifiers.
+We have also dockerized pipelines for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator). 
+These pipelines are based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). It can be used to create training set to build SomaticSeq classifiers.
 
 ### GATK's best practices
 The limited pipeline to generate BAM files based on GATK's best practices is at [utilities/dockered_pipelines/alignments](utilities/dockered_pipelines/alignments).
 
 ### Additional workflows
 * A [Snakemake](https://snakemake.readthedocs.io/en/latest/) workflow to run the somatic mutation callers and SomaticSeq, created by [Afif Elghraoui](https://github.com/0xaf1f), is at [**utilities/snakemake**](utilities/snakemake).
-* All docker pipelines have their corresponding singularity versions at utilities/singularities. They're created automatically with this script. They are not as extensively tested or optimized as the dockered ones. Read the pages at the dockered pipelines for descriptions and how-to's. Please let us know at Issues if any of them does not work.
+* All the docker scripts have their corresponding singularity versions at utilities/singularities. They're created automatically with this [script](utilities/singularities/docker2singularity.py). They are not as extensively tested or optimized as the dockered ones. Read the pages at the dockered pipelines for descriptions and how-to's. Please let us know at Issues if any of them does not work.
 
 
 ## For a quick description of SomaticSeq, watch this 8-minute video
