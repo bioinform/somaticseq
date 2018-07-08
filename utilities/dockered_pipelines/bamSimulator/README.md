@@ -40,6 +40,10 @@ This is a workflow created using modified [BAMSurgeon](https://github.com/ltfang
 * **BamSimulator_.sh** creates semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**, **synthetic_indels.vcf**, and **synthetic_svs.vcf**.
 * For multi-thread job (WGS), use BamSimulator_multiThreads.sh instead. See below for additional options and parameters.
 
+<b>A schematic of the BAMSurgeon simulation procedure</b>
+  ![Somatic Mutation Simulation](replicate_sim.jpg)
+
+
 
 **2) This example mimicks [DREAM Challenge](https://www.synapse.org/#!Synapse:syn312572/wiki/70726)**
 
