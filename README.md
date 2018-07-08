@@ -1,6 +1,6 @@
-## SomaticSeq: An ensemble approach to accurately detect somatic mutations
+# SomaticSeq
 
-* SomaticSeq is an ensemble caller, and uses machine learning to filter out false positives. Detailed documentation is included in the package, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). Quick guide can also be found [here](http://bioinform.github.io/somaticseq/).
+* SomaticSeq is an ensemble caller that has the ability to use machine learning to filter out false positives. The detailed documentation is included in the package, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). A quick guide can also be found [here](http://bioinform.github.io/somaticseq/).
 * SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
 
@@ -30,7 +30,8 @@ $somaticseq/SomaticSeq.Wrapper.sh \
 --exclusion-region /PATH/TO/RESULTS/blackList.bed
 ```
 * For all those input VCF files, either .vcf or .vcf.gz are acceptable. 
-* Additional parameters for training/prediction:
+
+### Additional parameters for training/prediction:
     * ```--truth-snv```:        if you have ground truth VCF file for SNV
     * ```--truth-indel```:      if you have a ground truth VCF file for INDEL
     * ```--ada-r-script```:     $somaticseq/r_scripts/ada_model_builder_ntChange.R to build classifiers (.RData files), if you have ground truths supplied.
@@ -43,14 +44,14 @@ $somaticseq/SomaticSeq.Wrapper.sh \
      z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
    ```
 
-## Pipelines and workflows to run dockerized applications
+## Dockerized applications and pipelines
 
-### Somatic mutation callers
-We have dockerized pipelines that run all the somatic mutation callers and SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines).
+### To run somatic mutation callers
+We have created scripts that run all the dockerized somatic mutation callers and SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines). All you need is [docker](https://www.docker.com/). 
 
 ### To create training data set
 We have also dockerized pipelines for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator). 
-These pipelines are based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). It can be used to create training set to build SomaticSeq classifiers.
+These pipelines are based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). We use it to create training set to build SomaticSeq classifiers.
 
 ### GATK's best practices
 The limited pipeline to generate BAM files based on GATK's best practices is at [utilities/dockered_pipelines/alignments](utilities/dockered_pipelines/alignments).
@@ -60,8 +61,8 @@ The limited pipeline to generate BAM files based on GATK's best practices is at 
 * All the docker scripts have their corresponding singularity versions at utilities/singularities. They're created automatically with this [script](utilities/singularities/docker2singularity.py). They are not as extensively tested or optimized as the dockered ones. Read the pages at the dockered pipelines for descriptions and how-to's. Please let us know at Issues if any of them does not work.
 
 
-## For a quick description of SomaticSeq, watch this 8-minute video
+## Video tutorial
 
-It is slightly outdated, but the main points remain the same. 
+This 8-minute video was created for SomaticSeq v1. The details are slightly outdated, but the main points remain the same. 
 
   [![SomaticSeq Video](docs/SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")

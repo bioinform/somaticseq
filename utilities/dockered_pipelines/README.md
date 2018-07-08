@@ -1,11 +1,36 @@
-<b>Dockerized Somatic Mutation Detection Pipeline</b>
+# Dockerized Somatic Mutation Detection Pipeline
 
-**Requirement**
+## Requirement
 * Have internet connection and docker daemon. Be able to pull and run docker images from Docker Hub.
 * **Highly recommended**: Have cluster management system with valid "qsub" command, such as Sun Grid Engine (SGE).
 * The documentation for those scripts can also be found in Section 4 of the [User's Manual](../../docs/Manual.pdf "Documentation").
 
-**Example Command for multi-thread jobs**
+## Example Commands
+
+
+### Single-thread job
+The following command will create scripts for MuTect2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and Strelka. Then, it will create the SomaticSeq script that merges those 7 callers. This command defaults to majority-vote consensus.
+
+Since it's ```--aciton echo```, it will echo the mutation caller scripts locations, but these scripts will **not** be run. 
+If you do ```--action qsub``` instead, then those mutation caller scripts will be qsub'ed. 
+You'll still need to mantually run/submit the SomaticSeq script after all the caller jobs are done.
+
+```
+$PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh \
+--normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
+--tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-dir      /ABSOLUTE/PATH/TO/RESULTS \
+--dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--somaticseq-dir  /ABSOLUTE/PATH/TO/SomaticSeq \
+--action          echo \
+--mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
+```
+
+
+### Multi-threaded job
+This is same as above, except it will create 36 equal-size regions in 36 bed files, and parallelize the jobs into 36 regions. 
+
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_multiThreads.sh \
 --normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
@@ -18,18 +43,47 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_multiThreads.sh 
 --mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
 ```
 
-**Example Command for single-thread jobs**
+
+
+### Single-threaded job for SomaticSeq training
+Two classifiers will be created (*.RData files), one for SNV and one for INDEL.
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh \
 --normal-bam      /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam       /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--truth-snv       /ABSOLUTE/PATH/TO/snvTruth.vcf \
+--truth-indel     /ABSOLUTE/PATH/TO/indelTruth.vcf \
 --human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
 --output-dir      /ABSOLUTE/PATH/TO/RESULTS \
 --dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--somaticseq-dir  /ABSOLUTE/PATH/TO/SomaticSeq \
 --action          echo \
+--mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq --somaticseq-train
+```
+Notice the command includes ```--truth-snv``` and ```--truth-indel```, and invokes ```somaticseq-train```.
+
+For multi-threaded job, you should not invoke ```somaticseq-train```. Instead, you should combine all the Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv files (separately), and then train on the combined files.
+
+
+### Single-threaded job for SomaticSeq prediction
+```
+$PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh \
+--normal-bam       /ABSOLUTE/PATH/TO/normal_sample.bam \
+--tumor-bam        /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--classifier-snv   /ABSOLUTE/PATH/TO/Ensemble.sSNV.tsv.ntChange.Classifier.RData \
+--classifier-indel /ABSOLUTE/PATH/TO/Ensemble.sINDEL.tsv.ntChange.Classifier.RData \
+--human-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-dir       /ABSOLUTE/PATH/TO/RESULTS \
+--dbsnp            /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--somaticseq-dir   /ABSOLUTE/PATH/TO/SomaticSeq \
+--action           echo \
 --mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
 ```
+Notice the command includes ```--classifier-snv``` and ```--classifier-indel```.
 
+
+
+## Options and Parameters
 **submit_callers_[single|multi]Thread(s).sh** can submit dockered somatic mutation calling jobs. The multiThread version is recommended for WGS. The following options:
 * ```--normal-bam```                  /ABSOLUTE/PATH/TO/normal_sample.bam (Required)
 * ```--tumor-bam```                   /ABSOLUTE/PATH/TO/tumor_sample.bam  (Required)
@@ -78,7 +132,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 * ```--somaticseq-arguments```        (Extra parameters to pass onto SomaticSeq.Wrapper.sh)
 
 
-**What does that command do**
+### What does that command do
 
 * For each flag such as --mutect2, --varscan2, ...., --strelka, a run script ending with .cmd will be created in /ABSOLUTE/PATH/TO/output_results/logs. By default, these .cmd scripts will only be created, and their file path will be printed on screen. However, if you do "--action qsub", then these scripts will be submitted via the qsub command. The default action is "echo." If you use the multiThread version, they will be created into /ABSOLUTE/PATH/TO/output_results/{1,2,3...}/logs instead. 
 * If you do "--somaticseq," the somaticseq script will be created in /ABSOLUTE/PATH/TO/output_results/SomaticSeq/logs. However, unless you do "--somaticseq-action qsub" it will not be submitted until you manually do so. You should never use "--somaticseq-action qsub" unless you're running SomaticSeq in a different setting, after all the mutation callers have finished successfully already. 
@@ -91,14 +145,14 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 * JointSNVMix2 also does not support partial BAM input. Unlike SomaticSniper, it's slow and takes massive amount of memory. It's not a good idea to run JointSNVMix2 on a WGS data. The only way to do so is to manually split the BAM files and run each separately. We may do so in the future, but JointSNVMix2 is a 5-year old that's no longer being supported, so we probably won't. 
 
 
-**NOTES**
+### NOTES
 * Parallelization (i.e., splitting) is not turned on for SomaticSniper because 1) it's manageable on a single thread, and 2) it doesn't support partial processing with BED file, so it may not be worth the time to split the BAM.
 * After specifying the reference fasta (must have extensions of .fa or .fasta), it must also include the .dict and .fa.fai (or .fasta.fai) files in the same directory.
 * When specifying /ABSOLUTE/PATH/TO/dbsnp.vcf, there also needs to be dbsnp.vcf.idx, dbsnp.vcf.gz, and dbsnp.vcf.gz.tbi present at the same directory because MuSE and LoFreq are expecting them.
 * There is no public docker image for MuTect v1 because we don't have distribution rights.
 * We also have no distribution rights for VarScan2, so our script points to a 3rd-party version. Only run it if you are licensed to do so. 
 
-**Known Issues**
+### Known Issues
 * Running JointSNVMix2 for WGS is discouraged because of memory requirement. The only way we know to parallelize it is to split the BAM files, which is a cumbersome process and hogs disk spaces.
 * Scalpel is very slow and can be enourmously memory-hungry. Use that at your own risk. Sometimes, you may need to up the memory requirement in some regions (by editing the scripts). 
 * If jobs run out of memory, try up the memory and re-run.
