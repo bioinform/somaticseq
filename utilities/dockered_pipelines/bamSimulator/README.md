@@ -10,9 +10,12 @@
 * Have internet connection, and able to pull and run docker images from Docker Hub, as we have dockerized the entire BAMSurgeon workflow. 
 * **Recommended**: Have cluster management system with valid "qsub" command, such as Sun Grid Engine (SGE).
 
-**1) An ideal example (single-thread) when you have sequencing replicates of the same samples**
+**1) An ideal example is when you have sequencing replicates of the same normal samples**
+
+This is our approach to define high-confidence somatic mutations in SEQC2 consortium's cancer reference samples, presented [here](https://dx.doi.org/10.1158/1538-7445.AM2018-432). 
 
 In this case, *in silico* mutations will be spiked into Replicate_002.bam. Since Replicate_002.bam and Replicate_001.bam are otherwise the same sample, any mutations detected that you did not spike in are false positives. 
+The following command is a single-thread example. 
 
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_singleThread.sh \
