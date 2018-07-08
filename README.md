@@ -7,6 +7,7 @@
 ## Example commands
 * The following is a SomaticSeq command **after** the individual mutation caller jobs are complete
 * If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [dockerized somatic mutation scripts](utilities/dockered_pipelines).
+
 ```
 $somaticseq/SomaticSeq.Wrapper.sh \
 --output-dir       /PATH/TO/RESULTS/SomaticSeq_MVSDULPK \
@@ -29,16 +30,21 @@ $somaticseq/SomaticSeq.Wrapper.sh \
 --inclusion-region /PATH/TO/RESULTS/captureRegion.bed \
 --exclusion-region /PATH/TO/RESULTS/blackList.bed
 ```
+
 * For all those input VCF files, either .vcf or .vcf.gz are acceptable. 
 
 ### Additional parameters for training/prediction:
-    * ```--truth-snv```:        if you have ground truth VCF file for SNV
-    * ```--truth-indel```:      if you have a ground truth VCF file for INDEL
-    * ```--ada-r-script```:     $somaticseq/r_scripts/ada_model_builder_ntChange.R to build classifiers (.RData files), if you have ground truths supplied.
-    * ```--classifier-snv```:   classifier (.RData file) previously built for SNV
-    * ```--classifier-indel```: classifier (.RData file) previously built for INDEL
-    * ```--ada-r-script```:     $somaticseq/r_scripts/ada_model_predictor.R to use the classifiers specified above to make predictions
+
+    --truth-snv:        if you have ground truth VCF file for SNV
+    --truth-indel:      if you have a ground truth VCF file for INDEL
+    --ada-r-script:     $somaticseq/r_scripts/ada_model_builder_ntChange.R to build classifiers (.RData files), if you have ground truths supplied.
+    --classifier-snv:   classifier (.RData file) previously built for SNV
+    --classifier-indel: classifier (.RData file) previously built for INDEL
+    --ada-r-script:     $somaticseq/r_scripts/ada_model_predictor.R to use the classifiers specified above to make predictions
+
+
 * Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data, e.g., z-scores between reference- and variant-supporting reads will be NaN if there is no reference read at a position.
+
    ```
      RuntimeWarning: invalid value encountered in double_scalars
      z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
