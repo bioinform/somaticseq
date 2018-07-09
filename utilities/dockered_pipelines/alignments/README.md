@@ -1,8 +1,8 @@
-**Requirement**
+## Requirement
 * Have internet connection, and able to pull and run docker images from Docker Hub.
 * **Recommended**: Have cluster management system with valid "qsub" command, such as Sun Grid Engine (SGE).
 
-**Alignment with bwa mem**
+### Alignment with bwa mem
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/alignments/bwa_mem_pe.sh \
 --output-dir /ABSOLUTE/PATH/TO/output \
@@ -15,7 +15,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/alignments/bwa_mem_pe.sh \
 --standalone
 ```
 
-**Mark Duplicate**
+### Mark Duplicate
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/alignments/markdup.sh \
 --output-dir /ABSOLUTE/PATH/TO/output \
@@ -25,7 +25,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/alignments/markdup.sh \
 ```
 
 
-**Joint Indel Realignment**
+### Joint Indel Realignment
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/alignments/jointIndelRealign.sh \
 --output-dir /ABSOLUTE/PATH/TO/output \
@@ -36,7 +36,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/alignments/jointIndelRealign.sh
 ```
 
 
-**Base Quality Recalibration**
+### Base Quality Recalibration
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/alignments/BQSR.sh \
 --output-dir /ABSOLUTE/PATH/TO/output \
