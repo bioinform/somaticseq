@@ -4,6 +4,13 @@
 * SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
 
+## Requirements
+* Python 3, plus regex, pysam, numpy, and scipy libraries
+* R, plus [ada](https://cran.r-project.org/package=ada) library
+* BEDTools
+* Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature)
+* At least one of the callers we have incorporated, i.e., MuTect2/MuTect/Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, and/or TNscope.
+
 ## Example commands
 * The following is a SomaticSeq command **after** the individual mutation caller jobs are complete
 * If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [dockerized somatic mutation scripts](utilities/dockered_pipelines).
