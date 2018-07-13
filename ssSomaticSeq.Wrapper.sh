@@ -221,12 +221,12 @@ if [[ -r ${merged_dir}/mutect.snp.vcf || -r ${merged_dir}/varscan2.snp.vcf || -r
 then
 
     mergesnp=''
-    all_indel=''
+    all_snp=''
     for vcf in ${merged_dir}/mutect.snp.vcf ${merged_dir}/varscan2.snp.vcf ${merged_dir}/snp.vardict.vcf ${merged_dir}/snp.lofreq.vcf ${merged_dir}/snv.strelka.vcf
     do
         if [[ -r $vcf ]]; then
             mergesnp="$mergesnp --variant $vcf"
-            all_indel="$all_indel $vcf"
+            all_snp="$all_snp $vcf"
         fi
     done
 
