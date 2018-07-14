@@ -40,7 +40,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_singl
 ```
 
 This is a workflow created using modified [BAMSurgeon](https://github.com/ltfang-bina/bamsurgeon).
-* **BamSimulator_.sh** creates semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf**, **synthetic_indels.vcf**, and **synthetic_svs.vcf** in the output directory.
+* **BamSimulator_singleThread.sh** creates semi-simulated tumor-normal pairs out of your input tumor-normal pairs. The "ground truth" of the somatic mutations will be **synthetic_snvs.vcf** and **synthetic_indels.vcf** in the output directory.
 * For multi-thread job (WGS), use BamSimulator_multiThreads.sh instead. See below for additional options and parameters.
 
 <b>A schematic of the BAMSurgeon simulation procedure</b>
@@ -59,7 +59,18 @@ It will, however, still capture artefacts related to sequencing errors, sampling
 
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multiThreads.sh \
---genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa --tumor-bam-in /ABSOLUTE/PATH/TO/highCoverageGenome.bam --tumor-bam-out syntheticTumor.bam --normal-bam-out syntheticNormal.bam --split-proportion  0.5 --num-snvs 10000 --num-indels 8000 --num-svs 1500 --min-vaf 0.0 --max-vaf 1.0 --left-beta 2 --right-beta 5 --min-variant-reads 2 --output-dir /ABSOLUTE/PATH/TO/trainingSet --threads 24 --action qsub --split-bam --indel-realign --merge-output-bams
+--genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--tumor-bam-in /ABSOLUTE/PATH/TO/highCoverageGenome.bam \
+--tumor-bam-out syntheticTumor.bam \
+--normal-bam-out syntheticNormal.bam \
+--split-proportion 0.5 \
+--num-snvs 10000 --num-indels 8000 --num-svs 1500 \
+--min-vaf 0.0 --max-vaf 1.0 --left-beta 2 --right-beta 5 \
+--min-variant-reads 2 \
+--output-dir /ABSOLUTE/PATH/TO/trainingSet \
+--threads 24 \
+--action qsub \
+--split-bam --indel-realign --merge-output-bams
 ```
 
 
@@ -78,7 +89,18 @@ The ```--merge-output-bams``` creates another script that will merge the BAM and
 
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multiThreads.sh \
---genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa --tumor-bam-in /ABSOLUTE/PATH/TO/Tumor_Sample.bam --normal-bam-in /ABSOLUTE/PATH/TO/Normal_Sample.bam --tumor-bam-out syntheticTumor.bam --normal-bam-out    syntheticNormal.bam --split-proportion  0.5 --num-snvs 30000 --num-indels 10000 --num-svs 1500 --min-vaf 0.0 --max-vaf 1.0 --left-beta 2 --right-beta 5 --min-variant-reads 2 --output-dir /ABSOLUTE/PATH/TO/trainingSet --threads 24 --action qsub --merge-bam --split-bam --indel-realign --merge-output-bams
+--genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--tumor-bam-in /ABSOLUTE/PATH/TO/Tumor_Sample.bam \
+--normal-bam-in /ABSOLUTE/PATH/TO/Normal_Sample.bam \
+--tumor-bam-out syntheticTumor.bam \
+--normal-bam-out syntheticNormal.bam \
+--split-proportion 0.5 \
+--num-snvs 30000 --num-indels 10000 --num-svs 1500 \
+--min-vaf 0.0 --max-vaf 1.0 --left-beta 2 --right-beta 5 \
+--min-variant-reads 2 \
+--output-dir /ABSOLUTE/PATH/TO/trainingSet \
+--threads 24 \
+--merge-bam --split-bam --indel-realign --merge-output-bams
 ```
 
 The ```--merge-bam``` will merge the normal and tumor BAM files into a single BAM file. Then, ```--split-bem``` will randomly split the merged BAM file into two BAM files.
@@ -92,7 +114,7 @@ This is the approach described in our [2017 AACR Abstract](http://dx.doi.org/10.
 
 ## Parameters and Options
 
-**The following parameters for the script:
+**The following parameters for the script:**
 
 * ```--genome-reference``` /ABSOLUTE/PATH/TO/human_reference.fa (Required)
 * ```--selector``` /ABSOLUTE/PATH/TO/capture_region.bed (BED file to limit where mutation spike in will be attempted)
@@ -115,7 +137,7 @@ This is the approach described in our [2017 AACR Abstract](http://dx.doi.org/10.
 * ```--merge-bam``` Flag to merge the tumor and normal bam file input
 * ```--split-bam``` Flag to split BAM file for tumor and normal
 * ```--clean-bam``` Flag to go through the BAM file and remove reads where more than 2 identical read names are present, or reads where its read length and CIGAR string do not match. This was necessary for some BAM files downloaded from TCGA. However, a proper pair-end BAM file should not have the same read name appearing more than twice. Use this only when necessary as it first sorts BAM file by qname, goes through the cleaning procedure, then re-sort by coordinates.
-* ```--indel-realign``` Conduct GATK Joint Indel Realignment on the two output BAM files. Instead of syntheticNormal.bam and syntheticTumor.bam, the final BAM files will be **syntheticNormal.JointRealigned.bam** and **syntheticTumor.JointRealigned.bam**.
+* ```--indel-realign``` Conduct GATK Joint Indel Realignment on the two output BAM files.
 * ```--seed``` Random seed. Pick any integer for reproducibility purposes.
 * ```--threads``` Split the BAM files evenly in N regions, then process each (pair) of sub-BAM files in parallel. 
 * ```--action``` The command preceding the run script created into /ABSOLUTE/PATH/TO/BamSurgeoned_SAMPLES/logs. "qsub" is to submit the script in SGE system. Default = echo
