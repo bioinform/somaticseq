@@ -15,7 +15,7 @@
 
 ### 1) An ideal example is when you have sequencing replicates of the same normal samples
 
-This is our approach to define high-confidence somatic mutations in SEQC2 consortium's cancer reference samples, presented [here](https://dx.doi.org/10.1158/1538-7445.AM2018-432). 
+This is our approach to define high-confidence somatic mutations in SEQC2 consortium's cancer reference samples, presented at [2018 AACR](https://doi.org/10.1158/1538-7445.AM2018-432). 
 
 In this case, *in silico* mutations will be spiked into Replicate_002.bam. Since Replicate_002.bam and Replicate_001.bam are otherwise the same sample, any mutations detected that you did not spike in are false positives. 
 The following command is a single-thread example. 
@@ -59,17 +59,17 @@ It will, however, still capture artefacts related to sequencing errors, sampling
 
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multiThreads.sh \
---genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
---tumor-bam-in /ABSOLUTE/PATH/TO/highCoverageGenome.bam \
---tumor-bam-out syntheticTumor.bam \
---normal-bam-out syntheticNormal.bam \
---split-proportion 0.5 \
+--output-dir        /ABSOLUTE/PATH/TO/trainingSet \
+--genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
+--tumor-bam-in      /ABSOLUTE/PATH/TO/highCoverageGenome.bam \
+--tumor-bam-out     syntheticTumor.bam \
+--normal-bam-out    syntheticNormal.bam \
+--split-proportion  0.5 \
+--min-variant-reads 2 \
+--threads           24 \
+--action            qsub \
 --num-snvs 10000 --num-indels 8000 --num-svs 1500 \
 --min-vaf 0.0 --max-vaf 1.0 --left-beta 2 --right-beta 5 \
---min-variant-reads 2 \
---output-dir /ABSOLUTE/PATH/TO/trainingSet \
---threads 24 \
---action qsub \
 --split-bam --indel-realign --merge-output-bams
 ```
 
@@ -89,17 +89,17 @@ The ```--merge-output-bams``` creates another script that will merge the BAM and
 
 ```
 $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multiThreads.sh \
---genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
---tumor-bam-in /ABSOLUTE/PATH/TO/Tumor_Sample.bam \
---normal-bam-in /ABSOLUTE/PATH/TO/Normal_Sample.bam \
---tumor-bam-out syntheticTumor.bam \
---normal-bam-out syntheticNormal.bam \
---split-proportion 0.5 \
+--output-dir        /ABSOLUTE/PATH/TO/trainingSet \
+--genome-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
+--tumor-bam-in      /ABSOLUTE/PATH/TO/Tumor_Sample.bam \
+--normal-bam-in     /ABSOLUTE/PATH/TO/Normal_Sample.bam \
+--tumor-bam-out     syntheticTumor.bam \
+--normal-bam-out    syntheticNormal.bam \
+--split-proportion  0.5 \
+--min-variant-reads 2 \
+--threads           24 \
 --num-snvs 30000 --num-indels 10000 --num-svs 1500 \
 --min-vaf 0.0 --max-vaf 1.0 --left-beta 2 --right-beta 5 \
---min-variant-reads 2 \
---output-dir /ABSOLUTE/PATH/TO/trainingSet \
---threads 24 \
 --merge-bam --split-bam --indel-realign --merge-output-bams
 ```
 
