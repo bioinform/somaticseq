@@ -2,13 +2,14 @@
 
 ## Requirement
 * Have internet connection and docker daemon. Be able to pull and run docker images from Docker Hub.
-* **Highly recommended**: Have cluster management system with valid "qsub" command, such as Sun Grid Engine (SGE).
+* **Highly recommended**: Have cluster management system with valid `qsub` command, such as Sun Grid Engine.
 * The documentation for those scripts can also be found in Section 4 of the [User's Manual](../../docs/Manual.pdf "Documentation").
 
 ## Example Commands
 
 ### Single-thread job
-The following command will create scripts for MuTect2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and Strelka. Then, it will create the SomaticSeq script that merges those 7 callers. This command defaults to majority-vote consensus.
+The following command will create scripts for MuTect2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and Strelka. 
+Then, it will create the SomaticSeq script that merges those 7 callers. This command defaults to majority-vote consensus.
 
 Since it's `--aciton echo`, it will echo the mutation caller scripts locations, but these scripts will **not** be run. 
 If you do `--action qsub` instead, then those mutation caller scripts will be qsub'ed. 

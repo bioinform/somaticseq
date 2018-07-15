@@ -61,17 +61,17 @@ Do not worry if Python throws the following warning. This occurs when SciPy atte
   z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
 ```
 
-## Dockerized applications and pipelines
+## Dockerized workflows and pipelines
 
-### To run somatic mutation callers
-We have created scripts that run all the dockerized somatic mutation callers and SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines). 
+### To run somatic mutation callers and then SomaticSeq
+We have created scripts that run all the dockerized somatic mutation callers and then SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines). 
 All you need is [docker](https://www.docker.com/). 
 
-### To create training data set
+### To create training data to create SomaticSeq classifiers
 We have also dockerized pipelines for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator). 
 These pipelines are based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). We use it to create training set to build SomaticSeq classifiers.
 
-### GATK's best practices
+### GATK's best practices for alignment
 The limited pipeline to generate BAM files based on GATK's best practices is at [utilities/dockered_pipelines/alignments](utilities/dockered_pipelines/alignments).
 
 ### Additional workflows
@@ -81,6 +81,6 @@ The limited pipeline to generate BAM files based on GATK's best practices is at 
 
 ## Video tutorial
 
-This 8-minute video was created for SomaticSeq v1. The details are slightly outdated, but the main points remain the same. 
+This 8-minute video was created for SomaticSeq v1.0. The details are slightly outdated, but the main points remain the same. 
 
   [![SomaticSeq Video](docs/SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")
