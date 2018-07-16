@@ -77,7 +77,21 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         copy_TextFile.copy(muse, muse_out)
         intermediate_files.append( muse_out )
         
+    if lofreq_snv:
+        snv_lofreq_out = outdir + os.sep + 'snv.lofreq.vcf'
+        copy_TextFile.copy(lofreq_snv, snv_lofreq_out)
+        intermediate_files.append( snv_lofreq_out )
 
+    if lofreq_indel:
+        indel_lofreq_out = outdir + os.sep + 'indel.lofreq.vcf'
+        copy_TextFile.copy(lofreq_indel, indel_lofreq_out)
+        intermediate_files.append( indel_lofreq_out )
+        
+    if scalpel:
+        scalpel_out = outdir + os.sep + 'indel.scalpel.vcf'
+        copy_TextFile.copy(scalpel, scalpel_out)
+        intermediate_files.append( scalpel_out )
+        
 
 
 
