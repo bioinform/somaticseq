@@ -132,6 +132,7 @@ echo "" >> $out_script
 echo "echo -e '##fileformat=VCFv4.1' > ${outdir}/${outvcf}" >> $out_script
 echo "echo -e '##INFO=<ID=AAAB,Number=1,Type=Float,Description=\"Probability of Joint Genotype AA in Normal and AB in Tumor\">' >> ${outdir}/${outvcf}" >> $out_script
 echo "echo -e '##INFO=<ID=AABB,Number=1,Type=Float,Description=\"Probability of Joint Genotype AA in Normal and BB in Tumor\">' >> ${outdir}/${outvcf}" >> $out_script
+echo "echo -i '##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">' >> ${outdir}/${outvcf}" >> $out_script
 echo "echo -e '##FORMAT=<ID=RD,Number=1,Type=Integer,Description=\"Depth of reference-supporting bases (reads1)\">' >> ${outdir}/${outvcf}" >> $out_script
 echo "echo -e '##FORMAT=<ID=AD,Number=1,Type=Integer,Description=\"Depth of variant-supporting bases (reads2)\">' >> ${outdir}/${outvcf}" >> $out_script
 echo "echo -e '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNORMAL\tTUMOR' >> ${outdir}/${outvcf}" >> $out_script
