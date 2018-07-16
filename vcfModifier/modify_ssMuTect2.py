@@ -21,13 +21,14 @@ def run():
     # Parse the arguments:
     args = parser.parse_args()
 
-    main(args)
-
-
-def main():
     infile = args.input_vcf
-    indel_out = args.indel_out
     snv_out = args.snv_out
+    indel_out = args.indel_out
+
+    return infile, snv_out, indel_out
+
+
+def convert(infile, snv_out, indel_out):
 
     info_to_split = 'NLOD', 'TLOD'
     info_to_keep = 'STR', 'ECNT'
@@ -122,4 +123,5 @@ def main():
 
 
 if __name__ == '__main__':
-    run()
+    infile, snv_out, indel_out = run()
+    convert(infile, snv_out, indel_out)

@@ -23,15 +23,15 @@ def run():
     # Parse the arguments:
     args = parser.parse_args()
 
-    main(args)
-
-
-
-def main(args):
-
     infile = args.input_vcf
-    indel_out = args.indel_out
     snv_out = args.snv_out
+    indel_out = args.indel_out
+    is_tnscope = args.is_tnscope
+
+    return infile, snv_out, indel_out, is_tnscope
+
+
+def convert(infile, snv_out, indel_out, is_tnscope):
 
     info_to_split = 'NLOD', 'TLOD'
     info_to_keep = 'STR', 'ECNT'
@@ -53,6 +53,7 @@ def main(args):
 
             snv_out.write( line_i + '\n' )
             indel_out.write( line_i + '\n' )
+
             line_i = vcf_in.readline().rstrip()
 
         # This line will be #CHROM:
@@ -60,7 +61,7 @@ def main(args):
         indel_out.write( line_i + '\n' )
         header = line_i.split('\t')
 
-        if args.is_tnscope:
+        if is_tnscope:
             # Doesn't matter which one is normal/tumor. These information are not used.
             normal_index, tumor_index = 1,0
 
@@ -131,5 +132,7 @@ def main(args):
 
             line_i = vcf_in.readline().rstrip()
 
+
 if __name__ == '__main__':
-    run()
+    infile, snv_out, indel_out, is_tnscope = run()
+    convert(infile, snv_out, indel_out, is_tnscope)

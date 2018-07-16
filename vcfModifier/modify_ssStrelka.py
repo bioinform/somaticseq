@@ -20,20 +20,21 @@ def run():
     parser.add_argument('-indel',  '--output-indel', type=str, help='Output INDEL VCF file', required=True)
 
     # Parse the arguments:
-    args     = parser.parse_args()
+    args      = parser.parse_args()
 
-    main(args)
+    infile    = args.input_vcf
+    snv_out   = args.output_snv
+    indel_out = args.output_indel
+
+    return infile, snv_out, indel_out
 
 
-def main():
-    infile   = args.input_vcf
-    snvout   = args.output_snv
-    indelout = args.output_indel
+def convert(infile, snv_out, indel_out):
 
     info_to_split = 'REFREP', 'IDREP', 'RU'
     info_to_keep = 'MQ',
 
-    with genome.open_textfile(infile) as vcf_in, open(snvout, 'w') as snv_out, open(indelout, 'w') as indel_out:
+    with genome.open_textfile(infile) as vcf_in, open(snv_out, 'w') as snv_out, open(indel_out, 'w') as indel_out:
 
         line_i = vcf_in.readline().rstrip()
 
@@ -107,4 +108,5 @@ def main():
 
 
 if __name__ == '__main__':
-    run()
+    infile, snv_out, indel_out = run()
+    convert(infile, snv_out, indel_out)
