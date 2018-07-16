@@ -4,11 +4,11 @@ import sys, argparse, gzip, os, re
 
 
 
-def runSingle():
+def runSingle(outdir, ref, bam, truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, vardict=None, scalpel=None):
     pass
 
 
-def runPaired():
+def runPaired(outdir, ref, tbam, nbam, truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, vardict=None, scalpel=None):
     pass
 
 
@@ -42,26 +42,27 @@ sample_parsers = parser.add_subparsers(title="sample_mode")
 
 # Paired Sample mode
 parser_paired = sample_parsers.add_parser('paired')
-parser_paired.add_argument('-tbam',        '--tumor-bam-file',    type=str,   help='Tumor BAM File',  required=True)
-parser_paired.add_argument('-nbam',        '--normal-bam-file',   type=str,   help='Normal BAM File', required=True)
+parser_paired.add_argument('-tbam',          '--tumor-bam-file',    type=str,   help='Tumor BAM File',  required=True)
+parser_paired.add_argument('-nbam',          '--normal-bam-file',   type=str,   help='Normal BAM File', required=True)
 
-parser_paired.add_argument('-tumorSM',     '--tumor-sample',      type=str,   help='Tumor Name',  default='TUMOR')
-parser_paired.add_argument('-normalSM',    '--normal-sample',     type=str,   help='Normal Name', default='NORMAL')
+parser_paired.add_argument('-tumorSM',       '--tumor-sample',      type=str,   help='Tumor Name',  default='TUMOR')
+parser_paired.add_argument('-normalSM',      '--normal-sample',     type=str,   help='Normal Name', default='NORMAL')
 
-parser_paired.add_argument('-mutect',      '--mutect-vcf',        type=str,   help='MuTect VCF',        )
-parser_paired.add_argument('-indelocator', '--indelocator-vcf',   type=str,   help='Indelocator VCF',   )
-parser_paired.add_argument('-mutect2',     '--mutect2-vcf',       type=str,   help='MuTect2 VCF',       )
-parser_paired.add_argument('-varscansnv',  '--varscan-snv',       type=str,   help='VarScan2 VCF',      )
-parser_paired.add_argument('-varscanindel','--varscan-indel',     type=str,   help='VarScan2 VCF',      )
-parser_paired.add_argument('-jsm',         '--jsm-vcf',           type=str,   help='JointSNVMix2 VCF',  )
-parser_paired.add_argument('-sniper',      '--somaticsniper-vcf', type=str,   help='SomaticSniper VCF', )
-parser_paired.add_argument('-vardict',     '--vardict-vcf',       type=str,   help='VarDict VCF',       )
-parser_paired.add_argument('-muse',        '--muse-vcf',          type=str,   help='MuSE VCF',          )
-parser_paired.add_argument('-lofreqsnv',   '--lofreq-snv',        type=str,   help='LoFreq VCF',        )
-parser_paired.add_argument('-lofreqindel', '--lofreq-indel',      type=str,   help='LoFreq VCF',        )
-parser_paired.add_argument('-scalpel',     '--scalpel-vcf',       type=str,   help='Scalpel VCF',       )
-parser_paired.add_argument('-strelka',     '--strelka-vcf',       type=str,   help='Strelka VCF',       )
-parser_paired.add_argument('-tnscope',     '--tnscope-vcf',       type=str,   help='TNscope VCF',       )
+parser_paired.add_argument('-mutect',        '--mutect-vcf',        type=str,   help='MuTect VCF',        )
+parser_paired.add_argument('-indelocator',   '--indelocator-vcf',   type=str,   help='Indelocator VCF',   )
+parser_paired.add_argument('-mutect2',       '--mutect2-vcf',       type=str,   help='MuTect2 VCF',       )
+parser_paired.add_argument('-varscansnv',    '--varscan-snv',       type=str,   help='VarScan2 VCF',      )
+parser_paired.add_argument('-varscanindel',  '--varscan-indel',     type=str,   help='VarScan2 VCF',      )
+parser_paired.add_argument('-jsm',           '--jsm-vcf',           type=str,   help='JointSNVMix2 VCF',  )
+parser_paired.add_argument('-sniper',        '--somaticsniper-vcf', type=str,   help='SomaticSniper VCF', )
+parser_paired.add_argument('-vardict',       '--vardict-vcf',       type=str,   help='VarDict VCF',       )
+parser_paired.add_argument('-muse',          '--muse-vcf',          type=str,   help='MuSE VCF',          )
+parser_paired.add_argument('-lofreqsnv',     '--lofreq-snv',        type=str,   help='LoFreq VCF',        )
+parser_paired.add_argument('-lofreqindel',   '--lofreq-indel',      type=str,   help='LoFreq VCF',        )
+parser_paired.add_argument('-scalpel',       '--scalpel-vcf',       type=str,   help='Scalpel VCF',       )
+parser_paired.add_argument('-strelka-snv',   '--strelka-snv',       type=str,   help='Strelka VCF',       )
+parser_paired.add_argument('-strelka-indel', '--strelka-indel',       type=str,   help='Strelka VCF',     )
+parser_paired.add_argument('-tnscope',       '--tnscope-vcf',       type=str,   help='TNscope VCF',       )
 
 parser_paired.set_defaults(which='paired')
 
@@ -82,6 +83,53 @@ parser_single.set_defaults(which='single')
 args = parser.parse_args()
 
 
+##
+outdir = args.output_directory
+ref    = args.genome_reference
+truth_snv = args.truth_snv
+truth_indel = args.truth_indel
+classifier_snv = args.classifier_snv
+classifier_indel = args.classifier_indel
+pass_threshold = args.pass_threshold
+lowqual_threshold = args.lowqual_threshold
+dbsnp = args.dbsnp_vcf
+cosmic = args.cosmic_vcf
+inclusion = args.inclusion_region
+exclusion = args.exclusion_region
 
+mutect_vcf = args.mutect_vcf
+mutect2_vcf = args.mutect2_vcf
+vardict_vcf = args.vardict
+scalpel_vcf = args.scalpel_vcf
+
+keep_intermediates = args.keep_intermediates
+
+if parser.parse_args().which == 'paired':
+    tbam = args.tumor_bam_file
+    nbam = args.normal_bam_file
+    tumor_name = args.tumor_sample
+    normal_name = args.normal_name
+    indelocator_vcf = args.indelocator_vcf
+    varscan_snv = args.varscan_snv
+    varscan_indel = args.varscan_indel
+    jsm_vcf = args.jsm_vcf
+    sniper_vcf = args.somaticsniper_vcf
+    muse_ vcf = args.muse_vcf
+    lofreq_snv = args.lofreq_snv
+    lofreq_indel = args.lofreq_indel
+    strelka_snv = args.strelka_snv
+    strelka_indel = args.strelka_indel
+    tnscope_vcf = args.tnscope_vcf
+    
+elif parser.parse_args().which == 'single':
+    tbam = args.bam_file
+    tumor_name = args.sample_name
+    varscan_vcf = args.varscan_vcf
+    lofreq_vcf = args.lofreq_vcf
+    strelka_vcf = args.strelka_vcf
+    
+    
 
 print( parser.parse_args().which )
+print()
+print(args.mutect2_vcf)
