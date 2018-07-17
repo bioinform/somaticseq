@@ -47,7 +47,7 @@ def run():
     return inputParameters
 
 
-def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score, lowqual_score, hom_threshold, het_threshold, single_mode, paired_mode, normal_sample_name, tumor_sample_name, print_reject, phred_scaled):
+def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_threshold=0.85, het_threshold=0.01, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True):
 
     try:
         with open(os.path.join(PRE_DIR, "VERSION")) as version_info_file:
@@ -144,22 +144,66 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score, lowqual_score, hom_threshold, het
         tsv_header = tsv_i.split('\t')
         
         # Make the header items into indices
-        for n,item in enumerate(tsv_header):
-            vars()[item] = n
-        
         toolcode2index = {}
-        if 'if_MuTect'        in vars(): toolcode2index['M'] = if_MuTect
-        if 'if_VarScan2'      in vars(): toolcode2index['V'] = if_VarScan2
-        if 'if_JointSNVMix2'  in vars(): toolcode2index['J'] = if_JointSNVMix2
-        if 'if_SomaticSniper' in vars(): toolcode2index['S'] = if_SomaticSniper
-        if 'if_VarDict'       in vars(): toolcode2index['D'] = if_VarDict
-        if 'MuSE_Tier'        in vars(): toolcode2index['U'] = MuSE_Tier
-        if 'if_LoFreq'        in vars(): toolcode2index['L'] = if_LoFreq
-        if 'if_Scalpel'       in vars(): toolcode2index['P'] = if_Scalpel
-        if 'if_Strelka'       in vars(): toolcode2index['K'] = if_Strelka
-        if 'if_TNscope'       in vars(): toolcode2index['T'] = if_TNscope
-                              
+        for n,item in enumerate(tsv_header):
+            if   'if_MuTect'            == item: toolcode2index['M'] = n
+            elif 'if_VarScan2'          == item: toolcode2index['V'] = n
+            elif 'if_JointSNVMix2'      == item: toolcode2index['J'] = n
+            elif 'if_SomaticSniper'     == item: toolcode2index['S'] = n
+            elif 'if_VarDict'           == item: toolcode2index['D'] = n
+            elif 'MuSE_Tier'            == item: toolcode2index['U'] = n
+            elif 'if_LoFreq'            == item: toolcode2index['L'] = n
+            elif 'if_Scalpel'           == item: toolcode2index['P'] = n
+            elif 'if_Strelka'           == item: toolcode2index['K'] = n
+            elif 'if_TNscope'           == item: toolcode2index['T'] = n
+            elif 'ALT'                  == item: ALT = n
+            elif 'CHROM'                == item: CHROM = n
+            elif 'ID'                   == item: ID = n
+            elif 'MuSE_Tier'            == item: MuSE_Tier = n
+            elif 'N_ALT_FOR'            == item: N_ALT_FOR = n
+            elif 'N_ALT_REV'            == item: N_ALT_REV = n
+            elif 'nBAM_ALT_BQ'          == item: nBAM_ALT_BQ = n
+            elif 'nBAM_ALT_Concordant'  == item: nBAM_ALT_Concordant = n
+            elif 'nBAM_ALT_MQ'          == item: nBAM_ALT_MQ = n
+            elif 'nBAM_ALT_NM'          == item: nBAM_ALT_NM = n
+            elif 'nBAM_Concordance_FET' == item: nBAM_Concordance_FET = n
+            elif 'nBAM_MQ0'             == item: nBAM_MQ0 = n
+            elif 'nBAM_REF_BQ'          == item: nBAM_REF_BQ = n
+            elif 'nBAM_REF_Concordant'  == item: nBAM_REF_Concordant = n
+            elif 'nBAM_REF_Discordant'  == item: nBAM_REF_Discordant = n
+            elif 'nBAM_REF_MQ'          == item: nBAM_REF_MQ = n
+            elif 'nBAM_REF_NM'          == item: nBAM_REF_NM = n
+            elif 'nBAM_StrandBias_FET'  == item: nBAM_StrandBias_FET = n
+            elif 'nBAM_Z_Ranksums_BQ'   == item: nBAM_Z_Ranksums_BQ = n
+            elif 'nBAM_Z_Ranksums_MQ'   == item: nBAM_Z_Ranksums_MQ = n
+            elif 'N_REF_FOR'            == item: N_REF_FOR = n
+            elif 'N_REF_REV'            == item: N_REF_REV = n
+            elif 'POS'                  == item: POS = n
+            elif 'REF'                  == item: REF = n
+            elif 'SCORE'                == item: SCORE = n
+            elif 'T_ALT_FOR'            == item: T_ALT_FOR = n
+            elif 'T_ALT_REV'            == item: T_ALT_REV = n
+            elif 'tBAM_ALT_BQ'          == item: tBAM_ALT_BQ = n
+            elif 'tBAM_ALT_Concordant'  == item: tBAM_ALT_Concordant = n
+            elif 'tBAM_ALT_Discordant'  == item: tBAM_ALT_Discordant = n
+            elif 'tBAM_ALT_MQ'          == item: tBAM_ALT_MQ = n
+            elif 'tBAM_ALT_NM'          == item: tBAM_ALT_NM = n
+            elif 'tBAM_Concordance_FET' == item: tBAM_Concordance_FET = n
+            elif 'tBAM_MQ0'             == item: tBAM_MQ0 = n
+            elif 'tBAM_REF_BQ'          == item: tBAM_REF_BQ = n
+            elif 'tBAM_REF_Concordant'  == item: tBAM_REF_Concordant = n
+            elif 'tBAM_REF_Discordant'  == item: tBAM_REF_Discordant = n
+            elif 'tBAM_REF_MQ'          == item: tBAM_REF_MQ = n
+            elif 'tBAM_REF_NM'          == item: tBAM_REF_NM = n
+            elif 'tBAM_StrandBias_FET'  == item: tBAM_StrandBias_FET = n
+            elif 'tBAM_Z_Ranksums_BQ'   == item: tBAM_Z_Ranksums_BQ = n
+            elif 'tBAM_Z_Ranksums_MQ'   == item: tBAM_Z_Ranksums_MQ = n
+            elif 'T_REF_FOR'            == item: T_REF_FOR = n
+            elif 'T_REF_REV'            == item: T_REF_REV = n
         
+
+
+
         # Create vcf headers:
         vcf.write('##fileformat=VCFv4.1\n')
         vcf.write(version_line)

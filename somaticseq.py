@@ -16,8 +16,48 @@ adaPredictor = MY_DIR +  os.sep + 'r_scripts' + os.sep + 'ada_model_predictor.R'
 def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, keep_intermediates=False):
     
     import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
+    import somaticseq.SSeq_tsv2vcf as tsv2vcf
     
     files_to_delete = set()
+    
+    snvCallers = []
+    if mutect or mutect2:
+        snvCallers.append('MuTect')
+    if varscan_snv:
+        snvCallers.append('VarScan2')
+    if jsm:
+        snvCallers.append('JointSNVMix2')
+    if sniper:
+        snvCallers.append('SomaticSniper')
+    if vardict:
+        snvCallers.append('VarDict')
+    if muse:
+        snvCallers.append('MuSE')
+    if lofreq_snv:
+        snvCallers.append('LoFreq')
+    if strelka_snv:
+        snvCallers.append('Strelka')
+    if tnscope:
+        snvCallers.append('TNscope')
+    
+    
+    indelCallers = []
+    if indelocator or mutect2:
+        indelCallers.append('MuTect')
+    if varscan_indel:
+        indelCallers.append('VarScan2')
+    if vardict:
+        indelCallers.append('VarDict')
+    if lofreq_indel:
+        indelCallers.append('LoFreq')
+    if scalpel:
+        indelCallers.append('Scalpel')
+    if strelka_indel:
+        indelCallers.append('Strelka')
+    if tnscope:
+        indelCallers.append('TNscope')
+    
+    
     
     # Function to combine individual VCFs into a simple VCF list of variants:
     outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combinePaired(outdir, ref, tbam, nbam, inclusion, exclusion, mutect, indelocator, mutect2, varscan_snv, varscan_indel, jsm, sniper, vardict, muse, lofreq_snv, lofreq_indel, scalpel, strelka_snv, strelka_indel, tnscope, keep_intermediates=True)
@@ -36,7 +76,11 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     # Classify SNV calls
     if classifier_snv:
         classifiedSnvTsv = outdir + os.sep + 'SSeq.Classified.sSNV.tsv'
+        classifiedSnvVcf = outdir + os.sep + 'SSeq.Classified.sSNV.vcf'
+        
         subprocess.call( (adaPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
+        
+        tsv2vcf.tsv2vcf(tsv_fn, classifiedSnvVcf, snvCallers, pass_score=0.5, lowqual_score=0.1, hom_threshold=0.85, het_threshold=0.01, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True)
     
     # Train SNV classifier:
     elif somaticseq_train and truth_snv:

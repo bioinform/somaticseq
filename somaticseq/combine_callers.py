@@ -23,7 +23,12 @@ def vcfsorter(hg_dict, vcfin, vcfout):
 
 # Combine individual VCF output into a simple combined VCF file, for single-sample callers
 def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, keep_intermediates=False):
-    pass
+    
+    hg_dict = re.sub(r'\.fa(sta)?$', '.dict', ref)
+    
+    intermediate_files  = []
+    snv_intermediates   = []
+    indel_intermediates = []
 
 
 
