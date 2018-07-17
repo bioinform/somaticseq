@@ -1,97 +1,66 @@
 #!/usr/bin/env python3
 
-import sys, argparse, gzip, os, re
+import sys, argparse, gzip, os, re, subprocess
 import genomicFileHandler.genomic_file_handlers as genome
 import vcfModifier.copy_TextFile as copy_TextFile
+import somaticseq.combine_callers as combineCallers
+
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 
+adaTrainer   = MY_DIR +  os.sep + 'r_scripts' + os.sep + 'ada_model_builder_ntChange.R'
+adaPredictor = MY_DIR +  os.sep + 'r_scripts' + os.sep + 'ada_model_predictor.R'
 
-def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, keep_intermediates=False):
-    pass
 
 
-def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, keep_intermediates=False):
+def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, keep_intermediates=False):
     
-    intermediate_files  = []
-    snv_intermediates   = []
-    indel_intermediates = []
+    import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
     
-    hg_dict = re.sub(r'\.fa(sta)?$', '.dict', ref)
+    files_to_delete = set()
     
-    # Modify direct VCF outputs for merging:
-    if mutect2:
-        import vcfModifier.modify_MuTect2 as mod_mutect2
-        
-        snv_mutect_out = outdir + os.sep + 'snv.mutect.vcf'
-        indel_mutect_out = outdir + os.sep + 'indel.mutect.vcf'
-        mod_mutect2.convert(mutect2, snv_mutect_out, indel_mutect_out, False)
-        
-        intermediate_files.extend( [snv_mutect_out, indel_mutect_out] )
+    # Function to combine individual VCFs into a simple VCF list of variants:
+    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combinePaired(outdir, ref, tbam, nbam, inclusion, exclusion, mutect, indelocator, mutect2, varscan_snv, varscan_indel, jsm, sniper, vardict, muse, lofreq_snv, lofreq_indel, scalpel, strelka_snv, strelka_indel, tnscope, keep_intermediates=True)
     
-    if varscan_snv or varscan_indel:
-        import vcfModifier.modify_VarScan2 as mod_varscan2
-        
-        if varscan_snv:
-            snv_varscan_out = outdir + os.sep + 'snv.varscan.vcf'
-            mod_varscan2.convert(varscan_snv, snv_varscan_out)
-            
-        if varscan_indel:
-            indel_varscan_out = outdir + os.sep + 'indel.varscan.vcf'
-            mod_varscan2.convert(varscan_indel, indel_varscan_out)
-            
-        intermediate_files.extend( [snv_varscan_out, indel_varscan_out] )
+    files_to_delete.add(outSnv)
+    files_to_delete.add(outIndel)
+    [ files_to_delete.add(i) for i in tempFiles ]
     
-    if jsm:
-        import vcfModifier.modify_JointSNVMix2 as mod_jsm
+    ensembleSnv   = outdir + os.sep + 'Ensemble.sSNV.tsv'
+    ensembleIndel = outdir + os.sep + 'Ensemble.sINDEL.tsv'
+    
+    ######################  SNV  ######################
+    somatic_vcf2tsv.vcf2tsv(is_vcf=outSnv, nbam_fn=nbam, tbam_fn=tbam, truth=truth_snv, cosmic=cosmic, dbsnp=dbsnp, mutect=intermediateVcfs['MuTect2']['snv'], varscan=varscan_snv, jsm=jsm, sniper=sniper, vardict=intermediateVcfs['VarDict']['snv'], muse=muse, lofreq=lofreq_snv, scalpel=None, strelka=strelka_snv, tnscope=intermediateVcfs['TNscope']['snv'], ref=ref, dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleSnv)
+    
         
-        jsm_out = outdir + os.sep + 'snv.jsm.vcf'
-        mod_jsm.convert(jsm, jsm_out)
-        
-        intermediate_files.append(jsm_out)
-        
-    if sniper:
-        import vcfModifier.modify_SomaticSniper as mod_sniper
-        
-        sniper_out = outdir + os.sep + 'snv.somaticsniper.vcf'
-        mod_sniper.convert(sniper, sniper_out)
-        
-        intermediate_files.append(sniper_out)
+    # Classify SNV calls
+    if classifier_snv:
+        classifiedSnvTsv = outdir + os.sep + 'SSeq.Classified.sSNV.tsv'
+        subprocess.call( (adaPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
+    
+    # Train SNV classifier:
+    elif somaticseq_train and truth_snv:
+        subprocess.call( (adaTrainer, ensembleSnv, 'Consistent_Mates' 'Inconsistent_Mates') )
+    
+    
+    
+    ###################### INDEL ######################
+    somatic_vcf2tsv.vcf2tsv(is_vcf=outIndel, nbam_fn=nbam, tbam_fn=tbam, truth=truth_indel, cosmic=cosmic, dbsnp=dbsnp, mutect=intermediateVcfs['MuTect2']['indel'], varscan=varscan_indel, vardict=intermediateVcfs['VarDict']['indel'], lofreq=lofreq_indel, scalpel=scalpel, strelka=strelka_indel, tnscope=intermediateVcfs['TNscope']['indel'], ref=ref, dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleIndel)
 
-    if vardict:
-        import vcfModifier.modify_VarDict as mod_vardict
-        
-        snv_vardict_out = outdir + os.sep + 'snv.vardict.vcf'
-        indel_vardict_out = outdir + os.sep + 'indel.vardict.vcf'
-        mod_vardict.convert(vardict, snv_vardict_out, indel_vardict_out)
-        
-        sorted_snv_vardict_out = outdir + os.sep + 'snv.sort.vardict.vcf'
-        sorted_indel_vardict_out = outdir + os.sep + 'indel.sort.vardict.vcf'
-        os.system('{}/utilities/vcfsorter.pl {} {} > {}'.format(MY_DIR, hg_dict, snv_vardict_out,   sorted_snv_vardict_out) )
-        os.system('{}/utilities/vcfsorter.pl {} {} > {}'.format(MY_DIR, hg_dict, indel_vardict_out, sorted_indel_vardict_out) )
-        
-        intermediate_files.extend([snv_vardict_out, indel_vardict_out, sorted_snv_vardict_out, indel_vardict_out])
+    # Classify INDEL calls
+    if classifier_indel:
+        classifiedIndelTsv = outdir + os.sep + 'SSeq.Classified.sINDEL.tsv'
+        subprocess.call( (adaPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
 
-    if muse:
-        muse_out = outdir + os.sep + 'snv.muse.vcf'
-        copy_TextFile.copy(muse, muse_out)
-        intermediate_files.append( muse_out )
-        
-    if lofreq_snv:
-        snv_lofreq_out = outdir + os.sep + 'snv.lofreq.vcf'
-        copy_TextFile.copy(lofreq_snv, snv_lofreq_out)
-        intermediate_files.append( snv_lofreq_out )
+    # Train INDEL classifier:
+    elif somaticseq_train and truth_indel:
+        subprocess.call( (adaTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
 
-    if lofreq_indel:
-        indel_lofreq_out = outdir + os.sep + 'indel.lofreq.vcf'
-        copy_TextFile.copy(lofreq_indel, indel_lofreq_out)
-        intermediate_files.append( indel_lofreq_out )
-        
-    if scalpel:
-        scalpel_out = outdir + os.sep + 'indel.scalpel.vcf'
-        copy_TextFile.copy(scalpel, scalpel_out)
-        intermediate_files.append( scalpel_out )
-        
+
+    ## Clean up after yourself ##
+    if not keep_intermediates:
+        for file_i in files_to_delete:
+            subprocess.call( ('rm', '-v', file_i ) )
 
 
 
@@ -112,6 +81,10 @@ def run():
     parser.add_argument('--classifier-indel',  type=str, help='RData for INDEL')
     parser.add_argument('--pass-threshold',    type=float, help='SCORE for PASS', default=0.5)
     parser.add_argument('--lowqual-threshold', type=float, help='SCORE for LowQual', default=0.1)
+
+    parser.add_argument('-minMQ',     '--minimum-mapping-quality',type=float, help='Minimum mapping quality below which is considered poor', default=1)
+    parser.add_argument('-minBQ',     '--minimum-base-quality',   type=float, help='Minimum base quality below which is considered poor', default=5)
+    parser.add_argument('-mincaller', '--minimum-num-callers',    type=float, help='Minimum number of tools to be considered', default=0.5)
     
     parser.add_argument('-dbsnp',  '--dbsnp-vcf',          type=str,   help='dbSNP VCF',)
     parser.add_argument('-cosmic', '--cosmic-vcf',         type=str,   help='COSMIC VCF')
@@ -120,7 +93,7 @@ def run():
     parser.add_argument('-exclude',  '--exclusion-region', type=str,   help='exclusion bed')
     
     parser.add_argument('--keep-intermediates', action='store_true', help='Keep intermediate files', default=False)
-    
+    parser.add_argument('-train', '--somaticseq-train', action='store_true', help='Invoke training mode with ground truths', default=False)
     
     # Modes:
     sample_parsers = parser.add_subparsers(title="sample_mode")
@@ -176,13 +149,18 @@ def run():
     inputParameters['classifier_indel']  = args.classifier_indel
     inputParameters['pass_threshold']    = args.pass_threshold
     inputParameters['lowqual_threshold'] = args.lowqual_threshold
+    inputParameters['minMQ']             = args.minimum_mapping_quality
+    inputParameters['minBQ']             = args.minimum_base_quality
+    inputParameters['mincaller']         = args.minimum_num_callers
     inputParameters['dbsnp']             = args.dbsnp_vcf
     inputParameters['cosmic']            = args.cosmic_vcf
     inputParameters['inclusion']         = args.inclusion_region
     inputParameters['exclusion']         = args.exclusion_region
     
+    inputParameters['somaticseq_train']   = args.somaticseq_train
     inputParameters['keep_intermediates'] = args.keep_intermediates
     
+    ################## paired sample ################## 
     if parser.parse_args().which == 'paired':
         inputParameters['tbam']          = args.tumor_bam_file
         inputParameters['nbam']          = args.normal_bam_file
@@ -205,7 +183,7 @@ def run():
         inputParameters['tnscope']       = args.tnscope_vcf
         inputParameters['mode']          = 'paired'
         
-        
+    ################## single sample ##################
     elif parser.parse_args().which == 'single':
         inputParameters['tbam']        = args.bam_file
         inputParameters['sample_name'] = args.sample_name
@@ -220,6 +198,10 @@ def run():
     return inputParameters
 
 
+
+
+################################################################################################
+# Execute:
 if __name__ == '__main__':
     runParameters = run()
     if runParameters['mode'] == 'paired':
@@ -236,6 +218,9 @@ if __name__ == '__main__':
                    classifier_indel   = runParameters['classifier_indel'], \
                    pass_threshold     = runParameters['pass_threshold'], \
                    lowqual_threshold  = runParameters['lowqual_threshold'], \
+                   min_mq             = runParameters['minMQ'], \
+                   min_bq             = runParameters['minBQ'], \
+                   min_caller         = runParameters['mincaller'], \
                    dbsnp              = runParameters['dbsnp'], \
                    cosmic             = runParameters['cosmic'], \
                    inclusion          = runParameters['inclusion'], \
@@ -255,6 +240,7 @@ if __name__ == '__main__':
                    strelka_snv        = runParameters['strelka_snv'], \
                    strelka_indel      = runParameters['strelka_indel'], \
                    tnscope            = runParameters['tnscope'], \
+                   somaticseq_train   = runParameters['somaticseq_train'], \
                    keep_intermediates = runParameters['keep_intermediates'] )
     
     elif runParameters['mode'] == 'single':
@@ -269,6 +255,9 @@ if __name__ == '__main__':
                    classifier_indel   = runParameters['classifier_indel'], \
                    pass_threshold     = runParameters['pass_threshold'], \
                    lowqual_threshold  = runParameters['lowqual_threshold'], \
+                   min_mq             = runParameters['minMQ'], \
+                   min_bq             = runParameters['minBQ'], \
+                   min_caller         = runParameters['mincaller'], \
                    dbsnp              = runParameters['dbsnp'], \
                    cosmic             = runParameters['cosmic'], \
                    inclusion          = runParameters['inclusion'], \
@@ -280,4 +269,5 @@ if __name__ == '__main__':
                    lofreq             = runParameters['lofreq'], \
                    scalpel            = runParameters['scalpel'], \
                    strelka            = runParameters['strelka'], \
+                   somaticseq_train   = runParameters['somaticseq_train'], \
                    keep_intermediates = runParameters['keep_intermediates'] )
