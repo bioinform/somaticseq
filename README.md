@@ -40,33 +40,38 @@ $somaticseq/SomaticSeq.Wrapper.sh \
 
 * For all those input VCF files, either .vcf or .vcf.gz are acceptable. 
 
-### Additional parameters for training/prediction:
+### Additional parameters to invoke training mode (to create classifiers)
 
-    --truth-snv:        if you have ground truth VCF file for SNV
-    --truth-indel:      if you have a ground truth VCF file for INDEL
-    --ada-r-script:     $somaticseq/r_scripts/ada_model_builder_ntChange.R to build classifiers (.RData files), if you have ground truths supplied.
-    --classifier-snv:   classifier (.RData file) previously built for SNV
-    --classifier-indel: classifier (.RData file) previously built for INDEL
-    --ada-r-script:     $somaticseq/r_scripts/ada_model_predictor.R to use the classifiers specified above to make predictions
+* `--ada-r-script`:     /PATH/TO/somaticseq/r_scripts/ada_model_builder_ntChange.R
+* `--truth-snv`:        if you have ground truth VCF file for SNV
+* `--truth-indel`:      if you have a ground truth VCF file for INDEL
+
+### Additional parameters to invoke prediction mode (to use classifiers to score variants)
+* `--ada-r-script`:     /PATH/TO/somaticseq/r_scripts/ada_model_predictor.R
+* `--classifier-snv`:   classifier (.RData file) previously built for SNV
+* `--classifier-indel`: classifier (.RData file) previously built for INDEL
+
+Without those paramters above to invoking training or prediction mode, SomaticSeq will default to majority-vote consensus mode. 
 
 
-* Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data, e.g., z-scores between reference- and variant-supporting reads will be NaN if there is no reference read at a position.
+Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data, e.g., z-scores between reference- and variant-supporting reads will be NaN if there is no reference read at a position.
 
-   ```
-     RuntimeWarning: invalid value encountered in double_scalars
-     z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
-   ```
+```
+  RuntimeWarning: invalid value encountered in double_scalars
+  z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
+```
 
-## Dockerized applications and pipelines
+## Dockerized workflows and pipelines
 
-### To run somatic mutation callers
-We have created scripts that run all the dockerized somatic mutation callers and SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines). All you need is [docker](https://www.docker.com/). 
+### To run somatic mutation callers and then SomaticSeq
+We have created scripts that run all the dockerized somatic mutation callers and then SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines). 
+All you need is [docker](https://www.docker.com/). 
 
-### To create training data set
+### To create training data to create SomaticSeq classifiers
 We have also dockerized pipelines for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator). 
 These pipelines are based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). We use it to create training set to build SomaticSeq classifiers.
 
-### GATK's best practices
+### GATK's best practices for alignment
 The limited pipeline to generate BAM files based on GATK's best practices is at [utilities/dockered_pipelines/alignments](utilities/dockered_pipelines/alignments).
 
 ### Additional workflows
@@ -76,6 +81,6 @@ The limited pipeline to generate BAM files based on GATK's best practices is at 
 
 ## Video tutorial
 
-This 8-minute video was created for SomaticSeq v1. The details are slightly outdated, but the main points remain the same. 
+This 8-minute video was created for SomaticSeq v1.0. The details are slightly outdated, but the main points remain the same. 
 
   [![SomaticSeq Video](docs/SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")
