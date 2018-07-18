@@ -328,7 +328,7 @@ if __name__ == '__main__':
                    pass_threshold     = runParameters['pass_threshold'], \
                    lowqual_threshold  = runParameters['lowqual_threshold'], \
                    hom_threshold      = runParameters['hom_threshold'], \
-                   het_threshold      = runParameters['het_threshold'], \                   
+                   het_threshold      = runParameters['het_threshold'], \
                    min_mq             = runParameters['minMQ'], \
                    min_bq             = runParameters['minBQ'], \
                    min_caller         = runParameters['mincaller'], \
