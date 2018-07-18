@@ -13,7 +13,7 @@ adaPredictor = MY_DIR +  os.sep + 'r_scripts' + os.sep + 'ada_model_predictor.R'
 
 
 
-def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, keep_intermediates=False):
+def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, keep_intermediates=False):
     
     import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
@@ -69,6 +69,8 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     ensembleSnv   = outdir + os.sep + 'Ensemble.sSNV.tsv'
     ensembleIndel = outdir + os.sep + 'Ensemble.sINDEL.tsv'
     
+    
+    
     ######################  SNV  ######################
     somatic_vcf2tsv.vcf2tsv(is_vcf=outSnv, nbam_fn=nbam, tbam_fn=tbam, truth=truth_snv, cosmic=cosmic, dbsnp=dbsnp, mutect=intermediateVcfs['MuTect2']['snv'], varscan=varscan_snv, jsm=jsm, sniper=sniper, vardict=intermediateVcfs['VarDict']['snv'], muse=muse, lofreq=lofreq_snv, scalpel=None, strelka=strelka_snv, tnscope=intermediateVcfs['TNscope']['snv'], ref=ref, dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleSnv)
     
@@ -80,25 +82,42 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         
         subprocess.call( (adaPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
         
-        tsv2vcf.tsv2vcf(tsv_fn, classifiedSnvVcf, snvCallers, pass_score=0.5, lowqual_score=0.1, hom_threshold=0.85, het_threshold=0.01, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True)
+        tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True)
     
-    # Train SNV classifier:
-    elif somaticseq_train and truth_snv:
-        subprocess.call( (adaTrainer, ensembleSnv, 'Consistent_Mates' 'Inconsistent_Mates') )
+    
+    else:
+        # Train SNV classifier:
+        if somaticseq_train and truth_snv:
+            subprocess.call( (adaTrainer, ensembleSnv, 'Consistent_Mates' 'Inconsistent_Mates') )
+        
+        
+        consensusSnvVcf = outdir + os.sep + 'Consensus.sSNV.vcf'
+        tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True)
     
     
     
     ###################### INDEL ######################
     somatic_vcf2tsv.vcf2tsv(is_vcf=outIndel, nbam_fn=nbam, tbam_fn=tbam, truth=truth_indel, cosmic=cosmic, dbsnp=dbsnp, mutect=intermediateVcfs['MuTect2']['indel'], varscan=varscan_indel, vardict=intermediateVcfs['VarDict']['indel'], lofreq=lofreq_indel, scalpel=scalpel, strelka=strelka_indel, tnscope=intermediateVcfs['TNscope']['indel'], ref=ref, dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleIndel)
 
+
     # Classify INDEL calls
     if classifier_indel:
         classifiedIndelTsv = outdir + os.sep + 'SSeq.Classified.sINDEL.tsv'
+        classifiedIndelVcf = outdir + os.sep + 'SSeq.Classified.sINDEL.vcf'
+        
         subprocess.call( (adaPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
+        
+        tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True)
 
-    # Train INDEL classifier:
-    elif somaticseq_train and truth_indel:
-        subprocess.call( (adaTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
+    else:
+        # Train INDEL classifier:
+        if somaticseq_train and truth_indel:
+            subprocess.call( (adaTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
+        
+        
+        consensusIndelVcf = outdir + os.sep + 'Consensus.sINDEL.vcf'
+        tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True)
+
 
 
     ## Clean up after yourself ##
@@ -109,7 +128,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
 
 
-
+################################################
 def run():
 
     inputParameters = {}
@@ -125,6 +144,10 @@ def run():
     parser.add_argument('--classifier-indel',  type=str, help='RData for INDEL')
     parser.add_argument('--pass-threshold',    type=float, help='SCORE for PASS', default=0.5)
     parser.add_argument('--lowqual-threshold', type=float, help='SCORE for LowQual', default=0.1)
+    parser.add_argument('-hom', '--homozygous-threshold', type=float, help='VAF for homozygous', default=0.85)
+    parser.add_argument('-het', '--heterozygous-threshold', type=float, help='VAF for heterozygous', default=0.01)
+
+
 
     parser.add_argument('-minMQ',     '--minimum-mapping-quality',type=float, help='Minimum mapping quality below which is considered poor', default=1)
     parser.add_argument('-minBQ',     '--minimum-base-quality',   type=float, help='Minimum base quality below which is considered poor', default=5)
@@ -138,6 +161,7 @@ def run():
     
     parser.add_argument('--keep-intermediates', action='store_true', help='Keep intermediate files', default=False)
     parser.add_argument('-train', '--somaticseq-train', action='store_true', help='Invoke training mode with ground truths', default=False)
+    
     
     # Modes:
     sample_parsers = parser.add_subparsers(title="sample_mode")
@@ -193,6 +217,8 @@ def run():
     inputParameters['classifier_indel']  = args.classifier_indel
     inputParameters['pass_threshold']    = args.pass_threshold
     inputParameters['lowqual_threshold'] = args.lowqual_threshold
+    inputParameters['hom_threshold']     = args.homozygous_threshold
+    inputParameters['het_threshold']     = args.heterozygous_threshold
     inputParameters['minMQ']             = args.minimum_mapping_quality
     inputParameters['minBQ']             = args.minimum_base_quality
     inputParameters['mincaller']         = args.minimum_num_callers
@@ -262,6 +288,8 @@ if __name__ == '__main__':
                    classifier_indel   = runParameters['classifier_indel'], \
                    pass_threshold     = runParameters['pass_threshold'], \
                    lowqual_threshold  = runParameters['lowqual_threshold'], \
+                   hom_threshold      = runParameters['hom_threshold'], \
+                   het_threshold      = runParameters['het_threshold'], \
                    min_mq             = runParameters['minMQ'], \
                    min_bq             = runParameters['minBQ'], \
                    min_caller         = runParameters['mincaller'], \
@@ -299,6 +327,8 @@ if __name__ == '__main__':
                    classifier_indel   = runParameters['classifier_indel'], \
                    pass_threshold     = runParameters['pass_threshold'], \
                    lowqual_threshold  = runParameters['lowqual_threshold'], \
+                   hom_threshold      = runParameters['hom_threshold'], \
+                   het_threshold      = runParameters['het_threshold'], \                   
                    min_mq             = runParameters['minMQ'], \
                    min_bq             = runParameters['minBQ'], \
                    min_caller         = runParameters['mincaller'], \
