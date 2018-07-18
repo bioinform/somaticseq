@@ -128,6 +128,51 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
 
 
+
+
+def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, keep_intermediates=False):
+    
+    import somaticseq.somatic_vcf2tsv as single_sample_vcf2tsv
+    import somaticseq.SSeq_tsv2vcf as tsv2vcf
+    
+    files_to_delete = set()
+    
+    snvCallers = []
+    if mutect or mutect2:
+        snvCallers.append('MuTect')
+    if varscan:
+        snvCallers.append('VarScan2')
+    if vardict:
+        snvCallers.append('VarDict')
+    if lofreq:
+        snvCallers.append('LoFreq')
+    if strelka:
+        snvCallers.append('Strelka')
+    
+    
+    indelCallers = []
+    if mutect2:
+        indelCallers.append('MuTect2')
+    if varscan:
+        indelCallers.append('VarScan2')
+    if vardict:
+        indelCallers.append('VarDict')
+    if lofreq:
+        indelCallers.append('LoFreq')
+    if scalpel:
+        indelCallers.append('Scalpel')
+    if strelka:
+        indelCallers.append('Strelka')
+    
+    
+    # Function to combine individual VCFs into a simple VCF list of variants:
+    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combineSingle(outdir, ref, bam, inclusion, exclusion, mutect, mutect2, varscan, vardict, lofreq, scalpel, strelka, keep_intermediates=False)
+
+
+
+
+
+
 ################################################
 def run():
 
@@ -255,7 +300,7 @@ def run():
         
     ################## single sample ##################
     elif parser.parse_args().which == 'single':
-        inputParameters['tbam']        = args.bam_file
+        inputParameters['bam']         = args.bam_file
         inputParameters['sample_name'] = args.sample_name
         inputParameters['mutect']      = args.mutect_vcf
         inputParameters['mutect2']     = args.mutect2_vcf
@@ -264,7 +309,8 @@ def run():
         inputParameters['lofreq']      = args.lofreq_vcf
         inputParameters['scalpel']     = args.scalpel_vcf
         inputParameters['strelka']     = args.strelka_vcf
-
+        inputParameters['mode']        = 'single'
+        
     return inputParameters
 
 
@@ -319,7 +365,7 @@ if __name__ == '__main__':
         
         runSingle( outdir             = runParameters['outdir'], \
                    ref                = runParameters['ref'], \
-                   bam                = runParameters['tbam'], \
+                   bam                = runParameters['bam'], \
                    sample_name        = runParameters['sample_name'], \
                    truth_snv          = runParameters['truth_snv'], \
                    truth_indel        = runParameters['truth_indel'], \

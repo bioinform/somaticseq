@@ -145,63 +145,61 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
         
         # Make the header items into indices
         toolcode2index = {}
-        for n,item in enumerate(tsv_header):
-            if   'if_MuTect'            == item: toolcode2index['M'] = n
-            elif 'if_VarScan2'          == item: toolcode2index['V'] = n
-            elif 'if_JointSNVMix2'      == item: toolcode2index['J'] = n
-            elif 'if_SomaticSniper'     == item: toolcode2index['S'] = n
-            elif 'if_VarDict'           == item: toolcode2index['D'] = n
-            elif 'MuSE_Tier'            == item: toolcode2index['U'] = n
-            elif 'if_LoFreq'            == item: toolcode2index['L'] = n
-            elif 'if_Scalpel'           == item: toolcode2index['P'] = n
-            elif 'if_Strelka'           == item: toolcode2index['K'] = n
-            elif 'if_TNscope'           == item: toolcode2index['T'] = n
-            elif 'ALT'                  == item: ALT = n
-            elif 'CHROM'                == item: CHROM = n
-            elif 'ID'                   == item: ID = n
-            elif 'MuSE_Tier'            == item: MuSE_Tier = n
-            elif 'N_ALT_FOR'            == item: N_ALT_FOR = n
-            elif 'N_ALT_REV'            == item: N_ALT_REV = n
-            elif 'nBAM_ALT_BQ'          == item: nBAM_ALT_BQ = n
-            elif 'nBAM_ALT_Concordant'  == item: nBAM_ALT_Concordant = n
-            elif 'nBAM_ALT_MQ'          == item: nBAM_ALT_MQ = n
-            elif 'nBAM_ALT_NM'          == item: nBAM_ALT_NM = n
-            elif 'nBAM_Concordance_FET' == item: nBAM_Concordance_FET = n
-            elif 'nBAM_MQ0'             == item: nBAM_MQ0 = n
-            elif 'nBAM_REF_BQ'          == item: nBAM_REF_BQ = n
-            elif 'nBAM_REF_Concordant'  == item: nBAM_REF_Concordant = n
-            elif 'nBAM_REF_Discordant'  == item: nBAM_REF_Discordant = n
-            elif 'nBAM_REF_MQ'          == item: nBAM_REF_MQ = n
-            elif 'nBAM_REF_NM'          == item: nBAM_REF_NM = n
-            elif 'nBAM_StrandBias_FET'  == item: nBAM_StrandBias_FET = n
-            elif 'nBAM_Z_Ranksums_BQ'   == item: nBAM_Z_Ranksums_BQ = n
-            elif 'nBAM_Z_Ranksums_MQ'   == item: nBAM_Z_Ranksums_MQ = n
-            elif 'N_REF_FOR'            == item: N_REF_FOR = n
-            elif 'N_REF_REV'            == item: N_REF_REV = n
-            elif 'POS'                  == item: POS = n
-            elif 'REF'                  == item: REF = n
-            elif 'SCORE'                == item: SCORE = n
-            elif 'T_ALT_FOR'            == item: T_ALT_FOR = n
-            elif 'T_ALT_REV'            == item: T_ALT_REV = n
-            elif 'tBAM_ALT_BQ'          == item: tBAM_ALT_BQ = n
-            elif 'tBAM_ALT_Concordant'  == item: tBAM_ALT_Concordant = n
-            elif 'tBAM_ALT_Discordant'  == item: tBAM_ALT_Discordant = n
-            elif 'tBAM_ALT_MQ'          == item: tBAM_ALT_MQ = n
-            elif 'tBAM_ALT_NM'          == item: tBAM_ALT_NM = n
-            elif 'tBAM_Concordance_FET' == item: tBAM_Concordance_FET = n
-            elif 'tBAM_MQ0'             == item: tBAM_MQ0 = n
-            elif 'tBAM_REF_BQ'          == item: tBAM_REF_BQ = n
-            elif 'tBAM_REF_Concordant'  == item: tBAM_REF_Concordant = n
-            elif 'tBAM_REF_Discordant'  == item: tBAM_REF_Discordant = n
-            elif 'tBAM_REF_MQ'          == item: tBAM_REF_MQ = n
-            elif 'tBAM_REF_NM'          == item: tBAM_REF_NM = n
-            elif 'tBAM_StrandBias_FET'  == item: tBAM_StrandBias_FET = n
-            elif 'tBAM_Z_Ranksums_BQ'   == item: tBAM_Z_Ranksums_BQ = n
-            elif 'tBAM_Z_Ranksums_MQ'   == item: tBAM_Z_Ranksums_MQ = n
-            elif 'T_REF_FOR'            == item: T_REF_FOR = n
-            elif 'T_REF_REV'            == item: T_REF_REV = n
+        toolcode2index['M']  = tsv_header.index('if_MuTect')
+        toolcode2index['V']  = tsv_header.index('if_VarScan2')
+        toolcode2index['J']  = tsv_header.index('if_JointSNVMix2')
+        toolcode2index['S']  = tsv_header.index('if_SomaticSniper')
+        toolcode2index['D']  = tsv_header.index('if_VarDict')
+        toolcode2index['U']  = tsv_header.index('MuSE_Tier')
+        toolcode2index['L']  = tsv_header.index('if_LoFreq')
+        toolcode2index['P']  = tsv_header.index('if_Scalpel')
+        toolcode2index['K']  = tsv_header.index('if_Strelka')
+        toolcode2index['T']  = tsv_header.index('if_TNscope')
+        ALT                  = tsv_header.index('ALT')
+        CHROM                = tsv_header.index('CHROM')
+        ID                   = tsv_header.index('ID')
+        MuSE_Tier            = tsv_header.index('MuSE_Tier')
+        N_ALT_FOR            = tsv_header.index('N_ALT_FOR')
+        N_ALT_REV            = tsv_header.index('N_ALT_REV')
+        nBAM_ALT_BQ          = tsv_header.index('nBAM_ALT_BQ')
+        nBAM_ALT_Concordant  = tsv_header.index('nBAM_ALT_Concordant')
+        nBAM_ALT_MQ          = tsv_header.index('nBAM_ALT_MQ')
+        nBAM_ALT_NM          = tsv_header.index('nBAM_ALT_NM')
+        nBAM_Concordance_FET = tsv_header.index('nBAM_Concordance_FET')
+        nBAM_MQ0             = tsv_header.index('nBAM_MQ0')
+        nBAM_REF_BQ          = tsv_header.index('nBAM_REF_BQ')
+        nBAM_REF_Concordant  = tsv_header.index('nBAM_REF_Concordant')
+        nBAM_REF_Discordant  = tsv_header.index('nBAM_REF_Discordant')
+        nBAM_REF_MQ          = tsv_header.index('nBAM_REF_MQ')
+        nBAM_REF_NM          = tsv_header.index('nBAM_REF_NM')
+        nBAM_StrandBias_FET  = tsv_header.index('nBAM_StrandBias_FET')
+        nBAM_Z_Ranksums_BQ   = tsv_header.index('nBAM_Z_Ranksums_BQ')
+        nBAM_Z_Ranksums_MQ   = tsv_header.index('nBAM_Z_Ranksums_MQ')
+        N_REF_FOR            = tsv_header.index('N_REF_FOR')
+        N_REF_REV            = tsv_header.index('N_REF_REV')
+        POS                  = tsv_header.index('POS')
+        REF                  = tsv_header.index('REF')
+        SCORE                = tsv_header.index('SCORE')
+        T_ALT_FOR            = tsv_header.index('T_ALT_FOR')
+        T_ALT_REV            = tsv_header.index('T_ALT_REV')
+        tBAM_ALT_BQ          = tsv_header.index('tBAM_ALT_BQ')
+        tBAM_ALT_Concordant  = tsv_header.index('tBAM_ALT_Concordant')
+        tBAM_ALT_Discordant  = tsv_header.index('tBAM_ALT_Discordant')
+        tBAM_ALT_MQ          = tsv_header.index('tBAM_ALT_MQ')
+        tBAM_ALT_NM          = tsv_header.index('tBAM_ALT_NM')
+        tBAM_Concordance_FET = tsv_header.index('tBAM_Concordance_FET')
+        tBAM_MQ0             = tsv_header.index('tBAM_MQ0')
+        tBAM_REF_BQ          = tsv_header.index('tBAM_REF_BQ')
+        tBAM_REF_Concordant  = tsv_header.index('tBAM_REF_Concordant')
+        tBAM_REF_Discordant  = tsv_header.index('tBAM_REF_Discordant')
+        tBAM_REF_MQ          = tsv_header.index('tBAM_REF_MQ')
+        tBAM_REF_NM          = tsv_header.index('tBAM_REF_NM')
+        tBAM_StrandBias_FET  = tsv_header.index('tBAM_StrandBias_FET')
+        tBAM_Z_Ranksums_BQ   = tsv_header.index('tBAM_Z_Ranksums_BQ')
+        tBAM_Z_Ranksums_MQ   = tsv_header.index('tBAM_Z_Ranksums_MQ')
+        T_REF_FOR            = tsv_header.index('T_REF_FOR')
+        T_REF_REV            = tsv_header.index('T_REF_REV')
         
-
 
 
         # Create vcf headers:
