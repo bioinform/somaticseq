@@ -21,41 +21,25 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     files_to_delete = set()
     
     snvCallers = []
-    if mutect or mutect2:
-        snvCallers.append('MuTect')
-    if varscan_snv:
-        snvCallers.append('VarScan2')
-    if jsm:
-        snvCallers.append('JointSNVMix2')
-    if sniper:
-        snvCallers.append('SomaticSniper')
-    if vardict:
-        snvCallers.append('VarDict')
-    if muse:
-        snvCallers.append('MuSE')
-    if lofreq_snv:
-        snvCallers.append('LoFreq')
-    if strelka_snv:
-        snvCallers.append('Strelka')
-    if tnscope:
-        snvCallers.append('TNscope')
+    if mutect or mutect2: snvCallers.append('MuTect')
+    if varscan_snv:       snvCallers.append('VarScan2')
+    if jsm:               snvCallers.append('JointSNVMix2')
+    if sniper:            snvCallers.append('SomaticSniper')
+    if vardict:           snvCallers.append('VarDict')
+    if muse:              snvCallers.append('MuSE')
+    if lofreq_snv:        snvCallers.append('LoFreq')
+    if strelka_snv:       snvCallers.append('Strelka')
+    if tnscope:           snvCallers.append('TNscope')
     
     
     indelCallers = []
-    if indelocator or mutect2:
-        indelCallers.append('MuTect')
-    if varscan_indel:
-        indelCallers.append('VarScan2')
-    if vardict:
-        indelCallers.append('VarDict')
-    if lofreq_indel:
-        indelCallers.append('LoFreq')
-    if scalpel:
-        indelCallers.append('Scalpel')
-    if strelka_indel:
-        indelCallers.append('Strelka')
-    if tnscope:
-        indelCallers.append('TNscope')
+    if indelocator or mutect2: indelCallers.append('MuTect')
+    if varscan_indel:          indelCallers.append('VarScan2')
+    if vardict:                indelCallers.append('VarDict')
+    if lofreq_indel:           indelCallers.append('LoFreq')
+    if scalpel:                indelCallers.append('Scalpel')
+    if strelka_indel:          indelCallers.append('Strelka')
+    if tnscope:                indelCallers.append('TNscope')
     
     
     
@@ -82,7 +66,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         
         subprocess.call( (adaPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
         
-        tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True)
+        tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True)
     
     
     else:
@@ -92,7 +76,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         
         
         consensusSnvVcf = outdir + os.sep + 'Consensus.sSNV.vcf'
-        tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True)
+        tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
     
     
     
@@ -107,7 +91,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         
         subprocess.call( (adaPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
         
-        tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True)
+        tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True)
 
     else:
         # Train INDEL classifier:
@@ -116,7 +100,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         
         
         consensusIndelVcf = outdir + os.sep + 'Consensus.sINDEL.vcf'
-        tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True)
+        tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
 
 
 
@@ -132,41 +116,97 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
 def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, keep_intermediates=False):
     
-    import somaticseq.somatic_vcf2tsv as single_sample_vcf2tsv
+    import somaticseq.single_sample_vcf2tsv as single_sample_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
     
     files_to_delete = set()
     
     snvCallers = []
-    if mutect or mutect2:
-        snvCallers.append('MuTect')
-    if varscan:
-        snvCallers.append('VarScan2')
-    if vardict:
-        snvCallers.append('VarDict')
-    if lofreq:
-        snvCallers.append('LoFreq')
-    if strelka:
-        snvCallers.append('Strelka')
+    if mutect or mutect2: snvCallers.append('MuTect')
+    if varscan:           snvCallers.append('VarScan2')
+    if vardict:           snvCallers.append('VarDict')
+    if lofreq:            snvCallers.append('LoFreq')
+    if strelka:           snvCallers.append('Strelka')
     
     
     indelCallers = []
-    if mutect2:
-        indelCallers.append('MuTect2')
-    if varscan:
-        indelCallers.append('VarScan2')
-    if vardict:
-        indelCallers.append('VarDict')
-    if lofreq:
-        indelCallers.append('LoFreq')
-    if scalpel:
-        indelCallers.append('Scalpel')
-    if strelka:
-        indelCallers.append('Strelka')
+    if mutect2: indelCallers.append('MuTect2')
+    if varscan: indelCallers.append('VarScan2')
+    if vardict: indelCallers.append('VarDict')
+    if lofreq:  indelCallers.append('LoFreq')
+    if scalpel: indelCallers.append('Scalpel')
+    if strelka: indelCallers.append('Strelka')
     
     
     # Function to combine individual VCFs into a simple VCF list of variants:
-    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combineSingle(outdir, ref, bam, inclusion, exclusion, mutect, mutect2, varscan, vardict, lofreq, scalpel, strelka, keep_intermediates=False)
+    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combineSingle(outdir, ref, bam, inclusion, exclusion, mutect, mutect2, varscan, vardict, lofreq, scalpel, strelka, keep_intermediates=True)
+
+    files_to_delete.add(outSnv)
+    files_to_delete.add(outIndel)
+    [ files_to_delete.add(i) for i in tempFiles ]
+    
+    ensembleSnv   = outdir + os.sep + 'Ensemble.sSNV.tsv'
+    ensembleIndel = outdir + os.sep + 'Ensemble.sINDEL.tsv'
+    
+    ######################  SNV  ######################
+    single_sample_vcf2tsv.vcf2tsv(is_vcf=outSnv, bam_fn=bam, truth=truth_snv, cosmic=cosmic, dbsnp=dbsnp, mutect=intermediateVcfs['MuTect2']['snv'], varscan=intermediateVcfs['VarScan2']['snv'], vardict=intermediateVcfs['VarDict']['snv'], lofreq=intermediateVcfs['LoFreq']['snv'], scalpel=None, strelka=intermediateVcfs['Strelka']['snv'], dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleSnv)
+    
+        
+    # Classify SNV calls
+    if classifier_snv:
+        classifiedSnvTsv = outdir + os.sep + 'SSeq.Classified.sSNV.tsv'
+        classifiedSnvVcf = outdir + os.sep + 'SSeq.Classified.sSNV.vcf'
+        
+        subprocess.call( (adaPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
+        
+        tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True, phred_scaled=True)
+    
+    
+    else:
+        # Train SNV classifier:
+        if somaticseq_train and truth_snv:
+            subprocess.call( (adaTrainer, ensembleSnv, 'Consistent_Mates' 'Inconsistent_Mates') )
+        
+        
+        consensusSnvVcf = outdir + os.sep + 'Consensus.sSNV.vcf'
+        tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
+    
+    
+    
+    ###################### INDEL ######################
+    single_sample_vcf2tsv.vcf2tsv(is_vcf=outIndel, bam_fn=bam, truth=truth_indel, cosmic=cosmic, dbsnp=dbsnp, mutect=intermediateVcfs['MuTect2']['indel'], varscan=intermediateVcfs['VarScan2']['indel'], vardict=intermediateVcfs['VarDict']['indel'], lofreq=intermediateVcfs['LoFreq']['indel'], scalpel=scalpel, strelka=intermediateVcfs['Strelka']['indel'], dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleIndel)
+
+
+    # Classify INDEL calls
+    if classifier_indel:
+        classifiedIndelTsv = outdir + os.sep + 'SSeq.Classified.sINDEL.tsv'
+        classifiedIndelVcf = outdir + os.sep + 'SSeq.Classified.sINDEL.vcf'
+        
+        subprocess.call( (adaPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
+        
+        tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True, phred_scaled=True)
+
+    else:
+        # Train INDEL classifier:
+        if somaticseq_train and truth_indel:
+            subprocess.call( (adaTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
+        
+        
+        consensusIndelVcf = outdir + os.sep + 'Consensus.sINDEL.vcf'
+        tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
+
+
+
+    ## Clean up after yourself ##
+    if not keep_intermediates:
+        for file_i in files_to_delete:
+            subprocess.call( ('rm', '-v', file_i ) )
+
+
+
+
+
+
 
 
 

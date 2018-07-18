@@ -130,30 +130,33 @@ def run():
     
     
     # Rename input:
-    inputParameters['is_vcf']    = args.vcf_format
-    inputParameters['is_bed']    = args.bed_format
-    inputParameters['is_pos']    = args.positions_list
-    inputParameters['bam_fn']    = args.in_bam
-    inputParameters['truth']     = args.ground_truth_vcf
-    inputParameters['cosmic']    = args.cosmic_vcf
-    inputParameters['dbsnp']     = args.dbsnp_vcf
-    inputParameters['mutect']    = args.mutect_vcf
-    inputParameters['varscan']   = args.varscan_vcf
-    inputParameters['vardict']   = args.vardict_vcf
-    inputParameters['lofreq']    = args.lofreq_vcf
-    inputParameters['scalpel']   = args.scalpel_vcf
-    inputParameters['strelka']   = args.strelka_vcf
-    inputParameters['min_mq']    = args.minimum_mapping_quality
-    inputParameters['min_bq']    = args.minimum_base_quality
-    inputParameters['ref_fa']    = args.genome_reference
-    inputParameters['p_scale']   = args.p_scale
-    inputParameters['outfile']   = args.output_tsv_file
+    inputParameters['is_vcf']     = args.vcf_format
+    inputParameters['is_bed']     = args.bed_format
+    inputParameters['is_pos']     = args.positions_list
+    inputParameters['bam_fn']     = args.in_bam
+    inputParameters['truth']      = args.ground_truth_vcf
+    inputParameters['dbsnp']      = args.dbsnp_vcf
+    inputParameters['cosmic']     = args.cosmic_vcf
+    inputParameters['mutect']     = args.mutect_vcf
+    inputParameters['varscan']    = args.varscan_vcf
+    inputParameters['vardict']    = args.vardict_vcf
+    inputParameters['lofreq']     = args.lofreq_vcf
+    inputParameters['scalpel']    = args.scalpel_vcf
+    inputParameters['strelka']    = args.strelka_vcf
+    inputParameters['ref_fa']     = args.genome_reference
+    inputParameters['dedup']      = args.deduplicate
+    inputParameters['min_mq']     = args.minimum_mapping_quality
+    inputParameters['min_bq']     = args.minimum_base_quality
+    inputParameters['min_caller'] = args.minimum_num_callers
+    inputParameters['p_scale']    = args.p_scale
+    inputParameters['outfile']    = args.output_tsv_file
 
     return inputParameters
 
 
 
-def vcf2tsv():
+def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosmic=None, dbsnp=None, mutect=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, dedup=True, min_mq=1, min_bq=5, min_caller=0, ref_fa=None, p_scale=None, outfile=None):
+    
     # Convert contig_sequence to chrom_seq dict:
     fai_file  = ref_fa + '.fai'
     chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
@@ -368,15 +371,15 @@ def vcf2tsv():
                 num_callers = 0
                 
                 #################################### Find the same coordinate in those VCF files ####################################
-                if args.mutect_vcf:        got_mutect,  mutect_variants,  mutect_line  = genome.find_vcf_at_coordinate(my_coordinate, mutect_line,  mutect,  chrom_seq)
-                if args.varscan_vcf:       got_varscan, varscan_variants, varscan_line = genome.find_vcf_at_coordinate(my_coordinate, varscan_line, varscan, chrom_seq)
-                if args.vardict_vcf:       got_vardict, vardict_variants, vardict_line = genome.find_vcf_at_coordinate(my_coordinate, vardict_line, vardict, chrom_seq)
-                if args.lofreq_vcf:        got_lofreq,  lofreq_variants,  lofreq_line  = genome.find_vcf_at_coordinate(my_coordinate, lofreq_line,  lofreq,  chrom_seq)
-                if args.scalpel_vcf:       got_scalpel, scalpel_variants, scalpel_line = genome.find_vcf_at_coordinate(my_coordinate, scalpel_line, scalpel, chrom_seq)
-                if args.strelka_vcf:       got_strelka, strelka_variants, strelka_line = genome.find_vcf_at_coordinate(my_coordinate, strelka_line, strelka, chrom_seq)
-                if args.ground_truth_vcf:  got_truth,   truth_variants,   truth_line   = genome.find_vcf_at_coordinate(my_coordinate, truth_line,   truth,   chrom_seq)
-                if args.dbsnp_vcf:         got_dbsnp,   dbsnp_variants,   dbsnp_line   = genome.find_vcf_at_coordinate(my_coordinate, dbsnp_line,   dbsnp,   chrom_seq)
-                if args.cosmic_vcf:        got_cosmic,  cosmic_variants,  cosmic_line  = genome.find_vcf_at_coordinate(my_coordinate, cosmic_line,  cosmic,  chrom_seq)
+                if mutect:        got_mutect,  mutect_variants,  mutect_line  = genome.find_vcf_at_coordinate(my_coordinate, mutect_line,  mutect,  chrom_seq)
+                if varscan:       got_varscan, varscan_variants, varscan_line = genome.find_vcf_at_coordinate(my_coordinate, varscan_line, varscan, chrom_seq)
+                if vardict:       got_vardict, vardict_variants, vardict_line = genome.find_vcf_at_coordinate(my_coordinate, vardict_line, vardict, chrom_seq)
+                if lofreq:        got_lofreq,  lofreq_variants,  lofreq_line  = genome.find_vcf_at_coordinate(my_coordinate, lofreq_line,  lofreq,  chrom_seq)
+                if scalpel:       got_scalpel, scalpel_variants, scalpel_line = genome.find_vcf_at_coordinate(my_coordinate, scalpel_line, scalpel, chrom_seq)
+                if strelka:       got_strelka, strelka_variants, strelka_line = genome.find_vcf_at_coordinate(my_coordinate, strelka_line, strelka, chrom_seq)
+                if truth:  got_truth,   truth_variants,   truth_line   = genome.find_vcf_at_coordinate(my_coordinate, truth_line,   truth,   chrom_seq)
+                if dbsnp:         got_dbsnp,   dbsnp_variants,   dbsnp_line   = genome.find_vcf_at_coordinate(my_coordinate, dbsnp_line,   dbsnp,   chrom_seq)
+                if cosmic:        got_cosmic,  cosmic_variants,  cosmic_line  = genome.find_vcf_at_coordinate(my_coordinate, cosmic_line,  cosmic,  chrom_seq)
                 
                 # Now, use pysam to look into the tBAM file(s), variant by variant from the input:
                 for ith_call, my_call in enumerate( variants_at_my_coordinate ):
@@ -395,7 +398,7 @@ def vcf2tsv():
     
     
                     #################### Collect MuTect ####################:
-                    if args.mutect_vcf:
+                    if mutect:
     
                         if variant_id in mutect_variants:
     
@@ -419,7 +422,7 @@ def vcf2tsv():
     
     
                     #################### Collect VarScan ####################:
-                    if args.varscan_vcf:
+                    if varscan:
     
                         if variant_id in varscan_variants:
     
@@ -437,7 +440,7 @@ def vcf2tsv():
     
     
                     #################### Collect VarDict ####################:
-                    if args.vardict_vcf:
+                    if vardict:
                         
                         if variant_id in vardict_variants.keys():
     
@@ -477,7 +480,7 @@ def vcf2tsv():
     
     
                     #################### Collect LoFreq ####################:
-                    if args.lofreq_vcf:
+                    if lofreq:
                         
                         if variant_id in lofreq_variants.keys():
     
@@ -492,7 +495,7 @@ def vcf2tsv():
                     
     
                     #################### Collect Scalpel ####################:
-                    if args.scalpel_vcf:
+                    if scalpel:
                         
                         if variant_id in scalpel_variants.keys():
     
@@ -507,7 +510,7 @@ def vcf2tsv():
     
     
                     #################### Collect Strelka ####################:
-                    if args.strelka_vcf:
+                    if strelka:
                         
                         if variant_id in strelka_variants:
                             
@@ -523,10 +526,10 @@ def vcf2tsv():
                     
                                 
                     # Potentially write the output only if it meets this threshold:
-                    if num_callers >= args.minimum_num_callers:
+                    if num_callers >= min_caller:
                                             
                         ########## Ground truth file ##########
-                        if args.ground_truth_vcf:
+                        if truth:
                             if variant_id in truth_variants.keys():
                                 judgement = 1
                                 my_identifiers.add('TruePositive')
@@ -538,7 +541,7 @@ def vcf2tsv():
     
     
                         ########## dbSNP ########## Will overwrite dbSNP info from input VCF file
-                        if args.dbsnp_vcf:
+                        if dbsnp:
                             if variant_id in dbsnp_variants.keys():
     
                                 dbsnp_variant_i = dbsnp_variants[variant_id]
@@ -554,7 +557,7 @@ def vcf2tsv():
     
                         
                         ########## COSMIC ########## Will overwrite COSMIC info from input VCF file
-                        if args.cosmic_vcf:
+                        if cosmic:
                             if variant_id in cosmic_variants.keys():
     
                                 cosmic_variant_i = cosmic_variants[variant_id]
@@ -890,7 +893,7 @@ if __name__ == '__main__':
     vcf2tsv(is_vcf     = runParameters['is_vcf'], \
             is_bed     = runParameters['is_bed'], \
             is_pos     = runParameters['is_pos'], \
-            tbam_fn    = runParameters['bam_fn'], \
+            bam_fn     = runParameters['bam_fn'], \
             truth      = runParameters['truth'], \
             cosmic     = runParameters['cosmic'], \
             dbsnp      = runParameters['dbsnp'], \
@@ -900,7 +903,6 @@ if __name__ == '__main__':
             lofreq     = runParameters['lofreq'], \
             scalpel    = runParameters['scalpel'], \
             strelka    = runParameters['strelka'], \
-            ref        = runParameters['ref'], \
             dedup      = runParameters['dedup'], \
             min_mq     = runParameters['min_mq'], \
             min_bq     = runParameters['min_bq'], \
