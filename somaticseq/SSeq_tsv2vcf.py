@@ -143,43 +143,37 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
         
         tsv_header = tsv_i.split('\t')
         
-        # Make the header items into indices
+        # Make the header items into indices (single/paired have different tool names)
         toolcode2index = {}
-        toolcode2index['M']  = tsv_header.index('if_MuTect')
-        toolcode2index['V']  = tsv_header.index('if_VarScan2')
-        toolcode2index['J']  = tsv_header.index('if_JointSNVMix2')
-        toolcode2index['S']  = tsv_header.index('if_SomaticSniper')
-        toolcode2index['D']  = tsv_header.index('if_VarDict')
-        toolcode2index['U']  = tsv_header.index('MuSE_Tier')
-        toolcode2index['L']  = tsv_header.index('if_LoFreq')
-        toolcode2index['P']  = tsv_header.index('if_Scalpel')
-        toolcode2index['K']  = tsv_header.index('if_Strelka')
-        toolcode2index['T']  = tsv_header.index('if_TNscope')
+        for n,item in enumerate(tsv_header):
+        
+            if   'if_MuTect'        == item:
+                toolcode2index['M'] = n
+            elif 'if_VarScan2'      == item:
+                toolcode2index['V'] = n
+            elif 'if_JointSNVMix2'  == item:
+                toolcode2index['J'] = n
+            elif 'if_SomaticSniper' == item:
+                toolcode2index['S'] = n
+            elif 'if_VarDict'       == item:
+                toolcode2index['D'] = n
+            elif 'MuSE_Tier'        == item:
+                toolcode2index['U'] = n
+                MuSE_Tier = tsv_header.index('MuSE_Tier')
+            elif 'if_LoFreq'        == item:
+                toolcode2index['L'] = n
+            elif 'if_Scalpel'       == item:
+                toolcode2index['P'] = n
+            elif 'if_Strelka'       == item:
+                toolcode2index['K'] = n
+            elif 'if_TNscope'       == item:
+                toolcode2index['T'] = n
+        
         ALT                  = tsv_header.index('ALT')
         CHROM                = tsv_header.index('CHROM')
         ID                   = tsv_header.index('ID')
-        MuSE_Tier            = tsv_header.index('MuSE_Tier')
-        N_ALT_FOR            = tsv_header.index('N_ALT_FOR')
-        N_ALT_REV            = tsv_header.index('N_ALT_REV')
-        nBAM_ALT_BQ          = tsv_header.index('nBAM_ALT_BQ')
-        nBAM_ALT_Concordant  = tsv_header.index('nBAM_ALT_Concordant')
-        nBAM_ALT_MQ          = tsv_header.index('nBAM_ALT_MQ')
-        nBAM_ALT_NM          = tsv_header.index('nBAM_ALT_NM')
-        nBAM_Concordance_FET = tsv_header.index('nBAM_Concordance_FET')
-        nBAM_MQ0             = tsv_header.index('nBAM_MQ0')
-        nBAM_REF_BQ          = tsv_header.index('nBAM_REF_BQ')
-        nBAM_REF_Concordant  = tsv_header.index('nBAM_REF_Concordant')
-        nBAM_REF_Discordant  = tsv_header.index('nBAM_REF_Discordant')
-        nBAM_REF_MQ          = tsv_header.index('nBAM_REF_MQ')
-        nBAM_REF_NM          = tsv_header.index('nBAM_REF_NM')
-        nBAM_StrandBias_FET  = tsv_header.index('nBAM_StrandBias_FET')
-        nBAM_Z_Ranksums_BQ   = tsv_header.index('nBAM_Z_Ranksums_BQ')
-        nBAM_Z_Ranksums_MQ   = tsv_header.index('nBAM_Z_Ranksums_MQ')
-        N_REF_FOR            = tsv_header.index('N_REF_FOR')
-        N_REF_REV            = tsv_header.index('N_REF_REV')
         POS                  = tsv_header.index('POS')
         REF                  = tsv_header.index('REF')
-        SCORE                = tsv_header.index('SCORE')
         T_ALT_FOR            = tsv_header.index('T_ALT_FOR')
         T_ALT_REV            = tsv_header.index('T_ALT_REV')
         tBAM_ALT_BQ          = tsv_header.index('tBAM_ALT_BQ')
@@ -200,6 +194,31 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
         T_REF_FOR            = tsv_header.index('T_REF_FOR')
         T_REF_REV            = tsv_header.index('T_REF_REV')
         
+        
+        if not single_mode:
+            N_ALT_FOR            = tsv_header.index('N_ALT_FOR')
+            N_ALT_REV            = tsv_header.index('N_ALT_REV')
+            nBAM_ALT_BQ          = tsv_header.index('nBAM_ALT_BQ')
+            nBAM_ALT_Concordant  = tsv_header.index('nBAM_ALT_Concordant')
+            nBAM_ALT_MQ          = tsv_header.index('nBAM_ALT_MQ')
+            nBAM_ALT_NM          = tsv_header.index('nBAM_ALT_NM')
+            nBAM_Concordance_FET = tsv_header.index('nBAM_Concordance_FET')
+            nBAM_MQ0             = tsv_header.index('nBAM_MQ0')
+            nBAM_REF_BQ          = tsv_header.index('nBAM_REF_BQ')
+            nBAM_REF_Concordant  = tsv_header.index('nBAM_REF_Concordant')
+            nBAM_REF_Discordant  = tsv_header.index('nBAM_REF_Discordant')
+            nBAM_REF_MQ          = tsv_header.index('nBAM_REF_MQ')
+            nBAM_REF_NM          = tsv_header.index('nBAM_REF_NM')
+            nBAM_StrandBias_FET  = tsv_header.index('nBAM_StrandBias_FET')
+            nBAM_Z_Ranksums_BQ   = tsv_header.index('nBAM_Z_Ranksums_BQ')
+            nBAM_Z_Ranksums_MQ   = tsv_header.index('nBAM_Z_Ranksums_MQ')
+            N_REF_FOR            = tsv_header.index('N_REF_FOR')
+            N_REF_REV            = tsv_header.index('N_REF_REV')
+
+        try:
+            SCORE = tsv_header.index('SCORE')
+        except ValueError:
+            pass
 
 
         # Create vcf headers:
