@@ -22,7 +22,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 --human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
 --output-dir      /ABSOLUTE/PATH/TO/RESULTS \
 --dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
---somaticseq-dir  /ABSOLUTE/PATH/TO/SomaticSeq \
+--somaticseq-dir  SomaticSeq_DIR \
 --action          echo \
 --mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
 ```
@@ -56,7 +56,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 --human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
 --output-dir      /ABSOLUTE/PATH/TO/RESULTS \
 --dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
---somaticseq-dir  /ABSOLUTE/PATH/TO/SomaticSeq \
+--somaticseq-dir  SomaticSeq_DIR \
 --action          echo \
 --mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq --somaticseq-train
 ```
@@ -75,7 +75,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 --human-reference  /ABSOLUTE/PATH/TO/GRCh38.fa \
 --output-dir       /ABSOLUTE/PATH/TO/RESULTS \
 --dbsnp            /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
---somaticseq-dir   /ABSOLUTE/PATH/TO/SomaticSeq \
+--somaticseq-dir   SomaticSeq_DIR \
 --action           echo \
 --mutect2 --somaticsniper --vardict --muse --lofreq --scalpel --strelka --somaticseq
 ```
@@ -114,7 +114,7 @@ Only call for callers that support single-sample modes, i.e., `--mutect2`, `--va
 * `--somaticseq`                  (Optional flag to invoke SomaticSeq. This script always be echo'ed, as it should not be submitted until all the callers above complete).
 * `--output-dir`                  /ABSOLUTE/PATH/TO/OUTPUT_DIRECTORY (Required)
 * `--somaticseq-train`            (Optional flag to invoke SomaticSeq to produce classifiers if ground truth VCF files are provided. Only recommended in singleThread mode, because otherwise it's better to combine the output TSV files first, and then train classifiers.)
-* `--somaticseq-dir`              SomaticSeq_Output_Directory_Name (Optional. The directory name of the SomaticSeq output. Default = SomaticSeq).
+* `--somaticseq-dir`              SomaticSeq_Output_Directory_Name created after `--output-dir`. (Optional. Default = SomaticSeq, i.e., `--output-dir /ABSOLUTE/PATH/RESULT --somaticseq-dir SomaticSeq` will result in `/ABSOLUTE/PATH/RESULT/SomaticSeq`).
 * `--somaticseq-action`           (Optional. What to do with the somaticseq.cmd. Default is echo. Only do "qsub" if you have already completed all the mutation callers, but want to run SomaticSeq at a different setting, in which case consider using "--action rm" for the individual caller scripts.)
 * `--classifier-snv`              Trained_sSNV_Classifier.RData (Optional: if there is a classifer you want to use)
 * `--classifier-indel`            Trained_sINDEL_Classifier.RData (Optional: if there is a classifer you want to use)
