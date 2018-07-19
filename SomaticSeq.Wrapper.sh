@@ -244,7 +244,6 @@ echo ''
 
 
 if [[ $merged_dir ]];        then outdir_arg="-outdir $merged_dir"; fi
-
 if [[ $hg_ref ]];            then ref_arg="-ref $hg_ref"; fi
 if [[ $cosmic ]];            then cosmic_arg="-cosmic $cosmic"; fi
 if [[ $dbsnp ]];             then dbsnp_arg="-dbsnp $dbsnp"; fi
@@ -256,7 +255,6 @@ if [[ $indelgroundtruth ]];  then truth_indel_arg="--truth-indel $indelgroundtru
 if [[ $snpgroundtruth ]];    then truth_snv_arg="--truth $snpgroundtruth"; fi
 if [[ $pass_threshold ]];    then pass_arg="--pass-threshold $pass_threshold"; fi
 if [[ $lowqual_threshold ]]; then low_arg="--lowqual-threshold $lowqual_threshold"; fi
-
 
 if [[ $tbam ]];              then tbam_arg="-tbam $tbam"; fi
 if [[ $nbam ]];              then nbam_arg="-nbam $nbam"; fi
@@ -278,9 +276,9 @@ if [[ $strelka_snv_vcf ]];   then strelka_snv_arg="--strelka-snv $strelka_snv_vc
 if [[ $strelka_indel_vcf ]]; then strelka_indel_arg="--strelka-indel $strelka_indel_vcf"; fi
 if [[ $tnscope_vcf ]];       then tnscope_arg="-tnscope $tnscope_vcf"; fi
 
+if [[ $keep_intermediates == 1 ]]; then keep_intermediate_arg='--keep-intermediates'; fi
 
-
-${MYDIR}/run_somaticseq.py $outdir_arg $ref_arg $cosmic_arg $dbsnp_arg $classifier_snv_arg $classifier_indel_arg $exclude_arg $include_arg $truth_indel_arg $truth_snv_arg $pass_arg $low_arg \
+${MYDIR}/run_somaticseq.py $outdir_arg $ref_arg $cosmic_arg $dbsnp_arg $classifier_snv_arg $classifier_indel_arg $exclude_arg $include_arg $truth_indel_arg $truth_snv_arg $pass_arg $low_arg $keep_intermediate_arg \
 paired $tbam_arg $nbam_arg $tname_arg $nname_arg $mutect_arg $indelocator_arg $mutect2_arg $varscan_snv_arg $varscan_indel_arg $jsm_arg $sniper_arg $vardict_arg $muse_arg $lofreq_snv_arg $lofreq_indel_arg $scalpel_arg $strelka_snv_arg $strelka_indel_arg $tnscope_arg
 
 
