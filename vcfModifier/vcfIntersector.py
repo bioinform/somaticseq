@@ -19,8 +19,7 @@ def bed_include(infile, inclusion_region, outfile):
         exit_code = os.system( 'intersectBed -header -a {} -b {} | uniq > {}'.format(infile, inclusion_region, outfile) )
         assert exit_code == 0
     else:
-    
-        outfile = infile
+        outfile = None
     
     return outfile
 
@@ -35,15 +34,16 @@ def bed_exclude(infile, exclusion_region, outfile):
         exit_code = os.system( 'intersectBed -header -a {} -b {} -v | uniq > {}'.format(infile, exclusion_region, outfile) )
         assert exit_code == 0
     else:
-    
-        outfile = infile
+        outfile = None
         
     return outfile
 
 
 # Use utilities/vcfsorter.pl fa.dict unsorted.vcf > sorted.vcf
-def vcfsorter(hg_dict, vcfin, vcfout):
+def vcfsorter(ref, vcfin, vcfout):
     
-    vcfsort = '{}/utilities/vcfsorter.pl'.format(PRE_DIR)
-    os.system( '{} {} {} > {}'.format(vcfsort, hg_dict, vcfin, vcfout ) )
-    
+    #vcfsort = '{}/utilities/vcfsorter.pl'.format(PRE_DIR)
+    #os.system( '{} {} {} > {}'.format(vcfsort, hg_dict, vcfin, vcfout ) )
+    fai = ref + '.fai'
+    exit_code = os.system('bedtools sort -faidx {} -header -i {} > {}'.format(fai, vcfin, vcfout))
+    assert exit_code == 0

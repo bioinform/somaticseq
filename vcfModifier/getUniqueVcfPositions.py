@@ -63,7 +63,7 @@ def combine(infiles, outfile):
         vcf_out.write('##fileformat=VCFv4.1\n')
         vcf_out.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n')
 
-        for variant_position_i in variant_positions:
+        for variant_position_i in sorted(variant_positions):
 
             vcf_out.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(variant_position_i[0], variant_position_i[1], '.', variant_position_i[2], variant_position_i[3], '.', 'PASS', '.') )
 
