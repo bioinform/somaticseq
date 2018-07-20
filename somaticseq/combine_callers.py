@@ -32,6 +32,28 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
                          'LoFreq'   :{'snv': None, 'indel': None}, \
                          'Strelka'  :{'snv': None, 'indel': None}, }
 
+    if mutect:
+        
+        import vcfModifier.modify_MuTect as mod_mutect
+            
+        if exclusion:
+            mutect_ex = bed_exclude(mutect, exclusion, outdir + os.sep + 'snv.mutect1.ex.vcf')
+            intermediate_files.add(mutect_ex)
+        else:
+            mutect_ex = mutect
+        
+        if inclusion:
+            mutect_in = bed_include(mutect_ex, inclusion, outdir + os.sep + 'snv.mutect1.in.vcf')
+            intermediate_files.add(mutect_in)
+        else:
+            mutect_in = mutect_ex
+        
+        snv_mutect_out = outdir + os.sep + 'snv.mutect1.vcf'
+        mod_mutect.convert(mutect_in, snv_mutect_out, bam)
+        
+        intermediate_files.add(snv_mutect_out)
+        snv_intermediates.append(snv_mutect_out)
+
     if mutect2:
         import vcfModifier.modify_ssMuTect2 as mod_mutect2
         
@@ -240,6 +262,51 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
                          'TNscope':{'snv': None, 'indel': None}, }
     
     # Modify direct VCF outputs for merging:
+    if mutect or indelocator:
+        
+        import vcfModifier.modify_MuTect as mod_mutect
+
+        if mutect:
+            
+            if exclusion:
+                mutect_ex = bed_exclude(mutect, exclusion, outdir + os.sep + 'snv.mutect1.ex.vcf')
+                intermediate_files.add(mutect_ex)
+            else:
+                mutect_ex = mutect
+            
+            if inclusion:
+                mutect_in = bed_include(mutect_ex, inclusion, outdir + os.sep + 'snv.mutect1.in.vcf')
+                intermediate_files.add(mutect_in)
+            else:
+                mutect_in = mutect_ex
+            
+            snv_mutect_out = outdir + os.sep + 'snv.mutect1.vcf'
+            mod_mutect.convert(mutect_in, snv_mutect_out, tbam, nbam)
+            
+            intermediate_files.add(snv_mutect_out)
+            snv_intermediates.append(snv_mutect_out)
+        
+        if indelocator:
+
+            if exclusion:
+                indelocator_ex = bed_exclude(indelocator, exclusion, outdir + os.sep + 'indel.indelocator.ex.vcf')
+                intermediate_files.add(indelocator_ex)
+            else:
+                indelocator_ex = indelocator
+            
+            if inclusion:
+                indelocator_in = bed_include(indelocator_ex, inclusion, outdir + os.sep + 'indel.indelocator.in.vcf')
+                intermediate_files.add(indelocator_in)
+            else:
+                indelocator_in = indelocator_ex
+            
+            indel_indelocator_out = outdir + os.sep + 'indel.indelocator.vcf'
+            mod_mutect.convert(indelocator_in, indel_indelocator_out, tbam, nbam)
+            
+            intermediate_files.add(indel_indelocator_out)
+            indel_intermediates.append(indel_indelocator_out)
+
+    
     if mutect2:
         
         import vcfModifier.modify_MuTect2 as mod_mutect2
