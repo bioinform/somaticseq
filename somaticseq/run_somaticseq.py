@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 
 import sys, argparse, gzip, os, re, subprocess
+
+MY_DIR = os.path.dirname(os.path.realpath(__file__))
+PRE_DIR = os.path.join(MY_DIR, os.pardir)
+sys.path.append( PRE_DIR )
+
 import genomicFileHandler.genomic_file_handlers as genome
 import vcfModifier.copy_TextFile as copy_TextFile
 import somaticseq.combine_callers as combineCallers
 
-
-MY_DIR = os.path.dirname(os.path.realpath(__file__))
-
-adaTrainer   = MY_DIR +  os.sep + 'r_scripts' + os.sep + 'ada_model_builder_ntChange.R'
-adaPredictor = MY_DIR +  os.sep + 'r_scripts' + os.sep + 'ada_model_predictor.R'
-
+adaTrainer   = PRE_DIR +  os.sep + 'r_scripts' + os.sep + 'ada_model_builder_ntChange.R'
+adaPredictor = PRE_DIR +  os.sep + 'r_scripts' + os.sep + 'ada_model_predictor.R'
 
 
 def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False):
