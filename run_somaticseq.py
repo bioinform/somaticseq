@@ -149,7 +149,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
     [ files_to_delete.add(i) for i in tempFiles ]
     
     ensembleSnv   = outdir + os.sep + ensembleOutPrefix + 'sSNV.tsv'
-    ensembleIndel = outdir + os.sep + ensembleOutPrefix + 'INDEL.tsv'
+    ensembleIndel = outdir + os.sep + ensembleOutPrefix + 'sINDEL.tsv'
     
     ######################  SNV  ######################
     mutect_infile = intermediateVcfs['MuTect2']['snv'] if intermediateVcfs['MuTect2']['snv'] else mutect

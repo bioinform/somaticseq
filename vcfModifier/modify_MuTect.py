@@ -22,10 +22,7 @@ def run():
     parser.add_argument('-infile',   '--input-vcf',            type=str, help='Input VCF file', required=True, )
     parser.add_argument('-outfile',  '--output-vcf',           type=str, help='Output VCF file', default=sys.stdout)
     parser.add_argument('-tbam',     '--tumor-bam',            type=str, help='A tumor bam file for sample name identification.' )
-    parser.add_argument('-nbam',     '--normal-bam',           type=str, help='A normal bam file for sample name identification.' )
-    parser.add_argument('-tsm',      '--tumor-input-name',     type=str, help='Tumor sample name in the MuTect vcf file.' )
-    parser.add_argument('-nsm',      '--normal-input-name',    type=str, help='Normal sample name in the MuTect vcf file.' )
-    
+    parser.add_argument('-nbam',     '--normal-bam',           type=str, help='A normal bam file for sample name identification.' )    
     
     # Parse the arguments:
     args = parser.parse_args()
@@ -34,43 +31,29 @@ def run():
     out_vcf      = args.output_vcf
     tbam         = args.tumor_bam
     nbam         = args.normal_bam
-    t_samplename = args.tumor_input_name
-    n_samplename = args.normal_input_name
     
-    if tbam:
-    
-        paired_mode = True if nbam else False
-    
-        # Get tumor and normal sample names from the bam files:
-        nbam_header = genome.pysam_header(nbam) if nbam else None
-        tbam_header = genome.pysam_header(tbam)
-    
-        # When MuTect is run in a "single sample mode," the "normal" will be named "none."
-        n_samplename = nbam_header.SM() if nbam else ['none']
-        t_samplename = tbam_header.SM()
-    
-        if not ( len(n_samplename)==1 and len(t_samplename)==1 ):
-            sys.stderr.write('There are multiple Sample Names present in the BAM file!')
-    
-        n_samplename = n_samplename[0]
-        t_samplename = t_samplename[0]
-    
-    elif args.tumor_input_name:
-    
-        paired_mode = True if args.normal_input_name else False
-        n_samplename = args.normal_input_name if args.normal_input_name else 'none'
-        t_samplename = args.tumor_input_name
-    
-    else:
-        raise Exception('Cannot tell which column is Tumor and which column is normal.')
-
-
-    return in_vcf, out_vcf, t_samplename, n_samplename
+    return in_vcf, out_vcf, tbam, nbam
 
 
 
-def convert(infile, outfile, t_samplename, n_samplename):
-            
+def convert(infile, outfile, tbam, nbam):
+    
+    paired_mode = True if nbam else False
+
+    # Get tumor and normal sample names from the bam files:
+    nbam_header = genome.pysam_header(nbam) if nbam else None
+    tbam_header = genome.pysam_header(tbam)
+
+    # When MuTect is run in a "single sample mode," the "normal" will be named "none."
+    n_samplename = nbam_header.SM() if nbam else ['none']
+    t_samplename = tbam_header.SM()
+
+    if not ( len(n_samplename)==1 and len(t_samplename)==1 ):
+        sys.stderr.write('There are multiple Sample Names present in the BAM file!')
+
+    n_samplename = n_samplename[0]
+    t_samplename = t_samplename[0]
+
     assert t_samplename or n_samplename
     
     if t_samplename and n_samplename:
@@ -83,16 +66,14 @@ def convert(infile, outfile, t_samplename, n_samplename):
     
     with genome.open_textfile(infile) as vcf, open(outfile, 'w') as vcfout:
 
-
         line_i = vcf.readline().rstrip()
 
-
         while line_i.startswith('#'):
-    
-    
+
+
             if line_i.startswith('##'):
                 vcfout.write( line_i + '\n' )
-    
+
             elif line_i.startswith('#CHROM'):
                 header_items = line_i.rstrip().split('\t')
     
@@ -102,9 +83,9 @@ def convert(infile, outfile, t_samplename, n_samplename):
                 if paired_mode:
                     header_items[idx_SM1] = 'NORMAL'
                     header_items[idx_SM2] = 'TUMOR'
-    
+
                 else:
-    
+
                     # Keep up to the first sample column, then make sure it's labeled the TUMOR sample name
                     header_items = header_items[:idx_SM1+1]
                     header_items[idx_SM1] = args.tumor_sample_name
@@ -113,7 +94,6 @@ def convert(infile, outfile, t_samplename, n_samplename):
                 vcfout.write(replaced_header + '\n')
     
             line_i = vcf.readline().rstrip()
-
 
 
         while line_i:
@@ -133,7 +113,6 @@ def convert(infile, outfile, t_samplename, n_samplename):
             if not ( 'N' in items_i[idx_ref] ):
                 vcfout.write( new_line + '\n' )
 
-
             line_i = vcf.readline().rstrip()
     
     
@@ -141,5 +120,5 @@ def convert(infile, outfile, t_samplename, n_samplename):
 
 
 if __name__ == '__main__':
-    infile, outfile, t_samplename, n_samplename = run()
-    convert(infile, outfile, t_samplename, n_samplename)
+    infile, outfile, tbam, nbam = run()
+    convert(infile, outfile, tbam, nbam)
