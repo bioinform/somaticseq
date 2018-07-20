@@ -78,7 +78,7 @@ def convert(infile, outfile, t_samplename, n_samplename):
     else:
         paired_mode = False
     
-    
+    idx_chrom,idx_pos,idx_id,idx_ref,idx_alt,idx_qual,idx_filter,idx_info,idx_format = 0,1,2,3,4,5,6,7,8
     idx_SM1, idx_SM2 = 9,10
     
     with genome.open_textfile(infile) as vcf, open(outfile, 'w') as vcfout:
