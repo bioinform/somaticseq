@@ -112,7 +112,7 @@ def convert(infile, outfile, t_samplename, n_samplename):
                 replaced_header = '\t'.join(header_items)
                 vcfout.write(replaced_header + '\n')
     
-            line_i = vcf.readline()
+            line_i = vcf.readline().rstrip()
 
 
 
