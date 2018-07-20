@@ -81,7 +81,7 @@ def convert(infile, outfile, t_samplename, n_samplename):
     
     idx_SM1, idx_SM2 = 9,10
     
-    with genome.open_textfile(infile) as vcf, open(out_vcf, 'w') as vcfout:
+    with genome.open_textfile(infile) as vcf, open(outfile, 'w') as vcfout:
 
 
         line_i = vcf.readline().rstrip()
