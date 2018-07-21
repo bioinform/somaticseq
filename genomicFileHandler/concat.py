@@ -3,28 +3,27 @@
 import argparse
 import genomic_file_handlers as genome
 
-
 def vcf(infileList, outfile):
-    
+
     with open(outfile, 'w') as vcfout:
-        
+
         headerWritten = False
-        
+
         for file_i in infileList:
-        
+
             with genome.open_textfile(file_i) as vcfin:
-                
+
                 line_i = vcfin.readline()
-                
+
                 while line_i.startswith('#'):
                     if not headerWritten:
                         vcfout.write( line_i )
-                        
+
                     line_i = vcfin.readline()
-                
+
                 # Turn off header writing from now on:
                 headerWritten = True
-                
+
                 while line_i:
                     vcfout.write( line_i )
                     line_i = vcfin.readline()
@@ -32,26 +31,26 @@ def vcf(infileList, outfile):
 
 
 def tsv(infileList, outfile):
-    
+
     with open(outfile, 'w') as tsvout:
-        
+
         headerWritten = False
-        
+
         for file_i in infileList:
-        
+
             with genome.open_textfile(file_i) as tsvin:
-                
+
                 # First line is a header
                 line_i = tsvin.readline()
-                
+
                 if not headerWritten:
                     tsvout.write( line_i )
-                        
+
                 # Turn off header writing from now on:
                 headerWritten = True
 
                 line_i = tsvin.readline()
-                                
+
                 while line_i:
                     tsvout.write( line_i )
                     line_i = tsvin.readline()
@@ -72,20 +71,20 @@ def run():
 
     # Parse the arguments:
     args = parser.parse_args()
-    
+
     infiles  = args.input_files
     outfile  = args.output_file
     filetype = args.file_type
-    
+
     return infiles, outfile, filetype
 
 
 if __name__ == '__main__':
-    
+
     infiles, outfile, ftype = run()
-    
+
     if ftype == 'vcf':
         vcf(infiles, outfile)
-        
+
     elif ftype == 'tsv':
         tsv(infiles, outfile)
