@@ -23,12 +23,24 @@ def runPaired_by_region(inclusion, outdir=None, ref=None, tbam=None, nbam=None, 
 
     basename   = inclusion.split(os.sep)[-1].split('.')[0]
     outdir_i   = outdir + os.sep + basename
-
     os.mkdir(outdir_i)
 
-    print(outdir_i, ref, tbam, nbam, tumor_name, normal_name, truth_snv, truth_indel, classifier_snv, classifier_indel, pass_threshold, lowqual_threshold, hom_threshold, het_threshold, dbsnp, cosmic, inclusion, exclusion, mutect, indelocator, mutect2, varscan_snv, varscan_indel, jsm, sniper, vardict, muse, lofreq_snv, lofreq_indel, scalpel, strelka_snv, strelka_indel, tnscope, min_mq, min_bq, min_caller, somaticseq_train, ensembleOutPrefix, consensusOutPrefix, classifiedOutPrefix, keep_intermediates)
-
     run_somaticseq.runPaired(outdir_i, ref, tbam, nbam, tumor_name, normal_name, truth_snv, truth_indel, classifier_snv, classifier_indel, pass_threshold, lowqual_threshold, hom_threshold, het_threshold, dbsnp, cosmic, inclusion, exclusion, mutect, indelocator, mutect2, varscan_snv, varscan_indel, jsm, sniper, vardict, muse, lofreq_snv, lofreq_indel, scalpel, strelka_snv, strelka_indel, tnscope, min_mq, min_bq, min_caller, somaticseq_train, ensembleOutPrefix, consensusOutPrefix, classifiedOutPrefix, keep_intermediates)
+
+    return basename
+
+
+
+def runSingle_by_region(inclusion, outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False):
+
+    basename   = inclusion.split(os.sep)[-1].split('.')[0]
+    outdir_i   = outdir + os.sep + basename
+    os.mkdir(outdir_i)
+
+    run_somaticseq.runSingle(outdir_i, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False)
+
+    return basename
+
 
 
 
@@ -78,7 +90,43 @@ if __name__ == '__main__':
                    strelka_snv        = runParameters['strelka_snv'], \
                    strelka_indel      = runParameters['strelka_indel'], \
                    tnscope            = runParameters['tnscope'], \
-                   somaticseq_train   = runParameters['somaticseq_train'], \
+                   somaticseq_train   = False, \
                    keep_intermediates = runParameters['keep_intermediates'] )
 
         pool.map(runPaired_by_region_i, bed_splitted)
+
+    elif runParameters['mode'] == 'single':
+
+        runSingle_by_region_i = partial(runSingle_by_region_by_region, \
+                   outdir             = runParameters['outdir'], \
+                   ref                = runParameters['ref'], \
+                   bam                = runParameters['bam'], \
+                   sample_name        = runParameters['sample_name'], \
+                   truth_snv          = runParameters['truth_snv'], \
+                   truth_indel        = runParameters['truth_indel'], \
+                   classifier_snv     = runParameters['classifier_snv'], \
+                   classifier_indel   = runParameters['classifier_indel'], \
+                   pass_threshold     = runParameters['pass_threshold'], \
+                   lowqual_threshold  = runParameters['lowqual_threshold'], \
+                   hom_threshold      = runParameters['hom_threshold'], \
+                   het_threshold      = runParameters['het_threshold'], \
+                   min_mq             = runParameters['minMQ'], \
+                   min_bq             = runParameters['minBQ'], \
+                   min_caller         = runParameters['mincaller'], \
+                   dbsnp              = runParameters['dbsnp'], \
+                   cosmic             = runParameters['cosmic'], \
+                   exclusion          = runParameters['exclusion'], \
+                   mutect             = runParameters['mutect'], \
+                   mutect2            = runParameters['mutect2'], \
+                   varscan            = runParameters['varscan'], \
+                   vardict            = runParameters['vardict'], \
+                   lofreq             = runParameters['lofreq'], \
+                   scalpel            = runParameters['scalpel'], \
+                   strelka            = runParameters['strelka'], \
+                   somaticseq_train   = False, \
+                   keep_intermediates = runParameters['keep_intermediates'] )
+
+        pool.map(runSingle_by_region_i, bed_splitted)
+
+    if runParameters['somaticseq_train']:
+        pass
