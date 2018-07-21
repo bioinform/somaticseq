@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     elif runParameters['mode'] == 'single':
 
-        runSingle_by_region_i = partial(runSingle_by_region_by_region, \
+        runSingle_by_region_i = partial(runSingle_by_region, \
                    outdir             = runParameters['outdir'], \
                    ref                = runParameters['ref'], \
                    bam                = runParameters['bam'], \
