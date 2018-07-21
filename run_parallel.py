@@ -6,9 +6,6 @@ import somaticseq.run_somaticseq as run_somaticseq
 import utilities.split_Bed_into_equal_regions as split_bed
 from functools import partial
 
-#import test as run_somaticseq
-
-
 def splitRegions(nthreads, outfiles, bed=None, fai=None):
 
     if bed:
