@@ -149,5 +149,14 @@ if __name__ == '__main__':
     mergeSubdirVcf(subdirs, 'Consensus.sSNV.vcf', runParameters['outdir'])
     mergeSubdirVcf(subdirs, 'Consensus.sINDEL.vcf', runParameters['outdir'])
 
+    if runParameters['classifier_snv']:
+        mergeSubdirTsv(subdirs, 'SSeq.Classified.sSNV.tsv', runParameters['outdir'])
+        mergeSubdirVcf(subdirs, 'SSeq.Classified.sSNV.vcf', runParameters['outdir'])
+
+    if runParameters['classifier_indel']:
+        mergeSubdirTsv(subdirs, 'SSeq.Classified.sINDEL.tsv', runParameters['outdir'])
+        mergeSubdirVcf(subdirs, 'SSeq.Classified.sINDEL.vcf', runParameters['outdir'])
+
     if runParameters['somaticseq_train']:
-        pass
+        subprocess.call( (run_somaticseq.adaTrainer, runParameters['outdir'] + os.sep + 'Ensemble.sSNV.tsv', 'Consistent_Mates' 'Inconsistent_Mates') )
+        subprocess.call( (run_somaticseq.adaTrainer, runParameters['outdir'] + os.sep + 'Ensemble.sINDEL.tsv', 'Strelka_QSS', 'Strelka_TQSS','Consistent_Mates' 'Inconsistent_Mates') )
