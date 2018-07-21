@@ -25,6 +25,8 @@ def runPaired_by_region(inclusion, outdir=None, ref=None, tbam=None, nbam=None, 
     basename   = inclusion.split(os.sep)[-1].split('.')[0]
     outdir     = outdirbase + os.sep + basename
 
+    os.mkdir(outdir)
+
     run_somaticseq.runPaired(outdir, ref, tbam, nbam, tumor_name, normal_name, truth_snv, truth_indel, classifier_snv, classifier_indel, pass_threshold, lowqual_threshold, hom_threshold, het_threshold, dbsnp, cosmic, inclusion, exclusion, mutect, indelocator, mutect2, varscan_snv, varscan_indel, jsm, sniper, vardict, muse, lofreq_snv, lofreq_indel, scalpel, strelka_snv, strelka_indel, tnscope, min_mq, min_bq, min_caller, somaticseq_train, ensembleOutPrefix, consensusOutPrefix, classifiedOutPrefix, keep_intermediates)
 
 
