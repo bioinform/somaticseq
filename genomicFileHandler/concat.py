@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
-import argparse
+import argparse, os
+
+MY_DIR = os.path.dirname(os.path.realpath(__file__))
+sys.path.append( MY_DIR )
+
 import genomic_file_handlers as genome
 
 def vcf(infileList, outfile):
