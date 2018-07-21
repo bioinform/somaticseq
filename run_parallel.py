@@ -37,7 +37,7 @@ def runSingle_by_region(inclusion, outdir, ref, bam, sample_name='TUMOR', truth_
     outdir_i   = outdir + os.sep + basename
     os.mkdir(outdir_i)
 
-    run_somaticseq.runSingle(outdir_i, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False)
+    run_somaticseq.runSingle(outdir_i, ref, bam, sample_name, truth_snv, truth_indel, classifier_snv, classifier_indel, pass_threshold, lowqual_threshold, hom_threshold, het_threshold, dbsnp, cosmic, inclusion, exclusion, mutect, mutect2, varscan, vardict, lofreq, scalpel, strelka, min_mq, min_bq, min_caller, somaticseq_train, ensembleOutPrefix, consensusOutPrefix, classifiedOutPrefix, keep_intermediates)
 
     return basename
 
@@ -93,7 +93,7 @@ if __name__ == '__main__':
                    somaticseq_train   = False, \
                    keep_intermediates = runParameters['keep_intermediates'] )
 
-        pool.map(runPaired_by_region_i, bed_splitted)
+        subjobs = pool.map(runPaired_by_region_i, bed_splitted)
 
     elif runParameters['mode'] == 'single':
 
@@ -126,7 +126,9 @@ if __name__ == '__main__':
                    somaticseq_train   = False, \
                    keep_intermediates = runParameters['keep_intermediates'] )
 
-        pool.map(runSingle_by_region_i, bed_splitted)
+        subjobs = pool.map(runSingle_by_region_i, bed_splitted)
+
+    print('Sub-directories created: {}'.format(subjobs) )
 
     if runParameters['somaticseq_train']:
         pass
