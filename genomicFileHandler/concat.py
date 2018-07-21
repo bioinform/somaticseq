@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import argparse, os
+import argparse, os, sys
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append( MY_DIR )
