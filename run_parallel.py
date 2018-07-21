@@ -21,7 +21,9 @@ def splitRegions(nthreads, outfiles, bed=None, fai=None):
 
 def runPaired_by_region(inclusion, outdir=None, ref=None, tbam=None, nbam=None, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False):
 
-    outdir = os.sep.join( inclusion.split(os.sep)[:-1] ) if os.sep in inclusion else os.curdir
+    outdirbase = os.sep.join( inclusion.split(os.sep)[:-1] ) if os.sep in inclusion else os.curdir
+    basename   = inclusion.split(os.sep)[-1].split('.')[0]
+    outdir     = outdirbase + os.sep + basename
 
     run_somaticseq.runPaired(outdir, ref, tbam, nbam, tumor_name, normal_name, truth_snv, truth_indel, classifier_snv, classifier_indel, pass_threshold, lowqual_threshold, hom_threshold, het_threshold, dbsnp, cosmic, inclusion, exclusion, mutect, indelocator, mutect2, varscan_snv, varscan_indel, jsm, sniper, vardict, muse, lofreq_snv, lofreq_indel, scalpel, strelka_snv, strelka_indel, tnscope, min_mq, min_bq, min_caller, somaticseq_train, ensembleOutPrefix, consensusOutPrefix, classifiedOutPrefix, keep_intermediates)
 
