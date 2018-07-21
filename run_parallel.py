@@ -12,11 +12,10 @@ import genomicFileHandler.concat as concat
 
 def splitRegions(nthreads, outfiles, bed=None, fai=None):
 
-    if bed:
-        writtenBeds = split_bed.split(bed, outfiles, nthreads)
-    elif fai:
-        bed         = split_bed.fai2bed(fai, outfiles)
-        writtenBeds = split_bed.split(bed, outfiles, nthreads)
+    if fai:
+        bed = split_bed.fai2bed(fai, outfiles)
+
+    writtenBeds = split_bed.split(bed, outfiles, nthreads)
 
     return writtenBeds
 
@@ -141,7 +140,7 @@ if __name__ == '__main__':
 
         subdirs = pool.map(runSingle_by_region_i, bed_splitted)
 
-    print('Sub-directories created: {}'.format(subdirs), file=sys.stderr)
+    print('Sub-directories created: {}'.format(', '.join(subdirs)), file=sys.stderr)
 
     # Merge sub-results
     mergeSubdirTsv(subdirs, 'Ensemble.sSNV.tsv', runParameters['outdir'])
