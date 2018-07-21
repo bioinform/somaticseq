@@ -8,8 +8,6 @@ import somaticseq.run_somaticseq as run_somaticseq
 import utilities.split_Bed_into_equal_regions as split_bed
 import genomicFileHandler.concat as concat
 
-
-
 def splitRegions(nthreads, outfiles, bed=None, fai=None):
 
     if fai:
@@ -26,7 +24,7 @@ def runPaired_by_region(inclusion, outdir=None, ref=None, tbam=None, nbam=None, 
 
     basename   = inclusion.split(os.sep)[-1].split('.')[0]
     outdir_i   = outdir + os.sep + basename
-    os.mkdir(outdir_i)
+    os.makedirs(outdir_i, os.makedirs)
 
     run_somaticseq.runPaired(outdir_i, ref, tbam, nbam, tumor_name, normal_name, truth_snv, truth_indel, classifier_snv, classifier_indel, pass_threshold, lowqual_threshold, hom_threshold, het_threshold, dbsnp, cosmic, inclusion, exclusion, mutect, indelocator, mutect2, varscan_snv, varscan_indel, jsm, sniper, vardict, muse, lofreq_snv, lofreq_indel, scalpel, strelka_snv, strelka_indel, tnscope, min_mq, min_bq, min_caller, somaticseq_train, ensembleOutPrefix, consensusOutPrefix, classifiedOutPrefix, keep_intermediates)
 
@@ -38,7 +36,7 @@ def runSingle_by_region(inclusion, outdir, ref, bam, sample_name='TUMOR', truth_
 
     basename   = inclusion.split(os.sep)[-1].split('.')[0]
     outdir_i   = outdir + os.sep + basename
-    os.mkdir(outdir_i)
+    os.makedirs(outdir_i, os.makedirs)
 
     run_somaticseq.runSingle(outdir_i, ref, bam, sample_name, truth_snv, truth_indel, classifier_snv, classifier_indel, pass_threshold, lowqual_threshold, hom_threshold, het_threshold, dbsnp, cosmic, inclusion, exclusion, mutect, mutect2, varscan, vardict, lofreq, scalpel, strelka, min_mq, min_bq, min_caller, somaticseq_train, ensembleOutPrefix, consensusOutPrefix, classifiedOutPrefix, keep_intermediates)
 

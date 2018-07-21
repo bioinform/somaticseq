@@ -144,10 +144,12 @@ done
 
 mkdir -p ${merged_dir}
 
-echo 'SomaticSeq.Wrapper.sh script is being obsolesced.'
+
+
+echo 'This SomaticSeq.Wrapper.sh script is being obsolesced.'
 echo 'It is only here to maintain compatibility with previous versions.'
-echo 'You should look into run_somaticseq.py in the future.'
-echo 'This script simply runs the run_somaticseq.py script.'
+echo 'You should look into run_parallel.py or somaticseq/run_somaticseq.py in the future.'
+echo 'This script simply runs the somaticseq/run_somaticseq.py script.'
 echo ''
 
 
@@ -176,15 +178,15 @@ if [[ $strelka_vcf ]];       then strelka_arg="-strelka $strelka_vcf" ; fi
 if [[ $keep_intermediates == 1 ]]; then keep_intermediate_arg='--keep-intermediates'; fi
 
 
-${MYDIR}/run_somaticseq.py $outdir_arg $ref_arg $cosmic_arg $dbsnp_arg $classifier_snv_arg $classifier_indel_arg $exclude_arg $include_arg $truth_indel_arg $truth_snv_arg $pass_arg $low_arg $keep_intermediate_arg \
+${MYDIR}/somaticseq/run_somaticseq.py $outdir_arg $ref_arg $cosmic_arg $dbsnp_arg $classifier_snv_arg $classifier_indel_arg $exclude_arg $include_arg $truth_indel_arg $truth_snv_arg $pass_arg $low_arg $keep_intermediate_arg \
 single $bam_arg $mutect2_arg $varscan_arg $vardict_arg $lofreq_arg $scalpel_arg $strelka_arg
 
 
 
 
 echo ''
-echo 'SomaticSeq.Wrapper.sh script is being obsolesced.'
+echo 'This ssSomaticSeq.Wrapper.sh script is being obsolesced.'
 echo 'It is only here to maintain compatibility with previous versions.'
-echo 'You should look into run_somaticseq.py in the future.'
-echo 'This script simply runs the run_somaticseq.py script.'
+echo 'You should look into run_parallel.py or somaticseq/run_somaticseq.py in the future.'
+echo 'This script simply runs the somaticseq/run_somaticseq.py script.'
 
