@@ -2,9 +2,13 @@
 
 import sys, os, argparse, shutil, math, re
 from multiprocessing import Pool
+from functools import partial
+
 import somaticseq.run_somaticseq as run_somaticseq
 import utilities.split_Bed_into_equal_regions as split_bed
-from functools import partial
+import genomicFileHandler.concat as concat
+
+
 
 def splitRegions(nthreads, outfiles, bed=None, fai=None):
 
@@ -27,7 +31,7 @@ def runPaired_by_region(inclusion, outdir=None, ref=None, tbam=None, nbam=None, 
 
     run_somaticseq.runPaired(outdir_i, ref, tbam, nbam, tumor_name, normal_name, truth_snv, truth_indel, classifier_snv, classifier_indel, pass_threshold, lowqual_threshold, hom_threshold, het_threshold, dbsnp, cosmic, inclusion, exclusion, mutect, indelocator, mutect2, varscan_snv, varscan_indel, jsm, sniper, vardict, muse, lofreq_snv, lofreq_indel, scalpel, strelka_snv, strelka_indel, tnscope, min_mq, min_bq, min_caller, somaticseq_train, ensembleOutPrefix, consensusOutPrefix, classifiedOutPrefix, keep_intermediates)
 
-    return basename
+    return outdir_i
 
 
 
@@ -39,8 +43,17 @@ def runSingle_by_region(inclusion, outdir, ref, bam, sample_name='TUMOR', truth_
 
     run_somaticseq.runSingle(outdir_i, ref, bam, sample_name, truth_snv, truth_indel, classifier_snv, classifier_indel, pass_threshold, lowqual_threshold, hom_threshold, het_threshold, dbsnp, cosmic, inclusion, exclusion, mutect, mutect2, varscan, vardict, lofreq, scalpel, strelka, min_mq, min_bq, min_caller, somaticseq_train, ensembleOutPrefix, consensusOutPrefix, classifiedOutPrefix, keep_intermediates)
 
-    return basename
+    return outdir_i
 
+
+
+def mergeSubdirTsv(dirList, filename, outdir=os.curdir):
+    fileList = ['{}/{}'.format(dir_i, filename) for dir_i in dirList]
+    concat.tsv(fileList, outdir + os.sep + filename)
+
+def mergeSubdirVcf(dirList, filename, outdir=os.curdir):
+    fileList = ['{}/{}'.format(dir_i, filename) for dir_i in dirList]
+    concat.vcf(fileList, outdir + os.sep + filename)
 
 
 
@@ -93,7 +106,7 @@ if __name__ == '__main__':
                    somaticseq_train   = False, \
                    keep_intermediates = runParameters['keep_intermediates'] )
 
-        subjobs = pool.map(runPaired_by_region_i, bed_splitted)
+        subdirs = pool.map(runPaired_by_region_i, bed_splitted)
 
     elif runParameters['mode'] == 'single':
 
@@ -126,9 +139,15 @@ if __name__ == '__main__':
                    somaticseq_train   = False, \
                    keep_intermediates = runParameters['keep_intermediates'] )
 
-        subjobs = pool.map(runSingle_by_region_i, bed_splitted)
+        subdirs = pool.map(runSingle_by_region_i, bed_splitted)
 
-    print('Sub-directories created: {}'.format(subjobs) )
+    print('Sub-directories created: {}'.format(subdirs), file=sys.stderr)
+
+    # Merge sub-results
+    mergeSubdirTsv(subdirs, 'Ensemble.sSNV.tsv', runParameters['outdir'])
+    mergeSubdirTsv(subdirs, 'Ensemble.sINDEL.tsv', runParameters['outdir'])
+    mergeSubdirVcf(subdirs, 'Consensus.sSNV.vcf', runParameters['outdir'])
+    mergeSubdirVcf(subdirs, 'Consensus.sINDEL.vcf', runParameters['outdir'])
 
     if runParameters['somaticseq_train']:
         pass
