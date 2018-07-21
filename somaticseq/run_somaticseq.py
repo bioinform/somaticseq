@@ -43,9 +43,8 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     if tnscope:                indelCallers.append('TNscope')
     
     
-    
     # Function to combine individual VCFs into a simple VCF list of variants:
-    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combinePaired(outdir, ref, tbam, nbam, inclusion, exclusion, mutect, indelocator, mutect2, varscan_snv, varscan_indel, jsm, sniper, vardict, muse, lofreq_snv, lofreq_indel, scalpel, strelka_snv, strelka_indel, tnscope, keep_intermediates=True)
+    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combinePaired(outdir=outdir, ref=ref, tbam=tbam, nbam=nbam, inclusion=inclusion, exclusion=exclusion, mutect=mutect, indelocator=indelocator, mutect=mutect2, varscan_snv=varscan_snv, varscan_indel=varscan_indel, jsm=jsm, sniper=sniper, vardict=vardict, muse=muse, lofreq_snv=lofreq_snv, lofreq_indel=lofreq_indel, scalpel=scalpel, strelka_snv=strelka_snv, strelka_indel=strelka_indel, tnscope=tnscope, keep_intermediates=True)
     
     files_to_delete.add(outSnv)
     files_to_delete.add(outIndel)
@@ -143,7 +142,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
     
     
     # Function to combine individual VCFs into a simple VCF list of variants:
-    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combineSingle(outdir, ref, bam, inclusion, exclusion, mutect, mutect2, varscan, vardict, lofreq, scalpel, strelka, keep_intermediates=True)
+    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combineSingle(outdir=outdir, ref=ref, bam=bam, inclusion=inclusion, exclusion=exclusion, mutect=mutect, mutect2=mutect2, varscan=varscan, vardict=vardict, lofreq=lofreq, scalpel=scalpel, strelka=strelka, keep_intermediates=True)
 
     files_to_delete.add(outSnv)
     files_to_delete.add(outIndel)
@@ -238,8 +237,6 @@ def run():
     parser.add_argument('-hom', '--homozygous-threshold', type=float, help='VAF for homozygous', default=0.85)
     parser.add_argument('-het', '--heterozygous-threshold', type=float, help='VAF for heterozygous', default=0.01)
 
-
-
     parser.add_argument('-minMQ',     '--minimum-mapping-quality',type=float, help='Minimum mapping quality below which is considered poor', default=1)
     parser.add_argument('-minBQ',     '--minimum-base-quality',   type=float, help='Minimum base quality below which is considered poor', default=5)
     parser.add_argument('-mincaller', '--minimum-num-callers',    type=float, help='Minimum number of tools to be considered', default=0.5)
@@ -250,7 +247,9 @@ def run():
     parser.add_argument('-include',  '--inclusion-region', type=str,   help='inclusion bed')
     parser.add_argument('-exclude',  '--exclusion-region', type=str,   help='exclusion bed')
     
-    parser.add_argument('--keep-intermediates', action='store_true', help='Keep intermediate files', default=False)
+    parser.add_argument('-nt', '--threads',  type=int, help='number of threads', default=1)
+    
+    parser.add_argument('--keep-intermediates',         action='store_true', help='Keep intermediate files', default=False)
     parser.add_argument('-train', '--somaticseq-train', action='store_true', help='Invoke training mode with ground truths', default=False)
     
     
@@ -317,6 +316,7 @@ def run():
     inputParameters['cosmic']            = args.cosmic_vcf
     inputParameters['inclusion']         = args.inclusion_region
     inputParameters['exclusion']         = args.exclusion_region
+    inputParameters['threads']           = args.threads
     
     inputParameters['somaticseq_train']   = args.somaticseq_train
     inputParameters['keep_intermediates'] = args.keep_intermediates
@@ -366,6 +366,7 @@ def run():
 # Execute:
 if __name__ == '__main__':
     runParameters = run()
+    
     if runParameters['mode'] == 'paired':
         
         runPaired( outdir             = runParameters['outdir'], \

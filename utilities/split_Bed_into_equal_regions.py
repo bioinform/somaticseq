@@ -10,8 +10,8 @@ def run():
     
     # Variant Call Type, i.e., snp or indel
     parser.add_argument('-infile',    '--input-file',    type=str, help='Input merged BED file',    required=True,  default=None)
-    parser.add_argument('-num',        '--num-of-files', type=int, help='1',                        required=False, default=1)
-    parser.add_argument('-outfiles',   '--output-files', type=str, help='Output BED file',          required=False, default=sys.stdout)
+    parser.add_argument('-num',       '--num-of-files', type=int, help='1',                        required=False, default=1)
+    parser.add_argument('-outfiles',  '--output-files', type=str, help='Output BED file',          required=False, default=sys.stdout)
     
     
     # Parse the arguments:
@@ -21,10 +21,27 @@ def run():
     outfiles = args.output_files
     num      = args.num_of_files
     
-    return infile, outfile, num
+    return infile, outfiles, num
 
 
-def split(infile, outfile, num):
+def fai2bed(fai, bedout):
+    
+    with open(fai) as fai, open(bedout, 'w') as bed:
+    
+        fai_i = fai.readline().rstrip()
+        
+        while fai_i:
+            fai_item = fai_i.split('\t')
+            bed.write( '{}\t{}\t{}\n'.format(fai_item[0], '0', fai_item[1] ) )
+            fai_i = fai.readline().rstrip()
+            
+    return bedout
+
+
+def split(infile, outfiles, num):
+    
+    outfilesWritten = []
+    
     out_basename = outfiles.split( os.sep )[-1]
     
     if os.sep in outfiles:
@@ -82,6 +99,7 @@ def split(infile, outfile, num):
             breakpoint_i = size_per_file + start_i - current_size
     
             # Write these regions out, , reset "current_region," then add 1 to ith_split afterward to keep track:
+            outfilesWritten.append( '{}{}{}.{}'.format(out_directory, os.sep, ith_split, out_basename) )
             with open( '{}{}{}.{}'.format(out_directory, os.sep, ith_split, out_basename), 'w' ) as ith_out:
                 for line_i in current_region:
                     ith_out.write( line_i )
@@ -106,6 +124,7 @@ def split(infile, outfile, num):
                     
                     end_j = breakpoint_i + size_per_file
                     
+                    outfilesWritten.append( '{}{}{}.{}'.format(out_directory, os.sep, ith_split, out_basename) )
                     with open( '{}{}{}.{}'.format(out_directory, os.sep, ith_split, out_basename), 'w' ) as ith_out:
                         ith_out.write( '{}\t{}\t{}\n'.format( chr_i, breakpoint_i, end_j ) )
                     ith_split += 1
@@ -117,11 +136,15 @@ def split(infile, outfile, num):
                 current_size = end_i - breakpoint_i
     
     # The final region to write out:
-    with open( '{}{}{}.{}'.format(out_directory, os.sep, ith_split, out_basename), 'w' ) as ith_out:
+    ithOutName = '{}{}{}.{}'.format(out_directory, os.sep, ith_split, out_basename)
+    outfilesWritten.append( ithOutName )
+    with open( ithOutName, 'w' ) as ith_out:
         for line_i in current_region:
             ith_out.write( line_i )
+            
+    return outfilesWritten
 
 
 if __name__ == '__main__':
-    infile, outfile, num = run()
-    split(infile, outfile, num)
+    infile, outfiles, num = run()
+    split(infile, outfiles, num)
