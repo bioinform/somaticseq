@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os, argparse, shutil, math, re
+import sys, os, argparse, shutil, math, re, subprocess
 from multiprocessing import Pool
 from functools import partial
 
@@ -146,7 +146,7 @@ if __name__ == '__main__':
     # Merge sub-results
     mergeSubdirTsv(subdirs, 'Ensemble.sSNV.tsv', runParameters['outdir'])
     mergeSubdirTsv(subdirs, 'Ensemble.sINDEL.tsv', runParameters['outdir'])
-    
+
     if runParameters['classifier_snv']:
         mergeSubdirTsv(subdirs, 'SSeq.Classified.sSNV.tsv', runParameters['outdir'])
         mergeSubdirVcf(subdirs, 'SSeq.Classified.sSNV.vcf', runParameters['outdir'])
