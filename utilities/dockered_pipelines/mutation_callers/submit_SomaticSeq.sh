@@ -283,7 +283,7 @@ echo "$classifier_snv_text \\" >> $out_script
 echo "$classifier_indel_text \\" >> $out_script
 echo "$truth_snv_text \\" >> $out_script
 echo "$truth_indel_text \\" >> $out_script
-echo "${extra_arguments}" >> $out_script
+echo "${extra_arguments} \\" >> $out_script
 echo "paired \\" >> $out_script
 echo "--tumor-bam-file  /mnt/${tumor_bam} \\" >> $out_script
 echo "--normal-bam-file  /mnt/${normal_bam} \\" >> $out_script

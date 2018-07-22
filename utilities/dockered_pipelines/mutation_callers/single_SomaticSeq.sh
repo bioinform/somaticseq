@@ -227,7 +227,7 @@ echo "$classifier_snv_text \\" >> $out_script
 echo "$classifier_indel_text \\" >> $out_script
 echo "$truth_snv_text \\" >> $out_script
 echo "$truth_indel_text \\" >> $out_script
-echo "${extra_arguments}" >> $out_script
+echo "${extra_arguments} \\" >> $out_script
 echo "single \\" >> $out_script
 echo "--bam-file /mnt/${tumor_bam} \\" >> $out_script
 echo "$mutect2_text \\" >> $out_script
