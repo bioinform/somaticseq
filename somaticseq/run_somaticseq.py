@@ -73,7 +73,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
-            subprocess.call( (adaTrainer, ensembleSnv, 'Consistent_Mates' 'Inconsistent_Mates') )
+            subprocess.call( (adaTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
 
 
         consensusSnvVcf = outdir + os.sep + consensusOutPrefix + 'sSNV.vcf'
@@ -170,7 +170,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
-            subprocess.call( (adaTrainer, ensembleSnv, 'Consistent_Mates' 'Inconsistent_Mates') )
+            subprocess.call( (adaTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
 
 
         consensusSnvVcf = outdir + os.sep + consensusOutPrefix + 'sSNV.vcf'

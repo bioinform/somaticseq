@@ -158,5 +158,5 @@ if __name__ == '__main__':
         mergeSubdirVcf(subdirs, 'Consensus.sINDEL.vcf', runParameters['outdir'])
 
     if runParameters['somaticseq_train']:
-        subprocess.call( (run_somaticseq.adaTrainer, runParameters['outdir'] + os.sep + 'Ensemble.sSNV.tsv', 'Consistent_Mates' 'Inconsistent_Mates') )
-        subprocess.call( (run_somaticseq.adaTrainer, runParameters['outdir'] + os.sep + 'Ensemble.sINDEL.tsv', 'Strelka_QSS', 'Strelka_TQSS','Consistent_Mates' 'Inconsistent_Mates') )
+        subprocess.call( (run_somaticseq.adaTrainer, runParameters['outdir'] + os.sep + 'Ensemble.sSNV.tsv', 'Consistent_Mates', 'Inconsistent_Mates') )
+        subprocess.call( (run_somaticseq.adaTrainer, runParameters['outdir'] + os.sep + 'Ensemble.sINDEL.tsv', 'Strelka_QSS', 'Strelka_TQSS','Consistent_Mates', 'Inconsistent_Mates') )
