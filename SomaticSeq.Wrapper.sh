@@ -252,7 +252,7 @@ if [[ $indelclassifier ]];   then classifier_indel_arg="--classifier-indel $inde
 if [[ $masked_region ]];     then exclude_arg="-exclude $masked_region"; fi
 if [[ $inclusion_region ]];  then include_arg="-include $inclusion_region"; fi
 if [[ $indelgroundtruth ]];  then truth_indel_arg="--truth-indel $indelgroundtruth"; fi
-if [[ $snpgroundtruth ]];    then truth_snv_arg="--truth $snpgroundtruth"; fi
+if [[ $snpgroundtruth ]];    then truth_snv_arg="--truth-snv $snpgroundtruth"; fi
 if [[ $pass_threshold ]];    then pass_arg="--pass-threshold $pass_threshold"; fi
 if [[ $lowqual_threshold ]]; then low_arg="--lowqual-threshold $lowqual_threshold"; fi
 
