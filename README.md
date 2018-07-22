@@ -5,53 +5,62 @@
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
 
 ## Requirements
-* Python 3, plus regex, pysam, numpy, and scipy libraries
+* Python 3, plus pysam, numpy, and scipy libraries
 * R, plus [ada](https://cran.r-project.org/package=ada) library
 * BEDTools
-* Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature)
+* Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature). COSMIC VCF file can also be included to annotate COSMIC ID, but does not affect the algorithm otherwise.
 * At least one of the callers we have incorporated, i.e., MuTect2/MuTect/Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, and/or TNscope.
 
 ## Example commands
-* The following is a SomaticSeq command **after** the individual mutation caller jobs are complete
+* The following is a SomaticSeq command **after** the individual mutation caller jobs are complete. Required inputs are `--output-directory`, `--genome-reference`, `paired|single`, `--tumor-bam-file`, and `--normal-bam-file`. Everything else is optional, although if you don't have a single VCF file input, the command will have nothing to do.
+* The following four files will be created into the `$OUTPUT_DIR`:
+  * Consensus.sSNV.vcf
+  * Consensus.sINDEL.vcf
+  * Ensemble.sSNV.tsv
+  * Ensemble.sINDEL.tsv
+
 * If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [dockerized somatic mutation scripts](utilities/dockered_pipelines).
 
 ```
-$somaticseq/SomaticSeq.Wrapper.sh \
---output-dir       /PATH/TO/RESULTS/SomaticSeq_MVSDULPK \
---genome-reference /PATH/TO/GRCh38.fa \
---tumor-bam        /PATH/TO/HCC1395.bam \
---normal-bam       /PATH/TO/HCC1395BL.bam \
---dbsnp            /PATH/TO/dbSNP.GRCh38.vcf \
---cosmic           /PATH/TO/COSMIC.v77.vcf \
---mutect2          /PATH/TO/RESULTS/MuTect2.vcf \
---varscan-snv      /PATH/TO/RESULTS/VarScan2.snp.vcf \
---varscan-indel    /PATH/TO/RESULTS/VarScan2.indel.vcf \
---sniper           /PATH/TO/RESULTS/SomaticSniper.vcf \
---vardict          /PATH/TO/RESULTS/VarDict.vcf \
---muse             /PATH/TO/RESULTS/MuSE.vcf \
---lofreq-snv       /PATH/TO/RESULTS/LoFreq.somatic_final.snvs.vcf.gz \
---lofreq-indel     /PATH/TO/RESULTS/LoFreq.somatic_final.indels.vcf.gz \
---scalpel          /PATH/TO/RESULTS/Scalpel.vcf \
---strelka-snv      /PATH/TO/RESULTS/Strelka/results/variants/somatic.snvs.vcf.gz \
---strelka-indel    /PATH/TO/RESULTS/Strelka/results/variants/somatic.indels.vcf.gz \
---inclusion-region /PATH/TO/RESULTS/captureRegion.bed \
---exclusion-region /PATH/TO/RESULTS/blackList.bed
+# Merge caller results and extract SomaticSeq features
+$somaticseq/run_parallel.py \
+--somaticseq-train \
+--output-directory  $OUTPUT_DIR \
+--genome-reference  GRCh38.fa \
+--inclusion-region  genome.bed \
+--exclusion-region  blacklist.bed \
+--threads           8 \
+paired \
+--tumor-bam-file    tumor.bam \
+--normal-bam-file   matched_normal.bam \
+--mutect2-vcf       MuTect2/variants.vcf \
+--varscan-snv       VarScan2/variants.snp.vcf \
+--varscan-indel     VarScan2/variants.indel.vcf \
+--jsm-vcf           JointSNVMix2/variants.snp.vcf \
+--somaticsniper-vcf SomaticSniper/variants.snp.vcf \
+--vardict-vcf       VarDict/variants.vcf \
+--muse-vcf          MuSE/variants.snp.vcf \
+--lofreq-snv        LoFreq/variants.snp.vcf \
+--lofreq-indel      LoFreq/variants.indel.vcf \
+--scalpel-vcf       Scalpel/variants.indel.vcf \
+--strelka-snv       Strelka/variants.snv.vcf \
+--strelka-indel     Strelka/variants.indel.vcf
 ```
 
-* For all those input VCF files, either .vcf or .vcf.gz are acceptable. 
+* For single-threaded job, you may also use the `$somaticseq/somaticseq/run_somaticseq.py` script, with identical input options except fot `--threads`. The `run_parallel.py` is simply a script to create multiple sub-BED files, and then invokes `somaticseq/run_somaticseq.py` on each of those sub-BED files in parallel.
+* For all those input VCF files, either .vcf or .vcf.gz are acceptable.
 
-### Additional parameters to invoke training mode (to create classifiers)
+Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two additional files (classifiers) will be created, i.e., `Ensemble.sSNV.tsv.ntChange.Classifier.RData` and `Ensemble.sINDEL.tsv.ntChange.Classifier.RData`.
 
-* `--ada-r-script`:     /PATH/TO/somaticseq/r_scripts/ada_model_builder_ntChange.R
+* `--somaticseq-train`: FLAG to invoke training mode with no argument
 * `--truth-snv`:        if you have ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL
 
-### Additional parameters to invoke prediction mode (to use classifiers to score variants)
-* `--ada-r-script`:     /PATH/TO/somaticseq/r_scripts/ada_model_predictor.R
+Additional input files to be specified **before** `paired` option invoke prediction mode (to use classifiers to score variants). Four additional files will be created, i.e., `Seq.Classified.sSNV.vcf`, `SSeq.Classified.sSNV.tsv`,  `SSeq.Classified.sINDEL.vcf`, and `SSeq.Classified.sINDEL.tsv`.
 * `--classifier-snv`:   classifier (.RData file) previously built for SNV
 * `--classifier-indel`: classifier (.RData file) previously built for INDEL
 
-Without those paramters above to invoking training or prediction mode, SomaticSeq will default to majority-vote consensus mode. 
+Without those paramters above to invoking training or prediction mode, SomaticSeq will default to majority-vote consensus mode.
 
 
 Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data, e.g., z-scores between reference- and variant-supporting reads will be NaN if there is no reference read at a position.
@@ -64,11 +73,11 @@ Do not worry if Python throws the following warning. This occurs when SciPy atte
 ## Dockerized workflows and pipelines
 
 ### To run somatic mutation callers and then SomaticSeq
-We have created scripts that run all the dockerized somatic mutation callers and then SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines). 
-All you need is [docker](https://www.docker.com/). 
+We have created scripts that run all the dockerized somatic mutation callers and then SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines).
+All you need is [docker](https://www.docker.com/).
 
 ### To create training data to create SomaticSeq classifiers
-We have also dockerized pipelines for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator). 
+We have also dockerized pipelines for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator).
 These pipelines are based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). We use it to create training set to build SomaticSeq classifiers.
 
 ### GATK's best practices for alignment
@@ -81,6 +90,6 @@ The limited pipeline to generate BAM files based on GATK's best practices is at 
 
 ## Video tutorial
 
-This 8-minute video was created for SomaticSeq v1.0. The details are slightly outdated, but the main points remain the same. 
+This 8-minute video was created for SomaticSeq v1.0. The details are slightly outdated, but the main points remain the same.
 
   [![SomaticSeq Video](docs/SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")
