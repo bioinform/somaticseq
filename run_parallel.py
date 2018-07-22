@@ -10,7 +10,8 @@ import genomicFileHandler.concat as concat
 
 def splitRegions(nthreads, outfiles, bed=None, fai=None):
 
-    if fai:
+    assert bed or fai
+    if fai and not bed:
         bed = split_bed.fai2bed(fai, outfiles)
 
     writtenBeds = split_bed.split(bed, outfiles, nthreads)
