@@ -150,25 +150,25 @@ while true; do
             "") shift 2 ;;
             *)  ada_r_script=$2 ; shift 2 ;;
         esac ;;
-        
+
     --classifier-snv )
         case "$2" in
             "") shift 2 ;;
             *)  classifier_snv=$2 ; shift 2 ;;
         esac ;;
-        
+
     --classifier-indel )
         case "$2" in
             "") shift 2 ;;
             *)  classifier_indel=$2 ; shift 2 ;;
         esac ;;
-        
+
     --truth-snv )
         case "$2" in
             "") shift 2 ;;
             *)  truth_snv=$2 ; shift 2 ;;
         esac ;;
-        
+
     --truth-indel )
         case "$2" in
             "") shift 2 ;;
@@ -311,7 +311,7 @@ then
     then
         input_mutect2_arguments="${mutect2_arguments}"
     fi
-    
+
     if [[ ${mutect2_filter_arguments} ]]
     then
         input_mutect2_filter_arguments="${mutect2_filter_arguments}"
@@ -337,12 +337,12 @@ then
 
     input_varscan_pileup_arguments=''
     input_varscan_arguments=''
-    
+
     if [[ ${varscan_pileup_arguments} ]]
     then
         input_varscan_pileup_arguments="${varscan_pileup_arguments}"
     fi
-    
+
     if [[ ${varscan_arguments} ]]
     then
         input_varscan_arguments="${varscan_arguments}"
@@ -368,12 +368,12 @@ then
 
     input_jsm_train_arguments=''
     input_jsm_classify_arguments=''
-    
+
     if [[ ${jsm_train_arguments} ]]
     then
         input_jsm_train_arguments="${jsm_train_arguments}"
     fi
-    
+
     if [[ ${jsm_classify_arguments} ]]
     then
         input_jsm_classify_arguments="${jsm_classify_arguments}"
@@ -419,7 +419,7 @@ if [[ $vardict -eq 1 ]]
 then
 
     input_vardict_arguments=''
-    
+
     if [[ ${vardict_arguments} ]]
     then
         input_vardict_arguments="${vardict_arguments}"
@@ -490,12 +490,12 @@ then
 
     input_scalpel_discovery_arguments=''
     input_scalpel_export_arguments=''
-    
+
     if [[ ${scalpel_discovery_arguments} ]]
     then
         input_scalpel_discovery_arguments="${scalpel_discovery_arguments}"
     fi
-    
+
     if [[ ${scalpel_export_arguments} ]]
     then
         input_scalpel_export_arguments="${scalpel_export_arguments}"
@@ -521,12 +521,12 @@ then
 
     input_strelka_config_arguments=''
     input_strelka_run_arguments=''
-    
+
     if [[ ${strelka_config_arguments} ]]
     then
         input_strelka_config_arguments="${strelka_config_arguments}"
     fi
-    
+
     if [[ ${strelka_run_arguments} ]]
     then
         input_strelka_run_arguments="${strelka_run_arguments}"
@@ -561,15 +561,8 @@ then
     if [[ ${dbsnp} ]];          then dbsnp_input="--dbsnp ${dbsnp}"                                     ; fi
     if [[ ${cosmic} ]];         then cosmic_input="--cosmic ${cosmic}"                                  ; fi
     if [[ ${EXCLUSION} ]];      then exclusion_text="--exclude ${EXCLUSION}"                            ; fi
-    
-    
-    if [[ $ada_r_script ]]; then
-        ada_r_script_text="--ada-r-script /mnt/${ada_r_script}"
-    elif [[ ($truth_snv || $truth_indel) && $somaticseq_train ]]; then
-        ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_builder_ntChange.R"
-    elif [[ $classifier_snv || $classifier_indel ]]; then
-        ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"
-    fi
+
+    if [[ $somaticseq_train ]]; then train="--somaticseq-train"                                         ; fi
 
     input_somaticseq_arguments=''
     if [[ ${somaticseq_arguments} ]]
@@ -582,6 +575,7 @@ then
     --tumor-bam ${tumor_bam} \
     --out-dir ${outdir}/${somaticseq_dir} \
     --human-reference ${HUMAN_REFERENCE} \
+    $train \
     $selector_input \
     $exclusion_text \
     $dbsnp_input \
@@ -604,7 +598,6 @@ then
     $classifier_indel_text \
     $truth_snv_text \
     $truth_indel_text \
-    $ada_r_script_text \
     --extra-arguments "${input_somaticseq_arguments}" \
     --action ${somaticseq_action}
 

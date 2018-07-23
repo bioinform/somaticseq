@@ -103,13 +103,13 @@ while true; do
             "") shift 2 ;;
             *)  action=$2 ; shift 2 ;;
         esac ;;
-        
+
     --somaticseq-action )
         case "$2" in
             "") shift 2 ;;
             *)  somaticseq_action=$2 ; shift 2 ;;
         esac ;;
-        
+
     --threads )
         case "$2" in
             "") shift 2 ;;
@@ -157,25 +157,25 @@ while true; do
             "") shift 2 ;;
             *)  ada_r_script=$2 ; shift 2 ;;
         esac ;;
-        
+
     --classifier-snv )
         case "$2" in
             "") shift 2 ;;
             *)  classifier_snv=$2 ; shift 2 ;;
         esac ;;
-        
+
     --classifier-indel )
         case "$2" in
             "") shift 2 ;;
             *)  classifier_indel=$2 ; shift 2 ;;
         esac ;;
-        
+
     --truth-snv )
         case "$2" in
             "") shift 2 ;;
             *)  truth_snv=$2 ; shift 2 ;;
         esac ;;
-        
+
     --truth-indel )
         case "$2" in
             "") shift 2 ;;
@@ -274,7 +274,7 @@ while true; do
 
     --scalpel-two-pass )
         two_pass=1 ; shift ;;
-        
+
     --exome )
         exome_stat=1 ; shift ;;
 
@@ -297,7 +297,7 @@ then
 else
     cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
 fi
-    
+
 
 if [[ `which python3` ]]
 then
@@ -322,13 +322,13 @@ do
     then
         jsm_input="--jsm ${outdir}/${ith_thread}/JointSNVMix2.vcf"
     fi
-    
-    
+
+
     if [[ $somaticsniper -eq 1 ]]
     then
         sniper_input="--sniper ${outdir}/${ith_thread}/SomaticSniper.vcf"
     fi
-    
+
     if [[ $mutect -eq 1 ]]
     then
         $MYDIR/mutation_callers/submit_MuTect.sh \
@@ -340,28 +340,28 @@ do
         --human-reference ${HUMAN_REFERENCE} \
         --dbsnp ${dbsnp} \
         --action $action
-        
+
         mutect_input="--mutect ${outdir}/${ith_thread}/MuTect.vcf"
         indelocator_input="--indelocator ${outdir}/${ith_thread}/Indel.MuTect.vcf"
     fi
-    
+
 
     if [[ $mutect2 -eq 1 ]]
     then
-                
+
         input_mutect2_arguments=''
         input_mutect2_filter_arguments=''
-        
+
         if [[ ${mutect2_arguments} ]]
         then
             input_mutect2_arguments="${mutect2_arguments}"
         fi
-        
+
         if [[ ${mutect2_filter_arguments} ]]
         then
             input_mutect2_filter_arguments="${mutect2_filter_arguments}"
         fi
-    
+
         $MYDIR/mutation_callers/submit_MuTect2.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
@@ -373,27 +373,27 @@ do
         --extra-arguments "${input_mutect2_arguments}" \
         --extra-filter-arguments "${input_mutect2_filter_arguments}" \
         --action $action
-    
+
         mutect2_input="--mutect2 ${outdir}/${ith_thread}/MuTect2.vcf"
     fi
-        
+
 
     if [[ $varscan2 -eq 1 ]]
     then
-        
+
         input_varscan_pileup_arguments=''
         input_varscan_arguments=''
-        
+
         if [[ ${varscan_pileup_arguments} ]]
         then
             input_varscan_pileup_arguments="${varscan_pileup_arguments}"
         fi
-        
+
         if [[ ${varscan_arguments} ]]
         then
             input_varscan_arguments="${varscan_arguments}"
         fi
-    
+
         $MYDIR/mutation_callers/submit_VarScan2.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
@@ -404,23 +404,23 @@ do
         --extra-pileup-arguments "${input_varscan_pileup_arguments}" \
         --extra-arguments "${input_varscan_arguments}" \
         --action $action
-    
+
         varscan_snv_input="--varscan-snv ${outdir}/${ith_thread}/VarScan2.snp.vcf"
         varscan_indel_input="--varscan-indel ${outdir}/${ith_thread}/VarScan2.indel.vcf"
     fi
 
 
-        
+
     if [[ $vardict -eq 1 ]]
     then
-        
+
         input_vardict_arguments=''
-        
+
         if [[ ${vardict_arguments} ]]
         then
             input_vardict_arguments="${vardict_arguments}"
         fi
-    
+
         $MYDIR/mutation_callers/submit_VarDictJava.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
@@ -431,11 +431,11 @@ do
         --VAF ${min_vaf} \
         --extra-arguments "${input_vardict_arguments}" \
         --action $action
-        
+
         vardict_input="--vardict ${outdir}/${ith_thread}/VarDict.vcf"
     fi
-    
-    
+
+
     if [[ $muse -eq 1 ]]
     then
         $MYDIR/mutation_callers/submit_MuSE.sh \
@@ -448,21 +448,21 @@ do
         --dbsnp ${dbsnp} \
         --extra-arguments "${muse_extra_arguments}" \
         --action $action
-        
+
         muse_input="--muse ${outdir}/${ith_thread}/MuSE.vcf"
     fi
-    
-    
+
+
     if [[ $lofreq -eq 1 ]]
     then
-    
+
         input_lofreq_arguments=''
-        
+
         if [[ ${lofreq_arguments} ]]
         then
             input_lofreq_arguments="${lofreq_arguments}"
         fi
-    
+
         $MYDIR/mutation_callers/submit_LoFreq.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
@@ -473,33 +473,33 @@ do
         --dbsnp ${dbsnp} \
         --extra-arguments "${input_lofreq_arguments}" \
         --action $action
-        
+
         lofreq_snv_input="--lofreq-snv ${outdir}/${ith_thread}/LoFreq.somatic_final.snvs.vcf.gz"
         lofreq_indel_input="--lofreq-indel ${outdir}/${ith_thread}/LoFreq.somatic_final.indels.vcf.gz"
     fi
-    
-    
+
+
     if [[ $scalpel -eq 1 ]]
     then
-    
+
         if [[ $two_pass ]]
         then
             two_pass='--two-pass'
-        fi    
-        
+        fi
+
         input_scalpel_discovery_arguments=''
         input_scalpel_export_arguments=''
-        
+
         if [[ ${scalpel_discovery_arguments} ]]
         then
             input_scalpel_discovery_arguments="${scalpel_discovery_arguments}"
         fi
-        
+
         if [[ ${scalpel_export_arguments} ]]
         then
             input_scalpel_export_arguments="${scalpel_export_arguments}"
         fi
-    
+
         $MYDIR/mutation_callers/submit_Scalpel.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
@@ -511,32 +511,32 @@ do
         --extra-export-arguments "${input_scalpel_export_arguments}" \
         ${two_pass} \
         --action $action
-        
+
         scalpel_input="--scalpel ${outdir}/${ith_thread}/Scalpel.vcf"
     fi
-    
-      
+
+
     if [[ $strelka -eq 1 ]]
     then
-    
+
         if [[ $exome_stat ]]
         then
             exome_stat='--exome'
         fi
-        
+
         input_strelka_config_arguments=''
         input_strelka_run_arguments=''
-        
+
         if [[ ${strelka_config_arguments} ]]
         then
             input_strelka_config_arguments="${strelka_config_arguments}"
         fi
-        
+
         if [[ ${strelka_run_arguments} ]]
         then
             input_strelka_run_arguments="${strelka_run_arguments}"
         fi
-    
+
         $MYDIR/mutation_callers/submit_Strelka.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
@@ -548,12 +548,12 @@ do
         --extra-config-arguments "${input_strelka_config_arguments}" \
         --extra-run-arguments "${input_strelka_run_arguments}" \
         --action $action
-        
+
         strelka_snv_input="--strelka-snv ${outdir}/${ith_thread}/Strelka/results/variants/somatic.snvs.vcf.gz"
-        strelka_indel_input="--strelka-indel ${outdir}/${ith_thread}/Strelka/results/variants/somatic.indels.vcf.gz"        
+        strelka_indel_input="--strelka-indel ${outdir}/${ith_thread}/Strelka/results/variants/somatic.indels.vcf.gz"
     fi
-    
-    
+
+
     # SomaticSeq
     if [[ $somaticseq -eq 1 ]]
     then
@@ -567,26 +567,21 @@ do
         if [[ ${dbsnp} ]];          then dbsnp_input="--dbsnp ${dbsnp}"                                     ; fi
         if [[ ${cosmic} ]];         then cosmic_input="--cosmic ${cosmic}"                                  ; fi
 
-        if [[ $ada_r_script ]]; then
-            ada_r_script_text="--ada-r-script /mnt/${ada_r_script}"
-        elif [[ ($truth_snv || $truth_indel) && $somaticseq_train ]]; then
-            ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_builder_ntChange.R"
-        elif [[ $classifier_snv || $classifier_indel ]]; then
-            ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"
-        fi
-        
+        if [[ $somaticseq_train ]]; then train="--somaticseq-train"                                         ; fi
+
         input_somaticseq_arguments=''
-        
+
         if [[ ${somaticseq_arguments} ]]
         then
             input_somaticseq_arguments="${somaticseq_arguments}"
         fi
-        
+
         $MYDIR/mutation_callers/submit_SomaticSeq.sh \
         --normal-bam ${normal_bam} \
         --tumor-bam ${tumor_bam} \
         --out-dir ${outdir}/${ith_thread}/${somaticseq_dir} \
         --human-reference ${HUMAN_REFERENCE} \
+        $train \
         $dbsnp_input \
         $cosmic_input \
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
@@ -613,7 +608,7 @@ do
         --extra-arguments "${input_somaticseq_arguments}" \
         --action ${somaticseq_action}
     fi
-        
+
     ith_thread=$(( $ith_thread + 1))
 
 done
@@ -626,17 +621,17 @@ then
 
     input_jsm_train_arguments=''
     input_jsm_classify_arguments=''
-    
+
     if [[ ${jsm_train_arguments} ]]
     then
         input_jsm_train_arguments="${jsm_train_arguments}"
     fi
-    
+
     if [[ ${jsm_classify_arguments} ]]
     then
         input_jsm_classify_arguments="${jsm_classify_arguments}"
     fi
-    
+
     $MYDIR/mutation_callers/submit_JointSNVMix2.sh \
     --normal-bam ${normal_bam} \
     --tumor-bam ${tumor_bam} \
@@ -654,7 +649,7 @@ if [[ $somaticsniper -eq 1 ]]
 then
 
     input_somaticsniper_arguments=''
-    
+
     if [[ ${somaticsniper_arguments} ]]
     then
         input_somaticsniper_arguments="${somaticsniper_arguments}"
