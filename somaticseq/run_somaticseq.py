@@ -10,8 +10,9 @@ import genomicFileHandler.genomic_file_handlers as genome
 import vcfModifier.copy_TextFile as copy_TextFile
 import somaticseq.combine_callers as combineCallers
 
-adaTrainer   = PRE_DIR +  os.sep + 'r_scripts' + os.sep + 'ada_model_builder_ntChange.R'
-adaPredictor = PRE_DIR +  os.sep + 'r_scripts' + os.sep + 'ada_model_predictor.R'
+
+adaTrainer   = os.sep.join( (PRE_DIR, 'r_scripts', 'ada_model_builder_ntChange.R') )
+adaPredictor = os.sep.join( (PRE_DIR, 'r_scripts', 'ada_model_predictor.R') )
 
 
 def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False):
@@ -50,8 +51,9 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     files_to_delete.add(outIndel)
     [ files_to_delete.add(i) for i in tempFiles ]
 
-    ensembleSnv   = outdir + os.sep + ensembleOutPrefix + 'sSNV.tsv'
-    ensembleIndel = outdir + os.sep + ensembleOutPrefix + 'sINDEL.tsv'
+
+    ensembleSnv   = os.sep.join(( outdir, ensembleOutPrefix + 'sSNV.tsv' ))
+    ensembleIndel = os.sep.join(( outdir, ensembleOutPrefix + 'sINDEL.tsv' ))
 
 
     ######################  SNV  ######################
@@ -62,9 +64,9 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
     # Classify SNV calls
     if classifier_snv:
-        classifiedSnvTsv = outdir + os.sep + classifiedOutPrefix + 'sSNV.tsv'
-        classifiedSnvVcf = outdir + os.sep + classifiedOutPrefix + 'sSNV.vcf'
-
+        classifiedSnvTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.tsv' ))
+        classifiedSnvVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.vcf' ))
+        
         subprocess.call( (adaPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
 
         tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True)
@@ -75,8 +77,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         if somaticseq_train and truth_snv:
             subprocess.call( (adaTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
 
-
-        consensusSnvVcf = outdir + os.sep + consensusOutPrefix + 'sSNV.vcf'
+        consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
         tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
 
 
@@ -88,10 +89,10 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
 
     # Classify INDEL calls
-    if classifier_indel:
-        classifiedIndelTsv = outdir + os.sep + classifiedOutPrefix + 'sINDEL.tsv'
-        classifiedIndelVcf = outdir + os.sep + classifiedOutPrefix + 'sINDEL.vcf'
-
+    if classifier_indel:        
+        classifiedIndelTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.tsv' ))
+        classifiedIndelVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.vcf' ))
+        
         subprocess.call( (adaPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
 
         tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True)
@@ -101,8 +102,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         if somaticseq_train and truth_indel:
             subprocess.call( (adaTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
 
-
-        consensusIndelVcf = outdir + os.sep + consensusOutPrefix + 'sINDEL.vcf'
+        consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))
         tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
 
 
@@ -148,8 +148,9 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
     files_to_delete.add(outIndel)
     [ files_to_delete.add(i) for i in tempFiles ]
 
-    ensembleSnv   = outdir + os.sep + ensembleOutPrefix + 'sSNV.tsv'
-    ensembleIndel = outdir + os.sep + ensembleOutPrefix + 'sINDEL.tsv'
+    ensembleSnv   = os.sep.join(( outdir, ensembleOutPrefix + 'sSNV.tsv' ))
+    ensembleIndel = os.sep.join(( outdir, ensembleOutPrefix + 'sINDEL.tsv' ))
+    
 
     ######################  SNV  ######################
     mutect_infile = intermediateVcfs['MuTect2']['snv'] if intermediateVcfs['MuTect2']['snv'] else mutect
@@ -159,8 +160,8 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
 
     # Classify SNV calls
     if classifier_snv:
-        classifiedSnvTsv = outdir + os.sep + classifiedOutPrefix + 'sSNV.tsv'
-        classifiedSnvVcf = outdir + os.sep + classifiedOutPrefix + 'sSNV.vcf'
+        classifiedSnvTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.tsv' ))
+        classifiedSnvVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.vcf' ))
 
         subprocess.call( (adaPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
 
@@ -172,8 +173,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         if somaticseq_train and truth_snv:
             subprocess.call( (adaTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
 
-
-        consensusSnvVcf = outdir + os.sep + consensusOutPrefix + 'sSNV.vcf'
+        consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
         tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
 
 
@@ -184,8 +184,8 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
 
     # Classify INDEL calls
     if classifier_indel:
-        classifiedIndelTsv = outdir + os.sep + classifiedOutPrefix + 'sINDEL.tsv'
-        classifiedIndelVcf = outdir + os.sep + classifiedOutPrefix + 'sINDEL.vcf'
+        classifiedIndelTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.tsv' ))
+        classifiedIndelVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.vcf' ))
 
         subprocess.call( (adaPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
 
@@ -196,8 +196,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         if somaticseq_train and truth_indel:
             subprocess.call( (adaTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
 
-
-        consensusIndelVcf = outdir + os.sep + consensusOutPrefix + 'sINDEL.vcf'
+        consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))
         tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
 
 

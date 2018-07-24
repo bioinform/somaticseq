@@ -88,46 +88,6 @@ class Vcf_line:
 
 
 
-
-class Bam_header:
-    '''I wrote this to read the bam headers into a tuple'''
-
-    def __init__(self, bam_file, method = 'samtools'):
-
-        '''Argument is a line in pileup file.'''
-        self.bam_header = tuple( os.popen( '{} view -H {}'.format(samtools, bam_file) ) )
-
-
-    def SM(self):
-        '''Sample Name'''
-
-        sample_name = set()
-
-        for header_i in self.bam_header:
-            items = header_i.rstrip('\n').split('\t')
-            for item_i in items:
-                if item_i.startswith('SM:'):
-                    sample_name.add( item_i.replace('SM:', '') )
-        sample_name = tuple(sample_name)
-
-        return sample_name
-
-
-    def custom_tag(self, tag_i):
-
-        values_i = []
-
-        for header_i in self.bam_header:
-            items = header_i.rstrip('\n').split('\t')
-
-            for item_i in items:
-                if item_i.startswith( tag_i+':' ):
-                    values_i.append( item_i.replace(tag_i+':', '') )
-
-        return values_i
-
-
-
 class pysam_header:
     '''
     Extract BAM header using pysam.
@@ -172,10 +132,9 @@ def faiordict2contigorder(file_name, file_format):
 
     contig_sequence = []
     with open(file_name) as gfile:
-        line_i = gfile.readline().rstrip('\n')
-
-        while line_i:
-
+        
+        for line_i in gfile:
+            
             if file_format == 'fai':
                 contig_match = re.match(r'([^\t]+)\t', line_i)
 
@@ -186,8 +145,6 @@ def faiordict2contigorder(file_name, file_format):
             if contig_match:
                 contig_i = contig_match.groups()[0].split(' ')[0]  # some .fai files have space after the contig for descriptions.
                 contig_sequence.append( contig_i )
-
-            line_i = gfile.readline().rstrip('\n')
 
     chrom_seq = {}
     for n,contig_i in enumerate(contig_sequence):
@@ -261,13 +218,13 @@ def phred2p(phred):
 
 def findall_index(mylist, tolookfor):
     '''Find all instances in a list that matches exactly thestring.'''
-    all_indices = [i for i,mylist in enumerate(mylist) if mylist == tolookfor]
+    all_indices = [i for i,item in enumerate(mylist) if item == tolookfor]
     return all_indices
 
 
 def findall_index_regex(mylist, pattern):
     '''Find all instances in a list that matches a regex pattern.'''
-    all_indices = [i for i,mylist in enumerate(mylist) if re.search(pattern, mylist)]
+    all_indices = [i for i,item in enumerate(mylist) if re.search(pattern, item)]
     return all_indices
 
 

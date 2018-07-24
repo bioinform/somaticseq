@@ -71,14 +71,17 @@ def run():
     # Variant Call Type, i.e., snp or indel
     parser.add_argument('-infiles', '--input-files', type=str, nargs='*', help='Input files', required=True)
     parser.add_argument('-outfile', '--output-file', type=str,            help='Output file', required=True)
-    parser.add_argument('-type',    '--file-type',   type=str,            help='vcf or tsv',  default='vcf')
 
     # Parse the arguments:
     args = parser.parse_args()
 
     infiles  = args.input_files
     outfile  = args.output_file
-    filetype = args.file_type
+
+    if infiles[0].lower().endswith('.vcf'):
+        filetype = 'vcf'
+    elif infiles[0].lower().endswith('.tsv'):
+        filetype = 'tsv'
 
     return infiles, outfile, filetype
 

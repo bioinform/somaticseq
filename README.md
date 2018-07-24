@@ -46,7 +46,7 @@ paired \
 --strelka-indel     Strelka/variants.indel.vcf
 ```
 
-* You can also do it in parallel using `$somaticseq/somaticseq/somaticseq_parallel.py` script, with identical input options except for `--threads` placed before the `paired` option to indicate the number of threads. The `somaticseq_parallel.py` is simply a script to create multiple sub-BED files, and then invokes `somaticseq/run_somaticseq.py` on each of those sub-BED files in parallel.
+* You can also do it in parallel using `$somaticseq/somaticseq_parallel.py` script, with identical input options except for `--threads` placed before the `paired` option to indicate the number of threads. The `somaticseq_parallel.py` is simply a script to create multiple sub-BED files, and then invokes `somaticseq/run_somaticseq.py` on each of those sub-BED files in parallel.
 * For all those input VCF files, either .vcf or .vcf.gz are acceptable.
 
 Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two additional files (classifiers) will be created, i.e., `Ensemble.sSNV.tsv.ntChange.Classifier.RData` and `Ensemble.sINDEL.tsv.ntChange.Classifier.RData`.

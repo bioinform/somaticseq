@@ -18,7 +18,6 @@ setup(
     url='https://github.com/bioinform/somaticseq',
     packages=find_packages(),
     install_requires=['pysam', 'numpy', 'scipy'],
-    package_data={"metasv": ["resources/*"]},
     scripts=['somaticseq/run_somaticseq.py',
              'somaticseq_parallel.py',],
 )
