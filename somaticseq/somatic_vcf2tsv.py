@@ -236,7 +236,7 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
         if truth:
             truth = genome.open_textfile(truth)
             truth_line = genome.skip_vcf_header( truth )
-         
+        
         if cosmic:
             cosmic = genome.open_textfile(cosmic)
             cosmic_line = genome.skip_vcf_header( cosmic )
@@ -268,7 +268,7 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
 
         if muse:
             muse = genome.open_textfile(muse)
-            muse_line = muse.genome.skip_vcf_header( muse )
+            muse_line = genome.skip_vcf_header( muse )
 
         if lofreq:
             lofreq = genome.open_textfile(lofreq)
