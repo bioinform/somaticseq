@@ -28,21 +28,7 @@ def run():
     mode.add_argument('-paired',  '--paired-samples',  action="store_true", help='Paired tumor-normal samples', required=False, default=True)
     
     args = parser.parse_args()
-    
-    # Rename input:
-    inputParameters['tsv_fn']             = args.tsv_in
-    inputParameters['vcf_fn']             = args.vcf_out
-    inputParameters['tools']              = args.individual_mutation_tools
-    inputParameters['pass_score']         = args.pass_threshold
-    inputParameters['lowqual_score']      = args.lowqual_threshold
-    inputParameters['hom_threshold']      = args.hom_threshold
-    inputParameters['het_threshold']      = args.het_threshold
-    inputParameters['single_mode']        = args.single_sample
-    inputParameters['paired_mode']        = args.paired_samples
-    inputParameters['normal_sample_name'] = args.normal_sample_name
-    inputParameters['tumor_sample_name']  = args.tumor_sample_name
-    inputParameters['print_reject']       = args.emit_all
-    inputParameters['phred_scaled']       = args.phred_scale
+    inputParameters = vars(args)
 
     return inputParameters
 
@@ -445,18 +431,19 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
     
 
 
+
 if __name__ == '__main__':
     runParameters = run()
-    tsv2vcf( tsv_fn             = runParameters['tsv_fn'], \
-             vcf_fn             = runParameters['vcf_fn'], \
-             tools              = runParameters['tools'], \
-             pass_score         = runParameters['pass_score'], \
-             lowqual_score      = runParameters['lowqual_score'], \
+    tsv2vcf( tsv_fn             = runParameters['tsv_in'], \
+             vcf_fn             = runParameters['vcf_out'], \
+             tools              = runParameters['individual_mutation_tools'], \
+             pass_score         = runParameters['pass_threshold'], \
+             lowqual_score      = runParameters['lowqual_threshold'], \
              hom_threshold      = runParameters['hom_threshold'], \
              het_threshold      = runParameters['het_threshold'], \
-             single_mode        = runParameters['single_mode'], \
-             paired_mode        = runParameters['paired_mode'], \
+             single_mode        = runParameters['single_sample'], \
+             paired_mode        = runParameters['paired_samples'], \
              normal_sample_name = runParameters['normal_sample_name'], \
              tumor_sample_name  = runParameters['tumor_sample_name'], \
-             print_reject       = runParameters['print_reject'], \
-             phred_scaled       = runParameters['phred_scaled'] )
+             print_reject       = runParameters['emit_all'], \
+             phred_scaled       = runParameters['phred_scale'] )

@@ -96,8 +96,6 @@ class pysam_header:
 
     def __init__(self, bam_file):
 
-        from pysam import AlignmentFile
-
         bam = AlignmentFile(bam_file)
         self.bam_header = bam.header
 
@@ -124,6 +122,15 @@ class pysam_header:
 
 
 ### ### ### ### ### FUNCTIONS OF CONVENIENCE ### ### ### ### ###
+
+def skip_vcf_header(opened_file):
+    
+    line_i = opened_file.readline().rstrip()
+    while line_i.startswith('#'):
+        line_i = opened_file.readline().rstrip()
+    
+    return line_i
+
 
 def faiordict2contigorder(file_name, file_format):
     '''Takes either a .fai or .dict file, and return a contig order dictionary, i.e., chrom_seq['chr1'] == 0'''
@@ -166,8 +173,6 @@ def open_textfile(file_name):
 
 
 def open_bam_file(file_name):
-
-    from pysam import AlignmentFile
 
     try:
         return AlignmentFile(file_name, 'rb')

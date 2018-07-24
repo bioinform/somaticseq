@@ -179,46 +179,13 @@ def run():
     
     args = parser.parse_args()
     
-    
-    # Rename input:
-    inputParameters['is_vcf']     = args.vcf_format
-    inputParameters['is_bed']     = args.bed_format
-    inputParameters['is_pos']     = args.positions_list
-    
-    inputParameters['nbam_fn']    = args.normal_bam_file
-    inputParameters['tbam_fn']    = args.tumor_bam_file
-    
-    inputParameters['truth']      = args.ground_truth_vcf
-    inputParameters['cosmic']     = args.cosmic_vcf
-    inputParameters['dbsnp']      = args.dbsnp_vcf
-    
-    inputParameters['mutect']     = args.mutect_vcf
-    inputParameters['varscan']    = args.varscan_vcf
-    inputParameters['jsm']        = args.jsm_vcf
-    inputParameters['sniper']     = args.somaticsniper_vcf
-    inputParameters['vardict']    = args.vardict_vcf
-    inputParameters['muse']       = args.muse_vcf
-    inputParameters['lofreq']     = args.lofreq_vcf
-    inputParameters['scalpel']    = args.scalpel_vcf
-    inputParameters['strelka']    = args.strelka_vcf
-    inputParameters['tnscope']    = args.tnscope_vcf
-    
-    inputParameters['ref']        = args.genome_reference
-    inputParameters['dedup']      = args.deduplicate
-    
-    inputParameters['min_mq']     = args.minimum_mapping_quality
-    inputParameters['min_bq']     = args.minimum_base_quality
-    inputParameters['min_caller'] = args.minimum_num_callers
-    inputParameters['ref_fa']     = args.genome_reference
-    inputParameters['p_scale']    = args.p_scale
-    
-    inputParameters['outfile']    = args.output_tsv_file
+    inputParameters = vars(args)
         
     return inputParameters
 
 
 
-def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, truth=None, cosmic=None, dbsnp=None, mutect=None, varscan=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq=None, scalpel=None, strelka=None, tnscope=None, ref=None, dedup=True, min_mq=1, min_bq=5, min_caller=0, ref_fa=None, p_scale=None, outfile=None):
+def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, truth=None, cosmic=None, dbsnp=None, mutect=None, varscan=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq=None, scalpel=None, strelka=None, tnscope=None, dedup=True, min_mq=1, min_bq=5, min_caller=0, ref_fa=None, p_scale=None, outfile=None):
 
     # Convert contig_sequence to chrom_seq dict:
     fai_file  = ref_fa + '.fai'
@@ -268,82 +235,56 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
         
         if truth:
             truth = genome.open_textfile(truth)
-            truth_line = truth.readline().rstrip()
-            while truth_line.startswith('#'):
-                truth_line = truth.readline().rstrip()
-        
+            truth_line = genome.skip_vcf_header( truth )
+         
         if cosmic:
             cosmic = genome.open_textfile(cosmic)
-            cosmic_line = cosmic.readline().rstrip()
-            while cosmic_line.startswith('#'):
-                cosmic_line = cosmic.readline().rstrip()
+            cosmic_line = genome.skip_vcf_header( cosmic )
     
         if dbsnp:
             dbsnp = genome.open_textfile(dbsnp)
-            dbsnp_line = dbsnp.readline().rstrip()
-            while dbsnp_line.startswith('#'):
-                dbsnp_line = dbsnp.readline().rstrip()
+            dbsnp_line = genome.skip_vcf_header( dbsnp )
         
         # 10 Incorporate callers: get thru the #'s
         if mutect:
             mutect = genome.open_textfile(mutect)
-            mutect_line = mutect.readline().rstrip()
-            while mutect_line.startswith('#'):
-                mutect_line = mutect.readline().rstrip()
+            mutect_line = genome.skip_vcf_header( mutect )
 
         if varscan:
             varscan = genome.open_textfile(varscan)
-            varscan_line = varscan.readline().rstrip()
-            while varscan_line.startswith('#'):
-                varscan_line = varscan.readline().rstrip()
+            varscan_line = genome.skip_vcf_header( varscan )
 
         if jsm:
             jsm = genome.open_textfile(jsm)
-            jsm_line = jsm.readline().rstrip()
-            while jsm_line.startswith('#'):
-                jsm_line = jsm.readline().rstrip()
+            jsm_line = genome.skip_vcf_header( jsm )
 
         if sniper:
             sniper = genome.open_textfile(sniper)
-            sniper_line = sniper.readline().rstrip()
-            while sniper_line.startswith('#'):
-                sniper_line = sniper.readline().rstrip()
+            sniper_line = genome.skip_vcf_header( sniper )
 
         if vardict:
             vardict = genome.open_textfile(vardict)
-            vardict_line = vardict.readline().rstrip()
-            while vardict_line.startswith('#'):
-                vardict_line = vardict.readline().rstrip()
+            vardict_line = genome.skip_vcf_header( vardict )
 
         if muse:
             muse = genome.open_textfile(muse)
-            muse_line = muse.readline().rstrip()
-            while muse_line.startswith('#'):
-                muse_line = muse.readline().rstrip()
+            muse_line = muse.genome.skip_vcf_header( muse )
 
         if lofreq:
             lofreq = genome.open_textfile(lofreq)
-            lofreq_line = lofreq.readline().rstrip()
-            while lofreq_line.startswith('#'):
-                lofreq_line = lofreq.readline().rstrip()
+            lofreq_line = genome.skip_vcf_header( lofreq )
 
         if scalpel:
             scalpel = genome.open_textfile(scalpel)
-            scalpel_line = scalpel.readline().rstrip()
-            while scalpel_line.startswith('#'):
-                scalpel_line = scalpel.readline().rstrip()
+            scalpel_line = genome.skip_vcf_header( scalpel )
 
         if strelka:
             strelka = genome.open_textfile(strelka)
-            strelka_line = strelka.readline().rstrip()
-            while strelka_line.startswith('#'):
-                strelka_line = strelka.readline().rstrip()
+            strelka_line = genome.skip_vcf_header( strelka )
 
         if tnscope:
             tnscope = genome.open_textfile(tnscope)
-            tnscope_line = tnscope.readline().rstrip()
-            while tnscope_line.startswith('#'):
-                tnscope_line = tnscope.readline().rstrip()
+            tnscope_line = genome.skip_vcf_header( tnscope )
 
     
         # Get through all the headers:
@@ -1359,32 +1300,32 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
     
 
 
+
 if __name__ == '__main__':
     runParameters = run()
     
-    vcf2tsv(is_vcf     = runParameters['is_vcf'], \
-            is_bed     = runParameters['is_bed'], \
-            is_pos     = runParameters['is_pos'], \
-            nbam_fn    = runParameters['nbam_fn'], \
-            tbam_fn    = runParameters['tbam_fn'], \
-            truth      = runParameters['truth'], \
-            cosmic     = runParameters['cosmic'], \
-            dbsnp      = runParameters['dbsnp'], \
-            mutect     = runParameters['mutect'], \
-            varscan    = runParameters['varscan'], \
-            jsm        = runParameters['jsm'], \
-            sniper     = runParameters['sniper'], \
-            vardict    = runParameters['vardict'], \
-            muse       = runParameters['muse'], \
-            lofreq     = runParameters['lofreq'], \
-            scalpel    = runParameters['scalpel'], \
-            strelka    = runParameters['strelka'], \
-            tnscope    = runParameters['tnscope'], \
-            ref        = runParameters['ref'], \
-            dedup      = runParameters['dedup'], \
-            min_mq     = runParameters['min_mq'], \
-            min_bq     = runParameters['min_bq'], \
-            min_caller = runParameters['min_caller'], \
-            ref_fa     = runParameters['ref_fa'], \
+    vcf2tsv(is_vcf     = runParameters['vcf_format'], \
+            is_bed     = runParameters['bed_format'], \
+            is_pos     = runParameters['positions_list'], \
+            nbam_fn    = runParameters['normal_bam_file'], \
+            tbam_fn    = runParameters['tumor_bam_file'], \
+            truth      = runParameters['ground_truth_vcf'], \
+            cosmic     = runParameters['cosmic_vcf'], \
+            dbsnp      = runParameters['dbsnp_vcf'], \
+            mutect     = runParameters['mutect_vcf'], \
+            varscan    = runParameters['varscan_vcf'], \
+            jsm        = runParameters['jsm_vcf'], \
+            sniper     = runParameters['somaticsniper_vcf'], \
+            vardict    = runParameters['vardict_vcf'], \
+            muse       = runParameters['muse_vcf'], \
+            lofreq     = runParameters['lofreq_vcf'], \
+            scalpel    = runParameters['scalpel_vcf'], \
+            strelka    = runParameters['strelka_vcf'], \
+            tnscope    = runParameters['tnscope_vcf'], \
+            dedup      = runParameters['deduplicate'], \
+            min_mq     = runParameters['minimum_mapping_quality'], \
+            min_bq     = runParameters['minimum_base_quality'], \
+            min_caller = runParameters['minimum_num_callers'], \
+            ref_fa     = runParameters['genome_reference'], \
             p_scale    = runParameters['p_scale'], \
-            outfile    = runParameters['outfile'])
+            outfile    = runParameters['output_tsv_file'])

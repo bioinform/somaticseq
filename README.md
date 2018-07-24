@@ -5,10 +5,10 @@
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
 
 ## Requirements
-* Python 3, plus pysam, numpy, and scipy libraries
+* Python 3, plus pysam (v0.14.1), numpy (v1.14.3), and scipy (v1.1.0) libraries. Those versions are in our docker images and validated to work, though other versions may/should also work. 
 * R, plus [ada](https://cran.r-project.org/package=ada) library
 * BEDTools
-* Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature). COSMIC VCF file can also be included to annotate COSMIC ID, but does not affect the algorithm otherwise.
+* Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature). COSMIC VCF file can be included to annotate, but does not affect the algorithm otherwise.
 * At least one of the callers we have incorporated, i.e., MuTect2/MuTect/Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, and/or TNscope.
 
 ## Example commands
@@ -23,7 +23,7 @@
 
 ```
 # Merge caller results and extract SomaticSeq features
-$somaticseq/run_somaticseq.py \
+$somaticseq/somaticseq/run_somaticseq.py \
 --somaticseq-train \
 --output-directory  $OUTPUT_DIR \
 --genome-reference  GRCh38.fa \
@@ -51,7 +51,7 @@ paired \
 
 Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two additional files (classifiers) will be created, i.e., `Ensemble.sSNV.tsv.ntChange.Classifier.RData` and `Ensemble.sINDEL.tsv.ntChange.Classifier.RData`.
 
-* `--somaticseq-train`: FLAG to invoke training mode with no argument
+* `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires the following inputs
 * `--truth-snv`:        if you have ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL
 

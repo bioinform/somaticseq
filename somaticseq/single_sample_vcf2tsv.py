@@ -128,28 +128,7 @@ def run():
     
     args = parser.parse_args()
     
-    
-    # Rename input:
-    inputParameters['is_vcf']     = args.vcf_format
-    inputParameters['is_bed']     = args.bed_format
-    inputParameters['is_pos']     = args.positions_list
-    inputParameters['bam_fn']     = args.in_bam
-    inputParameters['truth']      = args.ground_truth_vcf
-    inputParameters['dbsnp']      = args.dbsnp_vcf
-    inputParameters['cosmic']     = args.cosmic_vcf
-    inputParameters['mutect']     = args.mutect_vcf
-    inputParameters['varscan']    = args.varscan_vcf
-    inputParameters['vardict']    = args.vardict_vcf
-    inputParameters['lofreq']     = args.lofreq_vcf
-    inputParameters['scalpel']    = args.scalpel_vcf
-    inputParameters['strelka']    = args.strelka_vcf
-    inputParameters['ref_fa']     = args.genome_reference
-    inputParameters['dedup']      = args.deduplicate
-    inputParameters['min_mq']     = args.minimum_mapping_quality
-    inputParameters['min_bq']     = args.minimum_base_quality
-    inputParameters['min_caller'] = args.minimum_num_callers
-    inputParameters['p_scale']    = args.p_scale
-    inputParameters['outfile']    = args.output_tsv_file
+    inputParameters = vars(args)
 
     return inputParameters
 
@@ -184,7 +163,6 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
         print('NO RE-SCALING', file=sys.stderr)
     
     
-    
     # Define NaN and Inf:
     nan = float('nan')
     inf = float('inf')
@@ -207,57 +185,40 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
         
         if truth:
             truth = genome.open_textfile(truth)
-            truth_line = truth.readline().rstrip()
-            while truth_line.startswith('#'):
-                truth_line = truth.readline().rstrip()
-        
+            truth_line = genome.skip_vcf_header( truth )
+         
         if cosmic:
             cosmic = genome.open_textfile(cosmic)
-            cosmic_line = cosmic.readline().rstrip()
-            while cosmic_line.startswith('#'):
-                cosmic_line = cosmic.readline().rstrip()
+            cosmic_line = genome.skip_vcf_header( cosmic )
     
         if dbsnp:
             dbsnp = genome.open_textfile(dbsnp)
-            dbsnp_line = dbsnp.readline().rstrip()
-            while dbsnp_line.startswith('#'):
-                dbsnp_line = dbsnp.readline().rstrip()
+            dbsnp_line = genome.skip_vcf_header( dbsnp )
         
+        # 6 Incorporate callers: get thru the #'s
         if mutect:
             mutect = genome.open_textfile(mutect)
-            mutect_line = mutect.readline().rstrip()
-            while mutect_line.startswith('#'):
-                mutect_line = mutect.readline().rstrip()
-    
+            mutect_line = genome.skip_vcf_header( mutect )
+
         if varscan:
             varscan = genome.open_textfile(varscan)
-            varscan_line = varscan.readline().rstrip()
-            while varscan_line.startswith('#'):
-                varscan_line = varscan.readline().rstrip()
-        
+            varscan_line = genome.skip_vcf_header( varscan )
+
         if vardict:
             vardict = genome.open_textfile(vardict)
-            vardict_line = vardict.readline().rstrip()
-            while vardict_line.startswith('#'):
-                vardict_line = vardict.readline().rstrip()
+            vardict_line = genome.skip_vcf_header( vardict )
     
         if lofreq:
             lofreq = genome.open_textfile(lofreq)
-            lofreq_line = lofreq.readline().rstrip()
-            while lofreq_line.startswith('#'):
-                lofreq_line = lofreq.readline().rstrip()
-                
+            lofreq_line = genome.skip_vcf_header( lofreq )
+
         if scalpel:
             scalpel = genome.open_textfile(scalpel)
-            scalpel_line = scalpel.readline().rstrip()
-            while scalpel_line.startswith('#'):
-                scalpel_line = scalpel.readline().rstrip()
-    
+            scalpel_line = genome.skip_vcf_header( scalpel )
+
         if strelka:
             strelka = genome.open_textfile(strelka)
-            strelka_line = strelka.readline().rstrip()
-            while strelka_line.startswith('#'):
-                strelka_line = strelka.readline().rstrip()
+            strelka_line = genome.skip_vcf_header( strelka )
     
         
         # Get through all the headers:
@@ -371,15 +332,15 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
                 num_callers = 0
                 
                 #################################### Find the same coordinate in those VCF files ####################################
-                if mutect:        got_mutect,  mutect_variants,  mutect_line  = genome.find_vcf_at_coordinate(my_coordinate, mutect_line,  mutect,  chrom_seq)
-                if varscan:       got_varscan, varscan_variants, varscan_line = genome.find_vcf_at_coordinate(my_coordinate, varscan_line, varscan, chrom_seq)
-                if vardict:       got_vardict, vardict_variants, vardict_line = genome.find_vcf_at_coordinate(my_coordinate, vardict_line, vardict, chrom_seq)
-                if lofreq:        got_lofreq,  lofreq_variants,  lofreq_line  = genome.find_vcf_at_coordinate(my_coordinate, lofreq_line,  lofreq,  chrom_seq)
-                if scalpel:       got_scalpel, scalpel_variants, scalpel_line = genome.find_vcf_at_coordinate(my_coordinate, scalpel_line, scalpel, chrom_seq)
-                if strelka:       got_strelka, strelka_variants, strelka_line = genome.find_vcf_at_coordinate(my_coordinate, strelka_line, strelka, chrom_seq)
-                if truth:  got_truth,   truth_variants,   truth_line   = genome.find_vcf_at_coordinate(my_coordinate, truth_line,   truth,   chrom_seq)
-                if dbsnp:         got_dbsnp,   dbsnp_variants,   dbsnp_line   = genome.find_vcf_at_coordinate(my_coordinate, dbsnp_line,   dbsnp,   chrom_seq)
-                if cosmic:        got_cosmic,  cosmic_variants,  cosmic_line  = genome.find_vcf_at_coordinate(my_coordinate, cosmic_line,  cosmic,  chrom_seq)
+                if mutect:   got_mutect,  mutect_variants,  mutect_line  = genome.find_vcf_at_coordinate(my_coordinate, mutect_line,  mutect,  chrom_seq)
+                if varscan:  got_varscan, varscan_variants, varscan_line = genome.find_vcf_at_coordinate(my_coordinate, varscan_line, varscan, chrom_seq)
+                if vardict:  got_vardict, vardict_variants, vardict_line = genome.find_vcf_at_coordinate(my_coordinate, vardict_line, vardict, chrom_seq)
+                if lofreq:   got_lofreq,  lofreq_variants,  lofreq_line  = genome.find_vcf_at_coordinate(my_coordinate, lofreq_line,  lofreq,  chrom_seq)
+                if scalpel:  got_scalpel, scalpel_variants, scalpel_line = genome.find_vcf_at_coordinate(my_coordinate, scalpel_line, scalpel, chrom_seq)
+                if strelka:  got_strelka, strelka_variants, strelka_line = genome.find_vcf_at_coordinate(my_coordinate, strelka_line, strelka, chrom_seq)
+                if truth:    got_truth,   truth_variants,   truth_line   = genome.find_vcf_at_coordinate(my_coordinate, truth_line,   truth,   chrom_seq)
+                if dbsnp:    got_dbsnp,   dbsnp_variants,   dbsnp_line   = genome.find_vcf_at_coordinate(my_coordinate, dbsnp_line,   dbsnp,   chrom_seq)
+                if cosmic:   got_cosmic,  cosmic_variants,  cosmic_line  = genome.find_vcf_at_coordinate(my_coordinate, cosmic_line,  cosmic,  chrom_seq)
                 
                 # Now, use pysam to look into the tBAM file(s), variant by variant from the input:
                 for ith_call, my_call in enumerate( variants_at_my_coordinate ):
@@ -885,28 +846,26 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
         [opened_file.close() for opened_file in opened_files if opened_file]
 
 
-
-
 if __name__ == '__main__':
     runParameters = run()
     
-    vcf2tsv(is_vcf     = runParameters['is_vcf'], \
-            is_bed     = runParameters['is_bed'], \
-            is_pos     = runParameters['is_pos'], \
-            bam_fn     = runParameters['bam_fn'], \
-            truth      = runParameters['truth'], \
-            cosmic     = runParameters['cosmic'], \
-            dbsnp      = runParameters['dbsnp'], \
-            mutect     = runParameters['mutect'], \
-            varscan    = runParameters['varscan'], \
-            vardict    = runParameters['vardict'], \
-            lofreq     = runParameters['lofreq'], \
-            scalpel    = runParameters['scalpel'], \
-            strelka    = runParameters['strelka'], \
-            dedup      = runParameters['dedup'], \
-            min_mq     = runParameters['min_mq'], \
-            min_bq     = runParameters['min_bq'], \
-            min_caller = runParameters['min_caller'], \
-            ref_fa     = runParameters['ref_fa'], \
+    vcf2tsv(is_vcf     = runParameters['vcf_format'], \
+            is_bed     = runParameters['bed_format'], \
+            is_pos     = runParameters['positions_list'], \
+            bam_fn     = runParameters['in_bam'], \
+            truth      = runParameters['ground_truth_vcf'], \
+            cosmic     = runParameters['cosmic_vcf'], \
+            dbsnp      = runParameters['dbsnp_vcf'], \
+            mutect     = runParameters['mutect_vcf'], \
+            varscan    = runParameters['varscan_vcf'], \
+            vardict    = runParameters['vardict_vcf'], \
+            lofreq     = runParameters['lofreq_vcf'], \
+            scalpel    = runParameters['scalpel_vcf'], \
+            strelka    = runParameters['strelka_vcf'], \
+            dedup      = runParameters['deduplicate'], \
+            min_mq     = runParameters['minimum_mapping_quality'], \
+            min_bq     = runParameters['minimum_base_quality'], \
+            min_caller = runParameters['minimum_num_callers'], \
+            ref_fa     = runParameters['genome_reference'], \
             p_scale    = runParameters['p_scale'], \
-            outfile    = runParameters['outfile'])
+            outfile    = runParameters['output_tsv_file'])

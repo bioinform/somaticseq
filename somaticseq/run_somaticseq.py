@@ -59,7 +59,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     ######################  SNV  ######################
     mutect_infile = intermediateVcfs['MuTect2']['snv'] if intermediateVcfs['MuTect2']['snv'] else mutect
 
-    somatic_vcf2tsv.vcf2tsv(is_vcf=outSnv, nbam_fn=nbam, tbam_fn=tbam, truth=truth_snv, cosmic=cosmic, dbsnp=dbsnp, mutect=mutect_infile, varscan=varscan_snv, jsm=jsm, sniper=sniper, vardict=intermediateVcfs['VarDict']['snv'], muse=muse, lofreq=lofreq_snv, scalpel=None, strelka=strelka_snv, tnscope=intermediateVcfs['TNscope']['snv'], ref=ref, dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleSnv)
+    somatic_vcf2tsv.vcf2tsv(is_vcf=outSnv, nbam_fn=nbam, tbam_fn=tbam, truth=truth_snv, cosmic=cosmic, dbsnp=dbsnp, mutect=mutect_infile, varscan=varscan_snv, jsm=jsm, sniper=sniper, vardict=intermediateVcfs['VarDict']['snv'], muse=muse, lofreq=lofreq_snv, scalpel=None, strelka=strelka_snv, tnscope=intermediateVcfs['TNscope']['snv'], dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleSnv)
 
 
     # Classify SNV calls
@@ -85,7 +85,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     ###################### INDEL ######################
     mutect_infile = intermediateVcfs['MuTect2']['indel'] if intermediateVcfs['MuTect2']['indel'] else indelocator
 
-    somatic_vcf2tsv.vcf2tsv(is_vcf=outIndel, nbam_fn=nbam, tbam_fn=tbam, truth=truth_indel, cosmic=cosmic, dbsnp=dbsnp, mutect=mutect_infile, varscan=varscan_indel, vardict=intermediateVcfs['VarDict']['indel'], lofreq=lofreq_indel, scalpel=scalpel, strelka=strelka_indel, tnscope=intermediateVcfs['TNscope']['indel'], ref=ref, dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleIndel)
+    somatic_vcf2tsv.vcf2tsv(is_vcf=outIndel, nbam_fn=nbam, tbam_fn=tbam, truth=truth_indel, cosmic=cosmic, dbsnp=dbsnp, mutect=mutect_infile, varscan=varscan_indel, vardict=intermediateVcfs['VarDict']['indel'], lofreq=lofreq_indel, scalpel=scalpel, strelka=strelka_indel, tnscope=intermediateVcfs['TNscope']['indel'], dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleIndel)
 
 
     # Classify INDEL calls
@@ -211,12 +211,6 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
 
 
 
-
-
-
-
-
-
 ################################################
 def run():
 
@@ -296,65 +290,7 @@ def run():
     parser_single.set_defaults(which='single')
 
     args = parser.parse_args()
-
-    ##
-    inputParameters['outdir']            = args.output_directory
-    inputParameters['ref']               = args.genome_reference
-    inputParameters['truth_snv']         = args.truth_snv
-    inputParameters['truth_indel']       = args.truth_indel
-    inputParameters['classifier_snv']    = args.classifier_snv
-    inputParameters['classifier_indel']  = args.classifier_indel
-    inputParameters['pass_threshold']    = args.pass_threshold
-    inputParameters['lowqual_threshold'] = args.lowqual_threshold
-    inputParameters['hom_threshold']     = args.homozygous_threshold
-    inputParameters['het_threshold']     = args.heterozygous_threshold
-    inputParameters['minMQ']             = args.minimum_mapping_quality
-    inputParameters['minBQ']             = args.minimum_base_quality
-    inputParameters['mincaller']         = args.minimum_num_callers
-    inputParameters['dbsnp']             = args.dbsnp_vcf
-    inputParameters['cosmic']            = args.cosmic_vcf
-    inputParameters['inclusion']         = args.inclusion_region
-    inputParameters['exclusion']         = args.exclusion_region
-    inputParameters['threads']           = args.threads
-
-    inputParameters['somaticseq_train']   = args.somaticseq_train
-    inputParameters['keep_intermediates'] = args.keep_intermediates
-
-    ################## paired sample ##################
-    if parser.parse_args().which == 'paired':
-        inputParameters['tbam']          = args.tumor_bam_file
-        inputParameters['nbam']          = args.normal_bam_file
-        inputParameters['tumor_name']    = args.tumor_sample
-        inputParameters['normal_name']   = args.normal_sample
-        inputParameters['mutect']        = args.mutect_vcf
-        inputParameters['indelocator']   = args.indelocator_vcf
-        inputParameters['mutect2']       = args.mutect2_vcf
-        inputParameters['varscan_snv']   = args.varscan_snv
-        inputParameters['varscan_indel'] = args.varscan_indel
-        inputParameters['jsm']           = args.jsm_vcf
-        inputParameters['sniper']        = args.somaticsniper_vcf
-        inputParameters['vardict']       = args.vardict_vcf
-        inputParameters['muse']          = args.muse_vcf
-        inputParameters['lofreq_snv']    = args.lofreq_snv
-        inputParameters['lofreq_indel']  = args.lofreq_indel
-        inputParameters['scalpel']       = args.scalpel_vcf
-        inputParameters['strelka_snv']   = args.strelka_snv
-        inputParameters['strelka_indel'] = args.strelka_indel
-        inputParameters['tnscope']       = args.tnscope_vcf
-        inputParameters['mode']          = 'paired'
-
-    ################## single sample ##################
-    elif parser.parse_args().which == 'single':
-        inputParameters['bam']         = args.bam_file
-        inputParameters['sample_name'] = args.sample_name
-        inputParameters['mutect']      = args.mutect_vcf
-        inputParameters['mutect2']     = args.mutect2_vcf
-        inputParameters['varscan']     = args.varscan_vcf
-        inputParameters['vardict']     = args.vardict_vcf
-        inputParameters['lofreq']      = args.lofreq_vcf
-        inputParameters['scalpel']     = args.scalpel_vcf
-        inputParameters['strelka']     = args.strelka_vcf
-        inputParameters['mode']        = 'single'
+    inputParameters = vars(args)
 
     return inputParameters
 
@@ -366,52 +302,52 @@ def run():
 if __name__ == '__main__':
     runParameters = run()
 
-    if runParameters['mode'] == 'paired':
+    if runParameters['which'] == 'paired':
 
-        runPaired( outdir             = runParameters['outdir'], \
-                   ref                = runParameters['ref'], \
-                   tbam               = runParameters['tbam'], \
-                   nbam               = runParameters['nbam'], \
-                   tumor_name         = runParameters['tumor_name'], \
-                   normal_name        = runParameters['normal_name'], \
+        runPaired( outdir             = runParameters['output_directory'], \
+                   ref                = runParameters['genome_reference'], \
+                   tbam               = runParameters['tumor_bam_file'], \
+                   nbam               = runParameters['normal_bam_file'], \
+                   tumor_name         = runParameters['tumor_sample'], \
+                   normal_name        = runParameters['normal_sample'], \
                    truth_snv          = runParameters['truth_snv'], \
                    truth_indel        = runParameters['truth_indel'], \
                    classifier_snv     = runParameters['classifier_snv'], \
                    classifier_indel   = runParameters['classifier_indel'], \
                    pass_threshold     = runParameters['pass_threshold'], \
                    lowqual_threshold  = runParameters['lowqual_threshold'], \
-                   hom_threshold      = runParameters['hom_threshold'], \
-                   het_threshold      = runParameters['het_threshold'], \
-                   min_mq             = runParameters['minMQ'], \
-                   min_bq             = runParameters['minBQ'], \
-                   min_caller         = runParameters['mincaller'], \
-                   dbsnp              = runParameters['dbsnp'], \
-                   cosmic             = runParameters['cosmic'], \
-                   inclusion          = runParameters['inclusion'], \
-                   exclusion          = runParameters['exclusion'], \
-                   mutect             = runParameters['mutect'], \
-                   indelocator        = runParameters['indelocator'], \
-                   mutect2            = runParameters['mutect2'], \
+                   hom_threshold      = runParameters['homozygous_threshold'], \
+                   het_threshold      = runParameters['heterozygous_threshold'], \
+                   min_mq             = runParameters['minimum_mapping_quality'], \
+                   min_bq             = runParameters['minimum_base_quality'], \
+                   min_caller         = runParameters['minimum_num_callers'], \
+                   dbsnp              = runParameters['dbsnp_vcf'], \
+                   cosmic             = runParameters['cosmic_vcf'], \
+                   inclusion          = runParameters['inclusion_region'], \
+                   exclusion          = runParameters['exclusion_region'], \
+                   mutect             = runParameters['mutect_vcf'], \
+                   indelocator        = runParameters['indelocator_vcf'], \
+                   mutect2            = runParameters['mutect2_vcf'], \
                    varscan_snv        = runParameters['varscan_snv'], \
                    varscan_indel      = runParameters['varscan_indel'], \
-                   jsm                = runParameters['jsm'], \
-                   sniper             = runParameters['sniper'], \
-                   vardict            = runParameters['vardict'], \
-                   muse               = runParameters['muse'], \
+                   jsm                = runParameters['jsm_vcf'], \
+                   sniper             = runParameters['somaticsniper_vcf'], \
+                   vardict            = runParameters['vardict_vcf'], \
+                   muse               = runParameters['muse_vcf'], \
                    lofreq_snv         = runParameters['lofreq_snv'], \
                    lofreq_indel       = runParameters['lofreq_indel'], \
-                   scalpel            = runParameters['scalpel'], \
+                   scalpel            = runParameters['scalpel_vcf'], \
                    strelka_snv        = runParameters['strelka_snv'], \
                    strelka_indel      = runParameters['strelka_indel'], \
-                   tnscope            = runParameters['tnscope'], \
+                   tnscope            = runParameters['tnscope_vcf'], \
                    somaticseq_train   = runParameters['somaticseq_train'], \
                    keep_intermediates = runParameters['keep_intermediates'] )
 
-    elif runParameters['mode'] == 'single':
+    elif runParameters['which'] == 'single':
 
-        runSingle( outdir             = runParameters['outdir'], \
-                   ref                = runParameters['ref'], \
-                   bam                = runParameters['bam'], \
+        runSingle( outdir             = runParameters['output_directory'], \
+                   ref                = runParameters['genome_reference'], \
+                   bam                = runParameters['bam_file'], \
                    sample_name        = runParameters['sample_name'], \
                    truth_snv          = runParameters['truth_snv'], \
                    truth_indel        = runParameters['truth_indel'], \
@@ -419,21 +355,21 @@ if __name__ == '__main__':
                    classifier_indel   = runParameters['classifier_indel'], \
                    pass_threshold     = runParameters['pass_threshold'], \
                    lowqual_threshold  = runParameters['lowqual_threshold'], \
-                   hom_threshold      = runParameters['hom_threshold'], \
-                   het_threshold      = runParameters['het_threshold'], \
-                   min_mq             = runParameters['minMQ'], \
-                   min_bq             = runParameters['minBQ'], \
-                   min_caller         = runParameters['mincaller'], \
-                   dbsnp              = runParameters['dbsnp'], \
-                   cosmic             = runParameters['cosmic'], \
-                   inclusion          = runParameters['inclusion'], \
-                   exclusion          = runParameters['exclusion'], \
-                   mutect             = runParameters['mutect'], \
-                   mutect2            = runParameters['mutect2'], \
-                   varscan            = runParameters['varscan'], \
-                   vardict            = runParameters['vardict'], \
-                   lofreq             = runParameters['lofreq'], \
-                   scalpel            = runParameters['scalpel'], \
-                   strelka            = runParameters['strelka'], \
+                   hom_threshold      = runParameters['homozygous_threshold'], \
+                   het_threshold      = runParameters['heterozygous_threshold'], \
+                   min_mq             = runParameters['minimum_mapping_quality'], \
+                   min_bq             = runParameters['minimum_base_quality'], \
+                   min_caller         = runParameters['minimum_num_callers'], \
+                   dbsnp              = runParameters['dbsnp_vcf'], \
+                   cosmic             = runParameters['cosmic_vcf'], \
+                   inclusion          = runParameters['inclusion_region'], \
+                   exclusion          = runParameters['exclusion_region'], \
+                   mutect             = runParameters['mutect_vcf'], \
+                   mutect2            = runParameters['mutect2_vcf'], \
+                   varscan            = runParameters['varscan_vcf'], \
+                   vardict            = runParameters['vardict_vcf'], \
+                   lofreq             = runParameters['lofreq_vcf'], \
+                   scalpel            = runParameters['scalpel_vcf'], \
+                   strelka            = runParameters['strelka_vcf'], \
                    somaticseq_train   = runParameters['somaticseq_train'], \
                    keep_intermediates = runParameters['keep_intermediates'] )
