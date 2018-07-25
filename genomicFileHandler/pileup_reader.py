@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# This class will be deprecated
+
 import sys, os, gzip, re, math
 
 nan = float('nan')

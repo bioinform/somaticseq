@@ -205,6 +205,20 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
 
 
 
+
+def rescale(x, original=None, rescale_to=None, max_phred=1001):
+    if ( rescale_to == None ) or ( original.lower() == rescale_to.lower() ):
+        y = x if isinstance(x, int) else '%.2f' % x
+    elif original.lower() == 'fraction' and rescale_to == 'phred':
+        y = genome.p2phred(x, max_phred=max_phred)
+        y = '%.2f' % y
+    elif original.lower() == 'phred' and rescale_to == 'fraction':
+        y = genome.phred2p(x)
+        y = '%.2f' % y
+    return y
+
+
+
 ##### Extract information from external vcf files:
 ##### From Samtools vcf:
 def sam_info_DP4(vcf_object):

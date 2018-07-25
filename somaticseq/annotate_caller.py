@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, math, os, re
+import sys, os, re
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 PRE_DIR = os.path.join(MY_DIR, os.pardir)
@@ -13,12 +13,16 @@ from genomicFileHandler.read_info_extractor import *
 
 nan = float('nan')
 
+# Normal/Tumor index in the Merged VCF file, or any other VCF file that puts NORMAL first. 
+idxN,idxT = 0,1
+    
+# Normal/Tumor index in VarDict VCF, or any other VCF file that puts TUMOR first.
+vdT,vdN = 0,1
+
 
 '''
 caller_variants is a dictionary, where the key is a tuple of ( (contig, position), ref, alt ), and value is a genome.Vcf_line object. 
-
 '''
-
 
 def MuTect(variant_id, mutect_variants):
     
@@ -33,11 +37,6 @@ def MuTect(variant_id, mutect_variants):
         tandem = mutect2_STR(mutect_variant_i)
         ecnt   = mutect2_ECNT(mutect_variant_i)
         
-        # If ref_base, first_alt, and indel_length unknown, get it here:
-        #if not ref_base:         ref_base = mutect_variant_i.refbase
-        #if not first_alt:        first_alt = mutect_variant_i.altbase
-        #if indel_length == None: indel_length = len(first_alt) - len(ref_base)
-
     else:
         # Not called by mutect
         mutect_classification = 0
@@ -48,21 +47,54 @@ def MuTect(variant_id, mutect_variants):
 
 
 
-def VarScan(variant_id, varscan_variants):
-    if variant_id in varscan_variants:
+def ssMuTect(variant_id, mutect_variants):
 
+    if variant_id in mutect_variants:
+
+        mutect_variant_i = mutect_variants[variant_id]
+        mutect_classification = 1 if mutect_variant_i.filters == 'PASS' else 0
+        
+        tlod   = mutect2_tlod(mutect_variant_i)
+        ecnt   = mutect2_ECNT(mutect_variant_i)
+
+    else:
+        # Not called by mutect
+        mutect_classification = 0
+        tlod = ecnt = nan
+
+    
+    return mutect_classification, tlod, ecnt
+
+
+
+
+def VarScan(variant_id, varscan_variants):
+    
+    if variant_id in varscan_variants:
+        
         varscan_variant_i = varscan_variants[ variant_id ]
         varscan_classification = 1 if varscan_variant_i.get_info_value('SOMATIC') else 0
-
-        # If ref_base, first_alt, and indel_length unknown, get it here:
-        #if not ref_base:         ref_base = varscan_variant_i.refbase
-        #if not first_alt:        first_alt = varscan_variant_i.altbase
-        #if indel_length == None: indel_length = len(first_alt) - len(ref_base)
         
     else:
         varscan_classification = 0
 
     return varscan_classification
+
+
+
+
+def ssVarScan(variant_id, varscan_variants):
+    if variant_id in varscan_variants:
+
+        varscan_variant_i = varscan_variants[ variant_id ]
+        varscan_classification = 1 if varscan_variant_i.filters == 'PASS' else 0
+        score_varscan2 = eval(varscan_variant_i.get_sample_value('PVAL'))
+
+    else:
+        varscan_classification = 0
+        score_varscan2 = nan
+
+    return varscan_classification, score_varscan2
 
 
 
@@ -77,11 +109,6 @@ def JSM(variant_id, jsm_variants):
         aabb = float( jsm_variant_i.get_info_value('AABB') )
         jointsnvmix2_p = 1 - aaab - aabb
         score_jointsnvmix2 = genome.p2phred(jointsnvmix2_p, max_phred=50)
-
-        # If ref_base, first_alt, and indel_length unknown, get it here:
-        #if not ref_base:         ref_base = jsm_variant_i.refbase
-        #if not first_alt:        first_alt = jsm_variant_i.altbase
-        #if indel_length == None: indel_length = len(first_alt) - len(ref_base)
         
     else:
         jointsnvmix2_classification = 0
@@ -103,11 +130,6 @@ def SomaticSniper(variant_id, sniper_variants):
         else:
             score_somaticsniper = nan
 
-        # If ref_base, first_alt, and indel_length unknown, get it here:
-        #if not ref_base:         ref_base = sniper_variant_i.refbase
-        #if not first_alt:        first_alt = sniper_variant_i.altbase
-        #if indel_length == None: indel_length = len(first_alt) - len(ref_base)
-            
     else:
         sniper_classification = 0
         score_somaticsniper = nan
@@ -129,16 +151,17 @@ def VarDict(variant_id, vardict_variants):
         elif 'Somatic' in vardict_variant_i.info:
             vardict_filters = vardict_variant_i.filters.split(';')
             
-            disqualifying_filters = ('d7' in vardict_filters or 'd5' in vardict_filters) or \
+            disqualifying_filters = \
+            ('d7'      in vardict_filters  or 'd5' in vardict_filters) or \
             ('DIFF0.2' in vardict_filters) or \
-            ('LongAT' in vardict_filters) or \
+            ('LongAT'  in vardict_filters) or \
             ('MAF0.05' in vardict_filters) or \
-            ('MSI6' in vardict_filters) or \
-            ('NM4' in vardict_filters or 'NM4.25' in vardict_filters) or \
-            ('pSTD' in vardict_filters) or \
-            ('SN1.5' in vardict_filters) or \
-            ( 'P0.05' in vardict_filters and float(vardict_variant_i.get_info_value('SSF') ) >= 0.15 ) or \
-            ( ('v3' in vardict_filters or 'v4' in vardict_filters) and int(vardict_variant_i.get_sample_value('VD', 0))<3 )
+            ('MSI6'    in vardict_filters) or \
+            ('NM4'     in vardict_filters  or 'NM4.25' in vardict_filters) or \
+            ('pSTD'    in vardict_filters) or \
+            ('SN1.5'   in vardict_filters) or \
+            ( 'P0.05'  in vardict_filters  and float(vardict_variant_i.get_info_value('SSF') ) >= 0.15 ) or \
+            ( ('v3'    in vardict_filters  or 'v4' in vardict_filters) and int(vardict_variant_i.get_sample_value('VD', 0))<3 )
         
             no_bad_filter = not disqualifying_filters
             filter_fail_times = len(vardict_filters)
@@ -147,7 +170,7 @@ def VarDict(variant_id, vardict_variants):
                 vardict_classification = 0.5
             else:
                 vardict_classification = 0
-                
+
         else:
             vardict_classification = 0
             
@@ -164,11 +187,6 @@ def VarDict(variant_id, vardict_variants):
         msilen = find_MSILEN(vardict_variant_i)
         shift3 = find_SHIFT3(vardict_variant_i)                        
 
-        # If ref_base, first_alt, and indel_length unknown, get it here:
-        #if not ref_base:         ref_base = vardict_variant_i.refbase
-        #if not first_alt:        first_alt = vardict_variant_i.altbase
-        #if indel_length == None: indel_length = len(first_alt) - len(ref_base)
-        
     else:
         vardict_classification = 0
         msi = msilen = shift3 = score_vardict = nan
@@ -178,7 +196,44 @@ def VarDict(variant_id, vardict_variants):
 
 
 
+def ssVarDict(variant_id, vardict_variants):
+    
+    if variant_id in vardict_variants.keys():
+
+        vardict_variant_i = vardict_variants[variant_id]
+        vardict_classification = 1 if vardict_variant_i.filters == 'PASS' else 0
+
+        # VarDict reported metrics:
+        msi = vardict_variant_i.get_info_value('MSI')
+        msi = msi if msi else nan
+
+        msilen = vardict_variant_i.get_info_value('MSILEN')
+        msilen = msilen if msilen else nan
+
+        shift3 = vardict_variant_i.get_info_value('SHIFT3')
+        shift3 = shift3 if shift3 else nan
+
+        t_pmean = vardict_variant_i.get_info_value('PMEAN')
+        t_pmean = t_pmean if t_pmean else nan
+
+        t_pstd = vardict_variant_i.get_info_value('PSTD')
+        t_pstd = t_pstd if t_pstd else nan
+
+        t_qstd = vardict_variant_i.get_info_value('QSTD')
+        t_qstd = t_qstd if t_qstd else nan
+
+    else:
+        # Not called by VarDict
+        vardict_classification = 0
+        msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
+
+    return vardict_classification, msi, msilen, shift3, t_pmean, t_pstd, t_qstd
+
+
+
+
 def MuSE(variant_id, muse_variants):
+    
     if variant_id in muse_variants:
         
         muse_variant_i = muse_variants[ variant_id ]
@@ -198,11 +253,6 @@ def MuSE(variant_id, muse_variants):
         else:
             muse_classification = 0
 
-        # If ref_base, first_alt, and indel_length unknown, get it here:
-        #if not ref_base:         ref_base = muse_variant_i.refbase
-        #if not first_alt:        first_alt = muse_variant_i.altbase
-        #if indel_length == None: indel_length = len(first_alt) - len(ref_base)
-            
     else:
         muse_classification = 0
 
@@ -212,16 +262,25 @@ def MuSE(variant_id, muse_variants):
 
 
 def LoFreq(variant_id, lofreq_variants):
+    
     if variant_id in lofreq_variants:
         
         lofreq_variant_i = lofreq_variants[ variant_id ]
         lofreq_classification = 1 if lofreq_variant_i.filters == 'PASS' else 0
 
-        # If ref_base, first_alt, and indel_length unknown, get it here:
-        #if not ref_base:         ref_base = lofreq_variant_i.refbase
-        #if not first_alt:        first_alt = lofreq_variant_i.altbase
-        #if indel_length == None: indel_length = len(first_alt) - len(ref_base)
-        
+    else:
+        lofreq_classification = 0
+
+    return lofreq_classification
+
+
+
+
+def ssLoFreq(variant_id, lofreq_variants):
+    if variant_id in lofreq_variants.keys():
+
+        lofreq_variant_i = lofreq_variants[ variant_id ]
+        lofreq_classification = 1 if lofreq_variant_i.filters == 'PASS' else 0
     else:
         lofreq_classification = 0
 
@@ -231,6 +290,7 @@ def LoFreq(variant_id, lofreq_variants):
 
 
 def Scalpel(variant_id, scalpel_variants):
+    
     if variant_id in scalpel_variants:
         
         scalpel_variant_i = scalpel_variants[ variant_id ]
@@ -243,11 +303,6 @@ def Scalpel(variant_id, scalpel_variants):
         else:
             scalpel_classification = 0
 
-        # If ref_base, first_alt, and indel_length unknown, get it here:
-        #if not ref_base:         ref_base = scalpel_variant_i.refbase
-        #if not first_alt:        first_alt = scalpel_variant_i.altbase
-        #if indel_length == None: indel_length = len(first_alt) - len(ref_base)
-
     else:
         scalpel_classification = 0
 
@@ -255,7 +310,22 @@ def Scalpel(variant_id, scalpel_variants):
 
 
 
+
+def ssScalpel(variant_id, scalpel_variants):
+    
+    if variant_id in scalpel_variants.keys():
+
+        scalpel_variant_i = scalpel_variants[ variant_id ]
+        scalpel_classification = 1 if scalpel_variant_i.filters == 'PASS' else 0
+    else:
+        scalpel_classification = 0
+
+    return scalpel_classification
+    
+
+
 def Strelka(variant_id, strelka_variants):
+    
     if variant_id in strelka_variants:
         
         strelka_variant_i = strelka_variants[variant_id]
@@ -273,7 +343,22 @@ def Strelka(variant_id, strelka_variants):
 
 
 
+def ssStrelka(variant_id, strelka_variants):
+    if variant_id in strelka_variants:
+        
+        strelka_variant_i = strelka_variants[variant_id]
+        strelka_classification = 1 if 'PASS' in strelka_variant_i.filters else 0
+        
+    else:
+        strelka_classification = 0
+
+    return strelka_classification
+
+
+
+
 def TNscope():
+    
     if variant_id in tnscope_variants:
 
         tnscope_variant_i = tnscope_variants[variant_id]
@@ -294,6 +379,7 @@ def TNscope():
 
 
 def dbSNP(variant_id, dbsnp_variants):
+    
     if variant_id in dbsnp_variants:
 
         dbsnp_variant_i = dbsnp_variants[variant_id]
@@ -301,18 +387,18 @@ def dbSNP(variant_id, dbsnp_variants):
         if_common = 1 if dbsnp_variant_i.get_info_value('COMMON') == '1' else 0
 
         rsID = dbsnp_variant_i.identifier.split(',')
-        for ID_i in rsID:
-            my_identifiers.add( ID_i )
 
     else:
         if_dbsnp = if_common = 0
+        rsID = []
 
-    return if_dbsnp, if_common
-    
-    
+    return if_dbsnp, if_common, rsID
+
+
 
 
 def COSMIC(variant_id, cosmic_variants):
+    
     if variant_id in cosmic_variants:
     
         cosmic_variant_i = cosmic_variants[variant_id]
@@ -329,10 +415,9 @@ def COSMIC(variant_id, cosmic_variants):
     
         # COSMIC ID still intact:
         cosmicID = cosmic_variant_i.identifier.split(',')
-        for ID_i in cosmicID:
-            my_identifiers.add( ID_i )
             
     else:
         if_cosmic = num_cases = 0
+        cosmicID = []
     
-    return if_cosmic, num_cases
+    return if_cosmic, num_cases, cosmicID
