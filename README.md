@@ -5,10 +5,10 @@
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
 
 ## Requirements
-* Python 3, plus pysam (v0.14.1), numpy (v1.14.3), and scipy (v1.1.0) libraries. Those versions are in our docker images and validated to work, though other versions may/should also work. 
+* Python 3, plus pysam (v0.14.1), numpy (v1.14.3), and scipy (v1.1.0) libraries. The versions in parentheses are in our docker images and validated to work, though other versions may/should work, too.
 * R, plus [ada](https://cran.r-project.org/package=ada) library
 * BEDTools
-* Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature). COSMIC VCF file can be included to annotate, but does not affect the algorithm otherwise.
+* Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
 * At least one of the callers we have incorporated, i.e., MuTect2/MuTect/Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, and/or TNscope.
 
 ## Example commands
@@ -24,7 +24,6 @@
 ```
 # Merge caller results and extract SomaticSeq features
 $somaticseq/somaticseq/run_somaticseq.py \
---somaticseq-train \
 --output-directory  $OUTPUT_DIR \
 --genome-reference  GRCh38.fa \
 --inclusion-region  genome.bed \
