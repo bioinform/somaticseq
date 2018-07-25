@@ -131,19 +131,19 @@ SomaticSeq and most somatic mutation callers we have incorporated are dockerized
 
 \section{How to run SomaticSeq} \label{Wrapper_script}
 
-The \textit{somaticseq/run\_somaticseq.py} calls a series of programs and procedures \textbf{after} you have run your individual somatic mutation callers, and \textit{run\_parallel.py} is a wrapper script that allows parallel processing. Section \ref{dockerized_callers} will teach you how to run those mutation callers that we have been dockerized. It also includes ways to create semi-simulated training data that can be used to create SomaticSeq classifiers. In the next section, we will describe the workflow in this wrapper script in detail. 
+The \textit{somaticseq/run\_somaticseq.py} calls a series of programs and procedures \textbf{after} you have run your individual somatic mutation callers, and \textit{somaticseq\_parallel.py} is a wrapper script that allows parallel processing. Section \ref{dockerized_callers} will teach you how to run those mutation callers that we have been dockerized. It also includes ways to create semi-simulated training data that can be used to create SomaticSeq classifiers. In the next section, we will describe the workflow in this wrapper script in detail. 
 
-Both paired and single modes are supported, although single mode is not as well validated scientifically as the paired mode. To see the required and optional input files and parameters to \textit{run\_parallel.py}:
+Both paired and single modes are supported, although single mode is not as well validated scientifically as the paired mode. To see the required and optional input files and parameters to \textit{somaticseq\_parallel.py}:
 
 \begin{lstlisting}
 # See the global input parameters
-run_parallel.py --help
+somaticseq_parallel.py --help
 
 # Input parameters for paired-sample mode (i.e., tumor-normal)
-run_parallel.py paired --help
+somaticseq_parallel.py paired --help
 
 # Input parameters for single-sample mode
-run_parallel.py single --help
+somaticseq_parallel.py single --help
 \end{lstlisting}
 
 
@@ -155,7 +155,7 @@ All the output VCF files from individual callers are optional. Those VCF files c
 
 \begin{lstlisting}
 # An example command for SomaticSeq Training.
-run_parallel.py \
+somaticseq_parallel.py \
 --somaticseq-train \
 --output-directory  $OUTPUT_DIR \
 --genome-reference  GRCh38.fa \
@@ -197,7 +197,7 @@ Make sure the classifiers (.RData files) are supplied, Without either of them, o
 
 \begin{lstlisting}
 # The *.RData files are trained classifier from the training mode.
-run_parallel.py \
+somaticseq_parallel.py \
 --classifier-snv    Ensemble.sSNV.tsv.ntChange.Classifier.RData \
 --classifier-indel  Ensemble.sINDEL.tsv.ntChange.Classifier.RData \
 --output-directory  $OUTPUT_DIR \
@@ -1211,9 +1211,9 @@ Have implemented the following improvement, mostly for indels:
   
     \begin{enumerate}
 
-     \item The wrapper scripts written in bash script (i.e., SomaticSeq.Wrapper.sh and ssSomaticSeq.Wrapper.sh) are replaced by somaticseq/run\_somaticseq.py.
+     \item The wrapper scripts written in bash script (i.e., SomaticSeq.Wrapper.sh and ssSomaticSeq.Wrapper.sh) are replaced by somaticseq/run\_somaticseq.py, though they're still kept for backward-compatibility. 
      
-     \item Allow parallel processing using run\_parallel.py
+     \item Allow parallel processing using somaticseq\_parallel.py
 
     \end{enumerate}
 
