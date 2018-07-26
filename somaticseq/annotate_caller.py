@@ -198,7 +198,7 @@ def VarDict(variant_id, vardict_variants):
 
 def ssVarDict(variant_id, vardict_variants):
     
-    if variant_id in vardict_variants.keys():
+    if variant_id in vardict_variants:
 
         vardict_variant_i = vardict_variants[variant_id]
         vardict_classification = 1 if vardict_variant_i.filters == 'PASS' else 0
@@ -277,7 +277,7 @@ def LoFreq(variant_id, lofreq_variants):
 
 
 def ssLoFreq(variant_id, lofreq_variants):
-    if variant_id in lofreq_variants.keys():
+    if variant_id in lofreq_variants:
 
         lofreq_variant_i = lofreq_variants[ variant_id ]
         lofreq_classification = 1 if lofreq_variant_i.filters == 'PASS' else 0
@@ -313,7 +313,7 @@ def Scalpel(variant_id, scalpel_variants):
 
 def ssScalpel(variant_id, scalpel_variants):
     
-    if variant_id in scalpel_variants.keys():
+    if variant_id in scalpel_variants:
 
         scalpel_variant_i = scalpel_variants[ variant_id ]
         scalpel_classification = 1 if scalpel_variant_i.filters == 'PASS' else 0
