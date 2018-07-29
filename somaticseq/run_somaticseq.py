@@ -11,13 +11,13 @@ import vcfModifier.copy_TextFile as copy_TextFile
 import somaticseq.combine_callers as combineCallers
 
 
-
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
-
+logger = logging.getLogger('SomaticSeq')
+logger.setLevel(logging.DEBUG)
+logger.addHandler(ch)
 
 
 adaTrainer   = os.sep.join( (PRE_DIR, 'r_scripts', 'ada_model_builder_ntChange.R') )
@@ -28,11 +28,6 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
     import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
-
-    region = inclusion if inclusion else 'Whole Genome'
-    logger = logging.getLogger('SomaticSeq on {}'.format(region))
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(ch)
 
     files_to_delete = set()
 
@@ -135,11 +130,6 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
 
     import somaticseq.single_sample_vcf2tsv as single_sample_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
-
-    region = inclusion if inclusion else 'Whole Genome'
-    logger = logging.getLogger('SomaticSeq on {}'.format(region))
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(ch)
 
     files_to_delete = set()
 
@@ -311,12 +301,10 @@ def run():
     args = parser.parse_args()
     inputParameters = vars(args)
 
-    region = inputParameters['inclusion_region'] if inputParameters['inclusion_region'] else 'Whole Genome'
-
-    logger = logging.getLogger('SomaticSeq on {}'.format(region))
+    logger = logging.getLogger('SomaticSeq')
     logger.setLevel(logging.DEBUG)
     logger.addHandler(ch)
-    logger.info( ', '.join( [ '{}={}'.format(i, inputParameters[i])  for i in inputParameters ] ) )
+    logger.info( 'SomaticSeq Input Arguments: ' + ', '.join( [ '{}={}'.format(i, inputParameters[i])  for i in inputParameters ] ) )
 
     return inputParameters
 
@@ -327,6 +315,8 @@ def run():
 # Execute:
 if __name__ == '__main__':
     runParameters = run()
+
+    os.makedirs(runParameters['output_directory'], exist_ok=True)
 
     if runParameters['which'] == 'paired':
 

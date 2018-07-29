@@ -3,6 +3,7 @@
 import sys, os, argparse, shutil, math, re, subprocess
 from multiprocessing import Pool
 from functools import partial
+from shutil import rmtree
 
 import somaticseq.run_somaticseq as run_somaticseq
 import utilities.split_Bed_into_equal_regions as split_bed
@@ -58,6 +59,8 @@ def mergeSubdirVcf(dirList, filename, outdir=os.curdir):
 if __name__ == '__main__':
 
     runParameters = run_somaticseq.run()
+
+    os.makedirs(runParameters['output_directory'], exist_ok=True)
 
     bed_splitted = splitRegions(runParameters['threads'], runParameters['output_directory']+os.sep+'th.input.bed', runParameters['inclusion_region'], runParameters['genome_reference']+'.fai')
 
@@ -139,7 +142,7 @@ if __name__ == '__main__':
 
         subdirs = pool.map(runSingle_by_region_i, bed_splitted)
 
-    print('Sub-directories created: {}'.format(', '.join(subdirs)), file=sys.stderr)
+    run_somaticseq.logger.info('Sub-directories created: {}'.format(', '.join(subdirs)) )
 
     # Merge sub-results
     mergeSubdirTsv(subdirs, 'Ensemble.sSNV.tsv', runParameters['output_directory'])
@@ -160,3 +163,8 @@ if __name__ == '__main__':
     if runParameters['somaticseq_train']:
         subprocess.call( (run_somaticseq.adaTrainer, runParameters['output_directory'] + os.sep + 'Ensemble.sSNV.tsv', 'Consistent_Mates', 'Inconsistent_Mates') )
         subprocess.call( (run_somaticseq.adaTrainer, runParameters['output_directory'] + os.sep + 'Ensemble.sINDEL.tsv', 'Strelka_QSS', 'Strelka_TQSS','Consistent_Mates', 'Inconsistent_Mates') )
+
+    # Clean up after yourself
+    for dir_i in subdirs:
+        rmtree( dir_i )
+        run_somaticseq.logger.info('Removed sub-directory: {}'.format( dir_i ) )
