@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, argparse, gzip, os, re, subprocess
+import sys, argparse, gzip, os, re, subprocess, logging
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 PRE_DIR = os.path.join(MY_DIR, os.pardir)
@@ -11,6 +11,15 @@ import vcfModifier.copy_TextFile as copy_TextFile
 import somaticseq.combine_callers as combineCallers
 
 
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+
+
+
 adaTrainer   = os.sep.join( (PRE_DIR, 'r_scripts', 'ada_model_builder_ntChange.R') )
 adaPredictor = os.sep.join( (PRE_DIR, 'r_scripts', 'ada_model_predictor.R') )
 
@@ -19,6 +28,11 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
     import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
+
+    region = inclusion if inclusion else 'Whole Genome'
+    logger = logging.getLogger('SomaticSeq on {}'.format(region))
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(ch)
 
     files_to_delete = set()
 
@@ -66,7 +80,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     if classifier_snv:
         classifiedSnvTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.tsv' ))
         classifiedSnvVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.vcf' ))
-        
+
         subprocess.call( (adaPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
 
         tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True)
@@ -89,10 +103,10 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
 
     # Classify INDEL calls
-    if classifier_indel:        
+    if classifier_indel:
         classifiedIndelTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.tsv' ))
         classifiedIndelVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.vcf' ))
-        
+
         subprocess.call( (adaPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
 
         tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True)
@@ -106,11 +120,11 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
 
 
-
     ## Clean up after yourself ##
     if not keep_intermediates:
         for file_i in files_to_delete:
-            subprocess.call( ('rm', '-v', file_i ) )
+            os.remove(file_i)
+            logger.info('Removed {}'.format( file_i ) )
 
 
 
@@ -121,6 +135,11 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
 
     import somaticseq.single_sample_vcf2tsv as single_sample_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
+
+    region = inclusion if inclusion else 'Whole Genome'
+    logger = logging.getLogger('SomaticSeq on {}'.format(region))
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(ch)
 
     files_to_delete = set()
 
@@ -150,7 +169,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
 
     ensembleSnv   = os.sep.join(( outdir, ensembleOutPrefix + 'sSNV.tsv' ))
     ensembleIndel = os.sep.join(( outdir, ensembleOutPrefix + 'sINDEL.tsv' ))
-    
+
 
     ######################  SNV  ######################
     mutect_infile = intermediateVcfs['MuTect2']['snv'] if intermediateVcfs['MuTect2']['snv'] else mutect
@@ -200,11 +219,11 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
 
 
-
     ## Clean up after yourself ##
     if not keep_intermediates:
         for file_i in files_to_delete:
-            subprocess.call( ('rm', '-v', file_i ) )
+            os.remove(file_i)
+            logger.info('Removed {}'.format( file_i ) )
 
 
 
@@ -291,6 +310,13 @@ def run():
 
     args = parser.parse_args()
     inputParameters = vars(args)
+
+    region = inputParameters['inclusion_region'] if inputParameters['inclusion_region'] else 'Whole Genome'
+
+    logger = logging.getLogger('SomaticSeq on {}'.format(region))
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(ch)
+    logger.info( ', '.join( [ '{}={}'.format(i, inputParameters[i])  for i in inputParameters ] ) )
 
     return inputParameters
 
