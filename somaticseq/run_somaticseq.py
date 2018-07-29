@@ -301,9 +301,6 @@ def run():
     args = parser.parse_args()
     inputParameters = vars(args)
 
-    logger = logging.getLogger('SomaticSeq')
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(ch)
     logger.info( 'SomaticSeq Input Arguments: ' + ', '.join( [ '{}={}'.format(i, inputParameters[i])  for i in inputParameters ] ) )
 
     return inputParameters
