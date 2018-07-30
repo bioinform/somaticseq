@@ -165,10 +165,11 @@ if __name__ == '__main__':
         subprocess.call( (run_somaticseq.adaTrainer, runParameters['output_directory'] + os.sep + 'Ensemble.sINDEL.tsv', 'Strelka_QSS', 'Strelka_TQSS','Consistent_Mates', 'Inconsistent_Mates') )
 
     # Clean up after yourself
-    for bed_i in bed_splitted:
-        os.remove( bed_i )
-        run_somaticseq.logger.info('Removed: {}'.format( bed_i ) )
+    if not runParameters['keep_intermediates']:
+        for bed_i in bed_splitted:
+            os.remove( bed_i )
+            run_somaticseq.logger.info('Removed: {}'.format( bed_i ) )
 
-    for dir_i in subdirs:
-        rmtree( dir_i )
-        run_somaticseq.logger.info('Removed sub-directory: {}'.format( dir_i ) )
+        for dir_i in subdirs:
+            rmtree( dir_i )
+            run_somaticseq.logger.info('Removed sub-directory: {}'.format( dir_i ) )
