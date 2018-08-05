@@ -3,6 +3,7 @@
 * SomaticSeq is an ensemble caller that has the ability to use machine learning to filter out false positives. The detailed documentation is included in the package, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). A quick guide can also be found [here](http://bioinform.github.io/somaticseq/).
 * SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
+* The v2 branch will continue to be supported in the foreseeable future for bug fixes, but new features will only be introduced in the current master branch. 
 
 ## Requirements
 * Python 3, plus pysam (v0.14.1), numpy (v1.14.3), and scipy (v1.1.0) libraries. The versions in parentheses are in our docker images and validated to work, though other versions may/should work, too.
