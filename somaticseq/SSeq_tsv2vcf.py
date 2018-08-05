@@ -4,6 +4,13 @@ import sys, argparse, math, gzip, os
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 PRE_DIR = os.path.join(MY_DIR, os.pardir)
+sys.path.append( PRE_DIR )
+
+from genomicFileHandler.genomic_file_handlers import p2phred
+
+
+nan = float('nan')
+
 
 def run():
     
@@ -33,6 +40,47 @@ def run():
     return inputParameters
 
 
+    
+
+def dp4_to_gt(ref_for, ref_rev, alt_for, alt_rev, hom_threshold=0.85, het_threshold=0.01):
+    try:
+        ref_for = int(ref_for)
+    except ValueError:
+        ref_for = 0
+        
+    try:
+        ref_rev = int(ref_rev)
+    except ValueError:
+        ref_rev = 0
+        
+    try:
+        alt_for = int(alt_for)
+    except ValueError:
+        alt_for = 0
+        
+    try:
+        alt_rev = int(alt_rev)
+    except ValueError:
+        alt_rev = 0
+    
+    var_counts = alt_for + alt_rev
+    ref_counts = ref_for + ref_rev
+    
+    if ref_counts == var_counts == 0:
+        gt = './.'
+    elif var_counts/(var_counts+ref_counts) > hom_threshold:
+        gt = '1/1'
+    elif var_counts/(var_counts+ref_counts) >= het_threshold:
+        gt = '0/1'
+    else:
+        gt = '0/0'
+        
+    return gt
+    
+
+
+
+
 def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_threshold=0.85, het_threshold=0.01, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True):
 
     try:
@@ -41,8 +89,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
     except FileNotFoundError:
         version_line = '##SomaticSeq\n'
     
-    nan = float('nan')
-    
+
     tools_code = {'CGA':           'M',
                   'MuTect':        'M',
                   'MuTect2':       'M',
@@ -64,63 +111,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
     
     total_num_tools = len(mvjsdu)
     tool_string = ', '.join( tools )
-    
-    def p2phred(p, max_phred=float('nan')):
-        '''Convert p-value to Phred-scale quality score.'''
         
-        if p == 0:
-            Q = max_phred        
-        elif p > 0:    
-            Q = -10 * math.log10(p)
-            if Q > max_phred:
-                Q = max_phred
-        elif p == 1:
-            Q = 0
-        elif math.isnan(p) or p<0:
-            Q = nan
-                    
-        return Q
-        
-    
-    def dp4_to_gt(ref_for, ref_rev, alt_for, alt_rev, hom_threshold=hom_threshold, het_threshold=het_threshold):
-        try:
-            ref_for = int(ref_for)
-        except ValueError:
-            ref_for = 0
-            
-        try:
-            ref_rev = int(ref_rev)
-        except ValueError:
-            ref_rev = 0
-            
-        try:
-            alt_for = int(alt_for)
-        except ValueError:
-            alt_for = 0
-            
-        try:
-            alt_rev = int(alt_rev)
-        except ValueError:
-            alt_rev = 0
-            
-        var_counts = alt_for + alt_rev
-        ref_counts = ref_for + ref_rev
-        
-        if ref_counts == var_counts == 0:
-            gt = './.'
-            
-        elif var_counts/(var_counts+ref_counts) > hom_threshold:
-            gt = '1/1'
-            
-        elif var_counts/(var_counts+ref_counts) >= het_threshold:
-            gt = '0/1'
-            
-        else:
-            gt = '0/0'
-            
-        return gt
-    
-    
     
     with open(tsv_fn) as tsv, open(vcf_fn, 'w') as vcf:
         
@@ -321,7 +312,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                 
         
                 # DP4toGT:
-                gt = dp4_to_gt(n_ref_for, n_ref_rev, n_alt_for, n_alt_rev)
+                gt = dp4_to_gt(n_ref_for, n_ref_rev, n_alt_for, n_alt_rev, hom_threshold, het_threshold)
                 
                 # 4-number strings:
                 dp4_string = ','.join(( n_ref_for, n_ref_rev, n_alt_for, n_alt_rev ))
@@ -361,7 +352,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
             t_alt_dis = tsv_item[tBAM_ALT_Discordant] if tsv_item[tBAM_ALT_Discordant] != 'nan' else '0'
     
             # DP4toGT:
-            gt = dp4_to_gt(t_ref_for, t_ref_rev, t_alt_for, t_alt_rev)
+            gt = dp4_to_gt(t_ref_for, t_ref_rev, t_alt_for, t_alt_rev, hom_threshold, het_threshold)
             
             # 4-number strings:
             dp4_string = ','.join(( t_ref_for, t_ref_rev, t_alt_for, t_alt_rev ))
