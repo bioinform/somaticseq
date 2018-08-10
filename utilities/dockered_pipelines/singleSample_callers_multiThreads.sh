@@ -125,31 +125,31 @@ while true; do
 
     --somaticseq-train )
         somaticseq_train=1 ; shift ;;
-    
+
     --ada-r-script )
         case "$2" in
             "") shift 2 ;;
             *)  ada_r_script=$2 ; shift 2 ;;
         esac ;;
-        
+
     --classifier-snv )
         case "$2" in
             "") shift 2 ;;
             *)  classifier_snv=$2 ; shift 2 ;;
         esac ;;
-        
+
     --classifier-indel )
         case "$2" in
             "") shift 2 ;;
             *)  classifier_indel=$2 ; shift 2 ;;
         esac ;;
-        
+
     --truth-snv )
         case "$2" in
             "") shift 2 ;;
             *)  truth_snv=$2 ; shift 2 ;;
         esac ;;
-        
+
     --truth-indel )
         case "$2" in
             "") shift 2 ;;
@@ -174,7 +174,7 @@ then
 else
     cat ${HUMAN_REFERENCE}.fai | awk -F "\t" '{print $1 "\t0\t" $2}' | awk -F "\t" '$1 ~ /^(chr)?[0-9XYMT]+$/' > ${outdir}/genome.bed
 fi
-    
+
 
 if [[ `which python3` ]]
 then
@@ -203,11 +203,11 @@ do
         --human-reference ${HUMAN_REFERENCE} \
         --dbsnp ${dbsnp} \
         --action $action
-    
+
         mutect2_input="--mutect2 ${outdir}/${ith_thread}/MuTect2.vcf"
     fi
-    
-    
+
+
     if [[ $varscan2 -eq 1 ]]
     then
         $MYDIR/mutation_callers/single_VarScan2.sh \
@@ -218,11 +218,11 @@ do
         --human-reference ${HUMAN_REFERENCE} \
         --VAF ${min_vaf} \
         --action $action
-    
+
         varscan_input="--varscan ${outdir}/VarScan2.vcf"
     fi
-    
-    
+
+
     if [[ $vardict -eq 1 ]]
     then
         $MYDIR/mutation_callers/single_VarDictJava.sh \
@@ -233,11 +233,11 @@ do
         --human-reference ${HUMAN_REFERENCE} \
         --VAF ${min_vaf} \
         --action $action
-    
+
         vardict_input="--vardict ${outdir}/VarDict.vcf"
     fi
-    
-    
+
+
     if [[ $lofreq -eq 1 ]]
     then
         $MYDIR/mutation_callers/single_LoFreq.sh \
@@ -248,11 +248,11 @@ do
         --human-reference ${HUMAN_REFERENCE} \
         --dbsnp ${dbsnp} \
         --action $action
-    
+
         lofreq_input="--lofreq ${outdir}/LoFreq.vcf"
     fi
-    
-    
+
+
     if [[ $scalpel -eq 1 ]]
     then
         $MYDIR/mutation_callers/single_Scalpel.sh \
@@ -262,11 +262,11 @@ do
         --out-vcf Scalpel.vcf \
         --human-reference ${HUMAN_REFERENCE} \
         --action $action
-    
+
         scalpel_input="--scalpel ${outdir}/Scalpel.vcf"
     fi
-    
-    
+
+
     if [[ $strelka -eq 1 ]]
     then
         $MYDIR/mutation_callers/single_Strelka.sh \
@@ -277,11 +277,11 @@ do
         --human-reference ${HUMAN_REFERENCE} \
         --exome \
         --action $action
-    
+
         strelka_input="--strelka ${outdir}/Strelka/results/variants/variants.vcf.gz"
     fi
-    
-    
+
+
     if [[ $somaticseq -eq 1 ]]
     then
         # SomaticSeq modes:
@@ -289,24 +289,19 @@ do
         if [[ $classifier_indel ]]; then classifier_indel_text="--classifier-indel /mnt/${classifier_indel}"; fi
         if [[ $truth_snv ]];        then truth_snv_text="--truth-snv /mnt/${truth_snv}"                     ; fi
         if [[ $truth_indel ]];      then truth_indel_text="--truth-indel /mnt/${truth_indel}"               ; fi
-    
+
         if [[ ${dbsnp} ]];          then dbsnp_input="--dbsnp ${dbsnp}"                                     ; fi
         if [[ ${cosmic} ]];         then cosmic_input="--cosmic ${cosmic}"                                  ; fi
         if [[ ${EXCLUSION} ]];      then exclusion_text="--exclude ${EXCLUSION}"                            ; fi
-        
-        if [[ $ada_r_script ]]; then
-            ada_r_script_text="--ada-r-script /mnt/${ada_r_script}"
-        elif [[ ($truth_snv || $truth_indel) && somaticseq_train ]]; then
-            ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_builder_ntChange.R"
-        elif [[ $classifier_snv || $classifier_indel ]]; then
-            ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"
-        fi
-    
+
+        if [[ $somaticseq_train ]]; then train="--somaticseq-train"                                         ; fi
+
         $MYDIR/mutation_callers/single_SomaticSeq.sh \
         --in-bam ${tumor_bam} \
         --out-dir ${outdir}/${somaticseq_dir} \
         --human-reference ${HUMAN_REFERENCE} \
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
+        $train \
         $exclusion_text \
         $dbsnp_input \
         $cosmic_input \

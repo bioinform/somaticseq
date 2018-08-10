@@ -9,6 +9,7 @@
 \usepackage{listings}
 \usepackage{color}
 \usepackage{hyperref}
+\usepackage[document]{ragged2e}
 
 \usepackage{geometry}
 \geometry{letterpaper, margin=1.0in}
@@ -128,144 +129,138 @@ SomaticSeq and most somatic mutation callers we have incorporated are dockerized
 \end{itemize}
 
 
-\section{How to use SomaticSeq.Wrapper.sh} \label{Wrapper_script}
+\section{How to run SomaticSeq} \label{Wrapper_script}
 
-The SomaticSeq.Wrapper.sh is a wrapper script that calls a series of programs and procedures \textbf{after} you have run your individual somatic mutation callers. Section \ref{dockerized_callers} will teach you how to run those mutation callers that have been dockerized. It also includes ways to create semi-simulated training data that can be used to create SomaticSeq classifiers. In the next section, we will describe the workflow in this wrapper script in detail, so you may not be dependent on this wrapper script. You can either modify this wrapper script or create your own workflow using whatever workflow language you want. 
+The \textit{somaticseq/run\_somaticseq.py} calls a series of programs and procedures \textbf{after} you have run your individual somatic mutation callers, and \textit{somaticseq\_parallel.py} is a wrapper script that allows parallel processing. Section \ref{dockerized_callers} will teach you how to run those mutation callers that we have been dockerized. It also includes ways to create semi-simulated training data that can be used to create SomaticSeq classifiers. In the next section, we will describe the workflow in this wrapper script in detail. 
+
+Both paired and single modes are supported, although single mode is not as well validated scientifically as the paired mode. To see the required and optional input files and parameters to \textit{somaticseq\_parallel.py}:
+
+\begin{lstlisting}
+# See the global input parameters
+somaticseq_parallel.py --help
+
+# Input parameters for paired-sample mode (i.e., tumor-normal)
+somaticseq_parallel.py paired --help
+
+# Input parameters for single-sample mode
+somaticseq_parallel.py single --help
+\end{lstlisting}
 
 
 \subsection{SomaticSeq Training Mode} \label{somaticseq_train}
 
-To create SomaticSeq classifiers, you need VCF files containing true positive SNVs and INDELs. There is also an option to include a list of regions to include and/or exclude from this exercise. The exclusion or inclusion regions can be VCF or BED files. An inclusion region may be subset of the call sets where you have validated their true/false mutation status, so that only those regions will be used for training. An exclusion region can be regions where the ``truth'' is ambigious. All the variants in the truth VCF files are assumed to be true positives. Every mutation call not in the truth VCF files is assumed to be false positives (as long as the genomic coordiante is in inclusion region and not in exclusion region if those regions are provided). 
+To create SomaticSeq classifiers, you need a VCF file containing true SNVs and a VCF file containing true INDELs. There is also an option to include a list of regions to include and/or exclude from this exercise. The exclusion or inclusion regions can be VCF or BED files. An inclusion region may be subset of the call sets where you have validated their true/false mutation status, so that only those regions will be used for training. An exclusion region can be regions where the ``truth'' is ambigious. All the variants in the truth VCF files are assumed to be true positives. Every mutation call not in the truth VCF files is assumed to be false positives (as long as the genomic coordiante is in inclusion region and not in exclusion region if those regions are provided). 
 
 All the output VCF files from individual callers are optional. Those VCF files can be bgzipped if they have .vcf.gz extensions. It is imperative that you will use the same parameter for prediction as you do for training. 
 
 \begin{lstlisting}
-# An example: for training, truth file and the correct R script are required.
-
-SomaticSeq.Wrapper.sh \
---mutect2           MuTect2/variants.vcf \
---varscan-snv       VarScan2/variants.snp.vcf \
---varscan-indel     VarScan2/variants.indel.vcf \
---jsm               JointSNVMix2/variants.snp.vcf \
---sniper            SomaticSniper/variants.snp.vcf \
---vardict           VarDict/variants.vcf \
---muse              MuSE/variants.snp.vcf \
---lofreq-snv        LoFreq/variants.snp.vcf \
---lofreq-indel      LoFreq/variants.indel.vcf \
---scalpel           Scalpel/variants.indel.vcf \
---strelka-snv       Strelka/variants.snv.vcf \
---strelka-indel     Strelka/variants.indel.vcf \
---tnscope           TNscope.vcf.gz \
---normal-bam        matched_normal.bam \
---tumor-bam         tumor.bam \
---ada-r-script      $somaticseq/r_scripts/ada_model_builder_ntChange.R \
+# An example command for SomaticSeq Training.
+somaticseq_parallel.py \
+--somaticseq-train \
+--output-directory  $OUTPUT_DIR \
 --genome-reference  GRCh38.fa \
---cosmic            cosmic.GRCh38.vcf \
---dbsnp             dbSNP.GRCh38.vcf \
---exclusion-region  blackList.bed \
---inclusion-region  highConfidenceRegions.bed
 --truth-snv         truePositives.snv.vcf \
 --truth-indel       truePositives.indel.vcf \
---output-dir        $OUTPUT_DIR
+--inclusion-region  genome.bed \
+--exclusion-region  blacklist.bed \
+--threads           12 \
+paired \
+--tumor-bam-file    tumor.bam \
+--normal-bam-file   matched_normal.bam \
+--mutect2-vcf       MuTect2/variants.vcf \
+--varscan-snv       VarScan2/variants.snp.vcf \
+--varscan-indel     VarScan2/variants.indel.vcf \
+--jsm-vcf           JointSNVMix2/variants.snp.vcf \
+--somaticsniper-vcf SomaticSniper/variants.snp.vcf \
+--vardict-vcf       VarDict/variants.vcf \
+--muse-vcf          MuSE/variants.snp.vcf \
+--lofreq-snv        LoFreq/variants.snp.vcf \
+--lofreq-indel      LoFreq/variants.indel.vcf \
+--scalpel-vcf       Scalpel/variants.indel.vcf \
+--strelka-snv       Strelka/variants.snv.vcf \
+--strelka-indel     Strelka/variants.indel.vcf
 \end{lstlisting}
 
-SomaticSeq.Wrapper.sh supports any combination of the somatic mutation callers we have incorporated into the workflow. SomaticSeq will run based on the output VCFs you have provided. It will train for SNV and/or INDEL if you provide the truePositives.snv.vcf and/or truePositives.indel.vcf file(s) as well as the proper R script (ada\_model\_builder\_ntChange.R). Otherwise, it will fall back to the simple caller consensus mode.
+For the command's argument placement, caller output and bam files are input ``after'' \textit{paired} or \textit{single} option. Everything else goes before, e.g., reference, ground truths, resources such as dbSNP and COSMIC, etc. 
+
+Parallel processing is achieved by splitting the inclusion BED file into a number of sub-BED files of equal region sizes, named 1.th.input.bed, 2.th.input.bed, ..., n.th.input.bed. Then each process will be run using each sub-BED file as the inclusion BED file. If there is no inclusion BED file in the command argument, it will split the reference.fa.fai file instead. 
+
+SomaticSeq supports any combination of the somatic mutation callers we have incorporated into the workflow. SomaticSeq will run based on the output VCFs you have provided. It will train for SNV and/or INDEL if you provide the truePositives.snv.vcf and/or truePositives.indel.vcf file(s) and invoke the \textit{\texttt{--}somaticseq-train} option. Otherwise, it will fall back to the simple caller consensus mode.
 
 
 
 
 \subsection{SomaticSeq Prediction Mode} \label{somaticseq_prediction}
 
-Make sure the classifiers (.RData files) and the proper R script (ada\_model\_predictor.R) are supplied, Without either of them, it will fall back to the simple caller consensus mode.
+Make sure the classifiers (.RData files) are supplied, Without either of them, or it will fall back to the simple caller consensus mode.
 
 
 \begin{lstlisting}
 # The *.RData files are trained classifier from the training mode.
-SomaticSeq.Wrapper.sh \
---mutect2           MuTect2/variants.vcf \
+somaticseq_parallel.py \
+--classifier-snv    Ensemble.sSNV.tsv.ntChange.Classifier.RData \
+--classifier-indel  Ensemble.sINDEL.tsv.ntChange.Classifier.RData \
+--output-directory  $OUTPUT_DIR \
+--genome-reference  GRCh38.fa \
+--inclusion-region  genome.bed \
+--exclusion-region  blacklist.bed \
+--threads           12 \
+paired \
+--tumor-bam-file    tumor.bam \
+--normal-bam-file   matched_normal.bam \
+--mutect2-vcf       MuTect2/variants.vcf \
 --varscan-snv       VarScan2/variants.snp.vcf \
 --varscan-indel     VarScan2/variants.indel.vcf \
---jsm               JointSNVMix2/variants.snp.vcf \
---sniper            SomaticSniper/variants.snp.vcf \
---vardict           VarDict/variants.vcf \
---muse              MuSE/variants.snp.vcf \
+--jsm-vcf           JointSNVMix2/variants.snp.vcf \
+--somaticsniper-vcf SomaticSniper/variants.snp.vcf \
+--vardict-vcf       VarDict/variants.vcf \
+--muse-vcf          MuSE/variants.snp.vcf \
 --lofreq-snv        LoFreq/variants.snp.vcf \
 --lofreq-indel      LoFreq/variants.indel.vcf \
---scalpel           Scalpel/variants.indel.vcf \
+--scalpel-vcf       Scalpel/variants.indel.vcf \
 --strelka-snv       Strelka/variants.snv.vcf \
---strelka-indel     Strelka/variants.indel.vcf \
---tnscope           TNscope.vcf.gz \
---normal-bam        matched_normal.bam \
---tumor-bam         tumor.bam \
---ada-r-script      ada_model_predictor.R \
---genome-reference  human_b37.fasta \
---genome-reference  GRCh38.fa \
---cosmic            cosmic.GRCh38.vcf \
---dbsnp             dbSNP.GRCh38.vcf \
---exclusion-region  blackList.bed \
---inclusion-region  highConfidenceRegions.bed
---classifier-snv    sSNV.Classifier.RData \
---classifier-indel  sINDEL.Classifier.RData \
---pass-threshold    0.5 \
---lowqual-threshold 0.1 \
---output-dir        $OUTPUT_DIR
-
+--strelka-indel     Strelka/variants.indel.vcf
 \end{lstlisting}
 
 
 
 \subsection{Consensus Mode} \label{somaticseq_default_mode}
 
-Same as the commands previously, but not including the R script or the ground truth files. Without those information, SomaticSeq will forgo machine learning, and fall back into a simple majority vote.
+Same as the commands previously, but without including classifiers or invoking \textit{--somaticseq-train}. Without those information, SomaticSeq will forgo machine learning, and fall back into a simple majority vote.
 
 
 
 \section{The step-by-step SomaticSeq Workflow} \label{step_by_step_procedures}
 
-We'll describe the workflow here, so you may modify the workflow and/or create your own workflow (better optimized for your own usage), instead of using SomaticSeq.Wrapper.sh we have included in the repo.
+We'll describe the workflow here.
+
+\subsection{Apply inclusion and exclusion regions}
+
+This step may be needed for model training. BEDTools is invoked by SomaticSeq. An inclusion region means we will only use calls inside these regions. An exclusion region means we do not care about calls inside this region. DREAM Challenge had exclusion regions, e.g., blacklisted regions, etc. It is also a routine used to parallelize the process by splitting large regions into equal-sized (in terms of number of pairs) regions, so that they can be processed in parallel.  
+
 
 
 \subsection{Combine the call sets}
-We use utilities/getUniqueVcfPositions.py and vcfsorter.pl to combine the VCF files from different callers. For each caller output, intermediate VCF file(s) were modified separate the SNVs and INDELs calls, and also remove some REJECT calls to reduce file sizes.
+We use \textit{vcfModifier/getUniqueVcfPositions.py} and \textit{bedtools sort} to combine the VCF files from different callers. For each caller output, intermediate VCF file(s) may be created to separate the SNVs and INDELs calls, and also remove some REJECT calls to reduce file sizes.
 
-\begin{enumerate}
+The following scripts are used to modify original VCF outputs.
 
-% MuTect and Indelocator
-\item 
-Modify (original) MuTect and/or Indelocator output VCF files. 
-Since MuTect's output VCF do not always put the tumor and normal samples in the same columns, the script will determine that information based on either the BAM files (the header has sample name information), or based on the sample information that you tell it, and then determine which column belongs to the normal, and which column belongs to the tumor. 
-	
-\begin{lstlisting}
-# Modify MuTect and Indelocator's output VCF based on BAM files
-modify_MuTect.py -infile input.vcf -outfile output.vcf -nbam normal.bam -tbam tumor.bam
-	
-# Based on the sample name you supply:
-modify_MuTect.py -infile input.vcf -outfile output.vcf -nsm NormalSampleName -tsm TumorSampleName
-\end{lstlisting}
-
-
-% MuTect 2 (from GATK 4)
-\item
-For MuTect2, this script will split multi-allelic records into one variant per line in the VCF file. This is to make thing easier for the SSeq\_merged.vcf2tsv.py script later. 
 
 \begin{lstlisting}
-# Based on the sample name you supply:
-modify_MuTect2.py -infile MuTect2.Filtered.vcf -snv mutect.snp.vcf -indel mutect.indel.vcf
+  vcfModifier/modify_JointSNVMix2.py
+  vcfModifier/modify_MuTect2.py
+  vcfModifier/modify_MuTect.py
+  vcfModifier/modify_SomaticSniper.py
+  vcfModifier/modify_ssMuTect2.py
+  vcfModifier/modify_ssStrelka.py
+  vcfModifier/modify_Strelka.py
+  vcfModifier/modify_VarDict.py
+  vcfModifier/modify_VarScan2.py
 \end{lstlisting}
 
+modify\_ssTOOL.py denotes it's for single-sample mode. 
 
-% VarScan2
-\item
-Modify VarScan's output VCF files to be rigorously concordant to VCF format standard, and to attach the tag 'VarScan2' to somatic calls. 
-\begin{lstlisting}
-# Do it for both the SNV and indel
-modify_VJSD.py -method VarScan2 -infile input.vcf -outfile output.vcf
-\end{lstlisting}
-
-
-% JointSNVMix2
-\item
-JointSNVMix2 does not output VCF files. In our own \href{https://github.com/bioinform/somaticseq/blob/master/utilities/dockered_pipelines/mutation_callers/submit_JointSNVMix2.sh}{workflow}, we convert its output into a basic VCF file with an 2 awk one-liners, which you may see at utilities/dockered\_pipelines/mutation\_callers/submit\_JointSNVMix2.sh.
+JointSNVMix2 does not output VCF files. In our own \href{https://github.com/bioinform/somaticseq/blob/master/utilities/dockered_pipelines/mutation_callers/submit_JointSNVMix2.sh}{workflow}, we convert its output into a basic VCF file with an 2 awk one-liners, which you may see at \textit{utilities/dockered\_pipelines/mutation\_callers/submit\_JointSNVMix2.sh}.
 
 \begin{lstlisting}
 # To avoid text files on the order of terabytes, this awk one-liner keeps entries where the reference is not "N", and the somatic probabilities are at least 0.95.
@@ -287,148 +282,21 @@ awk -F "\t" 'NR!=1 && $4!="N" && $10+$11>=0.95' |\
 awk -F "\t" '{print $1 "\t" $2 "\t.\t" $3 "\t" $4 "\t.\t.\tAAAB=" $10 ";AABB=" $11 "\tRD:AD\t" $5 ":" $6 "\t" $7 ":" $8}' >> unsorted.vcf
 \end{lstlisting}
 	
-After that, you'll also want to sort the VCF file.
-	
-\begin{lstlisting}
-modify_VJSD.py -method JointSNVMix2 -infile input.vcf -outfile output.vcf
-\end{lstlisting}
 
-% SomaticSniper:
-\item	
-Modify SomaticSniper's output:
-
-\begin{lstlisting}
-modify_VJSD.py -method SomaticSniper -infile input.vcf -outfile output.vcf
-\end{lstlisting}
-
-
-% VarDict
-\item	
-VarDict has both SNV and indel, plus some other variants in the same VCF file. Our script will create two files, one for SNV and one for indel, while everything else is ignored for now. By default, LikelySomatic/StrongSomatic and PASS calls will be labeled VarDict. However, in our SomaticSeq paper, based on our experience in DREAM Challenge, we implemented two custom filters to relax the VarDict tagging criteria. 
-
-
-\begin{lstlisting}
-# Default VarDict tagging criteria, only PASS (and Likely or Strong Somatic):
-modify_VJSD.py -method VarDict -infile intput.vcf -outfile output.vcf
-	
-# When running VarDict, if var2vcf_paired.pl is used to generate the VCF file, you may relax the tagging criteria with -filter paired
-modify_VJSD.py -method VarDict -infile intput.vcf -outfile output.vcf -filter paired
-	
-# When running VarDict, if var2vcf_somatic.pl is used to generate the VCF file, you may relax the tagging criteria with -filter somatic
-modify_VJSD.py -method VarDict -infile intput.vcf -outfile output.vcf -filter somatic
-\end{lstlisting}
-	
-
-In the SomaticSeq paper, -filter somatic was used because var2vcf\_somatic.pl was used to generate VarDict's VCF files. In the SomaticSeq.Wrapper.sh script, however, -filter paired is used because VarDict authors have since recommended var2vcf\_paired.pl script to create the VCF files. While there are some differences (different stringencies in some filters) in what VarDict labels as PASS between the somatic.pl and paired.pl scripts, the difference is miniscule after applying our custom filter (which relaxes the filter, resulting in a difference about 5 calls out of 15,000). 
-
-The output files will be snp.output.vcf and indel.output.vcf. 
-
-
-% MuSE
-\item
-MuSE was not a part of our analysis in the SomaticSeq paper. We have implemented it later. 
-	
-\begin{lstlisting}
-modify_VJSD.py -method MuSE -infile input.vcf -outfile output.vcf
-\end{lstlisting}
-
-
-% LoFreq
-\item
-LoFreq and Scalpel do not require modification. LoFreq has no sample columns anyway. 
-
-
-% Strelka
-\item
-Add ``GT'' field to sample columns to make it compatible with GATK CombineVariants.
-
-\begin{lstlisting}
-modify_Strelka.py -infile somatic.snvs.vcf.gz -outfile stralka.snv.vcf
-\end{lstlisting}
-
-
-% GATK CombineVariants
-\item
-Finally, with the VCF files modified, you need combine them: one for SNV and one for indel separately.
-	
-\begin{lstlisting}
-# Combine the VCF files for SNV. Any or all of the VCF files may be present.
-utilities/getUniqueVcfPositions.py -vcfs mutect.vcf varscan.snp.vcf jointsnvmix.vcf snp.vardict.vcf muse.vcf -out CombineVariants.snp.vcf
-\end{lstlisting}
-
-
-\end{enumerate}
-
-
-
-
-
-\subsection{Apply inclusion and exclusion regions}
-
-This step may be needed for model training. The workflow in SomaticSeq.Wrapper.sh allows for inclusion and exclusion region. An inclusion region means we will only use calls inside these regions. An exclusion region means we do not care about calls inside this region. DREAM Challenge had exclusion regions, e.g., blacklisted regions, etc. 
-	
-\begin{lstlisting}
-# In the DREAM_Stage_3 directory, we have included an exclusion region BED file as an example
-# This command uses BEDtools to rid of all calls in the exclusion region
-intersectBed -header -a BINA_somatic.snp.vcf   -b ignore.bed -v > somatic.snp.processed.vcf
-intersectBed -header -a BINA_somatic.indel.vcf -b ignore.bed -v > somatic.indel.processed.vcf
-
-# Alternatively (or both), this command uses BEDtools to keep only calls in the inclusion region
-intersectBed -header -a BINA_somatic.snp.vcf   -b inclusion.bed > somatic.snp.processed.vcf
-intersectBed -header -a BINA_somatic.indel.vcf -b inclusion.bed > somatic.indel.processed.vcf
-
-\end{lstlisting}
 
 
 
 \subsection{Convert the VCF file into TSV file}
-This script works for all VCF files. It extracts information from BAM files, as well as some individual callers' output VCF files. If the ground truth VCF file is included, a called variant will be annotated as a true positive, and everything will be annotated as a false positive.
-
-	
-\begin{lstlisting}
-# SNV
-SSeq_merged.vcf2tsv.py -ref genome.GRCh37.fa -myvcf somatic.snp.processed.vcf -truth Ground.truth.snp.vcf -mutect MuTect/variants.snp.vcf.gz -varscan VarScan2/variants.snp.vcf -jsm JSM2/variants.vcf -sniper SomaticSniper/variants.vcf -vardict VarDict/snp.variants.vcf -muse MuSE/variants.vcf -lofreq LoFreq/variants.snp.vcf -strelka Strelka/variants.snp.vcf -dedup -tbam tumor.bam -nbam normal.bam -outfile Ensemble.sSNV.tsv
-\end{lstlisting}
+This script \textit{somaticseq/somatic\_vcf2tsv.py} works for all VCF files (requires input for two BAM files). It extracts information from the BAM files, as well as some individual callers' output VCF files. If the ground truth VCF file is included, a called variant will be annotated as a true positive, and everything will be annotated as a false positive. \textit{somaticseq/single\_sample\_vcf2tsv.py} is used for single-sample mode. 
 
 
-That was for SNV, and indel is almost the same thing. After version 2.1, we have replaced all information from SAMtools and HaplotypeCaller with information directly from the BAM files. The accuracy differences are negligible with significant improvement in usability and resource requirement.
+At the end of this, \textit{Ensemble.sSNV.tsv} and \textit{Ensemble.sINDEL.tsv} are created. 
+
+All the options for \textit{somaticseq/somatic\_vcf2tsv.py} or \textit{somaticseq/single\_sample\_vcf2tsv.py} can be found by running. 
 
 \begin{lstlisting}
-# INDEL:
-SSeq_merged.vcf2tsv.py -ref genome.GRCh37.fa -myvcf somatic.indel.processed.vcf -truth Ground.truth.indel.vcf -varscan VarScan2/variants.snp.vcf -vardict VarDict/indel.variants.vcf -lofreq LoFreq/variants.indel.vcf -scalpel Scalpel/variants.indel.vcf -strelka Strelka/variants.indel.vcf -tbam tumor.bam -nbam normal.bam -dedup -outfile Ensemble.sINDEL.tsv
-\end{lstlisting}
-
-
-At the end of this, Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv are created. 
-
-All the options for SSeq\_merged.vcf2tsv.py are listed here. They can also be displayed by running SSeq\_merged.vcf2tsv.py \texttt{--}help.
-
-\begin{lstlisting}
-
-  -myvcf       Input VCF file of the merged calls [REQUIRED]
-  -ref         Genome reference fa/fasta file [REQUIRED]
-  -nbam        BAM file of the matched normal sample [REQUIRED]
-  -tbam        BAM file of the tumor sample [REQUIRED]
-  -ref         Genome reference fa/fastq file [REQUIRED]
-  -truth       Ground truth VCF file. Every other position is a False Positive.
-  -dbsnp       dbSNP VCF file
-  -cosmic      COSMIC VCF file
-  -mutect      VCF file from either MuTect2, MuTect, or Indelocator
-  -sniper      VCF file from SomaticSniper
-  -varscan     VCF file from VarScan2
-  -jsm         VCF file from Bina's workflow that contains JointSNVMix2
-  -vardict     VCF file that contains only SNV or only INDEL from VarDict
-  -muse        VCF file from MuSE
-  -lofreq      VCF file from LoFreq
-  -scalpel     VCF file from Scalpel
-  -strelka     VCF file from Strelka
-  -dedup       A flag to consider only primary reads
-  -minMQ       Minimum mapping quality for reads to be considered (Default = 1)
-  -minBQ       Minimum base quality for reads to be considered (Default = 5)
-  -mincaller   Minimum number of caller classification for a call to be considered (Use 0.5 to consider some LowQual calls. Default = 0).
-  -scale       The options are phred, fraction, or None, to convert numbers to Phred scale or fractional scale. (default = None, i.e., no conversion)
-  -outfile     Output TSV file name
-                        
+somaticseq/somatic_vcf2tsv.py -h
+somaticseq/single_sample_vcf2tsv.py -h
 \end{lstlisting}
 
 
@@ -455,7 +323,7 @@ r_scripts/ada_model_builder_ntChange.R Ensemble.sSNV.tsv   Consistent_Mates Inco
 r_scripts/ada_model_builder_ntChange.R Ensemble.sINDEL.tsv Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates
 \end{lstlisting}
 	
-Ensemble.sSNV.tsv.Classifier.RData and Ensemble.sINDEL.tsv.Classifier.RData will be created from model training. The arguments after Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv tells the builder script to ignore those features in training. These features do not improve accuracy in our data sets (mostly WGS data, but they may help other data sets)
+\textit{Ensemble.sSNV.tsv.ntChange.Classifier.RData} and \textit{Ensemble.sINDEL.tsv.ntChange.Classifier.RData} will be created from model training. The arguments after \textit{Ensemble.sSNV.tsv} and \textit{Ensemble.sINDEL.tsv} tells the builder script to ignore those features in training. These features do not improve accuracy in our data sets (mostly WGS data, but they may help other data sets)
 	
 
 Mutation prediction:
@@ -475,9 +343,9 @@ After mutation prediction, if you feel like it, you may convert Trained.sSNV.tsv
 # Use -all to include REJECT calls in the VCF file
 # Use -phred to convert probability values (between 0 to 1) into Phred scale in the QUAL column in the VCF file
 
-SSeq_tsv2vcf.py -tsv Trained.sSNV.tsv   -vcf Trained.sSNV.vcf   -pass 0.7 -low 0.1 -tools MuTect2 VarScan2 JointSNVMix2 SomaticSniper VarDict MuSE LoFreq Strelka -all -phred
+somaticseq/SSeq_tsv2vcf.py -tsv Trained.sSNV.tsv   -vcf Trained.sSNV.vcf   -pass 0.7 -low 0.1 -tools MuTect2 VarScan2 JointSNVMix2 SomaticSniper VarDict MuSE LoFreq Strelka -all -phred
 
-SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0.1 -tools MuTect2 VarScan2 VarDict LoFreq Scalpel Strelka -all -phred
+somaticseq/SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0.1 -tools MuTect2 VarScan2 VarDict LoFreq Scalpel Strelka -all -phred
 \end{lstlisting}
 
 
@@ -521,7 +389,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 \end{lstlisting}
 The command shown above will create scripts for MuTect2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and Strelka. Then, it will create the SomaticSeq script that merges those 7 callers. This command defaults to majority-vote consensus.
 
-Since it's --aciton echo, it will echo the mutation caller scripts locations, but these scripts will not be run. If you do --action qsub instead, then those mutation caller scripts will be qsub'ed. You'll still need to mantually run/submit the SomaticSeq script after all the caller jobs are done.
+Since it's \texttt{--}aciton echo, it will echo the mutation caller scripts locations, but these scripts will not be run. If you do \textit{\texttt{--}action qsub} instead, then those mutation caller scripts will be qsub'ed. You'll still need to mantually run/submit the SomaticSeq script after all the caller jobs are done.
 
 
 
@@ -566,7 +434,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_singleThread.sh 
 
 Notice the command includes --truth-snv and --truth-indel, and invokes somaticseq-train.
 
-For multi-threaded job, you should not invoke somaticseq-train. Instead, you should combine all the Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv files (separately), and then train on the combined files.
+For multi-threaded job, you should not invoke somaticseq-train. Instead, you should combine all the \textit{Ensemble.sSNV.tsv} and \textit{Ensemble.sINDEL.tsv} files (separately), and then train on the combined files.
 
 
 
@@ -825,7 +693,7 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_multi
 --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa --tumor-bam-in /ABSOLUTE/PATH/TO/Tumor_Sample.bam --normal-bam-in /ABSOLUTE/PATH/TO/Normal_Sample.bam --tumor-bam-out syntheticTumor.bam --normal-bam-out    syntheticNormal.bam --split-proportion  0.5 --num-snvs 30000 --num-indels 10000 --num-svs 1500 --min-vaf 0.0 --max-vaf 1.0 --left-beta 2 --right-beta 5 --min-variant-reads 2 --output-dir /ABSOLUTE/PATH/TO/trainingSet --threads 24 --action qsub --merge-bam --split-bam --indel-realign --merge-output-bams
 \end{lstlisting}
 
-The --merge-bam will merge the normal and tumor BAM files into a single BAM file. Then, --split-bem will randomly split the merged BAM file into two BAM files. One of which is designated normal, and one of which is designated tumor. Synthetic mutations will then be spiked into the designated tumor to create "real" mutations. This is the approach described in our \href{http://dx.doi.org/10.1158/1538-7445.AM2017-386}{2017 AACR Abstract}.
+The \textit{\texttt{--}merge-bam} will merge the normal and tumor BAM files into a single BAM file. Then, \textit{\texttt{--}split-bem} will randomly split the merged BAM file into two BAM files. One of which is designated normal, and one of which is designated tumor. Synthetic mutations will then be spiked into the designated tumor to create "real" mutations. This is the approach described in our \href{http://dx.doi.org/10.1158/1538-7445.AM2017-386}{2017 AACR Abstract}.
 
 
 A schematic of the simulation procedure
@@ -870,15 +738,15 @@ A schematic of the simulation procedure
 \subsubsection{--merge-bam / --split-bam / --indel-realign}
 
 
-If you have sequenced replicate normal, that's the best data set for training. You can use one of the normal as normal, and designate the other normal (of the same sample) as tumor. Use --indel-realign to invoke GATK IndelRealign.
+If you have sequenced replicate normal, that's the best data set for training. You can use one of the normal as normal, and designate the other normal (of the same sample) as tumor. Use \textit{\texttt{--}indel-realign} to invoke GATK IndelRealign.
 
-When you have a normal that's roughly 2X the coverage as your data of choice, you can split that into two halves. One designated as normal, and the other one designated as tumor. That DREAM Challenge's approach. Use --split-bam --indel-realign options.
+When you have a normal that's roughly 2X the coverage as your data of choice, you can split that into two halves. One designated as normal, and the other one designated as tumor. That DREAM Challenge's approach. Use \textit{\texttt{--}split-bam \texttt{--}indel-realign} options.
 
-Another approach is to merge the tumor and normal data, and then randomly split them as described above. When you merge the tumor and normal, the real tumor mutations are relegated as germline or noise, so they are considered false positives, because they are supposed to be evenly split into the designated normal. To take this approach, use --merge-bam --split-bam --indel-realign options.
+Another approach is to merge the tumor and normal data, and then randomly split them as described above. When you merge the tumor and normal, the real tumor mutations are relegated as germline or noise, so they are considered false positives, because they are supposed to be evenly split into the designated normal. To take this approach, use \textit{\texttt{--}merge-bam \texttt{--}split-bam \texttt{--}indel-realign options}.
 
-Don't use --indel-realign if you do not use indel realignment in your alignment pipeline.
+Don't use \textit{\texttt{--}indel-realign} if you do not use indel realignment in your alignment pipeline.
 
-In some BAM files, there are reads where read lengths and CIGAR strings don't match. Spike in will fail in these cases, and you'll need to invoke --clean-bam to get rid of these problematic reads.
+In some BAM files, there are reads where read lengths and CIGAR strings don't match. Spike in will fail in these cases, and you'll need to invoke \textit{\texttt{--}clean-bam} to get rid of these problematic reads.
 
 You can control and visualize the shape of target VAF distribution with python command:
 
@@ -1332,6 +1200,27 @@ Have implemented the following improvement, mostly for indels:
   
 \end{itemize}
 
+
+
+\subsection{Version 3.0.0}
+
+\begin{itemize}
+
+  \item
+  Refactored the codes.
+  
+    \begin{enumerate}
+
+     \item The wrapper scripts written in bash script (i.e., SomaticSeq.Wrapper.sh and ssSomaticSeq.Wrapper.sh) are replaced by somaticseq/run\_somaticseq.py, though they're still kept for backward-compatibility. 
+     
+     \item Allow parallel processing using somaticseq\_parallel.py
+
+    \end{enumerate}
+
+  
+  
+  
+\end{itemize}
 
 
 
