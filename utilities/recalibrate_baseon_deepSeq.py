@@ -128,6 +128,8 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
             for ith_call, my_call in enumerate( variants_at_my_coordinate ):
 
                 tvaf = float( my_call.get_info_value('TVAF') )
+                nPASSES = int( my_call.get_info_value('nPASSES') )
+                nREJECTS = int( my_call.get_info_value('nREJECTS') )
                 
                 if ('LikelyFalsePositive' in my_call.filters) or ('NeutralEvidence' in my_call.filters) and (tvaf <= 0.1):
                 

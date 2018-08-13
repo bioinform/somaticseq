@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # Re-count MQ0's and re-calculate VAF's
+# Have to have nREJECTS > nPASSES instead of nREJECTS + nNoCall > nPASSES to be "Likely False Positive"\
 
 import sys, argparse, math, gzip, os, re, copy, math
 import scipy.stats as stats
@@ -854,7 +855,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 elif (bwaMappingDifficulty or bwaAlignmentDifficulty) + (bowtieMappingDifficulty or bowtieAlignmentDifficulty) + (novoMappingDifficulty or novoAlignmentDifficulty) >= 3:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
                     
-                elif nREJECTS + nNoCall > nPASSES:
+                elif nREJECTS > nPASSES:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
 
                 elif vcf_i.get_info_value('FLAGS') and 'inconsistentTitration' in vcf_i.get_info_value('FLAGS'):
@@ -868,7 +869,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
 
                 if vcf_i.get_info_value('FLAGS') and 'inconsistentTitration' in vcf_i.get_info_value('FLAGS'):
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
-                elif nPASSES > nREJECTS + nNoCall:
+                elif nPASSES > nREJECTS:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
                 else:
                     vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'LikelyFalsePositive')
