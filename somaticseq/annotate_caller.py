@@ -364,11 +364,6 @@ def TNscope(variant_id, tnscope_variants):
         tnscope_variant_i = tnscope_variants[variant_id]
         tnscope_classification = 1 if (tnscope_variant_i.get_info_value('SOMATIC') or 'PASS' in tnscope_variant_i.filters) else 0
                                 
-        # If ref_base, first_alt, and indel_length unknown, get it here:
-        if not ref_base:         ref_base = tnscope_variant_i.refbase
-        if not first_alt:        first_alt = tnscope_variant_i.altbase
-        if indel_length == None: indel_length = len(first_alt) - len(ref_base)
-
     else:
         # Not called by TNscope
         tnscope_classification = 0
