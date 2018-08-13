@@ -357,7 +357,7 @@ def ssStrelka(variant_id, strelka_variants):
 
 
 
-def TNscope():
+def TNscope(variant_id, tnscope_variants):
     
     if variant_id in tnscope_variants:
 
