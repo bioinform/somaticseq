@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Re-count MQ0's and re-calculate VAF's
-# Have to have nREJECTS > nPASSES instead of nREJECTS + nNoCall > nPASSES to be "Likely False Positive"\
+# Different from seqc2_v0.3: Have to have nREJECTS > nPASSES instead of nREJECTS + nNoCall > nPASSES to be "Likely False Positive"
 
 import sys, argparse, math, gzip, os, re, copy, math
 import scipy.stats as stats

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Rename Confidence-level names here
+
 import sys, argparse, math, gzip, os
 import regex as re
 from copy import copy
@@ -126,13 +128,24 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
 
             # Now, use pysam to look into the BAM file(s), variant by variant from the input:
             for ith_call, my_call in enumerate( variants_at_my_coordinate ):
+                
+                vcf_items = my_call.vcf_line.split('\t')
+                
+                tvaf      = float( my_call.get_info_value('TVAF') )
+                nPASSES   = int( my_call.get_info_value('nPASSES') )
+                nREJECTS  = int( my_call.get_info_value('nREJECTS') )
+                
+                
+                if ( ('LikelyFalsePositive' in my_call.filters) or ('NeutralEvidence' in my_call.filters) ) and \
+                (tvaf <= 0.1 and nPASSES >= 20 and nREJECTS < 10):
 
-                tvaf = float( my_call.get_info_value('TVAF') )
-                nPASSES = int( my_call.get_info_value('nPASSES') )
-                nREJECTS = int( my_call.get_info_value('nREJECTS') )
+                    bwaVDP,    bwaDP    = [ int(i) for i in my_call.get_info_value('bwaDP').split(',') ]
+                    bowtieVDP, bowtieDP = [ int(i) for i in my_call.get_info_value('bowtieDP').split(',') ]
+                    novoVDP,   novoDP   = [ int(i) for i in my_call.get_info_value('novoDP').split(',') ]
                 
-                if ('LikelyFalsePositive' in my_call.filters) or ('NeutralEvidence' in my_call.filters) and (tvaf <= 0.1):
-                
+                    VDP = bwaVDP + bowtieVDP + novoVDP
+                    DP  = bwaDP  + bowtieDP  + novoDP
+                    
                     variant_id = ( (my_call.chromosome, my_call.position), my_call.refbase, my_call.altbase )
                     ref_base   = ref_bases[ith_call]
                     first_alt  = alt_bases[ith_call]
@@ -157,6 +170,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         nova_bwa_REJECT  = False
                         nova_bwa_Missing = True
 
+
                     # Combined NovaSeq Bowtie
                     if variant_id in nova_bowtie_variants:
 
@@ -175,6 +189,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         nova_bowtie_PASS    = False
                         nova_bowtie_REJECT  = False
                         nova_bowtie_Missing = True
+
 
                     # Combined NovaSeq NovoAlign
                     if variant_id in nova_novo_variants:
@@ -195,12 +210,23 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         nova_novo_REJECT  = False
                         nova_novo_Missing = True
 
+                    
+                    # Promote to "WeakEvidence"
+                    if nova_bwa_PASS and nova_bowtie_PASS and nova_novo_PASS:
+                        vcf_items[6] = re.sub('LikelyFalsePositive|NeutralEvidence', 'rc_WeakEvidence', vcf_items[6])
+                    
+                    # Promote one ladder up if PASS by Burrows-Wheeler (bwa or bowtie) and NovoAlign
+                    # "Missing" in 450X is worse than "missing" in 50X, so it's considered as "bad" as REJECT, i.e., two PASSES and one LowQual
+                    elif ( (nova_bwa_PASS or nova_bowtie_PASS) and nova_novo_PASS ) and not (nova_bwa_REJECT or nova_bowtie_REJECT or nova_novo_REJECT or nova_bwa_Missing or nova_bowtie_Missing or nova_bowtie_Missing):
+                        vcf_items[6] = re.sub('LikelyFalsePositive', 'rc_NeutralEvidence', vcf_items[6])
+                        vcf_items[6] = re.sub('NeutralEvidence',     'rc_WeakEvidence',    vcf_items[6])
 
 
-
-
+                # Write
+                line_out = '\t'.join(vcf_items)
+                fout.write( line_out + '\n' )
 
 
 
     opened_files = (nova_bwa, nova_bowtie, nova_novo)
-    [opened_file.close() for opened_file in opened_files if opened_file]
+    [ opened_file.close() for opened_file in opened_files if opened_file ]
