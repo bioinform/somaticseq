@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-# Rename Confidence-level names here
+# Recalibrate confidence-level of low VAF calls with high number of PASSES
+# Rename StrongEvidence/WeakEvidence/NeutralEvidence/LikelyFalsePositive into HighConf/MedConf/LowConf/Unclassified
 
 import sys, argparse, math, gzip, os
 import regex as re
@@ -38,6 +39,15 @@ fai_file  = args.genome_reference + '.fai'
 chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
 
 
+def rename(line_i):
+    
+    line_i = re.sub( 'StrongEvidence', 'HighConf', line_i )
+    line_i = re.sub( 'WeakEvidence', 'MedConf', line_i )
+    line_i = re.sub( 'NeutralEvidence', 'LowConf', line_i )
+    line_i = re.sub( 'LikelyFalsePositive', 'Unclassified', line_i )
+
+    return line_i
+
 
 
 with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
@@ -64,14 +74,8 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
     # Copy the headlines, but add two additional lines
     while line_i.startswith('#'):
 
+        line_i = rename( line_i )
         fout.write( line_i + '\n' )
-        
-        if line_i.startswith('##FILTER=<ID=WeakEvidence,'):
-            fout.write('##FILTER=<ID=rc_WeakEvidence,Description="Originally NeutralEvidence recalibrated to increase confidence level">\n')
-            
-        elif line_i.startswith('##FILTER=<ID=NeutralEvidence,'):
-            fout.write('##FILTER=<ID=rc_NeutralEvidence,Description="Originally LikelyFalsePositive recalibrated to increase confidence level">\n')
-        
         line_i = fin.readline().rstrip()
 
 
@@ -81,6 +85,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
 
     while line_i:
         
+        line_i = rename( line_i )
         my_vcf = genome.Vcf_line( line_i )
         
         my_coordinates = [(my_vcf.chromosome, my_vcf.position)]
@@ -92,6 +97,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
         while my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
 
             line_i = fin.readline().rstrip()
+            line_i = rename( line_i )
             my_vcf = genome.Vcf_line( line_i )
 
 
@@ -136,7 +142,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                 nREJECTS  = int( my_call.get_info_value('nREJECTS') )
                 
                 
-                if ( ('LikelyFalsePositive' in my_call.filters) or ('NeutralEvidence' in my_call.filters) or ('WeakEvidence' in my_call.filters) ) and \
+                if ( ('Unclassified' in my_call.filters) or ('LowConf' in my_call.filters) or ('MedConf' in my_call.filters) ) and \
                 (tvaf <= 0.1 and nPASSES >= 15 and nREJECTS <= 10):
 
                     bwaVDP,    bwaDP    = [ int(i) for i in my_call.get_info_value('bwaDP').split(',') ]
@@ -213,20 +219,18 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                     
                     # Promote to "WeakEvidence"
                     if nova_bwa_PASS and nova_bowtie_PASS and nova_novo_PASS:
-                        vcf_items[6] = re.sub('LikelyFalsePositive|NeutralEvidence', 'rc_WeakEvidence', vcf_items[6])
-                        # vcf_items[6] = re.sub('WeakEvidence', 'rc_StrongEvidence', vcf_items[6])
+                        vcf_items[6] = re.sub('Unclassified|LowConf', 'MedConf', vcf_items[6])
                     
                     # Promote one ladder up if PASS by Burrows-Wheeler (bwa or bowtie) and NovoAlign
                     # "Missing" in 450X is worse than "missing" in 50X, so it's considered as "bad" as REJECT, i.e., two PASSES and one LowQual
                     elif ( (nova_bwa_PASS or nova_bowtie_PASS) and nova_novo_PASS ) and not (nova_bwa_REJECT or nova_bowtie_REJECT or nova_novo_REJECT or nova_bwa_Missing or nova_bowtie_Missing or nova_novo_Missing):
-                        vcf_items[6] = re.sub('LikelyFalsePositive', 'rc_NeutralEvidence', vcf_items[6])
-                        vcf_items[6] = re.sub('NeutralEvidence',     'rc_WeakEvidence',    vcf_items[6])
-                        
-                        
+                        vcf_items[6] = re.sub('Unclassified', 'LowConf', vcf_items[6])
+                        vcf_items[6] = re.sub('LowConf',      'MedConf', vcf_items[6])
+                    
+                    # Demotion
                     elif (nova_bwa_REJECT or nova_bwa_Missing) and (nova_bowtie_REJECT or nova_bowtie_Missing) and (nova_novo_REJECT or nova_novo_Missing):
-                        vcf_items[6] = re.sub('WeakEvidence',    'rc_NeutralEvidence',    vcf_items[6])
-                        vcf_items[6] = re.sub('NeutralEvidence', 'rc_LikelyFalsePositive',    vcf_items[6])
-
+                        vcf_items[6] = re.sub('MedConf', 'LowConf',     vcf_items[6])
+                        vcf_items[6] = re.sub('LowConf', 'Unclassified', vcf_items[6])
 
                 # Write
                 line_out = '\t'.join(vcf_items)
