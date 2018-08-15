@@ -136,8 +136,8 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                 nREJECTS  = int( my_call.get_info_value('nREJECTS') )
                 
                 
-                if ( ('LikelyFalsePositive' in my_call.filters) or ('NeutralEvidence' in my_call.filters) ) and \
-                (tvaf <= 0.1 and nPASSES >= 20 and nREJECTS < 10):
+                if ( ('LikelyFalsePositive' in my_call.filters) or ('NeutralEvidence' in my_call.filters) or ('WeakEvidence' in my_call.filters) ) and \
+                (tvaf <= 0.1 and nPASSES >= 15 and nREJECTS <= 10):
 
                     bwaVDP,    bwaDP    = [ int(i) for i in my_call.get_info_value('bwaDP').split(',') ]
                     bowtieVDP, bowtieDP = [ int(i) for i in my_call.get_info_value('bowtieDP').split(',') ]
@@ -214,12 +214,18 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                     # Promote to "WeakEvidence"
                     if nova_bwa_PASS and nova_bowtie_PASS and nova_novo_PASS:
                         vcf_items[6] = re.sub('LikelyFalsePositive|NeutralEvidence', 'rc_WeakEvidence', vcf_items[6])
+                        # vcf_items[6] = re.sub('WeakEvidence', 'rc_StrongEvidence', vcf_items[6])
                     
                     # Promote one ladder up if PASS by Burrows-Wheeler (bwa or bowtie) and NovoAlign
                     # "Missing" in 450X is worse than "missing" in 50X, so it's considered as "bad" as REJECT, i.e., two PASSES and one LowQual
-                    elif ( (nova_bwa_PASS or nova_bowtie_PASS) and nova_novo_PASS ) and not (nova_bwa_REJECT or nova_bowtie_REJECT or nova_novo_REJECT or nova_bwa_Missing or nova_bowtie_Missing or nova_bowtie_Missing):
+                    elif ( (nova_bwa_PASS or nova_bowtie_PASS) and nova_novo_PASS ) and not (nova_bwa_REJECT or nova_bowtie_REJECT or nova_novo_REJECT or nova_bwa_Missing or nova_bowtie_Missing or nova_novo_Missing):
                         vcf_items[6] = re.sub('LikelyFalsePositive', 'rc_NeutralEvidence', vcf_items[6])
                         vcf_items[6] = re.sub('NeutralEvidence',     'rc_WeakEvidence',    vcf_items[6])
+                        
+                        
+                    elif (nova_bwa_REJECT or nova_bwa_Missing) and (nova_bowtie_REJECT or nova_bowtie_Missing) and (nova_novo_REJECT or nova_novo_Missing):
+                        vcf_items[6] = re.sub('WeakEvidence',    'rc_NeutralEvidence',    vcf_items[6])
+                        vcf_items[6] = re.sub('NeutralEvidence', 'rc_LikelyFalsePositive',    vcf_items[6])
 
 
                 # Write
