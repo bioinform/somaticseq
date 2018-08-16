@@ -34,6 +34,10 @@ outfile = args.vcf_outfile
 nova_bwa    = args.bignova_bwa
 nova_bowtie = args.bignova_bowtie
 nova_novo   = args.bignova_novo
+spp_bwa     = args.spp_bwa
+spp_bowtie  = args.spp_bowtie
+spp_novo    = args.spp_novo
+
 
 fai_file  = args.genome_reference + '.fai'
 chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
@@ -69,6 +73,19 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
     nova_novo_line = nova_novo.readline().rstrip()
     while nova_novo_line.startswith('#'):
         nova_novo_line = nova_novo.readline().rstrip()
+
+
+    spp_bwa      = genome.open_textfile(spp_bwa)
+    spp_bwa_line = spp_bwa.readline().rstrip()
+    while spp_bwa_line.startswith('#'):
+        spp_bwa_line = spp_bwa.readline().rstrip()
+
+    spp_bowtie = genome.open_textfile(spp_bowtie)
+    spp_bowtie_line = spp_bowtie.readline().rstrip()
+    while spp_bowtie_line.startswith('#'):
+        spp_bowtie_line = spp_bowtie.readline().rstrip()
+
+
 
 
     # Copy the headlines, but add two additional lines
@@ -121,17 +138,22 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
             
             for variant_i in variants_at_my_coordinate:
 
-                ref_base = variant_i.refbase
+                ref_base  = variant_i.refbase
                 first_alt = variant_i.altbase.split(',')[0]
 
                 ref_bases.append( ref_base )
                 alt_bases.append( first_alt )
+
 
             # deepSeq inputs
             got_nova_bwa,    nova_bwa_variants,    nova_bwa_line    = genome.find_vcf_at_coordinate(my_coordinate, nova_bwa_line,    nova_bwa,    chrom_seq)
             got_nova_bowtie, nova_bowtie_variants, nova_bowtie_line = genome.find_vcf_at_coordinate(my_coordinate, nova_bowtie_line, nova_bowtie, chrom_seq)
             got_nova_novo,   nova_novo_variants,   nova_novo_line   = genome.find_vcf_at_coordinate(my_coordinate, nova_novo_line,   nova_novo,   chrom_seq)
 
+            got_spp_bwa,     spp_bwa_variants,     spp_bwa_line     = genome.find_vcf_at_coordinate(my_coordinate, spp_bwa_line,     spp_bwa,     chrom_seq)
+            got_spp_bowtie,  spp_bowtie_variants,  spp_bowtie_line  = genome.find_vcf_at_coordinate(my_coordinate, spp_bowtie_line,  spp_bowtie,  chrom_seq)
+            
+            
             # Now, use pysam to look into the BAM file(s), variant by variant from the input:
             for ith_call, my_call in enumerate( variants_at_my_coordinate ):
                 
@@ -143,7 +165,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                 
                 
                 if ( ('Unclassified' in my_call.filters) or ('LowConf' in my_call.filters) or ('MedConf' in my_call.filters) ) and \
-                (tvaf <= 0.1 and nPASSES >= 15 and nREJECTS <= 10):
+                (tvaf <= 0.12 and nPASSES >= 15 and nREJECTS <= 10):
 
                     bwaVDP,    bwaDP    = [ int(i) for i in my_call.get_info_value('bwaDP').split(',') ]
                     bowtieVDP, bowtieDP = [ int(i) for i in my_call.get_info_value('bowtieDP').split(',') ]
@@ -171,6 +193,10 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                             nova_bwa_PASS    = False
                             nova_bwa_REJECT  = True
                             nova_bwa_Missing = False
+                        else:
+                            nova_bwa_PASS    = False
+                            nova_bwa_REJECT  = False
+                            nova_bwa_Missing = False
                     else:
                         nova_bwa_PASS    = False
                         nova_bwa_REJECT  = False
@@ -190,6 +216,10 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         elif 'REJECT' in nova_bowtie_variant_i.filters:
                             nova_bowtie_PASS    = False
                             nova_bowtie_REJECT  = True
+                            nova_bowtie_Missing = False
+                        else:
+                            nova_bowtie_PASS    = False
+                            nova_bowtie_REJECT  = False
                             nova_bowtie_Missing = False
                     else:
                         nova_bowtie_PASS    = False
@@ -211,26 +241,112 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                             nova_novo_PASS    = False
                             nova_novo_REJECT  = True
                             nova_novo_Missing = False
+                        else:
+                            nova_novo_PASS    = False
+                            nova_novo_REJECT  = False
+                            nova_novo_Missing = False
                     else:
                         nova_novo_PASS    = False
                         nova_novo_REJECT  = False
                         nova_novo_Missing = True
 
-                    
+
+
+                    # Combined SPP BWA
+                    if variant_id in spp_bwa_variants:
+
+                        spp_bwa_variant_i = spp_bwa_variants[variant_id]
+                        spp_bwa_tvaf = float( spp_bwa_variant_i.get_sample_value('VAF', 1) )
+
+                        if 'PASS' in spp_bwa_variant_i.filters:
+                            spp_bwa_PASS    = True
+                            spp_bwa_REJECT  = False
+                            spp_bwa_Missing = False
+                        elif 'REJECT' in spp_bwa_variant_i.filters:
+                            spp_bwa_PASS    = False
+                            spp_bwa_REJECT  = True
+                            spp_bwa_Missing = False
+                        else:
+                            spp_bwa_PASS    = False
+                            spp_bwa_REJECT  = False
+                            spp_bwa_Missing = False
+                    else:
+                        spp_bwa_PASS    = False
+                        spp_bwa_REJECT  = False
+                        spp_bwa_Missing = True
+
+
+                    # Combined SPP Bowtie
+                    if variant_id in spp_bowtie_variants:
+
+                        spp_bowtie_variant_i = spp_bowtie_variants[variant_id]
+                        spp_bowtie_tvaf = float( spp_bwa_variant_i.get_sample_value('VAF', 1) )
+
+                        if 'PASS' in spp_bowtie_variant_i.filters:
+                            spp_bowtie_PASS    = True
+                            spp_bowtie_REJECT  = False
+                            spp_bowtie_Missing = False
+                        elif 'REJECT' in spp_bowtie_variant_i.filters:
+                            spp_bowtie_PASS    = False
+                            spp_bowtie_REJECT  = True
+                            spp_bowtie_Missing = False
+                        else:
+                            spp_bowtie_PASS    = False
+                            spp_bowtie_REJECT  = False
+                            spp_bowtie_Missing = False
+                    else:
+                        spp_bowtie_PASS    = False
+                        spp_bowtie_REJECT  = False
+                        spp_bowtie_Missing = True
+
+
+
+
+
+                    nova_hasPASS    = nova_bwa_PASS    or nova_bowtie_PASS    or nova_novo_PASS
+                    nova_hasREJECT  = nova_bwa_REJECT  or nova_bowtie_REJECT  or nova_novo_REJECT
+                    nova_hasMissing = nova_bwa_Missing or nova_bowtie_Missing or nova_novo_Missing
+
+                    spp_hasPASS     = spp_bwa_PASS    or  spp_bowtie_PASS
+                    spp_hasREJECT   = spp_bwa_REJECT  or  spp_bowtie_REJECT
+                    spp_hasMissing  = spp_bwa_Missing or  spp_bowtie_Missing
+
+                    bwa_hasPASS     = nova_bwa_PASS    or spp_bwa_PASS
+                    bwa_REJECT      = nova_bwa_REJECT  or spp_bwa_REJECT
+                    bwa_Missing     = nova_bwa_Missing or spp_bwa_Missing
+
+                    bowtie_hasPASS  = nova_bowtie_PASS    or spp_bowtie_PASS
+                    bowtie_REJECT   = nova_bowtie_REJECT  or spp_bowtie_REJECT
+                    bowtie_Missing  = nova_bowtie_Missing or spp_bowtie_Missing
+
+                    novo_hasPASS    = nova_novo_PASS
+                    novo_REJECT     = nova_novo_REJECT
+                    novo_Missing    = nova_novo_Missing
+
+
+                    ##########
                     # Promote to "WeakEvidence"
-                    if nova_bwa_PASS and nova_bowtie_PASS and nova_novo_PASS:
+                    if ( nova_bwa_PASS or spp_bwa_PASS ) and ( nova_bowtie_PASS or spp_bowtie_PASS ) and nova_novo_PASS and \
+                    not (nova_hasREJECT or nova_hasMissing or spp_hasREJECT or spp_hasMissing):
                         vcf_items[6] = re.sub('Unclassified|LowConf', 'MedConf', vcf_items[6])
                     
                     # Promote one ladder up if PASS by Burrows-Wheeler (bwa or bowtie) and NovoAlign
                     # "Missing" in 450X is worse than "missing" in 50X, so it's considered as "bad" as REJECT, i.e., two PASSES and one LowQual
-                    elif ( (nova_bwa_PASS or nova_bowtie_PASS) and nova_novo_PASS ) and not (nova_bwa_REJECT or nova_bowtie_REJECT or nova_novo_REJECT or nova_bwa_Missing or nova_bowtie_Missing or nova_novo_Missing):
+                    elif ( nova_hasPASS and spp_hasPASS and bwa_hasPASS and bowtie_hasPASS and novo_hasPASS) and \
+                    not (nova_hasREJECT or nova_hasMissing or spp_hasREJECT or spp_hasMissing ):
                         vcf_items[6] = re.sub('Unclassified', 'LowConf', vcf_items[6])
                         vcf_items[6] = re.sub('LowConf',      'MedConf', vcf_items[6])
+                        
+                    elif nova_hasPASS and spp_hasPASS and bwa_hasPASS and bowtie_hasPASS and novo_hasPASS:
+                        vcf_items[6] = re.sub('Unclassified', 'LowConf', vcf_items[6])
                     
                     # Demotion
-                    elif (nova_bwa_REJECT or nova_bwa_Missing) and (nova_bowtie_REJECT or nova_bowtie_Missing) and (nova_novo_REJECT or nova_novo_Missing):
+                    elif not (nova_hasPASS or spp_hasPASS) and (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing):
                         vcf_items[6] = re.sub('MedConf', 'LowConf',     vcf_items[6])
                         vcf_items[6] = re.sub('LowConf', 'Unclassified', vcf_items[6])
+                        
+
+
 
                 # Write
                 line_out = '\t'.join(vcf_items)
