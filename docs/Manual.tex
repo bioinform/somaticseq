@@ -70,26 +70,26 @@
 
 \section{Introduction} \label{Introduction}
 
-SomaticSeq is a flexible post-somatic-mutation-calling algorithm for improved accuracy. We have incorporated 10+ somatic mutation caller(s). Any combinatin of them can be used to obtain a combined call set, and then SomaticSeq uses machine learning (adaptive boosting) to distinguish true mutations from false positives from that call set. The mutation callers we have incorporated are MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka, and TNscope. You may incorporate some or all of those callers into your own pipeline with SomaticSeq.
+SomaticSeq is a flexible post-somatic-mutation-calling algorithm for improved accuracy. It is compatible with 10+ somatic mutation caller(s). Any combination of them can be used to obtain a combined call set with sequencing features extracted into TSV and VCF files. In addition, SomaticSeq uses machine learning (adaptive boosting) to distinguish true mutations from false positives from that call set. The mutation callers we have incorporated are MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka, and TNscope. You may incorporate some or all of those callers into your own pipeline with SomaticSeq.
 
 The manuscript, An ensemble approach to accurately detect somatic mutations using SomaticSeq, was published in \href{http://dx.doi.org/10.1186/s13059-015-0758-2}{Genome Biology 2015, 16:197}. 
 The SomaticSeq project is located at \href{https://github.com/bioinform/somaticseq}{\textit{https://github.com/bioinform/somaticseq}}. 
 There have been some major improvements in SomaticSeq since that Genome Biology publication in 2015. 
 
-SomaticSeq.Wrapper.sh is a bash script that calls a series of algorithms to combine the output of the somatic mutation caller(s). Then, depending on the input files and R scripts that are fed to SomaticSeq.Wrapper.sh, it will either 1) train the call set into a classifier, 2) predict high-confidence somatic mutations from the call set based on a pre-defined classifier, or 3) simply label the calls (i.e., PASS, LowQual, or REJECT) based on majority vote of the tools.
+The wrapper script somaticseq/run\_somaticseq.py and its parallelized cousin somaticseq\_parallel.py can 1) train the call set into a classifier, 2) predict high-confidence somatic mutations from the call set based on a pre-defined classifier, or 3) default to consensus mode, i.e., extract sequencing features and output the TSV and VCF files, and then label the calls (i.e., PASS, LowQual, or REJECT) based on majority vote of the tools.
 
 \subsection{Dependencies}
 
 \begin{itemize}
 
 \item
-Python 3, plus regex, pysam, numpy, and scipy libraries. All the .py scripts are written in Python 3.
+Python 3, plus pysam (v0.14.1), numpy (v1.14.3), and scipy (v1.1.0). The versions in parentheses are in our docker images and validated to work, though other versions should work, too.
 
 \item
 R, plus the \href{https://cran.r-project.org/package=ada}{ada} package in R.
 
 \item
-BEDTools (if inclusion and/or an exclusion region files are supplied)
+BEDTools (if inclusion and/or an exclusion region files are supplied, and/or running somaticseq\_parallel.py instead of somaticseq/run\_somaticseq.py)
 
 \item
 Optional: dbSNP in VCF format (if you want to use dbSNP membership as a part of the training).
