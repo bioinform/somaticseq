@@ -6,19 +6,16 @@
 * The [v2 branch](../../tree/v2) will continue to be supported in the foreseeable future for bug fixes, but new features will only be introduced in the current master branch. 
 
 ## Requirements
-* Python 3, plus pysam (v0.14.1), numpy (v1.14.3), and scipy (v1.1.0) libraries. The versions in parentheses are in our docker images and validated to work, though other versions may/should work, too.
+* Python 3, plus pysam, numpy, and scipy libraries.
 * R, plus [ada](https://cran.r-project.org/package=ada) library
-* BEDTools
+* [BEDTools](https://bedtools.readthedocs.io/en/latest/)
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
 * At least one of the callers we have incorporated, i.e., MuTect2/MuTect/Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, and/or TNscope.
 
 ## Example commands
 * At minimum, given the results of the individual mutation caller(s), SomaticSeq will extract sequencing features for the combined call set. Required inputs are `--output-directory`, `--genome-reference`, `paired|single`, `--tumor-bam-file`, and `--normal-bam-file`. Everything else is optional, although if you don't have a single VCF file input, the command will have nothing to do.
-* The following four files will be created into the `$OUTPUT_DIR`:
-  * Consensus.sSNV.vcf
-  * Consensus.sINDEL.vcf
-  * Ensemble.sSNV.tsv
-  * Ensemble.sINDEL.tsv
+* The following four files will be created into the output directory:
+  * *Consensus.sSNV.vcf*, *Consensus.sINDEL.vcf*, *Ensemble.sSNV.tsv*, and *Ensemble.sINDEL.tsv*.
 
 * If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [dockerized somatic mutation scripts](utilities/dockered_pipelines).
 
@@ -46,16 +43,17 @@ paired \
 --strelka-indel     Strelka/variants.indel.vcf
 ```
 
-* You can also do it in parallel using `$somaticseq/somaticseq_parallel.py` script, with identical input options except for `--threads` placed before the `paired` option to indicate the number of threads. The `somaticseq_parallel.py` is simply a script to create multiple sub-BED files, and then invokes `somaticseq/run_somaticseq.py` on each of those sub-BED files in parallel.
+* `--inclusion-region` or `--exclusion-region` will require BEDTools in your path.
+* The command can be parallelized using `$somaticseq/somaticseq_parallel.py` script, with identical input options except for `--threads X` placed before the `paired` option to indicate X threads. The `somaticseq_parallel.py` is simply a script to create multiple sub-BED files, and then invokes `somaticseq/run_somaticseq.py` on each of those sub-BED files in parallel, then merge the results. It also requires BEDTools in your path.
 * For all those input VCF files, either .vcf or .vcf.gz are acceptable.
 
-Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two additional files (classifiers) will be created, i.e., `Ensemble.sSNV.tsv.ntChange.Classifier.RData` and `Ensemble.sINDEL.tsv.ntChange.Classifier.RData`.
+Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two additional files (classifiers) will be created, i.e., *Ensemble.sSNV.tsv.ntChange.Classifier.RData* and *Ensemble.sINDEL.tsv.ntChange.Classifier.RData*.
 
-* `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires the following inputs
+* `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires the following inputs, R and ada package in R.
 * `--truth-snv`:        if you have ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL
 
-Additional input files to be specified **before** `paired` option invoke prediction mode (to use classifiers to score variants). Four additional files will be created, i.e., `Seq.Classified.sSNV.vcf`, `SSeq.Classified.sSNV.tsv`,  `SSeq.Classified.sINDEL.vcf`, and `SSeq.Classified.sINDEL.tsv`.
+Additional input files to be specified **before** `paired` option invoke prediction mode (to use classifiers to score variants). Four additional files will be created, i.e., *Seq.Classified.sSNV.vcf*, *SSeq.Classified.sSNV.tsv*,  *SSeq.Classified.sINDEL.vcf*, and *SSeq.Classified.sINDEL.tsv*.
 * `--classifier-snv`:   classifier (.RData file) previously built for SNV
 * `--classifier-indel`: classifier (.RData file) previously built for INDEL
 
