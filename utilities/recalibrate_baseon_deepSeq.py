@@ -58,7 +58,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
     
     line_i = fin.readline().rstrip()
 
-
+    # 450X NovaSeq data
     nova_bwa      = genome.open_textfile(nova_bwa)
     nova_bwa_line = nova_bwa.readline().rstrip()
     while nova_bwa_line.startswith('#'):
@@ -74,7 +74,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
     while nova_novo_line.startswith('#'):
         nova_novo_line = nova_novo.readline().rstrip()
 
-
+    # 300X data sets from Genentech
     spp_bwa      = genome.open_textfile(spp_bwa)
     spp_bwa_line = spp_bwa.readline().rstrip()
     while spp_bwa_line.startswith('#'):
@@ -84,6 +84,11 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
     spp_bowtie_line = spp_bowtie.readline().rstrip()
     while spp_bowtie_line.startswith('#'):
         spp_bowtie_line = spp_bowtie.readline().rstrip()
+
+    spp_novo = genome.open_textfile(spp_novo)
+    spp_novo_line = spp_novo.readline().rstrip()
+    while spp_novo_line.startswith('#'):
+        spp_novo_line = spp_novo.readline().rstrip()
 
 
 
@@ -152,7 +157,8 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
 
             got_spp_bwa,     spp_bwa_variants,     spp_bwa_line     = genome.find_vcf_at_coordinate(my_coordinate, spp_bwa_line,     spp_bwa,     chrom_seq)
             got_spp_bowtie,  spp_bowtie_variants,  spp_bowtie_line  = genome.find_vcf_at_coordinate(my_coordinate, spp_bowtie_line,  spp_bowtie,  chrom_seq)
-            
+            got_spp_novo,    spp_novo_variants,    spp_novo_line    = genome.find_vcf_at_coordinate(my_coordinate, spp_novo_line,    spp_novo,    chrom_seq)
+
             
             # Now, use pysam to look into the BAM file(s), variant by variant from the input:
             for ith_call, my_call in enumerate( variants_at_my_coordinate ):
@@ -207,7 +213,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                     if variant_id in nova_bowtie_variants:
 
                         nova_bowtie_variant_i = nova_bowtie_variants[variant_id]
-                        nova_bowtie_tvaf = float( nova_bwa_variant_i.get_sample_value('VAF', 1) )
+                        nova_bowtie_tvaf = float( nova_bowtie_variant_i.get_sample_value('VAF', 1) )
                         
                         if 'PASS' in nova_bowtie_variant_i.filters:
                             nova_bowtie_PASS    = True
@@ -231,7 +237,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                     if variant_id in nova_novo_variants:
 
                         nova_novo_variant_i = nova_novo_variants[variant_id]
-                        nova_novo_tvaf = float( nova_bwa_variant_i.get_sample_value('VAF', 1) )
+                        nova_novo_tvaf = float( nova_novo_variant_i.get_sample_value('VAF', 1) )
                         
                         if 'PASS' in nova_novo_variant_i.filters:
                             nova_novo_PASS    = True
@@ -280,7 +286,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                     if variant_id in spp_bowtie_variants:
 
                         spp_bowtie_variant_i = spp_bowtie_variants[variant_id]
-                        spp_bowtie_tvaf = float( spp_bwa_variant_i.get_sample_value('VAF', 1) )
+                        spp_bowtie_tvaf = float( spp_bowtie_variant_i.get_sample_value('VAF', 1) )
 
                         if 'PASS' in spp_bowtie_variant_i.filters:
                             spp_bowtie_PASS    = True
@@ -300,9 +306,32 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         spp_bowtie_Missing = True
 
 
+                    # Combined SPP Novo
+                    if variant_id in spp_novo_variants:
+
+                        spp_novo_variant_i = spp_novo_variants[variant_id]
+                        spp_novo_tvaf = float( spp_novo_variant_i.get_sample_value('VAF', 1) )
+
+                        if 'PASS' in spp_novo_variant_i.filters:
+                            spp_novo_PASS    = True
+                            spp_novo_REJECT  = False
+                            spp_novo_Missing = False
+                        elif 'REJECT' in spp_novo_variant_i.filters:
+                            spp_novo_PASS    = False
+                            spp_novo_REJECT  = True
+                            spp_novo_Missing = False
+                        else:
+                            spp_novo_PASS    = False
+                            spp_novo_REJECT  = False
+                            spp_novo_Missing = False
+                    else:
+                        spp_novo_PASS    = False
+                        spp_novo_REJECT  = False
+                        spp_novo_Missing = True
 
 
 
+                    # By NovaSeq or SPP
                     nova_hasPASS    = nova_bwa_PASS    or nova_bowtie_PASS    or nova_novo_PASS
                     nova_hasREJECT  = nova_bwa_REJECT  or nova_bowtie_REJECT  or nova_novo_REJECT
                     nova_hasMissing = nova_bwa_Missing or nova_bowtie_Missing or nova_novo_Missing
@@ -311,6 +340,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                     spp_hasREJECT   = spp_bwa_REJECT  or  spp_bowtie_REJECT
                     spp_hasMissing  = spp_bwa_Missing or  spp_bowtie_Missing
 
+                    # By aligner
                     bwa_hasPASS     = nova_bwa_PASS    or spp_bwa_PASS
                     bwa_REJECT      = nova_bwa_REJECT  or spp_bwa_REJECT
                     bwa_Missing     = nova_bwa_Missing or spp_bwa_Missing
@@ -319,14 +349,15 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                     bowtie_REJECT   = nova_bowtie_REJECT  or spp_bowtie_REJECT
                     bowtie_Missing  = nova_bowtie_Missing or spp_bowtie_Missing
 
-                    novo_hasPASS    = nova_novo_PASS
-                    novo_REJECT     = nova_novo_REJECT
-                    novo_Missing    = nova_novo_Missing
+                    novo_hasPASS    = nova_novo_PASS    or spp_novo_PASS
+                    novo_REJECT     = nova_novo_REJECT  or spp_novo_REJECT
+                    novo_Missing    = nova_novo_Missing or spp_novo_Missing
 
 
                     ##########
                     # Promote to "WeakEvidence"
-                    if ( nova_bwa_PASS or spp_bwa_PASS ) and ( nova_bowtie_PASS or spp_bowtie_PASS ) and nova_novo_PASS and \
+                    if ( nova_bwa_PASS + spp_bwa_PASS + nova_bowtie_PASS + spp_bowtie_PASS + nova_novo_PASS + spp_novo_PASS >=4 ) and \
+                    ( nova_hasPASS and spp_hasPASS and bwa_hasPASS and bowtie_hasPASS and novo_hasPASS) and \
                     not (nova_hasREJECT or nova_hasMissing or spp_hasREJECT or spp_hasMissing):
                         vcf_items[6] = re.sub('Unclassified|LowConf', 'MedConf', vcf_items[6])
                     
@@ -345,8 +376,6 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         vcf_items[6] = re.sub('MedConf', 'LowConf',     vcf_items[6])
                         vcf_items[6] = re.sub('LowConf', 'Unclassified', vcf_items[6])
                         
-
-
 
                 # Write
                 line_out = '\t'.join(vcf_items)
