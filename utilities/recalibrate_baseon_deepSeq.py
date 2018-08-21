@@ -169,189 +169,191 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                 nPASSES   = int( my_call.get_info_value('nPASSES') )
                 nREJECTS  = int( my_call.get_info_value('nREJECTS') )
                 
-                
-                if ( ('Unclassified' in my_call.filters) or ('LowConf' in my_call.filters) or ('MedConf' in my_call.filters) ) and \
-                (tvaf <= 0.12 and nPASSES >= 15 and nREJECTS <= 10):
 
-                    bwaVDP,    bwaDP    = [ int(i) for i in my_call.get_info_value('bwaDP').split(',') ]
-                    bowtieVDP, bowtieDP = [ int(i) for i in my_call.get_info_value('bowtieDP').split(',') ]
-                    novoVDP,   novoDP   = [ int(i) for i in my_call.get_info_value('novoDP').split(',') ]
+                bwaVDP,    bwaDP    = [ int(i) for i in my_call.get_info_value('bwaDP').split(',') ]
+                bowtieVDP, bowtieDP = [ int(i) for i in my_call.get_info_value('bowtieDP').split(',') ]
+                novoVDP,   novoDP   = [ int(i) for i in my_call.get_info_value('novoDP').split(',') ]
+            
+                VDP = bwaVDP + bowtieVDP + novoVDP
+                DP  = bwaDP  + bowtieDP  + novoDP
                 
-                    VDP = bwaVDP + bowtieVDP + novoVDP
-                    DP  = bwaDP  + bowtieDP  + novoDP
+                variant_id = ( (my_call.chromosome, my_call.position), my_call.refbase, my_call.altbase )
+                ref_base   = ref_bases[ith_call]
+                first_alt  = alt_bases[ith_call]
+
+
+                # Combined NovaSeq BWA
+                if variant_id in nova_bwa_variants:
+
+                    nova_bwa_variant_i = nova_bwa_variants[variant_id]
+                    nova_bwa_tvaf = float( nova_bwa_variant_i.get_sample_value('VAF', 1) )
                     
-                    variant_id = ( (my_call.chromosome, my_call.position), my_call.refbase, my_call.altbase )
-                    ref_base   = ref_bases[ith_call]
-                    first_alt  = alt_bases[ith_call]
-
-
-                    # Combined NovaSeq BWA
-                    if variant_id in nova_bwa_variants:
-
-                        nova_bwa_variant_i = nova_bwa_variants[variant_id]
-                        nova_bwa_tvaf = float( nova_bwa_variant_i.get_sample_value('VAF', 1) )
-                        
-                        if 'PASS' in nova_bwa_variant_i.filters:
-                            nova_bwa_PASS    = True
-                            nova_bwa_REJECT  = False
-                            nova_bwa_Missing = False
-                        elif 'REJECT' in nova_bwa_variant_i.filters:
-                            nova_bwa_PASS    = False
-                            nova_bwa_REJECT  = True
-                            nova_bwa_Missing = False
-                        else:
-                            nova_bwa_PASS    = False
-                            nova_bwa_REJECT  = False
-                            nova_bwa_Missing = False
+                    if 'PASS' in nova_bwa_variant_i.filters:
+                        nova_bwa_PASS    = True
+                        nova_bwa_REJECT  = False
+                        nova_bwa_Missing = False
+                    elif 'REJECT' in nova_bwa_variant_i.filters:
+                        nova_bwa_PASS    = False
+                        nova_bwa_REJECT  = True
+                        nova_bwa_Missing = False
                     else:
                         nova_bwa_PASS    = False
                         nova_bwa_REJECT  = False
-                        nova_bwa_Missing = True
+                        nova_bwa_Missing = False
+                else:
+                    nova_bwa_PASS    = False
+                    nova_bwa_REJECT  = False
+                    nova_bwa_Missing = True
 
 
-                    # Combined NovaSeq Bowtie
-                    if variant_id in nova_bowtie_variants:
+                # Combined NovaSeq Bowtie
+                if variant_id in nova_bowtie_variants:
 
-                        nova_bowtie_variant_i = nova_bowtie_variants[variant_id]
-                        nova_bowtie_tvaf = float( nova_bowtie_variant_i.get_sample_value('VAF', 1) )
-                        
-                        if 'PASS' in nova_bowtie_variant_i.filters:
-                            nova_bowtie_PASS    = True
-                            nova_bowtie_REJECT  = False
-                            nova_bowtie_Missing = False
-                        elif 'REJECT' in nova_bowtie_variant_i.filters:
-                            nova_bowtie_PASS    = False
-                            nova_bowtie_REJECT  = True
-                            nova_bowtie_Missing = False
-                        else:
-                            nova_bowtie_PASS    = False
-                            nova_bowtie_REJECT  = False
-                            nova_bowtie_Missing = False
+                    nova_bowtie_variant_i = nova_bowtie_variants[variant_id]
+                    nova_bowtie_tvaf = float( nova_bowtie_variant_i.get_sample_value('VAF', 1) )
+                    
+                    if 'PASS' in nova_bowtie_variant_i.filters:
+                        nova_bowtie_PASS    = True
+                        nova_bowtie_REJECT  = False
+                        nova_bowtie_Missing = False
+                    elif 'REJECT' in nova_bowtie_variant_i.filters:
+                        nova_bowtie_PASS    = False
+                        nova_bowtie_REJECT  = True
+                        nova_bowtie_Missing = False
                     else:
                         nova_bowtie_PASS    = False
                         nova_bowtie_REJECT  = False
-                        nova_bowtie_Missing = True
+                        nova_bowtie_Missing = False
+                else:
+                    nova_bowtie_PASS    = False
+                    nova_bowtie_REJECT  = False
+                    nova_bowtie_Missing = True
 
 
-                    # Combined NovaSeq NovoAlign
-                    if variant_id in nova_novo_variants:
+                # Combined NovaSeq NovoAlign
+                if variant_id in nova_novo_variants:
 
-                        nova_novo_variant_i = nova_novo_variants[variant_id]
-                        nova_novo_tvaf = float( nova_novo_variant_i.get_sample_value('VAF', 1) )
-                        
-                        if 'PASS' in nova_novo_variant_i.filters:
-                            nova_novo_PASS    = True
-                            nova_novo_REJECT  = False
-                            nova_novo_Missing = False
-                        elif 'REJECT' in nova_novo_variant_i.filters:
-                            nova_novo_PASS    = False
-                            nova_novo_REJECT  = True
-                            nova_novo_Missing = False
-                        else:
-                            nova_novo_PASS    = False
-                            nova_novo_REJECT  = False
-                            nova_novo_Missing = False
+                    nova_novo_variant_i = nova_novo_variants[variant_id]
+                    nova_novo_tvaf = float( nova_novo_variant_i.get_sample_value('VAF', 1) )
+                    
+                    if 'PASS' in nova_novo_variant_i.filters:
+                        nova_novo_PASS    = True
+                        nova_novo_REJECT  = False
+                        nova_novo_Missing = False
+                    elif 'REJECT' in nova_novo_variant_i.filters:
+                        nova_novo_PASS    = False
+                        nova_novo_REJECT  = True
+                        nova_novo_Missing = False
                     else:
                         nova_novo_PASS    = False
                         nova_novo_REJECT  = False
-                        nova_novo_Missing = True
+                        nova_novo_Missing = False
+                else:
+                    nova_novo_PASS    = False
+                    nova_novo_REJECT  = False
+                    nova_novo_Missing = True
 
 
 
-                    # Combined SPP BWA
-                    if variant_id in spp_bwa_variants:
+                # Combined SPP BWA
+                if variant_id in spp_bwa_variants:
 
-                        spp_bwa_variant_i = spp_bwa_variants[variant_id]
-                        spp_bwa_tvaf = float( spp_bwa_variant_i.get_sample_value('VAF', 1) )
+                    spp_bwa_variant_i = spp_bwa_variants[variant_id]
+                    spp_bwa_tvaf = float( spp_bwa_variant_i.get_sample_value('VAF', 1) )
 
-                        if 'PASS' in spp_bwa_variant_i.filters:
-                            spp_bwa_PASS    = True
-                            spp_bwa_REJECT  = False
-                            spp_bwa_Missing = False
-                        elif 'REJECT' in spp_bwa_variant_i.filters:
-                            spp_bwa_PASS    = False
-                            spp_bwa_REJECT  = True
-                            spp_bwa_Missing = False
-                        else:
-                            spp_bwa_PASS    = False
-                            spp_bwa_REJECT  = False
-                            spp_bwa_Missing = False
+                    if 'PASS' in spp_bwa_variant_i.filters:
+                        spp_bwa_PASS    = True
+                        spp_bwa_REJECT  = False
+                        spp_bwa_Missing = False
+                    elif 'REJECT' in spp_bwa_variant_i.filters:
+                        spp_bwa_PASS    = False
+                        spp_bwa_REJECT  = True
+                        spp_bwa_Missing = False
                     else:
                         spp_bwa_PASS    = False
                         spp_bwa_REJECT  = False
-                        spp_bwa_Missing = True
+                        spp_bwa_Missing = False
+                else:
+                    spp_bwa_PASS    = False
+                    spp_bwa_REJECT  = False
+                    spp_bwa_Missing = True
 
 
-                    # Combined SPP Bowtie
-                    if variant_id in spp_bowtie_variants:
+                # Combined SPP Bowtie
+                if variant_id in spp_bowtie_variants:
 
-                        spp_bowtie_variant_i = spp_bowtie_variants[variant_id]
-                        spp_bowtie_tvaf = float( spp_bowtie_variant_i.get_sample_value('VAF', 1) )
+                    spp_bowtie_variant_i = spp_bowtie_variants[variant_id]
+                    spp_bowtie_tvaf = float( spp_bowtie_variant_i.get_sample_value('VAF', 1) )
 
-                        if 'PASS' in spp_bowtie_variant_i.filters:
-                            spp_bowtie_PASS    = True
-                            spp_bowtie_REJECT  = False
-                            spp_bowtie_Missing = False
-                        elif 'REJECT' in spp_bowtie_variant_i.filters:
-                            spp_bowtie_PASS    = False
-                            spp_bowtie_REJECT  = True
-                            spp_bowtie_Missing = False
-                        else:
-                            spp_bowtie_PASS    = False
-                            spp_bowtie_REJECT  = False
-                            spp_bowtie_Missing = False
+                    if 'PASS' in spp_bowtie_variant_i.filters:
+                        spp_bowtie_PASS    = True
+                        spp_bowtie_REJECT  = False
+                        spp_bowtie_Missing = False
+                    elif 'REJECT' in spp_bowtie_variant_i.filters:
+                        spp_bowtie_PASS    = False
+                        spp_bowtie_REJECT  = True
+                        spp_bowtie_Missing = False
                     else:
                         spp_bowtie_PASS    = False
                         spp_bowtie_REJECT  = False
-                        spp_bowtie_Missing = True
+                        spp_bowtie_Missing = False
+                else:
+                    spp_bowtie_PASS    = False
+                    spp_bowtie_REJECT  = False
+                    spp_bowtie_Missing = True
 
 
-                    # Combined SPP Novo
-                    if variant_id in spp_novo_variants:
+                # Combined SPP Novo
+                if variant_id in spp_novo_variants:
 
-                        spp_novo_variant_i = spp_novo_variants[variant_id]
-                        spp_novo_tvaf = float( spp_novo_variant_i.get_sample_value('VAF', 1) )
+                    spp_novo_variant_i = spp_novo_variants[variant_id]
+                    spp_novo_tvaf = float( spp_novo_variant_i.get_sample_value('VAF', 1) )
 
-                        if 'PASS' in spp_novo_variant_i.filters:
-                            spp_novo_PASS    = True
-                            spp_novo_REJECT  = False
-                            spp_novo_Missing = False
-                        elif 'REJECT' in spp_novo_variant_i.filters:
-                            spp_novo_PASS    = False
-                            spp_novo_REJECT  = True
-                            spp_novo_Missing = False
-                        else:
-                            spp_novo_PASS    = False
-                            spp_novo_REJECT  = False
-                            spp_novo_Missing = False
+                    if 'PASS' in spp_novo_variant_i.filters:
+                        spp_novo_PASS    = True
+                        spp_novo_REJECT  = False
+                        spp_novo_Missing = False
+                    elif 'REJECT' in spp_novo_variant_i.filters:
+                        spp_novo_PASS    = False
+                        spp_novo_REJECT  = True
+                        spp_novo_Missing = False
                     else:
                         spp_novo_PASS    = False
                         spp_novo_REJECT  = False
-                        spp_novo_Missing = True
+                        spp_novo_Missing = False
+                else:
+                    spp_novo_PASS    = False
+                    spp_novo_REJECT  = False
+                    spp_novo_Missing = True
 
 
 
-                    # By NovaSeq or SPP
-                    nova_hasPASS    = nova_bwa_PASS    or nova_bowtie_PASS    or nova_novo_PASS
-                    nova_hasREJECT  = nova_bwa_REJECT  or nova_bowtie_REJECT  or nova_novo_REJECT
-                    nova_hasMissing = nova_bwa_Missing or nova_bowtie_Missing or nova_novo_Missing
+                # By NovaSeq or SPP
+                nova_hasPASS    = nova_bwa_PASS    or nova_bowtie_PASS    or nova_novo_PASS
+                nova_hasREJECT  = nova_bwa_REJECT  or nova_bowtie_REJECT  or nova_novo_REJECT
+                nova_hasMissing = nova_bwa_Missing or nova_bowtie_Missing or nova_novo_Missing
 
-                    spp_hasPASS     = spp_bwa_PASS    or  spp_bowtie_PASS
-                    spp_hasREJECT   = spp_bwa_REJECT  or  spp_bowtie_REJECT
-                    spp_hasMissing  = spp_bwa_Missing or  spp_bowtie_Missing
+                spp_hasPASS     = spp_bwa_PASS    or  spp_bowtie_PASS
+                spp_hasREJECT   = spp_bwa_REJECT  or  spp_bowtie_REJECT
+                spp_hasMissing  = spp_bwa_Missing or  spp_bowtie_Missing
 
-                    # By aligner
-                    bwa_hasPASS     = nova_bwa_PASS    or spp_bwa_PASS
-                    bwa_REJECT      = nova_bwa_REJECT  or spp_bwa_REJECT
-                    bwa_Missing     = nova_bwa_Missing or spp_bwa_Missing
+                # By aligner
+                bwa_hasPASS     = nova_bwa_PASS    or spp_bwa_PASS
+                bwa_REJECT      = nova_bwa_REJECT  or spp_bwa_REJECT
+                bwa_Missing     = nova_bwa_Missing or spp_bwa_Missing
 
-                    bowtie_hasPASS  = nova_bowtie_PASS    or spp_bowtie_PASS
-                    bowtie_REJECT   = nova_bowtie_REJECT  or spp_bowtie_REJECT
-                    bowtie_Missing  = nova_bowtie_Missing or spp_bowtie_Missing
+                bowtie_hasPASS  = nova_bowtie_PASS    or spp_bowtie_PASS
+                bowtie_REJECT   = nova_bowtie_REJECT  or spp_bowtie_REJECT
+                bowtie_Missing  = nova_bowtie_Missing or spp_bowtie_Missing
 
-                    novo_hasPASS    = nova_novo_PASS    or spp_novo_PASS
-                    novo_REJECT     = nova_novo_REJECT  or spp_novo_REJECT
-                    novo_Missing    = nova_novo_Missing or spp_novo_Missing
+                novo_hasPASS    = nova_novo_PASS    or spp_novo_PASS
+                novo_REJECT     = nova_novo_REJECT  or spp_novo_REJECT
+                novo_Missing    = nova_novo_Missing or spp_novo_Missing
+
+
+                
+                if ( ('Unclassified' in my_call.filters) or ('LowConf' in my_call.filters) or ('MedConf' in my_call.filters) ) and \
+                (tvaf <= 0.12 and nPASSES >= 15 and nREJECTS <= 10):
 
 
                     ##########
@@ -377,6 +379,12 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         vcf_items[6] = re.sub('LowConf', 'Unclassified', vcf_items[6])
                         
 
+                elif 'LowConf' in my_call.filters  and tvaf >= 0.3:
+                    
+                    if (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing) and (bwa_REJECT or bwa_Missing) and (bowtie_REJECT or bowtie_Missing) and (novo_REJECT or novo_Missing) and not (nova_hasPASS or spp_hasPASS):
+                        vcf_items[6] = re.sub('LowConf', 'Unclassified', vcf_items[6])
+                        
+                    
                 # Write
                 line_out = '\t'.join(vcf_items)
                 fout.write( line_out + '\n' )
