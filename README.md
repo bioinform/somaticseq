@@ -10,7 +10,7 @@
 * R, plus [ada](https://cran.r-project.org/package=ada) library
 * [BEDTools](https://bedtools.readthedocs.io/en/latest/)
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
-* At least one of the callers we have incorporated, i.e., MuTect2/MuTect/Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, and/or TNscope.
+* At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, and/or TNscope.
 
 ## Example commands
 * At minimum, given the results of the individual mutation caller(s), SomaticSeq will extract sequencing features for the combined call set. Required inputs are `--output-directory`, `--genome-reference`, `paired|single`, `--tumor-bam-file`, and `--normal-bam-file`. Everything else is optional, although if you don't have a single VCF file input, the command will have nothing to do.
