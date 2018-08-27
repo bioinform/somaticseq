@@ -68,6 +68,10 @@
 
 
 
+\tableofcontents
+
+
+
 \section{Introduction} \label{Introduction}
 
 SomaticSeq is a flexible post-somatic-mutation-calling algorithm for improved accuracy. It is compatible with 10+ somatic mutation caller(s). Any combination of them can be used to obtain a combined call set with sequencing features extracted into TSV and VCF files. In addition, SomaticSeq uses machine learning (adaptive boosting) to distinguish true mutations from false positives from that call set. The mutation callers we have incorporated are MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka, and TNscope. You may incorporate some or all of those callers into your own pipeline with SomaticSeq.
@@ -227,6 +231,45 @@ paired \
 \subsection{Consensus Mode} \label{somaticseq_default_mode}
 
 Same as the commands previously, but without including classifiers or invoking \textit{--somaticseq-train}. Without those information, SomaticSeq will forgo machine learning, and fall back into a simple majority vote.
+
+
+
+
+\section{Use SomaticSeq as a Python library} \label{somaticseq_package}
+
+Section \ref{Wrapper_script} described how to use SomaticSeq as a standalone software, but SomaticSeq can also be treated as a python library for your own software. 
+
+The main function is to convert individual VCF files (each from a popular somatic mutation caller) to SomaticSeq VCF file. 
+
+
+The code to produce the .TSV and .VCF files described in Section \ref{Wrapper_script}, for example, would be something like this:
+ 
+\begin{lstlisting}
+
+  # Module is somaticseq/somaticseq/run_somaticseq.py
+  import somaticseq.somaticseq.run_somaticseq as run_somaticseq
+  
+  run_somaticseq.runPaired(outdir='/PATH/TO/SomaticSeq', ref='PATH/TO/GRCh38.fa', tbam='/PATH/TO/tumor.bwa.bam', nbam='/PATH/TO/normal.bwa.bam', tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', cosmic='/PATH/TO/COSMIC.v85.vcf', inclusion='/PATH/TO/Exon_Capture.bed', exclusion='/PATH/TO/ignore.bed', mutect=None, indelocator=None, mutect2='/PATH/TO/MuTect2.vcf', varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict='/PATH/TO/VarDict.vcf', muse='/PATH/TO/MuSE.vcf', lofreq_snv='/PATH/TO/LoFreq.snv.vcf.gz', lofreq_indel='/PATH/TO/LoFreq.indel.vcf.gz', scalpel=None, strelka_snv='/PATH/TO/Strelka/results/variants/somatic_ssnv.vcf.gz', strelka_indel='/PATH/TO/Strelka/results/variants/somatic_sindel.vcf.gz', tnscope=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False)
+
+\end{lstlisting}
+
+ensembleOutPrefix, consensusOutPrefix, and classifiedOutPrefix will dictate the output file names under outdir.
+
+
+Likewise, the single sample mode would be something like this:
+
+\begin{lstlisting}
+
+  import somaticseq.somaticseq.run_somaticseq as run_somaticseq
+  
+  run_somaticseq.runSingle(outdir='/PATH/TO/SomaticSeq', ref='/PATH/TO/GRCh38.fa', bam='/PATH/TO/tumor.bwa.bam', tumor_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', cosmic='/PATH/TO/COSMIC.v85.vcf', inclusion='/PATH/TO/Exon_Capture.bed', exclusion='/PATH/TO/ignore.bed', mutect=None, mutect2='/PATH/TO/MuTect2.vcf', varscan=None, vardict='/PATH/TO/VarDict.vcf', lofreq='/PATH/TO/LoFreq.vcf', scalpel=None, strelka='/PATH/TO/Strelka.vcf', min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False)
+
+\end{lstlisting}
+
+
+
+
+
 
 
 
@@ -792,435 +835,445 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_multiThreads.sh 
 Make sure training and prediction use the same SomaticSeq version, or at least make sure the different minor version changes do not change the results significantly. 
 
 
-\subsection{Version 1.0}
-Version used to generate data in the manuscript and \href{https://www.synapse.org/#!Synapse:syn312572/wiki/72943}{Stage 5 of the ICGC-TCGA DREAM Somatic Mutation Challenge}, where SomaticSeq's results were \#1 for INDEL and \#2 for SNV. 
+\begin{enumerate}
+
+
+	\item Version 1.0
+	
+		Version used to generate data in the manuscript and \href{https://www.synapse.org/#!Synapse:syn312572/wiki/72943}{Stage 5 of the ICGC-TCGA DREAM Somatic Mutation Challenge}, where SomaticSeq's results were \#1 for INDEL and \#2 for SNV. 
+		
+		In the original manuscript, VarDict's var2vcf\_somatic.pl script was used to generate VarDict VCFs, and subsequently ``-filter somatic'' was used for SSeq\_merged.vcf2tsv.py. Since then (including DREAM Challenge Stage 5), VarDict recommends var2vcf\_paired.pl over var2vcf\_somatic.pl, and subsequently ``-filter paired'' was used for SSeq\_merged.vcf2tsv.py. The difference in SomaticSeq results, however, is pretty much negligible. 
+	
+	
+	
+	\item Version 1.1
+	
+		Automated the SomaticSeq.Wrapper.sh script for both training and prediction mode. No change to any algorithm. 
+	
+	
+	
+	\item Version 1.2
+	
+		Have implemented the following improvement, mostly for indels:
+		
+		\begin{itemize}
+		 
+		  \item 
+		  SSeq\_merged.vcf2tsv.py can now accept pileup files to extract read depth and DP4 (reference forward, reference reverse, alternate forward, and alternate reverse) information (mainly for indels). Previously, that information can only be extracted from SAMtools VCF. Since the SAMtools or HaplotypeCaller generated VCFs hardly contain any indel information, this option improves the indel model. The SomaticSeq.Wrapper.sh script is modified accordingly.
+		 
+		  \item
+		  Extract mapping quality (MQ) from VarDict output if this information cannot be found in SAMtools VCF (also mostly benefits the indel model). 
+		 
+		  \item
+		  Indel length now positive for insertions and negative for deletions, instead of using the absolute value previously. 
+	 
+	\end{itemize}
+	
+	
+	
+	\item Version 2.0
+	
+		\begin{itemize}
+		  \item
+		  Removed dependencies for SAMtools and HaplotypeCaller during feature extraction. SSeq\_merged.vcf2tsv.py extracts those information (plus more) directly from BAM files.
+		
+		  \item
+		  Allow not only VCF file, but also BED file or a list of chromosome coordinate as input format for SSeq\_merged.vcf2tsv.py, i.e., use -mybed or -mypos instead of -myvcf. 
+		
+		  \item
+		  Instead of a separate step to annotate ground truth, that can be done directly by SSeq\_merged.vcf2tsv.py by supplying the ground truth VCF via -truth.
+		
+		  \item
+		  SSeq\_merged.vcf2tsv.py can annotate dbSNP and COSMIC information directly if BED file or a list of chromosome coordinates are used as input in lieu of an annotated VCF file. 
+		
+		  \item
+		  Consolidated feature sets, e.g., removed some redunda
+		  Fixed a bug: if JointSNVMix2 is not included, the values should be ``NaN'' instead of 0's. This is to keep consistency with how we handle all other callersnt feature sets coming from different resources.
+		\end{itemize}
+	
+	
+	
+	\item Version 2.0.2
+	
+		\begin{itemize}
+		
+		  \item
+		  Incorporated LoFreq.
+		  
+		  \item
+		  Used getopt to replace getopts in the SomaticSeq.Wrapper.sh script to allow long options. 
+		  
+		\end{itemize}
+	
+	
+	
+	\item Version 2.1.2
+	
+	\begin{itemize}
+	
+	  \item
+	  Properly handle cases when multiple ALT's are calls in the same position. The VCF files can either contain multiple calls in the ALT column (i.e., A,G), or have multiple lines corresponding to the same position (one line for each variant call). Some functions were significantly re-written to allow this.
+	
+	  \item
+	  Incorporated Scalpel.
+	  
+	  \item
+	  Deprecated HaplotypeCaller and SAMTools dependencies completely as far as feature generation is concerned.
+	  
+	  \item
+	  The Wrapper script removed SnpSift/SnpEff dependencies. Those information can be directly obtained during the SSeq\_merged.vcf2tsv.py step. Also removed some additional legacy steps that has become useless since v2 (i.e., score\_Somatic.Variants.py). Added a step to check the correctness of the input. The v2.1 and 2.1.1 had some typos in the wrapper script, so only describing v2.1.2 here.
+	
+	\end{itemize}
+	
+	
+	
+	\item Version 2.2
+	
+		\begin{itemize}
+		
+		  \item
+		  Added MuTect2 support.
+		
+		\end{itemize}
+	
+	
+	
+	\item Version 2.2.1
+	
+		\begin{itemize}
+		
+		  \item
+		  InDel\_3bp now stands for indel counts within 3 bps of the variant site, instead of exactly 3 bps from the variant site as it was previously (likewise for InDel\_2bp). 
+		 
+		  \item
+		  Collapse MQ0 (mapping quality of 0) reads supporting reference/variant reads into a single metric of MQ0 reads (i.e., tBAM\_MQ0 and nBAM\_MQ0). From experience, the number of MQ0 reads is at least equally predictive of false positive calls, rather than distinguishing if those MQ0 reads support reference or variant. 
+		  
+		  \item
+		  Obtain SOR (Somatic Odds Ratio) from BAM files instead of VarDict's VCF file.
+		  
+		  \item
+		  Fixed a typo in the SomaticSeq.Wrapper.sh script that did not handle inclusion region correctly.
+		  
+		\end{itemize}
+	
+	
+	
+	\item Version 2.2.2
+	
+		\begin{itemize}
+		
+		  \item
+		  Got around an occasional unexplained issue in then ada package were the SOR is sometimes categorized as type, by forcing it to be numeric. 
+		  
+		  \item
+		  Defaults PASS score from 0.7 to 0.5, and make them tunable in the SomaticSeq.Wrapper.sh script (\texttt{--}pass-threshold and \texttt{--}lowqual-threshold). 
+		  
+		\end{itemize}
+	
+	
+	
+	\item Version 2.2.3
+	
+		\begin{itemize}
+		
+		  \item
+		  Incorporated Strelka2 since it's now GPLv3.
+		  
+		  \item
+		  Added another R script (ada\_model\_builder\_ntChange.R) that uses nucleotide substitution pattern as a feature. Limited experiences have shown us that it improves the accuracy, but it's not heavily tested yet. 
+		
+		  \item
+		  If a COSMIC site is labeled SNP in the COSMIC VCF file, if\_cosmic and CNT will be labeled as 0. The COSMIC ID will still appear in the ID column. This will not change any results because both of those features are turned off in the training R script.
+		  
+		  \item
+		  Fixed a bug: if JointSNVMix2 is not included, the values should be ``NaN'' instead of 0's. This is to keep consistency with how we handle all other callers.
+		  
+		\end{itemize}
+	
+	
+	
+	\item Version 2.2.4
+	
+		\begin{itemize}
+		
+		  \item
+		  Resolved a bug in v2.2.3 where the VCF files of Strelka INDEL and Scalpel clash on GATK CombineVariants, by outputting a temporary VCF file for Strelka INDEL without the sample columns.
+		  
+		  \item
+		  Caller classification: consider if\_Scalpel = 1 only if there is a SOMATIC flag in its INFO. 
+		
+		\end{itemize}
+		
+		
+	
+	\item Version 2.2.5
+	
+		\begin{itemize}
+		  
+		  \item
+		  Added a dockerfile. Docker repo at https://hub.docker.com/r/lethalfang/somaticseq/. 
+		  
+		  \item
+		  Ability to use vcfsort.pl instead of GATK CombineVariants to merge VCF files.
+		
+		\end{itemize}
+	
+	
+	
+	\item Version 2.3.0
+	
+		\begin{itemize}
+		  
+		  \item
+		  Moved some scripts to the utilities directory to clean up the clutter.
+		  
+		  \item
+		  Added the split\_Bed\_into\_equal\_regions.py to utilities, which will split a input BED file into multiple BED files of equal size. This is to be used to parallelize large WGS jobs.
+		  
+		  \item
+		  Made compatible with MuTect2 from GATK4.
+		  
+		  \item
+		  Removed long options for the SomaticSeq.Wrapper.sh script because it's more readable this way.
+		  
+		  \item
+		  Added a script to add ``GT'' field to Strelka's VCF output before merging it with other VCF files. That was what caused GATK CombineVariants errors mentioned in v2.2.4's release notes. 
+		  
+		  \item
+		  Added a bunch of scripts at utilities/dockered\_pipelines that can be used to submit (requiring Sun Grid Engine or equivalent) dockerized pipeline to a computing cluster. 
+		
+		\end{itemize}
+	
+	
+	
+	\item Version 2.3.1
+	
+		\begin{itemize}
+		
+		  \item
+		  Improve the automated run script generator at utilities/dockered\_pipelines.
+		  
+		  \item
+		  No change to SomaticSeq algorithm
+		
+		\end{itemize}
+	
+	
+	
+	\item Version 2.3.2
+	
+		\begin{itemize}
+		
+		  \item
+		  Added run script generators for dockerized BAMSurgeon pipelines at utilities/dockered\_pipelines/bamSurgeon
+		  
+		  \item
+		  Added an error message to r\_scripts/ada\_model\_builder\_ntChange.R when TrueVariants\_or\_False don't have both 0's and 1's. Other than this warning message change, no other change to SomaticSeq algorithm.  
+		
+		\end{itemize}
+	
+	
+	
+	\item Version 2.4.0
+	
+		\begin{itemize}
+		
+		  \item
+		  Restructured the utilities scripts.
+		  
+		  \item
+		  Added the utilities/filter\_SomaticSeq\_VCF.py script that ``demotes'' PASS calls to LowQual based on a set of tunable hard filters.
+		  
+		  \item
+		  BamSurgeon scripts invokes modified BamSurgeon script that splits a BAM file without the need to sort by read name. This works if the BAM files have proper read names, i.e., 2 and only 2 identical read names for each paired-end reads.
+		  
+		  \item
+		  No change to SomaticSeq algorithm
+		
+		\end{itemize}
+	
+	
+	
+	\item Version 2.4.1
+	
+		\begin{itemize}
+		
+		  \item
+		  Updated some docker job scripts.
+		  
+		  \item
+		  Added a script that converts some items in the VCF's INFO field into the sample field, to precipitate the need to merge multiple VCF files into a single multi-sample VCF, i.e., utilities/reformat\_VCF2SEQC2.py.
+		  
+		  \item
+		  No change to SomaticSeq algorithm
+		
+		\end{itemize}
+	
+	
+	
+	\item Version 2.5.0
+	
+		\begin{itemize}
+		
+		  \item
+		  In modify\_VJSD.py, get rid of VarDict's END tag (in single sample mode) because it causes problem with GATK CombineVariants. 
+		  
+		  \item
+		  Added limited single-sample support, i.e., ssSomaticSeq.Wrapper.sh is the wrapper script. singleSample\_callers\_singleThread.sh is the wrapper script to submit single-sample mutation caller scripts.
+		  
+		  \item
+		  Added run scripts for read alignments and post-alignment processing, i.e,. FASTQ $\rightarrow$ BAM, at utilities/dockered\_pipelines/alignments.
+		  
+		  \item
+		  Fixed a bug where the last two CD4 numbers were both alternate concordant reads in the output VCF file, when the last number should've been alternate discordant reads.
+		  
+		  \item
+		  Changed the output file names from Trained.s(SNV$\vert$INDEL).vcf and Untrained.s(SNV$\vert$INDEL).vcf to SSeq.Classified.s(SNV$\vert$INDE).vcf and Consensus.s(SNV$\vert$INDEL).vcf. No change to the actual tumor-normal SomaticSeq algorithm.
+		  
+		  \item
+		  Added utilities/modify\_VarDict.py to VarDict's ``complex'' variant calls (e.g., GCA>TAC) into SNVs when possible. 
+		  
+		  \item
+		  Modified r\_scripts/ada\_model\_builder\_ntChange.R to allow you to ignore certain features, e.g., r\_scripts/ada\_model\_builder\_ntChange.R Training\_Data.tsv nBAM\_REF\_BQ tBAM\_REF\_BQ SiteHomopolymer\_Length ...
+		  
+		  Everything after the input file are features to be ignored during training.
+		  
+		  Also added r\_scripts/ada\_cross\_validation.R.
+		
+		\end{itemize}
+	
+	
+	
+	\item Version 2.5.1
+	
+		\begin{itemize}
+		  \item
+		  Additional passable parameters options to pass extra parameters to somatic mutation callers. Fixed a bug where the ``two-pass'' parameter is not passed onto Scalpel in multiThreads scripts. 
+		  
+		  \item
+		  Ignore Strelka\_QSS and Strelka\_TQSS for indel training in the SomaticSeq.Wrapper.sh script.
+		  
+		\end{itemize}
+	
+	
+	
+	\item Version 2.5.2
+	
+		\begin{itemize}
+		  \item
+		  Ported some pipeline scripts to singularities at utilities/singularities.
+		  
+		\end{itemize}
+	
+	
+	
+	\item Version 2.6.0
+	
+		\begin{itemize}
+		  \item
+		  VarScan2\_Score is no longer extracted from VarScan's output. Rather, it's now calculated directly using Fisher's Exact Test, which reproduces VarScan's output, but will have a real value when VarScan2 does not output a particular variant. 
+		  
+		  \item
+		  Incorporate TNscope's output VCF into SomaticSeq, but did not incorporate TNscope caller into the dockerized workflow because we don't have distribution license. 
+		  
+		\end{itemize}
+	
+	
+	
+	\item Version 2.6.1
+	
+		\begin{itemize}
+		  \item
+		  Optimized memory for singularity scripts.
+		  
+		  \item
+		  Updated utilities/bamQC.py and added utilities/trimSoftClippedReads.py (removed soft-clipped bases on soft-clipped reads)
+		  
+		  \item
+		  Added some docker scripts at utilities/dockered\_pipelines/QC
+		
+		\end{itemize}
+	
+	
+	
+	\item Version 2.7.0
+	
+		\begin{itemize}
+		  \item
+		  Added another feature: consistent/inconsistent calls for paired reads if the position is covered by both forward and reverse reads. However, they're excluded as training features in SomaticSeq.Wrapper.sh script for the time being. 
+		  
+		  \item
+		  Change non-GCTA characters to N in VarDict.vcf file to make it conform to VCF file specifications. 
+		
+		\end{itemize}
+		
+		
+		\item Version 2.7.1
+		
+		\begin{itemize}
+		
+		  \item
+		  Without --gatk \$PATH/TO/GenomeAnalysisTK.jar in the SomaticSeq.Wrapper.sh script, it will use utilities/getUniqueVcfPositions.py and utilities/vcfsorter.pl to (in lieu of GATK3 CombineVariants) to combine all the VCF files. 
+		
+		  \item
+		  Fixed bugs in the docker/singularities scripts where extra arguments for the callers are not correctly passed onto the callers. 
+		
+		\end{itemize}
+	
+	
+	
+	\item Version 2.7.2
+	
+		\begin{itemize}
+		
+		  \item
+		  Make compatible with .cram format
+		  
+		  \item
+		  Fixed a bug where Strelka-only calls are not considered by SomaticSeq. 
+		  
+		\end{itemize}
+	
+	
+	
+	\item Version 2.8.0
+	
+		\begin{itemize}
+		
+		  \item
+		  The program is now designed to crash if the VCF file(s) are not sorted according to the .fasta reference file. 
+		  
+		\end{itemize}
+	
+	
+	
+	\item Version 2.8.1
+	
+		\begin{itemize}
+		
+		  \item
+		  Fixed a bug in the ssSomaticSeq.Wrapper.sh script (single-sample mode), where the SNV algorithm weren't looking for SNV VCF files during merging when using utilities/getUniqueVcfPositions.py, causing empty SNV files. For previous commands (invoking --gatk for CombineVariants), the results have never changed. 
+		  
+		\end{itemize}
+	
+	
+	
+	\item Version 3.0.0
+	
+		Refactored the codes.
+		  
+			\begin{itemize}
+		
+		     	\item The wrapper scripts written in bash script (i.e., SomaticSeq.Wrapper.sh and ssSomaticSeq.Wrapper.sh) are replaced by somaticseq/run\_somaticseq.py, though they're still kept for backward-compatibility. 
+		     
+		    	    \item Allow parallel processing using somaticseq\_parallel.py
+		
+		    \end{itemize}
+	
+	
+
+\end{enumerate}
 
-In the original manuscript, VarDict's var2vcf\_somatic.pl script was used to generate VarDict VCFs, and subsequently ``-filter somatic'' was used for SSeq\_merged.vcf2tsv.py. Since then (including DREAM Challenge Stage 5), VarDict recommends var2vcf\_paired.pl over var2vcf\_somatic.pl, and subsequently ``-filter paired'' was used for SSeq\_merged.vcf2tsv.py. The difference in SomaticSeq results, however, is pretty much negligible. 
-
-\subsection{Version 1.1}
-Automated the SomaticSeq.Wrapper.sh script for both training and prediction mode. No change to any algorithm. 
-
-\subsection{Version 1.2}
-Have implemented the following improvement, mostly for indels:
-
-\begin{itemize}
- 
-  \item 
-  SSeq\_merged.vcf2tsv.py can now accept pileup files to extract read depth and DP4 (reference forward, reference reverse, alternate forward, and alternate reverse) information (mainly for indels). Previously, that information can only be extracted from SAMtools VCF. Since the SAMtools or HaplotypeCaller generated VCFs hardly contain any indel information, this option improves the indel model. The SomaticSeq.Wrapper.sh script is modified accordingly.
- 
-  \item
-  Extract mapping quality (MQ) from VarDict output if this information cannot be found in SAMtools VCF (also mostly benefits the indel model). 
- 
-  \item
-  Indel length now positive for insertions and negative for deletions, instead of using the absolute value previously. 
- 
- 
-\end{itemize}
-
-
-
-
-\subsection{Version 2.0}
-
-\begin{itemize}
-  \item
-  Removed dependencies for SAMtools and HaplotypeCaller during feature extraction. SSeq\_merged.vcf2tsv.py extracts those information (plus more) directly from BAM files.
-
-  \item
-  Allow not only VCF file, but also BED file or a list of chromosome coordinate as input format for SSeq\_merged.vcf2tsv.py, i.e., use -mybed or -mypos instead of -myvcf. 
-
-  \item
-  Instead of a separate step to annotate ground truth, that can be done directly by SSeq\_merged.vcf2tsv.py by supplying the ground truth VCF via -truth.
-
-  \item
-  SSeq\_merged.vcf2tsv.py can annotate dbSNP and COSMIC information directly if BED file or a list of chromosome coordinates are used as input in lieu of an annotated VCF file. 
-
-  \item
-  Consolidated feature sets, e.g., removed some redunda
-  Fixed a bug: if JointSNVMix2 is not included, the values should be ``NaN'' instead of 0's. This is to keep consistency with how we handle all other callersnt feature sets coming from different resources.
-\end{itemize}
-
-
-\subsection{Version 2.0.2}
-
-\begin{itemize}
-
-  \item
-  Incorporated LoFreq.
-  
-  \item
-  Used getopt to replace getopts in the SomaticSeq.Wrapper.sh script to allow long options. 
-  
-\end{itemize}
-
-
-
-\subsection{Version 2.1.2}
-
-\begin{itemize}
-
-  \item
-  Properly handle cases when multiple ALT's are calls in the same position. The VCF files can either contain multiple calls in the ALT column (i.e., A,G), or have multiple lines corresponding to the same position (one line for each variant call). Some functions were significantly re-written to allow this.
-
-  \item
-  Incorporated Scalpel.
-  
-  \item
-  Deprecated HaplotypeCaller and SAMTools dependencies completely as far as feature generation is concerned.
-  
-  \item
-  The Wrapper script removed SnpSift/SnpEff dependencies. Those information can be directly obtained during the SSeq\_merged.vcf2tsv.py step. Also removed some additional legacy steps that has become useless since v2 (i.e., score\_Somatic.Variants.py). Added a step to check the correctness of the input. The v2.1 and 2.1.1 had some typos in the wrapper script, so only describing v2.1.2 here.
-
-\end{itemize}
-
-
-
-\subsection{Version 2.2}
-
-\begin{itemize}
-
-  \item
-  Added MuTect2 support.
-
-\end{itemize}
-
-
-
-\subsection{Version 2.2.1}
-
-\begin{itemize}
-
-  \item
-  InDel\_3bp now stands for indel counts within 3 bps of the variant site, instead of exactly 3 bps from the variant site as it was previously (likewise for InDel\_2bp). 
- 
-  \item
-  Collapse MQ0 (mapping quality of 0) reads supporting reference/variant reads into a single metric of MQ0 reads (i.e., tBAM\_MQ0 and nBAM\_MQ0). From experience, the number of MQ0 reads is at least equally predictive of false positive calls, rather than distinguishing if those MQ0 reads support reference or variant. 
-  
-  \item
-  Obtain SOR (Somatic Odds Ratio) from BAM files instead of VarDict's VCF file.
-  
-  \item
-  Fixed a typo in the SomaticSeq.Wrapper.sh script that did not handle inclusion region correctly.
-  
-\end{itemize}
-
-
-
-\subsection{Version 2.2.2}
-
-\begin{itemize}
-
-  \item
-  Got around an occasional unexplained issue in then ada package were the SOR is sometimes categorized as type, by forcing it to be numeric. 
-  
-  \item
-  Defaults PASS score from 0.7 to 0.5, and make them tunable in the SomaticSeq.Wrapper.sh script (\texttt{--}pass-threshold and \texttt{--}lowqual-threshold). 
-  
-\end{itemize}
-
-
-
-\subsection{Version 2.2.3}
-
-\begin{itemize}
-
-  \item
-  Incorporated Strelka2 since it's now GPLv3.
-  
-  \item
-  Added another R script (ada\_model\_builder\_ntChange.R) that uses nucleotide substitution pattern as a feature. Limited experiences have shown us that it improves the accuracy, but it's not heavily tested yet. 
-
-  \item
-  If a COSMIC site is labeled SNP in the COSMIC VCF file, if\_cosmic and CNT will be labeled as 0. The COSMIC ID will still appear in the ID column. This will not change any results because both of those features are turned off in the training R script.
-  
-  \item
-  Fixed a bug: if JointSNVMix2 is not included, the values should be ``NaN'' instead of 0's. This is to keep consistency with how we handle all other callers.
-  
-\end{itemize}
-
-
-
-\subsection{Version 2.2.4}
-
-\begin{itemize}
-
-  \item
-  Resolved a bug in v2.2.3 where the VCF files of Strelka INDEL and Scalpel clash on GATK CombineVariants, by outputting a temporary VCF file for Strelka INDEL without the sample columns.
-  
-  \item
-  Caller classification: consider if\_Scalpel = 1 only if there is a SOMATIC flag in its INFO. 
-
-\end{itemize}
-
-
-\subsection{Version 2.2.5}
-
-\begin{itemize}
-  
-  \item
-  Added a dockerfile. Docker repo at https://hub.docker.com/r/lethalfang/somaticseq/. 
-  
-  \item
-  Ability to use vcfsort.pl instead of GATK CombineVariants to merge VCF files.
-
-\end{itemize}
-
-
-\subsection{Version 2.3.0}
-
-\begin{itemize}
-  
-  \item
-  Moved some scripts to the utilities directory to clean up the clutter.
-  
-  \item
-  Added the split\_Bed\_into\_equal\_regions.py to utilities, which will split a input BED file into multiple BED files of equal size. This is to be used to parallelize large WGS jobs.
-  
-  \item
-  Made compatible with MuTect2 from GATK4.
-  
-  \item
-  Removed long options for the SomaticSeq.Wrapper.sh script because it's more readable this way.
-  
-  \item
-  Added a script to add ``GT'' field to Strelka's VCF output before merging it with other VCF files. That was what caused GATK CombineVariants errors mentioned in v2.2.4's release notes. 
-  
-  \item
-  Added a bunch of scripts at utilities/dockered\_pipelines that can be used to submit (requiring Sun Grid Engine or equivalent) dockerized pipeline to a computing cluster. 
-
-\end{itemize}
-
-
-\subsection{Version 2.3.1}
-
-\begin{itemize}
-
-  \item
-  Improve the automated run script generator at utilities/dockered\_pipelines.
-  
-  \item
-  No change to SomaticSeq algorithm
-
-\end{itemize}
-
-
-
-\subsection{Version 2.3.2}
-
-\begin{itemize}
-
-  \item
-  Added run script generators for dockerized BAMSurgeon pipelines at utilities/dockered\_pipelines/bamSurgeon
-  
-  \item
-  Added an error message to r\_scripts/ada\_model\_builder\_ntChange.R when TrueVariants\_or\_False don't have both 0's and 1's. Other than this warning message change, no other change to SomaticSeq algorithm.  
-
-\end{itemize}
-
-
-\subsection{Version 2.4.0}
-
-\begin{itemize}
-
-  \item
-  Restructured the utilities scripts.
-  
-  \item
-  Added the utilities/filter\_SomaticSeq\_VCF.py script that ``demotes'' PASS calls to LowQual based on a set of tunable hard filters.
-  
-  \item
-  BamSurgeon scripts invokes modified BamSurgeon script that splits a BAM file without the need to sort by read name. This works if the BAM files have proper read names, i.e., 2 and only 2 identical read names for each paired-end reads.
-  
-  \item
-  No change to SomaticSeq algorithm
-
-\end{itemize}
-
-
-
-\subsection{Version 2.4.1}
-
-\begin{itemize}
-
-  \item
-  Updated some docker job scripts.
-  
-  \item
-  Added a script that converts some items in the VCF's INFO field into the sample field, to precipitate the need to merge multiple VCF files into a single multi-sample VCF, i.e., utilities/reformat\_VCF2SEQC2.py.
-  
-  \item
-  No change to SomaticSeq algorithm
-
-\end{itemize}
-
-
-
-
-\subsection{Version 2.5.0}
-
-\begin{itemize}
-
-  \item
-  In modify\_VJSD.py, get rid of VarDict's END tag (in single sample mode) because it causes problem with GATK CombineVariants. 
-  
-  \item
-  Added limited single-sample support, i.e., ssSomaticSeq.Wrapper.sh is the wrapper script. singleSample\_callers\_singleThread.sh is the wrapper script to submit single-sample mutation caller scripts.
-  
-  \item
-  Added run scripts for read alignments and post-alignment processing, i.e,. FASTQ $\rightarrow$ BAM, at utilities/dockered\_pipelines/alignments.
-  
-  \item
-  Fixed a bug where the last two CD4 numbers were both alternate concordant reads in the output VCF file, when the last number should've been alternate discordant reads.
-  
-  \item
-  Changed the output file names from Trained.s(SNV$\vert$INDEL).vcf and Untrained.s(SNV$\vert$INDEL).vcf to SSeq.Classified.s(SNV$\vert$INDE).vcf and Consensus.s(SNV$\vert$INDEL).vcf. No change to the actual tumor-normal SomaticSeq algorithm.
-  
-  \item
-  Added utilities/modify\_VarDict.py to VarDict's ``complex'' variant calls (e.g., GCA>TAC) into SNVs when possible. 
-  
-  \item
-  Modified r\_scripts/ada\_model\_builder\_ntChange.R to allow you to ignore certain features, e.g., r\_scripts/ada\_model\_builder\_ntChange.R Training\_Data.tsv nBAM\_REF\_BQ tBAM\_REF\_BQ SiteHomopolymer\_Length ...
-  
-  Everything after the input file are features to be ignored during training.
-  
-  Also added r\_scripts/ada\_cross\_validation.R.
-
-\end{itemize}
-
-
-
-\subsection{Version 2.5.1}
-
-\begin{itemize}
-  \item
-  Additional passable parameters options to pass extra parameters to somatic mutation callers. Fixed a bug where the ``two-pass'' parameter is not passed onto Scalpel in multiThreads scripts. 
-  
-  \item
-  Ignore Strelka\_QSS and Strelka\_TQSS for indel training in the SomaticSeq.Wrapper.sh script.
-  
-\end{itemize}
-
-
-
-\subsection{Version 2.5.2}
-
-\begin{itemize}
-  \item
-  Ported some pipeline scripts to singularities at utilities/singularities.
-  
-\end{itemize}
-
-
-\subsection{Version 2.6.0}
-
-\begin{itemize}
-  \item
-  VarScan2\_Score is no longer extracted from VarScan's output. Rather, it's now calculated directly using Fisher's Exact Test, which reproduces VarScan's output, but will have a real value when VarScan2 does not output a particular variant. 
-  
-  \item
-  Incorporate TNscope's output VCF into SomaticSeq, but did not incorporate TNscope caller into the dockerized workflow because we don't have distribution license. 
-  
-\end{itemize}
-
-
-
-\subsection{Version 2.6.1}
-
-\begin{itemize}
-  \item
-  Optimized memory for singularity scripts.
-  
-  \item
-  Updated utilities/bamQC.py and added utilities/trimSoftClippedReads.py (removed soft-clipped bases on soft-clipped reads)
-  
-  \item
-  Added some docker scripts at utilities/dockered\_pipelines/QC
-
-\end{itemize}
-
-
-\subsection{Version 2.7.0}
-
-\begin{itemize}
-  \item
-  Added another feature: consistent/inconsistent calls for paired reads if the position is covered by both forward and reverse reads. However, they're excluded as training features in SomaticSeq.Wrapper.sh script for the time being. 
-  
-  \item
-  Change non-GCTA characters to N in VarDict.vcf file to make it conform to VCF file specifications. 
-
-\end{itemize}
-
-
-\subsection{Version 2.7.1}
-
-\begin{itemize}
-
-  \item
-  Without --gatk \$PATH/TO/GenomeAnalysisTK.jar in the SomaticSeq.Wrapper.sh script, it will use utilities/getUniqueVcfPositions.py and utilities/vcfsorter.pl to (in lieu of GATK3 CombineVariants) to combine all the VCF files. 
-
-  \item
-  Fixed bugs in the docker/singularities scripts where extra arguments for the callers are not correctly passed onto the callers. 
-
-\end{itemize}
-
-
-
-
-\subsection{Version 2.7.2}
-
-\begin{itemize}
-
-  \item
-  Make compatible with .cram format
-  
-  \item
-  Fixed a bug where Strelka-only calls are not considered by SomaticSeq. 
-  
-\end{itemize}
-
-
-
-\subsection{Version 2.8.0}
-
-\begin{itemize}
-
-  \item
-  The program is now designed to crash if the VCF file(s) are not sorted according to the .fasta reference file. 
-  
-\end{itemize}
-
-
-
-\subsection{Version 2.8.1}
-
-\begin{itemize}
-
-  \item
-  Fixed a bug in the ssSomaticSeq.Wrapper.sh script (single-sample mode), where the SNV algorithm weren't looking for SNV VCF files during merging when using utilities/getUniqueVcfPositions.py, causing empty SNV files. For previous commands (invoking --gatk for CombineVariants), the results have never changed. 
-  
-\end{itemize}
-
-
-
-\subsection{Version 3.0.0}
-
-\begin{itemize}
-
-  \item
-  Refactored the codes.
-  
-    \begin{enumerate}
-
-     \item The wrapper scripts written in bash script (i.e., SomaticSeq.Wrapper.sh and ssSomaticSeq.Wrapper.sh) are replaced by somaticseq/run\_somaticseq.py, though they're still kept for backward-compatibility. 
-     
-     \item Allow parallel processing using somaticseq\_parallel.py
-
-    \end{enumerate}
-
-  
-  
-  
-\end{itemize}
 
 
 

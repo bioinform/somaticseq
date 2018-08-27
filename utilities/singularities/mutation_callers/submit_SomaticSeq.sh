@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long out-dir:,tumor-bam:,normal-bam:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,MEM:,action:,mutect:,indelocator:,mutect2:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,strelka-snv:,strelka-indel:,ada-r-script:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel:,extra-arguments: -n 'submit_SomaticSeq.sh'  -- "$@"`
+OPTS=`getopt -o o: --long out-dir:,tumor-bam:,normal-bam:,human-reference:,selector:,exclude:,dbsnp:,cosmic:,MEM:,action:,mutect:,indelocator:,mutect2:,varscan-snv:,varscan-indel:,jsm:,sniper:,vardict:,muse:,lofreq-snv:,lofreq-indel:,scalpel:,strelka-snv:,strelka-indel:,classifier-snv:,classifier-indel:,truth-snv:,truth-indel:,extra-arguments:,somaticseq-train -n 'submit_SomaticSeq.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -163,49 +163,45 @@ while true; do
             *)  strelka_indel_vcf=$2 ; shift 2 ;;
         esac ;;
 
-    --ada-r-script )
-        case "$2" in
-            "") shift 2 ;;
-            *)  ada_r_script=$2 ; shift 2 ;;
-        esac ;;
-        
     --classifier-snv )
         case "$2" in
             "") shift 2 ;;
             *)  classifier_snv=$2 ; shift 2 ;;
         esac ;;
-        
+
     --classifier-indel )
         case "$2" in
             "") shift 2 ;;
             *)  classifier_indel=$2 ; shift 2 ;;
         esac ;;
-        
+
     --truth-snv )
         case "$2" in
             "") shift 2 ;;
             *)  truth_snv=$2 ; shift 2 ;;
         esac ;;
-        
+
     --truth-indel )
         case "$2" in
             "") shift 2 ;;
             *)  truth_indel=$2 ; shift 2 ;;
         esac ;;
 
+    --somaticseq-train )
+        somaticseq_train=1 ; shift ;;
+
     --extra-arguments )
         case "$2" in
             "") shift 2 ;;
             *) extra_arguments=$2 ; shift 2 ;;
         esac ;;
-        
+
     -- ) shift; break ;;
     * ) break ;;
     esac
 
 done
 
-# VERSION='2.4.0'
 VERSION=`cat ${MYDIR}/../../../VERSION | sed 's/##SomaticSeq=v//'`
 
 logdir=${outdir}/logs
@@ -223,7 +219,6 @@ if [[ -r $EXCLUSION ]]; then
     exclusion_text="--exclusion-region /mnt/${EXCLUSION}"
 fi
 
-
 dbsnp_text=''
 if [[ -r $dbsnp ]]; then
     dbsnp_text="--dbsnp /mnt/${dbsnp}"
@@ -234,28 +229,30 @@ if [[ -r $cosmic ]]; then
     cosmic_text="--cosmic /mnt/${cosmic}"
 fi
 
+
 # VCF inputs
-if [[ $mutect_vcf ]];        then mutect_text="--mutect /mnt/${mutect_vcf}";                      fi
-if [[ $indelocator_vcf ]];   then indelocator_text="--indelocator /mnt/${indelocator_vcf}";       fi
-if [[ $mutect2_vcf ]];       then mutect2_text="--mutect2 /mnt/${mutect2_vcf}";                   fi
+if [[ $mutect_vcf ]];        then mutect_text="--mutect-vcf /mnt/${mutect_vcf}";                      fi
+if [[ $indelocator_vcf ]];   then indelocator_text="--indelocator-vcf /mnt/${indelocator_vcf}";       fi
+if [[ $mutect2_vcf ]];       then mutect2_text="--mutect2-vcf /mnt/${mutect2_vcf}";                   fi
 if [[ $varscan_snv_vcf ]];   then varscan_snv_text="--varscan-snv /mnt/${varscan_snv_vcf}";       fi
 if [[ $varscan_indel_vcf ]]; then varscan_indel_text="--varscan-indel /mnt/${varscan_indel_vcf}"; fi
-if [[ $jsm_vcf ]];           then jsm_text="--jsm /mnt/${jsm_vcf}";                               fi
-if [[ $sniper_vcf ]];        then sniper_text="--sniper /mnt/${sniper_vcf}";                      fi
-if [[ $vardict_vcf ]];       then vardict_text="--vardict /mnt/${vardict_vcf}";                   fi
-if [[ $muse_vcf ]];          then muse_text="--muse /mnt/${muse_vcf}";                            fi
+if [[ $jsm_vcf ]];           then jsm_text="--jsm-vcf /mnt/${jsm_vcf}";                               fi
+if [[ $sniper_vcf ]];        then sniper_text="--somaticsniper-vcf /mnt/${sniper_vcf}";                      fi
+if [[ $vardict_vcf ]];       then vardict_text="--vardict-vcf /mnt/${vardict_vcf}";                   fi
+if [[ $muse_vcf ]];          then muse_text="--muse-vcf /mnt/${muse_vcf}";                            fi
 if [[ $lofreq_snv_vcf ]];    then lofreq_snv_text="--lofreq-snv /mnt/${lofreq_snv_vcf}";          fi
 if [[ $lofreq_indel_vcf ]];  then lofreq_indel_text="--lofreq-indel /mnt/${lofreq_indel_vcf}";    fi
-if [[ $scalpel_vcf ]];       then scalpel_text="--scalpel /mnt/${scalpel_vcf}";                   fi
+if [[ $scalpel_vcf ]];       then scalpel_text="--scalpel-vcf /mnt/${scalpel_vcf}";                   fi
 if [[ $strelka_snv_vcf ]];   then strelka_snv_text="--strelka-snv /mnt/${strelka_snv_vcf}";       fi
 if [[ $strelka_indel_vcf ]]; then strelka_indel_text="--strelka-indel /mnt/${strelka_indel_vcf}"; fi
 
 # SomaticSeq modes:
-if [[ $classifier_snv ]];   then classifier_snv_text="--classifier-snv ${classifier_snv}";       fi
+if [[ $classifier_snv ]];   then classifier_snv_text="--classifier-snv ${classifier_snv}"      ; fi
 if [[ $classifier_indel ]]; then classifier_indel_text="--classifier-indel ${classifier_indel}"; fi
 if [[ $truth_snv ]];        then truth_snv_text="--truth-snv ${truth_snv}"                     ; fi
 if [[ $truth_indel ]];      then truth_indel_text="--truth-indel ${truth_indel}"               ; fi
-if [[ $ada_r_script ]];     then ada_r_script_text="--ada-r-script ${ada_r_script}"            ; fi
+if [[ $somaticseq_train ]]; then train='--somaticseq-train'                                    ; fi
+
 
 echo "#!/bin/bash" > $out_script
 echo "" >> $out_script
@@ -274,10 +271,22 @@ echo "docker pull lethalfang/somaticseq:${VERSION}" >> $out_script
 echo "" >> $out_script
 
 echo "singularity exec --bind /:/mnt   docker://lethalfang/somaticseq:${VERSION} \\" >> $out_script
-echo "/opt/somaticseq/SomaticSeq.Wrapper.sh \\" >> $out_script
+echo "/opt/somaticseq/somaticseq/run_somaticseq.py \\" >> $out_script
+echo "${train} \\" >> $out_script
+echo "--output-directory /mnt/${outdir} \\" >> $out_script
 echo "--genome-reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
-echo "--tumor-bam        /mnt/${tumor_bam} \\" >> $out_script
-echo "--normal-bam       /mnt/${normal_bam} \\" >> $out_script
+echo "$selector_text \\" >> $out_script
+echo "$exclusion_text \\" >> $out_script
+echo "$cosmic_text \\" >> $out_script
+echo "$dbsnp_text \\" >> $out_script
+echo "$classifier_snv_text \\" >> $out_script
+echo "$classifier_indel_text \\" >> $out_script
+echo "$truth_snv_text \\" >> $out_script
+echo "$truth_indel_text \\" >> $out_script
+echo "${extra_arguments} \\" >> $out_script
+echo "paired \\" >> $out_script
+echo "--tumor-bam-file  /mnt/${tumor_bam} \\" >> $out_script
+echo "--normal-bam-file  /mnt/${normal_bam} \\" >> $out_script
 echo "$mutect_text \\" >> $out_script
 echo "$indelocator_text \\" >> $out_script
 echo "$mutect2_text \\" >> $out_script
@@ -291,18 +300,7 @@ echo "$lofreq_snv_text \\" >> $out_script
 echo "$lofreq_indel_text \\" >> $out_script
 echo "$scalpel_text \\" >> $out_script
 echo "$strelka_snv_text \\" >> $out_script
-echo "$strelka_indel_text \\" >> $out_script
-echo "$selector_text \\" >> $out_script
-echo "$exclusion_text \\" >> $out_script
-echo "$cosmic_text \\" >> $out_script
-echo "$dbsnp_text \\" >> $out_script
-echo "$classifier_snv_text \\" >> $out_script
-echo "$classifier_indel_text \\" >> $out_script
-echo "$truth_snv_text \\" >> $out_script
-echo "$truth_indel_text \\" >> $out_script
-echo "$ada_r_script_text \\" >> $out_script
-echo "${extra_arguments} \\" >> $out_script
-echo "--output-dir /mnt/${outdir}" >> $out_script
+echo "$strelka_indel_text" >> $out_script
 
 
 echo "" >> $out_script

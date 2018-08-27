@@ -118,31 +118,31 @@ while true; do
 
     --somaticseq-train )
         somaticseq_train=1 ; shift ;;
-    
+
     --ada-r-script )
         case "$2" in
             "") shift 2 ;;
             *)  ada_r_script=$2 ; shift 2 ;;
         esac ;;
-        
+
     --classifier-snv )
         case "$2" in
             "") shift 2 ;;
             *)  classifier_snv=$2 ; shift 2 ;;
         esac ;;
-        
+
     --classifier-indel )
         case "$2" in
             "") shift 2 ;;
             *)  classifier_indel=$2 ; shift 2 ;;
         esac ;;
-        
+
     --truth-snv )
         case "$2" in
             "") shift 2 ;;
             *)  truth_snv=$2 ; shift 2 ;;
         esac ;;
-        
+
     --truth-indel )
         case "$2" in
             "") shift 2 ;;
@@ -260,19 +260,14 @@ then
     if [[ ${dbsnp} ]];          then dbsnp_input="--dbsnp ${dbsnp}"                                     ; fi
     if [[ ${cosmic} ]];         then cosmic_input="--cosmic ${cosmic}"                                  ; fi
     if [[ ${EXCLUSION} ]];      then exclusion_text="--exclude ${EXCLUSION}"                            ; fi
-    
-    if [[ $ada_r_script ]]; then
-        ada_r_script_text="--ada-r-script /mnt/${ada_r_script}"
-    elif [[ ($truth_snv || $truth_indel) && $somaticseq_train ]]; then
-        ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_builder_ntChange.R"
-    elif [[ $classifier_snv || $classifier_indel ]]; then
-        ada_r_script_text="--ada-r-script /opt/somaticseq/r_scripts/ada_model_predictor.R"
-    fi
+
+    if [[ $somaticseq_train ]]; then train="--somaticseq-train"                                         ; fi
 
     $MYDIR/mutation_callers/single_SomaticSeq.sh \
     --in-bam ${tumor_bam} \
     --out-dir ${outdir}/${somaticseq_dir} \
     --human-reference ${HUMAN_REFERENCE} \
+    $train \
     $selector_input \
     $exclusion_text \
     $dbsnp_input \
