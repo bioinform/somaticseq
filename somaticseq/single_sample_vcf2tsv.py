@@ -217,7 +217,7 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
         while my_line.startswith('#') or my_line.startswith('track='):
             my_line = my_sites.readline().rstrip()
 
-        # First coordinate:
+        # First coordinate, for later purpose of making sure the input is sorted properly
         coordinate_i = re.match( genome.pattern_chr_position, my_line )
         coordinate_i = coordinate_i.group() if coordinate_i else ''
 
@@ -247,6 +247,7 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
                     my_line = my_sites.readline().rstrip()
                     my_vcf = genome.Vcf_line( my_line )
 
+                    ########## This block is code is to ensure the input VCF file is properly sorted ##
                     coordinate_j = re.match( genome.pattern_chr_position, my_line )
                     coordinate_j = coordinate_j.group() if coordinate_j else ''
 
@@ -254,7 +255,8 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
                         raise Exception( '{} does not seem to be properly sorted.'.format(mysites) )
 
                     coordinate_i = coordinate_j
-
+                    ###################################################################################
+                    
                     if my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
 
                         alt_bases = my_vcf.altbase.split(',')
