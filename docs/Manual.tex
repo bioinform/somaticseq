@@ -243,18 +243,25 @@ Section \ref{Wrapper_script} described how to use SomaticSeq as a standalone sof
 
 \subsection{somaticseq.somaticseq modules} \label{module:somaticseq}
 
-The main function is to convert individual VCF files (each from a popular somatic mutation caller) to SomaticSeq VCF file. The code to produce the .TSV and .VCF files described in Section \ref{Wrapper_script}, for example, would be something like this:
- 
+The directory \textit{somaticseq/somaticseq} contain some of the critical modules of SomaticSeq, and many can be used as a function of a library. 
+
+
+\subsubsection{Module: run\_somaticseq} \label{run_somaticseq}
+
+The script \textit{somaticseq/somaticseq/run\_somaticseq.py} contains the module to convert individual VCF files (each from a popular somatic mutation caller) to SomaticSeq TSV and VCF files. 
+
+The code to produce the .TSV and .VCF files described in Section \ref{Wrapper_script}, for example, would be something like this:
+
 \begin{lstlisting}
 
-  # Module is somaticseq/somaticseq/run_somaticseq.py
+  # Module is located somaticseq/somaticseq/run_somaticseq.py
   import somaticseq.somaticseq.run_somaticseq as run_somaticseq
   
-  run_somaticseq.runPaired(outdir='/PATH/TO/SomaticSeq', ref='PATH/TO/GRCh38.fa', tbam='/PATH/TO/tumor.bwa.bam', nbam='/PATH/TO/normal.bwa.bam', tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', cosmic='/PATH/TO/COSMIC.v85.vcf', inclusion='/PATH/TO/Exon_Capture.bed', exclusion='/PATH/TO/ignore.bed', mutect=None, indelocator=None, mutect2='/PATH/TO/MuTect2.vcf', varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict='/PATH/TO/VarDict.vcf', muse='/PATH/TO/MuSE.vcf', lofreq_snv='/PATH/TO/LoFreq.snv.vcf.gz', lofreq_indel='/PATH/TO/LoFreq.indel.vcf.gz', scalpel=None, strelka_snv='/PATH/TO/Strelka/results/variants/somatic_ssnv.vcf.gz', strelka_indel='/PATH/TO/Strelka/results/variants/somatic_sindel.vcf.gz', tnscope=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False)
+  run_somaticseq.runPaired(outdir='/PATH/TO/SomaticSeq', ref='/PATH/TO/GRCh38.fa', tbam='/PATH/TO/tumor.bwa.bam', nbam='/PATH/TO/normal.bwa.bam', tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', cosmic='/PATH/TO/COSMIC.v85.vcf', inclusion='/PATH/TO/Exon_Capture.bed', exclusion='/PATH/TO/ignore.bed', mutect=None, indelocator=None, mutect2='/PATH/TO/MuTect2.vcf', varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict='/PATH/TO/VarDict.vcf', muse='/PATH/TO/MuSE.vcf', lofreq_snv='/PATH/TO/LoFreq.snv.vcf.gz', lofreq_indel='/PATH/TO/LoFreq.indel.vcf.gz', scalpel=None, strelka_snv='/PATH/TO/Strelka/results/variants/somatic_ssnv.vcf.gz', strelka_indel='/PATH/TO/Strelka/results/variants/somatic_sindel.vcf.gz', tnscope=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False)
 
 \end{lstlisting}
 
-ensembleOutPrefix, consensusOutPrefix, and classifiedOutPrefix will dictate the output file names under outdir.
+The parameters of \textit{ensembleOutPrefix}, \textit{consensusOutPrefix}, and \textit{classifiedOutPrefix} will dictate the output file names under outdir.
 
 
 Likewise, the single sample mode to convert various individual VCF outputs would be something like this:
@@ -267,6 +274,32 @@ Likewise, the single sample mode to convert various individual VCF outputs would
 
 \end{lstlisting}
 
+
+Parameters:
+
+\begin{itemize}
+
+\item truth\_snv/truth\_indel: if present, then the variants in these VCF files will be considered true positives, and \emph{everything else} will be considered false positive. If None, then nothing with regard to true positive or false positive will be annotated. 
+
+\item classifier\_snv/classifier\_indel: if present, then SomaticSeq prediction will be invoked to create machine learning classified VCF files. if None, only majority-vote consensus VCF files will be created. 
+
+\item inclusion: bed file so only variants in it will be considered (requires BEDTools on execution path)
+
+\item exclusion: bed file so variants in it will be tossed out (requires BEDTools on the execution path)
+
+\item mutect/mutect2/varscan/jsm/vardict/muse/lofreq/strelka/scalpel/tnscope: output VCF files from the callers. If None, then it assumes that tool was not used. 
+
+\item min\_caller: only output variants if at least N number of callers have called it. Since some LowQual calls are considered 0.5, an input of 0.5 tells the function to also return variants even if it's only been called as a ``LowQual'' by a tool. However, it will still filter out variants that's only been ``REJECTED'' by a caller.
+
+somaticseq\_train: if True, and also if truth\_snv or truth\_indel are present, then it will create SomaticSeq classifiers. If False, then will not invoke training mode. 
+
+\end{itemize}
+
+
+
+
+
+\subsubsection{Module: somatic\_vcf2tsv and single\_sample\_vcf2tsv} \label{vcf2tsv}
 
 Another useful module is the command to extract SomaticSeq features for variants in \emph{any} VCF file, and output the results to a TSV file. The following function requires both tumor and normal BAM files, and the reference genome. COSMIC, dbSNP, etc. are optional. None for any null inputs. min\_mq = 0 for this purpose. This is a filter to only output variants that has been called by a minimum number of tools (which you may specify as VCF inputs such as mutect, varscan, etc.)
 
@@ -291,6 +324,76 @@ You may also extract sequencing info for any VCF file if you just have one bam f
 Both \textit{somaticseq/somaticseq/somatic\_vcf2tsv.py} and \textit{somaticseq/somaticseq/single\_sample\_vcf2tsv.py} may also be run as standalone scripts. Invoke the script with -h to learn their usages. 
 
 
+Parameters:
+
+\begin{itemize}
+
+\item is\_vcf: the VCF file serves as the input file, from which every variant will have its sequencing feature extracted from the BAM file(s). 
+
+\item mutect/varscan/jsm/sniper/vardict/muse/lofreq/scalpel/strelka/tnscope: VCF files from these tools. If present, the function will extract information from these files such as if a variant is called by the tool. If None, everything associated with that tool will be ``nan'' in the TSV file.
+
+\end{itemize}
+
+
+
+
+
+
+\subsubsection{Module: SSeq\_tsv2vcf}
+
+This module converts SomaticSeq's TSV file (described in Sec. \ref{vcf2tsv}) to SomaticSeq VCF files.
+
+
+\begin{lstlisting}
+
+  import somaticseq.somaticseq.SSeq_tsv2vcf as SSeq_tsv2vcf
+  
+  SSeq_tsv2vcf.tsv2vcf(tsv_fn='/PATH/TO/SomaticSeq.tsv', vcf_fn='/PATH/TO/SomaticSeq.vcf', tools=['MuTect2', 'SomaticSniper', 'Strelka'], pass_score=0.5, lowqual_score=0.1, hom_threshold=0.85, het_threshold=0.01, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True)
+  
+\end{lstlisting}
+
+Parameters:
+
+\begin{itemize}
+
+\item tools: A list of tools that were run, can only be selected from MuTect2, MuTect, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka, and TNscope
+
+\item print\_reject: if False, will only print PASS and LowQual variants into VCF. If True, will print everything from TSV to VCF. 
+
+\item phred\_scaled: if True, will print Phred-scaled score in QUAL column (if the TSV was produced with SomaticSeq prediction). If False, will print the 0-1 scale. If no SomaticSeq prediction was done, will print 0. 
+
+
+\end{itemize}
+
+
+
+
+
+
+\subsection{somaticseq.utilities modules} \label{module:utilities}
+
+\subsubsection{Module: split\_Bed\_into\_equal\_regions}
+
+Given a .bed or a .fa.fai file, it will split the input region into N number of bed files, such that each bed file has equal-sized regions in them. 
+
+
+\subsubsection{Module: lociCounterWithLabels}
+
+Given a list of .bed files and a .fa.fai file, it will return a .bed file detailing which regions were contained from which .bed inputs. 
+
+\begin{lstlisting}
+
+  somaticseq/utilities/lociCounterWithLabels.py -fai GRCh38.fa.fai -beds 1.bed 2.bed 3.bed -labels 01 02 03 -out overlapping.bed
+
+\end{lstlisting}
+
+Parameters:
+
+\begin{itemize}
+
+\item labels: A list of labels to be written in 4th column of the output bed file. If absent, the 4th column will be populated by the input bed file names.
+
+\end{itemize}
 
 
 
