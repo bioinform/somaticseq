@@ -237,12 +237,13 @@ Same as the commands previously, but without including classifiers or invoking \
 
 \section{Use SomaticSeq as a Python library} \label{somaticseq_package}
 
+
 Section \ref{Wrapper_script} described how to use SomaticSeq as a standalone software, but SomaticSeq can also be treated as a python library for your own software. 
 
-The main function is to convert individual VCF files (each from a popular somatic mutation caller) to SomaticSeq VCF file. 
 
+\subsection{somaticseq.somaticseq modules} \label{module:somaticseq}
 
-The code to produce the .TSV and .VCF files described in Section \ref{Wrapper_script}, for example, would be something like this:
+The main function is to convert individual VCF files (each from a popular somatic mutation caller) to SomaticSeq VCF file. The code to produce the .TSV and .VCF files described in Section \ref{Wrapper_script}, for example, would be something like this:
  
 \begin{lstlisting}
 
@@ -256,7 +257,7 @@ The code to produce the .TSV and .VCF files described in Section \ref{Wrapper_sc
 ensembleOutPrefix, consensusOutPrefix, and classifiedOutPrefix will dictate the output file names under outdir.
 
 
-Likewise, the single sample mode would be something like this:
+Likewise, the single sample mode to convert various individual VCF outputs would be something like this:
 
 \begin{lstlisting}
 
@@ -267,6 +268,27 @@ Likewise, the single sample mode would be something like this:
 \end{lstlisting}
 
 
+Another useful module is the command to extract SomaticSeq features for variants in \emph{any} VCF file, and output the results to a TSV file. The following function requires both tumor and normal BAM files, and the reference genome. COSMIC, dbSNP, etc. are optional. None for any null inputs. min\_mq = 0 for this purpose. This is a filter to only output variants that has been called by a minimum number of tools (which you may specify as VCF inputs such as mutect, varscan, etc.)
+
+\begin{lstlisting}
+
+  import somaticseq.somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
+  
+  somatic_vcf2tsv.vcf2tsv(is_vcf='/PATH/TO/variants.vcf', is_bed=None, is_pos=None, nbam_fn='/PATH/TO/normal.bam', tbam_fn='/PATH/TO/tumor.bam', truth=None, cosmic='/PATH/TO/COSMIC.v85.vcf', dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', mutect=None, varscan=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq=None, scalpel=None, strelka=None, tnscope=None, dedup=True, min_mq=1, min_bq=5, min_caller=0, ref_fa='/PATH/TO/GRCh38.fa', p_scale=None, outfile='/PATH/TO/SomaticSeq.FeaturesExtracted.tsv')
+
+\end{lstlisting}
+
+You may also extract sequencing info for any VCF file if you just have one bam file
+
+\begin{lstlisting}
+
+  import somaticseq.somaticseq.single_sample_vcf2tsv as single_sample_vcf2tsv
+  
+  single_sample_vcf2tsv.vcf2tsv(is_vcf='/PATH/TO/variants.vcf', is_bed=None, is_pos=None, bam_fn='/PATH/TO/tumor.bam', truth=None, cosmic='/PATH/TO/COSMIC.v85.vcf', dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', mutect=None, varscan=None, vardict=None, muse=None, lofreq=None, scalpel=None, strelka=None, dedup=True, min_mq=1, min_bq=5, min_caller=0, ref_fa='/PATH/TO/GRCh38.fa', p_scale=None, outfile='/PATH/TO/SomaticSeq.FeaturesExtracted.tsv')
+
+\end{lstlisting}
+
+Both \textit{somaticseq/somaticseq/somatic\_vcf2tsv.py} and \textit{somaticseq/somaticseq/single\_sample\_vcf2tsv.py} may also be run as standalone scripts. Invoke the script with -h to learn their usages. 
 
 
 
