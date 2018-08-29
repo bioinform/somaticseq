@@ -7,13 +7,13 @@
 
 ## Requirements
 * Python 3, plus pysam, numpy, and scipy libraries.
-* R, plus [ada](https://cran.r-project.org/package=ada) library
-* [BEDTools](https://bedtools.readthedocs.io/en/latest/)
+* R, plus [ada](https://cran.r-project.org/package=ada) library: required in training or prediction mode
+* [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing in invoked, and/or when any bed files are used as input files
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
 * At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, and/or TNscope.
 
 ## Example commands
-* At minimum, given the results of the individual mutation caller(s), SomaticSeq will extract sequencing features for the combined call set. Required inputs are `--output-directory`, `--genome-reference`, `paired|single`, `--tumor-bam-file`, and `--normal-bam-file`. Everything else is optional, although if you don't have a single VCF file input, the command will have nothing to do.
+* At minimum, given the results of the individual mutation caller(s), SomaticSeq will extract sequencing features for the combined call set. Required inputs are `--output-directory`, `--genome-reference`, `paired|single`, `--tumor-bam-file`, and `--normal-bam-file`. Everything else is optional.
 * The following four files will be created into the output directory:
   * *Consensus.sSNV.vcf*, *Consensus.sINDEL.vcf*, *Ensemble.sSNV.tsv*, and *Ensemble.sINDEL.tsv*.
 
@@ -44,8 +44,8 @@ paired \
 ```
 
 * `--inclusion-region` or `--exclusion-region` will require BEDTools in your path.
-* The command can be parallelized using `$somaticseq/somaticseq_parallel.py` script, with identical input options except for `--threads X` placed before the `paired` option to indicate X threads. The `somaticseq_parallel.py` is simply a script to create multiple sub-BED files, and then invokes `somaticseq/run_somaticseq.py` on each of those sub-BED files in parallel, then merge the results. It also requires BEDTools in your path.
-* For all those input VCF files, either .vcf or .vcf.gz are acceptable.
+* The command can be parallelized using `$somaticseq/somaticseq_parallel.py` script, with identical input options except for `--threads X` placed before the `paired` option to indicate X threads. The `somaticseq_parallel.py` is simply a script to create multiple sub-BED files, and then invokes `somaticseq/run_somaticseq.py` on each of those sub-BED files in parallel, then merge the results. It requires BEDTools in your path.
+* For all input VCF files, either .vcf or .vcf.gz are acceptable.
 
 Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two additional files (classifiers) will be created, i.e., *Ensemble.sSNV.tsv.ntChange.Classifier.RData* and *Ensemble.sINDEL.tsv.ntChange.Classifier.RData*.
 
