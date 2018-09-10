@@ -36,6 +36,7 @@ pass_score     = args.pass_score
 reject_score   = args.reject_score
 
 # quasi-constants
+# Established in LTF's jupyter notebook: HCC1395/HighConfidenceCalls/draft.beta.2a.ipynb
 if args.variant_type.upper() == 'SNV':
     bwaMQ_lowEnd    = 40.1764705882
     bowtieMQ_lowEnd = 10.7058823529
