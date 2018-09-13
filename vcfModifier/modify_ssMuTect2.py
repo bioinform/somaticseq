@@ -76,7 +76,7 @@ def convert(infile, snv_out, indel_out):
 
                 if len(vcf_i.refbase) == 1 and len(vcf_i.altbase) == 1:
                     snv_out.write( new_line + '\n' )
-                else:
+                elif len(vcf_i.refbase) == 1 or len(altbase_i) == 1:
                     indel_out.write( new_line + '\n' )
 
             else:
