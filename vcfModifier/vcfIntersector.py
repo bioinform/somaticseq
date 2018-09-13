@@ -65,8 +65,6 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
     
     if exclusion_region:
         
-        excluded_temp_file = infile_noext + uuid.uuid4().hex + file_ext
-        
         exit_code = os.system( 'intersectBed -header -a {} -b {} -v | uniq > {}'.format(infile, exclusion_region, outfile) )
         assert exit_code == 0
     

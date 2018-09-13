@@ -8,6 +8,7 @@ sys.path.append( PRE_DIR )
 
 import genomicFileHandler.genomic_file_handlers as genome
 import vcfModifier.copy_TextFile as copy_TextFile
+import vcfModifier.splitVcf as splitVcf
 import vcfModifier.getUniqueVcfPositions as getUniqueVcfPositions
 from vcfModifier.vcfIntersector import *
 
@@ -16,8 +17,6 @@ from vcfModifier.vcfIntersector import *
 
 # Combine individual VCF output into a simple combined VCF file, for single-sample callers
 def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, keep_intermediates=False):
-    
-    import vcfModifier.splitVcf as splitVcf
     
     hg_dict = re.sub(r'\.fa(sta)?$', '.dict', ref)
     
@@ -50,8 +49,8 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
         mutect2_in = bed_intersector(mutect2, os.sep.join(( outdir, 'mutect2.intersected.vcf')), inclusion, exclusion)
         intermediate_files.add(mutect2_in)
         
-        snv_mutect_out   = os.sep.join(( outdir, 'snv.mutect.vcf' ))
-        indel_mutect_out = os.sep.join(( outdir, 'indel.mutect.vcf' ))
+        snv_mutect_out   = os.sep.join(( outdir, 'snv.mutect2.vcf' ))
+        indel_mutect_out = os.sep.join(( outdir, 'indel.mutect2.vcf' ))
         mod_mutect2.convert(mutect2_in, snv_mutect_out, indel_mutect_out)
         
         for file_i in snv_mutect_out, indel_mutect_out:
@@ -124,8 +123,8 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
         
         snv_intermediates.append(snv_lofreq_out)
         indel_intermediates.append(indel_lofreq_out)
-        intermediate_vcfs['LoFreq']['snv']   = snv_varscan_out
-        intermediate_vcfs['LoFreq']['indel'] = indel_varscan_out
+        intermediate_vcfs['LoFreq']['snv']   = snv_lofreq_out
+        intermediate_vcfs['LoFreq']['indel'] = indel_lofreq_out
 
     if scalpel:
         
@@ -185,7 +184,7 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
 
 
 # Combine individual VCF output into a simple combined VCF file, for paired sample callers
-def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, keep_intermediates=False):
+def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, keep_intermediates=False):
     
     hg_dict = re.sub(r'\.fa(sta)?$', '.dict', ref)
     
@@ -193,9 +192,10 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
     snv_intermediates   = []
     indel_intermediates = []
     
-    intermediate_vcfs = {'MuTect2':{'snv': None, 'indel': None}, \
-                         'VarDict':{'snv': None, 'indel': None}, \
-                         'TNscope':{'snv': None, 'indel': None}, }
+    intermediate_vcfs = {'MuTect2':  {'snv': None, 'indel': None}, \
+                         'VarDict':  {'snv': None, 'indel': None}, \
+                         'TNscope':  {'snv': None, 'indel': None}, \
+                         'Platypus': {'snv': None, 'indel': None} }
     
     # Modify direct VCF outputs for merging:
     if mutect or indelocator:
@@ -232,8 +232,8 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
         mutect2_in = bed_intersector(mutect2, os.sep.join(( outdir, 'mutect2.intersected.vcf')), inclusion, exclusion)
         intermediate_files.add(mutect2_in)
 
-        snv_mutect_out   = os.sep.join(( outdir, 'snv.mutect.vcf'))
-        indel_mutect_out = os.sep.join(( outdir, 'indel.mutect.vcf'))
+        snv_mutect_out   = os.sep.join(( outdir, 'snv.mutect2.vcf'))
+        indel_mutect_out = os.sep.join(( outdir, 'indel.mutect2.vcf'))
         mod_mutect2.convert(mutect2_in, snv_mutect_out, indel_mutect_out, False)
         
         for file_i in snv_mutect_out, indel_mutect_out:
@@ -246,7 +246,7 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
         intermediate_vcfs['MuTect2']['indel'] = indel_mutect_out
     
     if varscan_snv or varscan_indel:
-                
+        
         import vcfModifier.modify_VarScan2 as mod_varscan2
         
         if varscan_snv:
@@ -282,7 +282,7 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
         
         intermediate_files.add(jsm_out)
         snv_intermediates.append(jsm_out)
-        
+    
     if sniper:
         import vcfModifier.modify_SomaticSniper as mod_sniper
         
@@ -408,6 +408,25 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
         indel_intermediates.append(indel_tnscope_out)
         intermediate_vcfs['TNscope']['snv']   = snv_tnscope_out
         intermediate_vcfs['TNscope']['indel'] = indel_tnscope_out
+    
+    if platypus:
+        
+        platypus_in = bed_intersector(platypus, os.sep.join(( outdir, 'platypus.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(platypus_in)
+        
+        snv_platypus_out   = os.sep.join(( outdir, 'snv.platypus.vcf' ))
+        indel_platypus_out = os.sep.join(( outdir, 'indel.platypus.vcf' ))
+
+        splitVcf.split_into_snv_and_indel(platypus_in, snv_platypus_out, indel_platypus_out)
+
+        for file_i in snv_platypus_out, indel_platypus_out:
+            intermediate_files.add( file_i )
+        
+        snv_intermediates.append(snv_platypus_out)
+        indel_intermediates.append(indel_platypus_out)
+        intermediate_vcfs['Platypus']['snv']   = snv_platypus_out
+        intermediate_vcfs['Platypus']['indel'] = indel_platypus_out
+
     
     
     # Combine SNV/INDEL variant candidates

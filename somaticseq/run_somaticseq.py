@@ -24,7 +24,7 @@ adaTrainer   = os.sep.join( (PRE_DIR, 'r_scripts', 'ada_model_builder_ntChange.R
 adaPredictor = os.sep.join( (PRE_DIR, 'r_scripts', 'ada_model_predictor.R') )
 
 
-def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False):
+def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False):
 
     import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
@@ -41,6 +41,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     if lofreq_snv:        snvCallers.append('LoFreq')
     if strelka_snv:       snvCallers.append('Strelka')
     if tnscope:           snvCallers.append('TNscope')
+    if platypus:          snvCallers.append('Platypus')
 
 
     indelCallers = []
@@ -51,7 +52,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     if scalpel:                indelCallers.append('Scalpel')
     if strelka_indel:          indelCallers.append('Strelka')
     if tnscope:                indelCallers.append('TNscope')
-
+    if platypus:               indelCallers.append('Platypus')
 
     # Function to combine individual VCFs into a simple VCF list of variants:
     outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combinePaired(outdir=outdir, ref=ref, tbam=tbam, nbam=nbam, inclusion=inclusion, exclusion=exclusion, mutect=mutect, indelocator=indelocator, mutect2=mutect2, varscan_snv=varscan_snv, varscan_indel=varscan_indel, jsm=jsm, sniper=sniper, vardict=vardict, muse=muse, lofreq_snv=lofreq_snv, lofreq_indel=lofreq_indel, scalpel=scalpel, strelka_snv=strelka_snv, strelka_indel=strelka_indel, tnscope=tnscope, keep_intermediates=True)
@@ -68,7 +69,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     ######################  SNV  ######################
     mutect_infile = intermediateVcfs['MuTect2']['snv'] if intermediateVcfs['MuTect2']['snv'] else mutect
 
-    somatic_vcf2tsv.vcf2tsv(is_vcf=outSnv, nbam_fn=nbam, tbam_fn=tbam, truth=truth_snv, cosmic=cosmic, dbsnp=dbsnp, mutect=mutect_infile, varscan=varscan_snv, jsm=jsm, sniper=sniper, vardict=intermediateVcfs['VarDict']['snv'], muse=muse, lofreq=lofreq_snv, scalpel=None, strelka=strelka_snv, tnscope=intermediateVcfs['TNscope']['snv'], dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleSnv)
+    somatic_vcf2tsv.vcf2tsv(is_vcf=outSnv, nbam_fn=nbam, tbam_fn=tbam, truth=truth_snv, cosmic=cosmic, dbsnp=dbsnp, mutect=mutect_infile, varscan=varscan_snv, jsm=jsm, sniper=sniper, vardict=intermediateVcfs['VarDict']['snv'], muse=muse, lofreq=lofreq_snv, scalpel=None, strelka=strelka_snv, tnscope=intermediateVcfs['TNscope']['snv'], platypus=intermediateVcfs['Platypus']['snv'], dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleSnv)
 
 
     # Classify SNV calls
@@ -94,7 +95,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     ###################### INDEL ######################
     mutect_infile = intermediateVcfs['MuTect2']['indel'] if intermediateVcfs['MuTect2']['indel'] else indelocator
 
-    somatic_vcf2tsv.vcf2tsv(is_vcf=outIndel, nbam_fn=nbam, tbam_fn=tbam, truth=truth_indel, cosmic=cosmic, dbsnp=dbsnp, mutect=mutect_infile, varscan=varscan_indel, vardict=intermediateVcfs['VarDict']['indel'], lofreq=lofreq_indel, scalpel=scalpel, strelka=strelka_indel, tnscope=intermediateVcfs['TNscope']['indel'], dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleIndel)
+    somatic_vcf2tsv.vcf2tsv(is_vcf=outIndel, nbam_fn=nbam, tbam_fn=tbam, truth=truth_indel, cosmic=cosmic, dbsnp=dbsnp, mutect=mutect_infile, varscan=varscan_indel, vardict=intermediateVcfs['VarDict']['indel'], lofreq=lofreq_indel, scalpel=scalpel, strelka=strelka_indel, tnscope=intermediateVcfs['TNscope']['indel'], platypus=intermediateVcfs['Platypus']['indel'], dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleIndel)
 
 
     # Classify INDEL calls
@@ -278,9 +279,11 @@ def run():
     parser_paired.add_argument('-lofreqsnv',     '--lofreq-snv',        type=str,   help='LoFreq VCF',        )
     parser_paired.add_argument('-lofreqindel',   '--lofreq-indel',      type=str,   help='LoFreq VCF',        )
     parser_paired.add_argument('-scalpel',       '--scalpel-vcf',       type=str,   help='Scalpel VCF',       )
-    parser_paired.add_argument('-strelka-snv',   '--strelka-snv',       type=str,   help='Strelka VCF',       )
-    parser_paired.add_argument('-strelka-indel', '--strelka-indel',       type=str,   help='Strelka VCF',     )
+    parser_paired.add_argument('-strelkasnv',    '--strelka-snv',       type=str,   help='Strelka VCF',       )
+    parser_paired.add_argument('-strelkaindel',  '--strelka-indel',     type=str,   help='Strelka VCF',       )
     parser_paired.add_argument('-tnscope',       '--tnscope-vcf',       type=str,   help='TNscope VCF',       )
+    parser_paired.add_argument('-platypus',      '--platypus-vcf',      type=str,   help='Platypus VCF',      )
+
 
     parser_paired.set_defaults(which='paired')
 
@@ -353,6 +356,7 @@ if __name__ == '__main__':
                    strelka_snv        = runParameters['strelka_snv'], \
                    strelka_indel      = runParameters['strelka_indel'], \
                    tnscope            = runParameters['tnscope_vcf'], \
+                   platypus           = runParameters['platypus_vcf'], \
                    somaticseq_train   = runParameters['somaticseq_train'], \
                    keep_intermediates = runParameters['keep_intermediates'] )
 

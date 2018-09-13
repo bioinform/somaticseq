@@ -39,6 +39,7 @@ out_header = \
 {if_Scalpel}\t\
 {if_Strelka}\t\
 {if_TNscope}\t\
+{if_Platypus}\t\
 {Strelka_Score}\t\
 {Strelka_QSS}\t\
 {Strelka_TQSS}\t\
@@ -152,16 +153,17 @@ def run():
     parser.add_argument('-dbsnp',     '--dbsnp-vcf',              type=str,   help='dbSNP VCF: do not use if input VCF is annotated')
     parser.add_argument('-cosmic',    '--cosmic-vcf',             type=str,   help='COSMIC VCF: do not use if input VCF is annotated')
 
-    parser.add_argument('-mutect',  '--mutect-vcf',               type=str,   help='MuTect VCF',        )
-    parser.add_argument('-strelka', '--strelka-vcf',              type=str,   help='Strelka VCF',       )
-    parser.add_argument('-sniper',  '--somaticsniper-vcf',        type=str,   help='SomaticSniper VCF', )
-    parser.add_argument('-varscan', '--varscan-vcf',              type=str,   help='VarScan2 VCF',      )
-    parser.add_argument('-jsm',     '--jsm-vcf',                  type=str,   help='JointSNVMix2 VCF',  )
-    parser.add_argument('-vardict', '--vardict-vcf',              type=str,   help='VarDict VCF',       )
-    parser.add_argument('-muse',    '--muse-vcf',                 type=str,   help='MuSE VCF',          )
-    parser.add_argument('-lofreq',  '--lofreq-vcf',               type=str,   help='LoFreq VCF',        )
-    parser.add_argument('-scalpel', '--scalpel-vcf',              type=str,   help='Scalpel VCF',       )
-    parser.add_argument('-tnscope', '--tnscope-vcf',              type=str,   help='TNscope VCF',       )
+    parser.add_argument('-mutect',   '--mutect-vcf',              type=str,   help='MuTect VCF',        )
+    parser.add_argument('-strelka',  '--strelka-vcf',             type=str,   help='Strelka VCF',       )
+    parser.add_argument('-sniper',   '--somaticsniper-vcf',       type=str,   help='SomaticSniper VCF', )
+    parser.add_argument('-varscan',  '--varscan-vcf',             type=str,   help='VarScan2 VCF',      )
+    parser.add_argument('-jsm',      '--jsm-vcf',                 type=str,   help='JointSNVMix2 VCF',  )
+    parser.add_argument('-vardict',  '--vardict-vcf',             type=str,   help='VarDict VCF',       )
+    parser.add_argument('-muse',     '--muse-vcf',                type=str,   help='MuSE VCF',          )
+    parser.add_argument('-lofreq',   '--lofreq-vcf',              type=str,   help='LoFreq VCF',        )
+    parser.add_argument('-scalpel',  '--scalpel-vcf',             type=str,   help='Scalpel VCF',       )
+    parser.add_argument('-tnscope',  '--tnscope-vcf',             type=str,   help='TNscope VCF',       )
+    parser.add_argument('-platypus', '--platypus-vcf',            type=str,   help='Platypus VCF',      )
 
     parser.add_argument('-ref',     '--genome-reference',         type=str,   help='.fasta.fai file to get the contigs', required=True)
     parser.add_argument('-dedup',   '--deduplicate',     action='store_true', help='Do not consider duplicate reads from BAM files. Default is to count everything', default=False)
@@ -182,7 +184,7 @@ def run():
 
 
 
-def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, truth=None, cosmic=None, dbsnp=None, mutect=None, varscan=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq=None, scalpel=None, strelka=None, tnscope=None, dedup=True, min_mq=1, min_bq=5, min_caller=0, ref_fa=None, p_scale=None, outfile=None):
+def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, truth=None, cosmic=None, dbsnp=None, mutect=None, varscan=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq=None, scalpel=None, strelka=None, tnscope=None, platypus=None, dedup=True, min_mq=1, min_bq=5, min_caller=0, ref_fa=None, p_scale=None, outfile=None):
 
     # Convert contig_sequence to chrom_seq dict:
     fai_file  = ref_fa + '.fai'
@@ -277,6 +279,9 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
             tnscope = genome.open_textfile(tnscope)
             tnscope_line = genome.skip_vcf_header( tnscope )
 
+        if platypus:
+            platypus      = genome.open_textfile(platypus)
+            platypus_line = genome.skip_vcf_header( platypus )
 
         # Get through all the headers:
         while my_line.startswith('#') or my_line.startswith('track='):
@@ -393,19 +398,20 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                 num_callers = 0
 
                 #################################### Find the same coordinate in those VCF files ####################################
-                if mutect:  got_mutect,  mutect_variants,  mutect_line  = genome.find_vcf_at_coordinate(my_coordinate, mutect_line,  mutect,  chrom_seq)
-                if varscan: got_varscan, varscan_variants, varscan_line = genome.find_vcf_at_coordinate(my_coordinate, varscan_line, varscan, chrom_seq)
-                if jsm:     got_jsm,     jsm_variants,     jsm_line     = genome.find_vcf_at_coordinate(my_coordinate, jsm_line,     jsm,     chrom_seq)
-                if sniper:  got_sniper,  sniper_variants,  sniper_line  = genome.find_vcf_at_coordinate(my_coordinate, sniper_line,  sniper,  chrom_seq)
-                if vardict: got_vardict, vardict_variants, vardict_line = genome.find_vcf_at_coordinate(my_coordinate, vardict_line, vardict, chrom_seq)
-                if muse:    got_muse,    muse_variants,    muse_line    = genome.find_vcf_at_coordinate(my_coordinate, muse_line,    muse,    chrom_seq)
-                if lofreq:  got_lofreq,  lofreq_variants,  lofreq_line  = genome.find_vcf_at_coordinate(my_coordinate, lofreq_line,  lofreq,  chrom_seq)
-                if scalpel: got_scalpel, scalpel_variants, scalpel_line = genome.find_vcf_at_coordinate(my_coordinate, scalpel_line, scalpel, chrom_seq)
-                if strelka: got_strelka, strelka_variants, strelka_line = genome.find_vcf_at_coordinate(my_coordinate, strelka_line, strelka, chrom_seq)
-                if tnscope: got_tnscope, tnscope_variants, tnscope_line = genome.find_vcf_at_coordinate(my_coordinate, tnscope_line, tnscope, chrom_seq)
-                if truth:   got_truth,   truth_variants,   truth_line   = genome.find_vcf_at_coordinate(my_coordinate, truth_line,   truth,   chrom_seq)
-                if dbsnp:   got_dbsnp,   dbsnp_variants,   dbsnp_line   = genome.find_vcf_at_coordinate(my_coordinate, dbsnp_line,   dbsnp,   chrom_seq)
-                if cosmic:  got_cosmic,  cosmic_variants,  cosmic_line  = genome.find_vcf_at_coordinate(my_coordinate, cosmic_line,  cosmic,  chrom_seq)
+                if mutect:   got_mutect,   mutect_variants,   mutect_line  = genome.find_vcf_at_coordinate(my_coordinate, mutect_line,  mutect,  chrom_seq)
+                if varscan:  got_varscan,  varscan_variants,  varscan_line = genome.find_vcf_at_coordinate(my_coordinate, varscan_line, varscan, chrom_seq)
+                if jsm:      got_jsm,      jsm_variants,      jsm_line     = genome.find_vcf_at_coordinate(my_coordinate, jsm_line,     jsm,     chrom_seq)
+                if sniper:   got_sniper,   sniper_variants,   sniper_line  = genome.find_vcf_at_coordinate(my_coordinate, sniper_line,  sniper,  chrom_seq)
+                if vardict:  got_vardict,  vardict_variants,  vardict_line = genome.find_vcf_at_coordinate(my_coordinate, vardict_line, vardict, chrom_seq)
+                if muse:     got_muse,     muse_variants,     muse_line    = genome.find_vcf_at_coordinate(my_coordinate, muse_line,    muse,    chrom_seq)
+                if lofreq:   got_lofreq,   lofreq_variants,   lofreq_line  = genome.find_vcf_at_coordinate(my_coordinate, lofreq_line,  lofreq,  chrom_seq)
+                if scalpel:  got_scalpel,  scalpel_variants,  scalpel_line = genome.find_vcf_at_coordinate(my_coordinate, scalpel_line, scalpel, chrom_seq)
+                if strelka:  got_strelka,  strelka_variants,  strelka_line = genome.find_vcf_at_coordinate(my_coordinate, strelka_line, strelka, chrom_seq)
+                if tnscope:  got_tnscope,  tnscope_variants,  tnscope_line = genome.find_vcf_at_coordinate(my_coordinate, tnscope_line, tnscope, chrom_seq)
+                if platypus: got_platypus, platypus_variants, platypus_line = genome.find_vcf_at_coordinate(my_coordinate, platypus_line, platypus, chrom_seq)
+                if truth:    got_truth,    truth_variants,    truth_line   = genome.find_vcf_at_coordinate(my_coordinate, truth_line,   truth,   chrom_seq)
+                if dbsnp:    got_dbsnp,    dbsnp_variants,    dbsnp_line   = genome.find_vcf_at_coordinate(my_coordinate, dbsnp_line,   dbsnp,   chrom_seq)
+                if cosmic:   got_cosmic,   cosmic_variants,   cosmic_line  = genome.find_vcf_at_coordinate(my_coordinate, cosmic_line,  cosmic,  chrom_seq)
 
 
                 # Now, use pysam to look into the BAM file(s), variant by variant from the input:
@@ -493,6 +499,13 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                         num_callers += tnscope_classification
                     else:
                         tnscope_classification = nan
+                        
+                    
+                    if platypus:
+                        platypus_classification = annotate_caller.countPASS(variant_id, platypus_variants)
+                        num_caller += platypus_classification
+                    else:
+                        platypus_classification = nan
 
 
                     # Potentially write the output only if it meets this threshold:
@@ -563,6 +576,7 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                         if_Scalpel              = scalpel_classification,                                              \
                         if_Strelka              = strelka_classification,                                              \
                         if_TNscope              = tnscope_classification,                                              \
+                        if_Platypus             = Platypus_classification,                                             \
                         Strelka_Score           = somatic_evs,                                                         \
                         Strelka_QSS             = qss,                                                                 \
                         Strelka_TQSS            = tqss,                                                                \
@@ -663,7 +677,7 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                 my_line = my_sites.readline().rstrip()
 
         ##########  Close all open files if they were opened  ##########
-        opened_files = (ref_fa, nbam, tbam, truth, cosmic, dbsnp, mutect, varscan, jsm, sniper, vardict, muse, lofreq, scalpel, strelka, tnscope)
+        opened_files = (ref_fa, nbam, tbam, truth, cosmic, dbsnp, mutect, varscan, jsm, sniper, vardict, muse, lofreq, scalpel, strelka, tnscope, platypus)
         [opened_file.close() for opened_file in opened_files if opened_file]
 
 
@@ -689,6 +703,7 @@ if __name__ == '__main__':
             scalpel    = runParameters['scalpel_vcf'], \
             strelka    = runParameters['strelka_vcf'], \
             tnscope    = runParameters['tnscope_vcf'], \
+            platypus   = runParameters['platypus_vcf'], \
             dedup      = runParameters['deduplicate'], \
             min_mq     = runParameters['minimum_mapping_quality'], \
             min_bq     = runParameters['minimum_base_quality'], \

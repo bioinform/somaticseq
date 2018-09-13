@@ -24,6 +24,37 @@ vdT,vdN = 0,1
 caller_variants is a dictionary, where the key is a tuple of ( (contig, position), ref, alt ), and value is a genome.Vcf_line object. 
 '''
 
+
+def countPASS(variant_id, generic_variants):
+
+    # Most generic classification: 1 if PASS in FILTER, 0 everything else
+    if variant_id in generic_variants:
+        
+        variant_i = generic_variants[ variant_id ]
+        variant_classification = 1 if re.search(r'\bPASS\b', variant_i.filters) else 0
+        
+    else:
+        variant_classification = 0
+
+    return variant_classification
+
+
+
+def countSOMATICPASS(variant_id, generic_variants):
+
+    # 1 if PASS in FILTER and SOMATIC in INFO, 0 everything else
+    if variant_id in generic_variants:
+        
+        variant_i = generic_variants[ variant_id ]
+        variant_classification = 1 if ( re.search(r'\bPASS\b', variant_i.filters) and variant_i.get_info_value('SOMATIC') ) else 0
+        
+    else:
+        variant_classification = 0
+
+    return variant_classification
+
+
+
 def MuTect(variant_id, mutect_variants):
     
     if variant_id in mutect_variants:

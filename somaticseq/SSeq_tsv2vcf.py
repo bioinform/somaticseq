@@ -25,7 +25,7 @@ def run():
     parser.add_argument('-het',   '--het-threshold',             type=float, help='The VAF to be labeled 0/1 in GT', required=False, default=0.01)
     parser.add_argument('-N',     '--normal-sample-name',        type=str,   help='Normal Sample Name', required=False, default='NORMAL')
     parser.add_argument('-T',     '--tumor-sample-name',         type=str,   help='Tumor Sample Name', required=False, default='TUMOR')
-    parser.add_argument('-tools', '--individual-mutation-tools', type=str,   help='A list of all tools used. Possible values are CGA/MuTect/MuTect2 (M), VarScan2 (V), JointSNVMix2 (J), SomaticSniper (S), VarDict (D), MuSE (U), LoFreq (L), Scalpel (P), Strelka (K), and/or TNscope (T)', nargs='*', required=True)
+    parser.add_argument('-tools', '--individual-mutation-tools', type=str,   help='A list of all tools used. Possible values are CGA/MuTect/MuTect2 (M), VarScan2 (V), JointSNVMix2 (J), SomaticSniper (S), VarDict (D), MuSE (U), LoFreq (L), Scalpel (P), Strelka (K), TNscope (T), and/or Platypus (Y)', nargs='*', required=True)
     
     parser.add_argument('-all',   '--emit-all',    action='store_true', help='Flag it to print out everything', required=False)
     parser.add_argument('-phred', '--phred-scale', action='store_true', help='Flag it to print out Phred scale QUAL (proper VCF format but more annoying to filter)', required=False)
@@ -101,7 +101,8 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                   'LoFreq':        'L',
                   'Scalpel':       'P',
                   'Strelka':       'K',
-                  'TNscope':       'T'}
+                  'TNscope':       'T',
+                  'Platypus':      'Y'}
     
     
     mvjsdu = ''
@@ -145,7 +146,10 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                 toolcode2index['K'] = n
             elif 'if_TNscope'       == item:
                 toolcode2index['T'] = n
-        
+            elif 'if_Platypus'       == item:
+                toolcode2index['Y'] = n
+
+
         ALT                  = tsv_header.index('ALT')
         CHROM                = tsv_header.index('CHROM')
         ID                   = tsv_header.index('ID')
