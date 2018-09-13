@@ -1405,6 +1405,17 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 		\end{itemize}
 	
 
+
+	\item Version 3.1.0
+		\begin{itemize}
+		
+		  \item
+		  When splitting MuTect2 files into SNV and INDEL, make sure either the ref base or the alt base (but not both) consists of a single base, i.e., discarding stuff like GCAA>GCT.
+		  
+		\end{itemize}
+
+
+
 \end{enumerate}
 
 
