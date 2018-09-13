@@ -503,7 +503,7 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                     
                     if platypus:
                         platypus_classification = annotate_caller.countPASS(variant_id, platypus_variants)
-                        num_caller += platypus_classification
+                        num_callers += platypus_classification
                     else:
                         platypus_classification = nan
 

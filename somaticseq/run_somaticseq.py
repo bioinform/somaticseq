@@ -55,7 +55,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     if platypus:               indelCallers.append('Platypus')
 
     # Function to combine individual VCFs into a simple VCF list of variants:
-    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combinePaired(outdir=outdir, ref=ref, tbam=tbam, nbam=nbam, inclusion=inclusion, exclusion=exclusion, mutect=mutect, indelocator=indelocator, mutect2=mutect2, varscan_snv=varscan_snv, varscan_indel=varscan_indel, jsm=jsm, sniper=sniper, vardict=vardict, muse=muse, lofreq_snv=lofreq_snv, lofreq_indel=lofreq_indel, scalpel=scalpel, strelka_snv=strelka_snv, strelka_indel=strelka_indel, tnscope=tnscope, keep_intermediates=True)
+    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combinePaired(outdir=outdir, ref=ref, tbam=tbam, nbam=nbam, inclusion=inclusion, exclusion=exclusion, mutect=mutect, indelocator=indelocator, mutect2=mutect2, varscan_snv=varscan_snv, varscan_indel=varscan_indel, jsm=jsm, sniper=sniper, vardict=vardict, muse=muse, lofreq_snv=lofreq_snv, lofreq_indel=lofreq_indel, scalpel=scalpel, strelka_snv=strelka_snv, strelka_indel=strelka_indel, tnscope=tnscope, platypus=platypus, keep_intermediates=True)
 
     files_to_delete.add(outSnv)
     files_to_delete.add(outIndel)
@@ -284,7 +284,6 @@ def run():
     parser_paired.add_argument('-tnscope',       '--tnscope-vcf',       type=str,   help='TNscope VCF',       )
     parser_paired.add_argument('-platypus',      '--platypus-vcf',      type=str,   help='Platypus VCF',      )
 
-
     parser_paired.set_defaults(which='paired')
 
 
@@ -299,6 +298,7 @@ def run():
     parser_single.add_argument('-lofreq',  '--lofreq-vcf',  type=str, help='LoFreq VCF',   )
     parser_single.add_argument('-scalpel', '--scalpel-vcf', type=str, help='Scalpel VCF',  )
     parser_single.add_argument('-strelka', '--strelka-vcf', type=str, help='Strelka VCF',  )
+
     parser_single.set_defaults(which='single')
 
     args = parser.parse_args()
