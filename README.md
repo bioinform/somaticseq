@@ -10,7 +10,7 @@
 * R, plus [ada](https://cran.r-project.org/package=ada) library: required in training or prediction mode
 * [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing in invoked, and/or when any bed files are used as input files
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
-* At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, and/or TNscope.
+* At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus.
 
 ## Example commands
 * At minimum, given the results of the individual mutation caller(s), SomaticSeq will extract sequencing features for the combined call set. Required inputs are `--output-directory`, `--genome-reference`, `paired|single`, `--tumor-bam-file`, and `--normal-bam-file`. Everything else is optional.
