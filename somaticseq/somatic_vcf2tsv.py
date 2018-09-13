@@ -576,7 +576,7 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                         if_Scalpel              = scalpel_classification,                                              \
                         if_Strelka              = strelka_classification,                                              \
                         if_TNscope              = tnscope_classification,                                              \
-                        if_Platypus             = Platypus_classification,                                             \
+                        if_Platypus             = platypus_classification,                                             \
                         Strelka_Score           = somatic_evs,                                                         \
                         Strelka_QSS             = qss,                                                                 \
                         Strelka_TQSS            = tqss,                                                                \
