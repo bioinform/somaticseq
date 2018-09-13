@@ -34,18 +34,9 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
     if mutect:
         
         import vcfModifier.modify_MuTect as mod_mutect
-            
-        if exclusion:
-            mutect_ex = bed_exclude(mutect, exclusion, os.sep.join(( outdir, 'snv.mutect1.ex.vcf' )) )
-            intermediate_files.add(mutect_ex)
-        else:
-            mutect_ex = mutect
         
-        if inclusion:
-            mutect_in = bed_include(mutect_ex, inclusion, os.sep.join(( outdir, 'snv.mutect1.in.vcf')) )
-            intermediate_files.add(mutect_in)
-        else:
-            mutect_in = mutect_ex
+        mutect_in = bed_intersector(mutect, os.sep.join(( outdir, 'mutect.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(mutect_in)
         
         snv_mutect_out = os.sep.join(( outdir, 'snv.mutect1.vcf' ))
         mod_mutect.convert(mutect_in, snv_mutect_out, bam)
@@ -55,18 +46,9 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
 
     if mutect2:
         import vcfModifier.modify_ssMuTect2 as mod_mutect2
-        
-        if exclusion:
-            mutect2_ex = bed_exclude(mutect2, exclusion, os.sep.join(( outdir, 'mutect.ex.vcf')) )
-            intermediate_files.add(mutect2_ex)
-        else:
-            mutect2_ex = mutect2
-        
-        if inclusion:
-            mutect2_in = bed_include(mutect2_ex, inclusion, os.sep.join(( outdir, 'mutect.in.vcf')) )
-            intermediate_files.add(mutect2_in)
-        else:
-            mutect2_in = mutect2_ex
+                
+        mutect2_in = bed_intersector(mutect2, os.sep.join(( outdir, 'mutect2.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(mutect2_in)
         
         snv_mutect_out   = os.sep.join(( outdir, 'snv.mutect.vcf' ))
         indel_mutect_out = os.sep.join(( outdir, 'indel.mutect.vcf' ))
@@ -83,17 +65,8 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
     if varscan:
         import vcfModifier.modify_VarScan2 as mod_varscan2
 
-        if exclusion:
-            varscan_ex = bed_exclude(varscan, exclusion, os.sep.join(( outdir, 'varscan.ex.vcf')) )
-            intermediate_files.add(varscan_ex)
-        else:
-            varscan_ex = varscan
-        
-        if inclusion:
-            varscan_in = bed_include(varscan_ex, inclusion, os.sep.join(( outdir, 'varscan.in.vcf')) )
-            intermediate_files.add(varscan_in)
-        else:
-            varscan_in = varscan_ex
+        varscan_in = bed_intersector(varscan, os.sep.join(( outdir, 'varscan.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(varscan_in)
 
         snv_temp          = os.sep.join(( outdir, 'snv.varscan.temp.vcf' ))
         indel_temp        = os.sep.join(( outdir, 'indel.varscan.temp.vcf' ))
@@ -115,17 +88,8 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
     if vardict:
         import vcfModifier.modify_VarDict as mod_vardict
         
-        if exclusion:
-            vardict_ex = bed_exclude(vardict, exclusion, os.sep.join(( outdir, 'vardict.ex.vcf')) )
-            intermediate_files.add(vardict_ex)
-        else:
-            vardict_ex = vardict
-        
-        if inclusion:
-            vardict_in = bed_include(vardict_ex, inclusion, os.sep.join(( outdir, 'vardict.in.vcf')) )
-            intermediate_files.add(vardict_in)
-        else:
-            vardict_in = vardict_ex
+        vardict_in = bed_intersector(vardict, os.sep.join(( outdir, 'vardict.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(vardict_in)
 
         snv_vardict_out   = os.sep.join(( outdir, 'snv.vardict.vcf' ))
         indel_vardict_out = os.sep.join(( outdir, 'indel.vardict.vcf'))
@@ -147,17 +111,8 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
 
     if lofreq:
         
-        if exclusion:
-            lofreq_ex = bed_exclude(lofreq, exclusion, os.sep.join(( outdir, 'lofreq.ex.vcf')) )
-            intermediate_files.add(lofreq_ex)
-        else:
-            lofreq_ex = lofreq
-        
-        if inclusion:
-            lofreq_in = bed_include(lofreq_ex, inclusion, os.sep.join(( outdir, 'lofreq.in.vcf')) )
-            intermediate_files.add(lofreq_in)
-        else:
-            lofreq_in = lofreq_ex
+        lofreq_in = bed_intersector(lofreq, os.sep.join(( outdir, 'lofreq.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(lofreq_in)
         
         snv_lofreq_out   = os.sep.join(( outdir, 'snv.lofreq.vcf' ))
         indel_lofreq_out = os.sep.join(( outdir, 'indel.lofreq.vcf' ))
@@ -174,17 +129,8 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
 
     if scalpel:
         
-        if exclusion:
-            scalpel_ex = bed_exclude(scalpel, exclusion, os.sep.join(( outdir, 'scalpel.ex.vcf')) )
-            intermediate_files.add(scalpel_ex)
-        else:
-            scalpel_ex = scalpel
-        
-        if inclusion:
-            scalpel_in = bed_include(scalpel_ex, inclusion, os.sep.join(( outdir, 'scalpel.in.vcf')) )
-            intermediate_files.add(scalpel_in)
-        else:
-            scalpel_in = scalpel_ex
+        scalpel_in = bed_intersector(scalpel, os.sep.join(( outdir, 'scalpel.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(scalpel_in)
 
         scalpel_out = os.sep.join(( outdir, 'indel.scalpel.vcf' ))
         copy_TextFile.copy(scalpel_in, scalpel_out)
@@ -194,17 +140,8 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
     if strelka:
         import vcfModifier.modify_ssStrelka as mod_strelka
         
-        if exclusion:
-            strelka_ex = bed_exclude(strelka, exclusion, os.sep.join(( outdir, 'strelka.ex.vcf')) )
-            intermediate_files.add(strelka_ex)
-        else:
-            strelka_ex = strelka
-        
-        if inclusion:
-            strelka_in = bed_include(strelka_ex, inclusion, os.sep.join(( outdir, 'strelka.in.vcf')) )
-            intermediate_files.add(strelka_in)
-        else:
-            strelka_in = strelka_ex
+        strelka_in = bed_intersector(strelka, os.sep.join(( outdir, 'strelka.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(strelka_in)
 
         snv_strelka_out   = os.sep.join(( outdir, 'snv.strelka.vcf' ))
         indel_strelka_out = os.sep.join(( outdir, 'indel.strelka.vcf' ))
@@ -267,17 +204,8 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
 
         if mutect:
             
-            if exclusion:
-                mutect_ex = bed_exclude(mutect, exclusion, os.sep.join(( outdir, 'snv.mutect1.ex.vcf')) )
-                intermediate_files.add(mutect_ex)
-            else:
-                mutect_ex = mutect
-            
-            if inclusion:
-                mutect_in = bed_include(mutect_ex, inclusion, os.sep.join(( outdir, 'snv.mutect1.in.vcf')) )
-                intermediate_files.add(mutect_in)
-            else:
-                mutect_in = mutect_ex
+            mutect_in = bed_intersector(mutect, os.sep.join(( outdir, 'mutect.intersected.vcf')), inclusion, exclusion)
+            intermediate_files.add(mutect_in)
             
             snv_mutect_out = os.sep.join(( outdir, 'snv.mutect1.vcf' ))
             mod_mutect.convert(mutect_in, snv_mutect_out, tbam, nbam)
@@ -286,18 +214,9 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
             snv_intermediates.append(snv_mutect_out)
         
         if indelocator:
-
-            if exclusion:
-                indelocator_ex = bed_exclude(indelocator, exclusion, os.sep.join(( outdir, 'indel.indelocator.ex.vcf')) )
-                intermediate_files.add(indelocator_ex)
-            else:
-                indelocator_ex = indelocator
             
-            if inclusion:
-                indelocator_in = bed_include(indelocator_ex, inclusion, os.sep.join(( outdir, 'indel.indelocator.in.vcf')) )
-                intermediate_files.add(indelocator_in)
-            else:
-                indelocator_in = indelocator_ex
+            indelocator_in = bed_intersector(indelocator, os.sep.join(( outdir, 'indelocator.intersected.vcf')), inclusion, exclusion)
+            intermediate_files.add(indelocator_in)
             
             indel_indelocator_out = os.sep.join(( outdir, 'indel.indelocator.vcf'))
             mod_mutect.convert(indelocator_in, indel_indelocator_out, tbam, nbam)
@@ -309,19 +228,10 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
     if mutect2:
         
         import vcfModifier.modify_MuTect2 as mod_mutect2
-        
-        if exclusion:
-            mutect2_ex = bed_exclude(mutect2, exclusion, os.sep.join(( outdir, 'mutect.ex.vcf')) )
-            intermediate_files.add(mutect2_ex)
-        else:
-            mutect2_ex = mutect2
-        
-        if inclusion:
-            mutect2_in = bed_include(mutect2_ex, inclusion, os.sep.join(( outdir, 'mutect.in.vcf')) )
-            intermediate_files.add(mutect2_in)
-        else:
-            mutect2_in = mutect2_ex
-        
+                
+        mutect2_in = bed_intersector(mutect2, os.sep.join(( outdir, 'mutect2.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(mutect2_in)
+
         snv_mutect_out   = os.sep.join(( outdir, 'snv.mutect.vcf'))
         indel_mutect_out = os.sep.join(( outdir, 'indel.mutect.vcf'))
         mod_mutect2.convert(mutect2_in, snv_mutect_out, indel_mutect_out, False)
@@ -341,17 +251,8 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
         
         if varscan_snv:
             
-            if exclusion:
-                varscan_ex = bed_exclude(varscan_snv, exclusion, os.sep.join(( outdir, 'snv.varscan.ex.vcf')) )
-                intermediate_files.add(varscan_ex)
-            else:
-                varscan_ex = varscan_snv
-            
-            if inclusion:
-                varscan_in = bed_include(varscan_ex, inclusion, os.sep.join(( outdir, 'snv.varscan.in.vcf')) )
-                intermediate_files.add(varscan_in)
-            else:
-                varscan_in = varscan_ex
+            varscan_in = bed_intersector(varscan_snv, os.sep.join(( outdir, 'snv.varscan.intersected.vcf')), inclusion, exclusion)
+            intermediate_files.add(varscan_in)
             
             snv_varscan_out = os.sep.join(( outdir, 'snv.varscan.vcf'))
             mod_varscan2.convert(varscan_in, snv_varscan_out)
@@ -361,17 +262,8 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
             
         if varscan_indel:
 
-            if exclusion:
-                varscan_ex = bed_exclude(varscan_indel, exclusion, os.sep.join(( outdir, 'indel.varscan.ex.vcf')) )
-                intermediate_files.add(varscan_ex)
-            else:
-                varscan_ex = varscan_indel
-            
-            if inclusion:
-                varscan_in = bed_include(varscan_ex, inclusion, os.sep.join(( outdir, 'indel.varscan.in.vcf')) )
-                intermediate_files.add(varscan_in)
-            else:
-                varscan_in = varscan_ex
+            varscan_in = bed_intersector(varscan_indel, os.sep.join(( outdir, 'indel.varscan.intersected.vcf')), inclusion, exclusion)
+            intermediate_files.add(varscan_in)
             
             indel_varscan_out = os.sep.join(( outdir, 'indel.varscan.vcf' ))
             mod_varscan2.convert(varscan_in, indel_varscan_out)
@@ -382,17 +274,8 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
     if jsm:
         import vcfModifier.modify_JointSNVMix2 as mod_jsm
 
-        if exclusion:
-            jsm_ex = bed_exclude(jsm, exclusion, os.sep.join(( outdir, 'snv.jsm.ex.vcf')) )
-            intermediate_files.add(jsm_ex)
-        else:
-            jsm_ex = jsm
-        
-        if inclusion:
-            jsm_in = bed_include(jsm_ex, inclusion, os.sep.join(( outdir, 'snv.jsm.in.vcf')) )
-            intermediate_files.add(jsm_in)
-        else:
-            jsm_in = jsm_ex
+        jsm_in = bed_intersector(jsm, os.sep.join(( outdir, 'jsm.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(jsm_in)
         
         jsm_out = os.sep.join(( outdir, 'snv.jsm.vcf' ))
         mod_jsm.convert(jsm_in, jsm_out)
@@ -403,17 +286,8 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
     if sniper:
         import vcfModifier.modify_SomaticSniper as mod_sniper
         
-        if exclusion:
-            sniper_ex = bed_exclude(sniper, exclusion, os.sep.join(( outdir, 'snv.somaticsniper.ex.vcf')) )
-            intermediate_files.add(sniper_ex)
-        else:
-            sniper_ex = sniper
-        
-        if inclusion:
-            sniper_in = bed_include(sniper_ex, inclusion, os.sep.join(( outdir, 'snv.somaticsniper.in.vcf')) )
-            intermediate_files.add(sniper_in)
-        else:
-            sniper_in = sniper_ex
+        sniper_in = bed_intersector(sniper, os.sep.join(( outdir, 'sniper.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(sniper_in)
         
         sniper_out = os.sep.join(( outdir, 'snv.somaticsniper.vcf' ))
         mod_sniper.convert(sniper_in, sniper_out)
@@ -424,17 +298,8 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
     if vardict:
         import vcfModifier.modify_VarDict as mod_vardict
 
-        if exclusion:
-            vardict_ex = bed_exclude(vardict, exclusion, os.sep.join(( outdir, 'vardict.ex.vcf')) )
-            intermediate_files.add(vardict_ex)
-        else:
-            vardict_ex = vardict
-        
-        if inclusion:
-            vardict_in = bed_include(vardict_ex, inclusion, os.sep.join(( outdir, 'vardict.in.vcf')) )
-            intermediate_files.add(vardict_in)
-        else:
-            vardict_in = vardict_ex
+        vardict_in = bed_intersector(vardict, os.sep.join(( outdir, 'vardict.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(vardict_in)
         
         snv_vardict_out   = os.sep.join(( outdir, 'snv.vardict.vcf' ))
         indel_vardict_out = os.sep.join(( outdir, 'indel.vardict.vcf' ))
@@ -456,17 +321,8 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
         
     if muse:
 
-        if exclusion:
-            muse_ex = bed_exclude(muse, exclusion, os.sep.join(( outdir, 'snv.muse.ex.vcf')) )
-            intermediate_files.add(muse_ex)
-        else:
-            muse_ex = muse
-        
-        if inclusion:
-            muse_in = bed_include(muse_ex, inclusion, os.sep.join(( outdir, 'snv.muse.in.vcf')) )
-            intermediate_files.add(muse_in)
-        else:
-            muse_in = muse_ex
+        muse_in = bed_intersector(muse, os.sep.join(( outdir, 'muse.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(muse_in)
         
         muse_out = os.sep.join(( outdir, 'snv.muse.vcf' ))
         copy_TextFile.copy(muse_in, muse_out)
@@ -476,17 +332,9 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
         
     if lofreq_snv:
         
-        if exclusion:
-            lofreq_ex = bed_exclude(lofreq_snv, exclusion, os.sep.join(( outdir, 'snv.lofreq.ex.vcf')) )
-            intermediate_files.add(lofreq_ex)
-        else:
-            lofreq_ex = lofreq_snv
-        
-        if inclusion:
-            lofreq_in = bed_include(lofreq_ex, inclusion, os.sep.join(( outdir, 'snv.lofreq.in.vcf')) )
-            intermediate_files.add(lofreq_in)
-        else:
-            lofreq_in = lofreq_ex
+        lofreq_in = bed_intersector(lofreq_snv, os.sep.join(( outdir, 'snv.lofreq.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(lofreq_in)
+
 
         snv_lofreq_out = os.sep.join(( outdir, 'snv.lofreq.vcf' ))
         copy_TextFile.copy(lofreq_in, snv_lofreq_out)
@@ -496,18 +344,9 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
 
     if lofreq_indel:
         
-        if exclusion:
-            lofreq_ex = bed_exclude(lofreq_indel, exclusion, os.sep.join(( outdir, 'indel.lofreq.ex.vcf')) )
-            intermediate_files.add(lofreq_ex)
-        else:
-            lofreq_ex = lofreq_snv
-        
-        if inclusion:
-            lofreq_in = bed_include(lofreq_ex, inclusion, os.sep.join(( outdir, 'indel.lofreq.in.vcf')) )
-            intermediate_files.add(lofreq_in)
-        else:
-            lofreq_in = lofreq_ex
-        
+        lofreq_in = bed_intersector(lofreq_indel, os.sep.join(( outdir, 'indel.lofreq.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(lofreq_in)
+
         indel_lofreq_out = os.sep.join(( outdir, 'indel.lofreq.vcf' ))
         copy_TextFile.copy(lofreq_in, indel_lofreq_out)
         
@@ -516,17 +355,8 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
         
     if scalpel:
         
-        if exclusion:
-            scalpel_ex = bed_exclude(scalpel, exclusion, os.sep.join(( outdir, 'indel.scalpel.ex.vcf')) )
-            intermediate_files.add(scalpel_ex)
-        else:
-            scalpel_ex = scalpel
-        
-        if inclusion:
-            scalpel_in = bed_include(scalpel_ex, inclusion, os.sep.join(( outdir, 'indel.scalpel.in.vcf')) )
-            intermediate_files.add(scalpel_in)
-        else:
-            scalpel_in = scalpel_ex
+        scalpel_in = bed_intersector(scalpel, os.sep.join(( outdir, 'scalpel.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(scalpel_in)
         
         scalpel_out = os.sep.join(( outdir, 'indel.scalpel.vcf' ))
         copy_TextFile.copy(scalpel_in, scalpel_out)
@@ -540,17 +370,8 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
 
         if strelka_snv:
             
-            if exclusion:
-                strelka_ex = bed_exclude(strelka_snv, exclusion, os.sep.join(( outdir, 'snv.strelka.ex.vcf')) )
-                intermediate_files.add(strelka_ex)
-            else:
-                strelka_ex = strelka_snv
-            
-            if inclusion:
-                strelka_in = bed_include(strelka_ex, inclusion, os.sep.join(( outdir, 'snv.strelka.in.vcf')) )
-                intermediate_files.add(strelka_in)
-            else:
-                strelka_in = strelka_ex
+            strelka_in = bed_intersector(strelka_snv, os.sep.join(( outdir, 'snv.strelka.intersected.vcf')), inclusion, exclusion)
+            intermediate_files.add(strelka_in)
             
             snv_strelka_out = os.sep.join(( outdir, 'snv.strelka.vcf' ))
             mod_strelka.convert(strelka_in, snv_strelka_out)
@@ -560,17 +381,8 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
 
         if strelka_indel:
             
-            if exclusion:
-                strelka_ex = bed_exclude(strelka_indel, exclusion, os.sep.join(( outdir, 'indel.strelka.ex.vcf')) )
-                intermediate_files.add(strelka_ex)
-            else:
-                strelka_ex = strelka_snv
-            
-            if inclusion:
-                strelka_in = bed_include(strelka_ex, inclusion, os.sep.join(( outdir, 'indel.strelka.in.vcf')) )
-                intermediate_files.add(strelka_in)
-            else:
-                strelka_in = strelka_ex
+            strelka_in = bed_intersector(strelka_indel, os.sep.join(( outdir, 'indel.strelka.intersected.vcf')), inclusion, exclusion)
+            intermediate_files.add(strelka_in)
                         
             indel_strelka_out = os.sep.join(( outdir, 'indel.strelka.vcf' ))
             mod_strelka.convert(strelka_in, indel_strelka_out)
@@ -582,17 +394,8 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
 
         import vcfModifier.modify_MuTect2 as mod_mutect2
         
-        if exclusion:
-            tnscope_ex = bed_exclude(tnscope, exclusion, os.sep.join(( outdir, 'tnscope.ex.vcf')) )
-            intermediate_files.add(tnscope_ex)
-        else:
-            tnscope_ex = tnscope
-        
-        if inclusion:
-            tnscope_in = bed_include(tnscope_ex, inclusion, os.sep.join(( outdir, 'tnscope.in.vcf')) )
-            intermediate_files.add(tnscope_in)
-        else:
-            tnscope_in = tnscope_ex
+        tnscope_in = bed_intersector(tnscope, os.sep.join(( outdir, 'tnscope.intersected.vcf')), inclusion, exclusion)
+        intermediate_files.add(tnscope_in)
         
         snv_tnscope_out   = os.sep.join(( outdir, 'snv.tnscope.vcf' ))
         indel_tnscope_out = os.sep.join(( outdir, 'indel.tnscope.vcf' ))
