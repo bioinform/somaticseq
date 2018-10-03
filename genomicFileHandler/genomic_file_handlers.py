@@ -51,7 +51,7 @@ class Vcf_line:
 
     def get_info_value(self, variable):
 
-        key_item = re.search(r'\b{}=([^;\s]+)[;\W]'.format(variable), self.vcf_line)
+        key_item = re.search(r'\b{}=([^;\s]+)([;\W]|$)'.format(variable), self.vcf_line)
 
         # The key has a value attached to it, e.g., VAR=1,2,3
         if key_item:
