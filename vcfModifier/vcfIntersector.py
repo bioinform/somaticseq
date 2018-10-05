@@ -73,7 +73,11 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
         copyfile(included_temp_file, outfile)
     
     elif not (inclusion_region or exclusion_region):
-        copyfile(infile, outfile)
+        if infile.endswith('.gz'):
+            exit_code = os.system( 'gunzip -c {} > {}'.format(infile, outfile) )
+            assert exit_code == 0
+        else:
+            copyfile(infile, outfile)
     
     
     for file_i in temp_files:
