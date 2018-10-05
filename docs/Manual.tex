@@ -1412,8 +1412,11 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 		  \item
 		  When splitting MuTect2 files into SNV and INDEL, make sure either the ref base or the alt base (but not both) consists of a single base, i.e., discarding stuff like GCAA>GCT.
 		  
+		  \item
+		  Fixed a bug introduced in v3.0.1 that caused the program to handle .vcf.gz files incorrectly.
+		  
           \item
-          Incorporated Platypus into paired mode. 
+          Incorporated Platypus into paired mode.
 		  
 		\end{itemize}
 
