@@ -229,7 +229,7 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
         
         import vcfModifier.modify_MuTect2 as mod_mutect2
                 
-        mutect2_in = bed_intersector(mutect2, os.sep.join(( outdir, 'intersect.mutect2.vcf'+ )), inclusion, exclusion)
+        mutect2_in = bed_intersector(mutect2, os.sep.join(( outdir, 'intersect.mutect2.vcf' )), inclusion, exclusion)
         intermediate_files.add(mutect2_in)
 
         snv_mutect_out   = os.sep.join(( outdir, 'snv.mutect2.vcf'))
