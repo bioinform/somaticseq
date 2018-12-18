@@ -219,7 +219,7 @@ do
         --VAF ${min_vaf} \
         --action $action
 
-        varscan_input="--varscan ${outdir}/VarScan2.vcf"
+        varscan_input="--varscan ${outdir}/${ith_thread}/VarScan2.vcf"
     fi
 
 
@@ -234,7 +234,7 @@ do
         --VAF ${min_vaf} \
         --action $action
 
-        vardict_input="--vardict ${outdir}/VarDict.vcf"
+        vardict_input="--vardict ${outdir}/${ith_thread}/VarDict.vcf"
     fi
 
 
@@ -249,7 +249,7 @@ do
         --dbsnp ${dbsnp} \
         --action $action
 
-        lofreq_input="--lofreq ${outdir}/LoFreq.vcf"
+        lofreq_input="--lofreq ${outdir}/${ith_thread}/LoFreq.vcf"
     fi
 
 
@@ -263,7 +263,7 @@ do
         --human-reference ${HUMAN_REFERENCE} \
         --action $action
 
-        scalpel_input="--scalpel ${outdir}/Scalpel.vcf"
+        scalpel_input="--scalpel ${outdir}/${ith_thread}/Scalpel.vcf"
     fi
 
 
@@ -278,7 +278,7 @@ do
         --exome \
         --action $action
 
-        strelka_input="--strelka ${outdir}/Strelka/results/variants/variants.vcf.gz"
+        strelka_input="--strelka ${outdir}/${ith_thread}/Strelka/results/variants/variants.vcf.gz"
     fi
 
 
