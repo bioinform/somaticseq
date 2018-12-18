@@ -212,7 +212,7 @@ do
     then
         $MYDIR/mutation_callers/single_VarScan2.sh \
         --in-bam ${tumor_bam} \
-        --out-dir ${outdir} \
+        --out-dir ${outdir}/${ith_thread} \
         --out-vcf VarScan2.vcf \
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --human-reference ${HUMAN_REFERENCE} \
@@ -227,7 +227,7 @@ do
     then
         $MYDIR/mutation_callers/single_VarDictJava.sh \
         --in-bam ${tumor_bam} \
-        --out-dir ${outdir} \
+        --out-dir ${outdir}/${ith_thread} \
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --out-vcf VarDict.vcf \
         --human-reference ${HUMAN_REFERENCE} \
@@ -242,7 +242,7 @@ do
     then
         $MYDIR/mutation_callers/single_LoFreq.sh \
         --in-bam ${tumor_bam} \
-        --out-dir ${outdir} \
+        --out-dir ${outdir}/${ith_thread} \
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --out-vcf LoFreq.vcf \
         --human-reference ${HUMAN_REFERENCE} \
@@ -257,7 +257,7 @@ do
     then
         $MYDIR/mutation_callers/single_Scalpel.sh \
         --in-bam ${tumor_bam} \
-        --out-dir ${outdir} \
+        --out-dir ${outdir}/${ith_thread} \
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --out-vcf Scalpel.vcf \
         --human-reference ${HUMAN_REFERENCE} \
@@ -271,7 +271,7 @@ do
     then
         $MYDIR/mutation_callers/single_Strelka.sh \
         --in-bam ${tumor_bam} \
-        --out-dir ${outdir} \
+        --out-dir ${outdir}/${ith_thread} \
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         --out-vcf Strelka.vcf \
         --human-reference ${HUMAN_REFERENCE} \
@@ -298,7 +298,7 @@ do
 
         $MYDIR/mutation_callers/single_SomaticSeq.sh \
         --in-bam ${tumor_bam} \
-        --out-dir ${outdir}/${somaticseq_dir} \
+        --out-dir ${outdir}/${ith_thread}/${somaticseq_dir} \
         --human-reference ${HUMAN_REFERENCE} \
         --selector ${outdir}/${ith_thread}/${ith_thread}.bed \
         $train \
