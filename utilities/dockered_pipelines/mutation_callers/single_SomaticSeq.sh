@@ -218,7 +218,6 @@ echo "/opt/somaticseq/somaticseq/run_somaticseq.py \\" >> $out_script
 echo "${train} \\" >> $out_script
 echo "--genome-reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "--output-directory /mnt/${outdir} \\" >> $out_script
-echo "--genome-reference /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "$selector_text \\" >> $out_script
 echo "$exclusion_text \\" >> $out_script
 echo "$cosmic_text \\" >> $out_script
