@@ -27,10 +27,12 @@ vcf_header_file = MY_DIR + os.sep + 'header.vcf'
 with open(vcf_header_file) as header, open(vcf_out_fn, 'w') as vcfout:
     line_i = header.readline()
     
-    if line_i.startswith('#CHROM'):
-        line_i = re.sub(r'SAMPLE', tumor, line_i)
+    while line_i:
+        if line_i.startswith('#CHROM'):
+            line_i = re.sub(r'SAMPLE', tumor, line_i)
     
-    vcfout.write( line_i )
+        vcfout.write( line_i )
+        line_i = header.readline()
 
 
 
