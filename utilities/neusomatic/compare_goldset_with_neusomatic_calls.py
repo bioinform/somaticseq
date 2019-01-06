@@ -134,7 +134,10 @@ with genome.open_textfile(goldVcfFile) as goldVcf, open(outfile, 'w') as out:
 
 # Now print out the "positives" calls by neuSomatic that wasn't in the SuperSet:
 print('##fileformat=VCFv4.1')
-print('##FILTER=<ID=REJECT,Description="Rejected as a confident somatic mutation with probability score value below 0.4">')
+print('##FILTER=<ID=HighConf,Description="highly confident that it is a real somatic mutation">')
+print('##FILTER=<ID=MedConf,Description="confident that it is a real somatic mutation">')
+print('##FILTER=<ID=LowConf,Description="not very confident that it is a real somatic mutation">')
+print('##FILTER=<ID=Unclassified,Description="likely not a real somatic mutation">')
 print('##INFO=<ID=NeuBWA,Number=1,Type=Integer,Description="Number of times out of 21 pairs of BWA BAMs where NeuSomatic called it PASS">')
 print('##INFO=<ID=NeuNovoAlign,Number=1,Type=Integer,Description="Number of times out of 21 pairs of NovoAlign BAMs where NeuSomatic called it PASS">')
 print('##INFO=<ID=NeuBowtie,Number=1,Type=Integer,Description="Number of times out of 21 pairs of Bowtie BAMs where NeuSomatic called it PASS">')
@@ -169,5 +172,5 @@ for variant_i in neuVariantScores:
             elif 'bowtie' in sample_i:
                 neu_bowtie += 1
     
-    info_string = 'NeuDiscovered;NeuBWA={};NeuNovoAlign={};NeuBowtie={};TotalNeuCalls={}'.format(neu_bwa, neu_novo, neu_bowtie, num_neuSomaticCalls)
+    info_string = 'NeuDiscovered;NeuBWA={};NeuNovoAlign={};NeuBowtie={};NeuSomaticCalls={}'.format(neu_bwa, neu_novo, neu_bowtie, num_neuSomaticCalls)
     print(variant_identifier, '.\tLowConf', info_string, 'GT:NeuSCORE', '\t'.join( ['0/1:%s' %i if i>=0 else '.' for i in neuVariantScores[variant_i]] ), sep='\t')
