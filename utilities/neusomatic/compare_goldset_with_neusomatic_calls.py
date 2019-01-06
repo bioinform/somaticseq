@@ -115,8 +115,18 @@ with genome.open_textfile(goldVcfFile) as goldVcf, open(outfile, 'w') as out:
     while gold_i:
         
         gold_vcf = genome.Vcf_line( gold_i )
+        gold_item = gold_i.split('\t')
+        
         variant_i = gold_vcf.chromosome, gold_vcf.position, gold_vcf.refbase, gold_vcf.altbase
         
         neuCalls = num_neuCalls(variant_i, neuVariantScores)
         
+        gold_item[7] = gold_vcf.info + ';NeuSomaticCalls={}'.format( neuCalls )
+        
+        line_out = '\t'.join(gold_item)
+        
+        if variant_i in neuVariantScores:
+            del neuVariantScores[variant_i]
+        
+        out.write( line_out + '\n' )
         gold_i = goldVcf.readline().rstrip()
