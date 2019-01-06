@@ -134,4 +134,4 @@ with genome.open_textfile(goldVcfFile) as goldVcf, open(outfile, 'w') as out:
 
 # Now print out the "positives" calls by neuSomatic that wasn't in the SuperSet:
 for variant_i in neuVariantScores:
-    print(variant_i, num_neuCalls(variant_i, neuVariantScores), ','.join(neuVariantScores[variant_i]), sep='\t')
+    print(variant_i, num_neuCalls(variant_i, neuVariantScores), ','.join( ['%s' %i for i in neuVariantScores[variant_i]] ), sep='\t')
