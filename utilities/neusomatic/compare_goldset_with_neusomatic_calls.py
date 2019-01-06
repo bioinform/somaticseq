@@ -142,7 +142,7 @@ print('##INFO=<ID=NeuBWA,Number=1,Type=Integer,Description="Number of times out 
 print('##INFO=<ID=NeuNovoAlign,Number=1,Type=Integer,Description="Number of times out of 21 pairs of NovoAlign BAMs where NeuSomatic called it PASS">')
 print('##INFO=<ID=NeuBowtie,Number=1,Type=Integer,Description="Number of times out of 21 pairs of Bowtie BAMs where NeuSomatic called it PASS">')
 print('##INFO=<ID=NeuSomaticCalls,Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">' )
-print('##INFO=<ID=NeuDiscovered,Number=0,Type=Flag,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">' )
+print('##INFO=<ID=NeuDiscovered,Number=0,Type=Flag,Description="Variant calls discovered by NeuSomatic">' )
 print('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">')
 print('##FORMAT=<ID=NeuSCORE,Number=1,Type=Float,Description="Discovered only by NeuSomatic">' )
 
