@@ -139,13 +139,14 @@ print('##INFO=<ID=NeuBWA,Number=1,Type=Integer,Description="Number of times out 
 print('##INFO=<ID=NeuNovoAlign,Number=1,Type=Integer,Description="Number of times out of 21 pairs of NovoAlign BAMs where NeuSomatic called it PASS">')
 print('##INFO=<ID=NeuBowtie,Number=1,Type=Integer,Description="Number of times out of 21 pairs of Bowtie BAMs where NeuSomatic called it PASS">')
 print('##INFO=<ID=NeuSomaticCalls,Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">' )
+print('##FORMAT=<ID=NeuSCORE,Number=1,Type=Float,Description="SCORE by NeuSomatic">' )
 
-for sample_i in neu_samples:
-    print('##FORMAT=<ID={},Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">'.format(sample_i) )
+#for sample_i in neu_samples:
+#    print('##FORMAT=<ID={},Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">'.format(sample_i) )
 
 print('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLE')
 
-vcf_format_string = ':'.join(neu_samples)
+format_string = ':'.join(neu_samples)
 for variant_i in neuVariantScores:
     
     variant_j          = [ variant_i[0], variant_i[1], '.', variant_i[2], variant_i[3] ]
@@ -166,4 +167,4 @@ for variant_i in neuVariantScores:
                 neu_bowtie += 1
     
     info_string = 'NeuBWA={};NeuNovoAlign={};NeuBowtie={};TotalNeuCalls={}'.format(neu_bwa, neu_novo, neu_bowtie, num_neuSomaticCalls)
-    print(variant_identifier, info_string, '.\tREJECT', info_string, vcf_format_string, ':'.join( ['%s' %i for i in neuVariantScores[variant_i]] ), sep='\t')
+    print(variant_identifier, info_string, '.\tREJECT', info_string, 'NeuSCORE', '\t'.join( ['%s' %i if i>=0 else '.' for i in neuVariantScores[variant_i]] ), sep='\t')
