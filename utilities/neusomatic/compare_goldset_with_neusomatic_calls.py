@@ -84,7 +84,7 @@ with genome.open_textfile(neuVcfFile) as neuVcf:
         variant_i = neu_vcf.chromosome, neu_vcf.position, neu_vcf.refbase, neu_vcf.altbase
         
         scores = []
-        for i in n_samples:
+        for i in range( n_samples+1 ):
             if neu_vcf.get_sample_value('SCORE', i):
                 scores.append( float(neu_vcf.get_sample_value('SCORE', i)) )
             else:
