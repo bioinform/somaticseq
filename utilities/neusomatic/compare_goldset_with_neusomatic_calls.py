@@ -133,10 +133,24 @@ with genome.open_textfile(goldVcfFile) as goldVcf, open(outfile, 'w') as out:
 
 
 # Now print out the "positives" calls by neuSomatic that wasn't in the SuperSet:
-print('#CHROM\tPOS\tREF\tALT\tN_BWA_PASSES\tN_NovoAlign_PASSES\tN_Bowtie2_PASSES\tN_PASSES', ','.join(neu_samples), sep='\t')
+print('##fileformat=VCFv4.1')
+print('##FILTER=<ID=REJECT,Description="Rejected as a confident somatic mutation with probability score value below 0.4">')
+print('##INFO=<ID=NeuBWA,Number=1,Type=Integer,Description="Number of times out of 21 pairs of BWA BAMs where NeuSomatic called it PASS">')
+print('##INFO=<ID=NeuNovoAlign,Number=1,Type=Integer,Description="Number of times out of 21 pairs of NovoAlign BAMs where NeuSomatic called it PASS">')
+print('##INFO=<ID=NeuBowtie,Number=1,Type=Integer,Description="Number of times out of 21 pairs of Bowtie BAMs where NeuSomatic called it PASS">')
+print('##INFO=<ID=NeuSomaticCalls,Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">' )
+
+for sample_i in neu_samples:
+    print('##FORMAT=<ID={},Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">'.format(sample_i) )
+
+print('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLE')
+
+vcf_format_string = ':'.join(neu_samples)
 for variant_i in neuVariantScores:
     
-    variant_identifier = '\t'.join( [str(i) for i in variant_i] )
+    variant_j          = [ variant_i[], variant_i[], '.', variant_i[], variant_i[] ]
+    variant_identifier = '\t'.join( [str(i) for i in variant_j] )
+    
     num_neuSomaticCalls = num_neuCalls(variant_i, neuVariantScores)
 
     neu_bwa    = 0
@@ -151,4 +165,5 @@ for variant_i in neuVariantScores:
             elif 'bowtie' in sample_i:
                 neu_bowtie += 1
     
-    print(variant_identifier, neu_bwa, neu_novo, neu_bowtie, num_neuSomaticCalls, ','.join( ['%s' %i for i in neuVariantScores[variant_i]] ), sep='\t')
+    info_string = 'NeuBWA={};NeuNovoAlign={};NeuBowtie={};TotalNeuCalls={}'.format(neu_bwa, neu_novo, neu_bowtie, num_neuSomaticCalls)
+    print(variant_identifier, info_string, '.\tREJECT', info_string, vcf_format_string, ':'.join( ['%s' %i for i in neuVariantScores[variant_i]] ), sep='\t')
