@@ -148,7 +148,7 @@ print('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLE')
 vcf_format_string = ':'.join(neu_samples)
 for variant_i in neuVariantScores:
     
-    variant_j          = [ variant_i[], variant_i[], '.', variant_i[], variant_i[] ]
+    variant_j          = [ variant_i[0], variant_i[1], '.', variant_i[2], variant_i[3] ]
     variant_identifier = '\t'.join( [str(i) for i in variant_j] )
     
     num_neuSomaticCalls = num_neuCalls(variant_i, neuVariantScores)
