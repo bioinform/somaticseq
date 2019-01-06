@@ -106,7 +106,7 @@ with genome.open_textfile(goldVcfFile) as goldVcf, open(outfile, 'w') as out:
     
     
     # Write an extra line plus the #CHROM line into the output:
-    out.write( '##FORMAT=<ID=NeuSomaticCalls,Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">\n' )
+    out.write( '##INFO=<ID=NeuSomaticCalls,Number=1,Type=Integer,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">\n' )
     out.write( gold_i + '\n' )
     
     # Now this is the first line containing variant calls
