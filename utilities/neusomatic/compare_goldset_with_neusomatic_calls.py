@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument('-neusomatic',  '--neusomatic',             type=str, help='VCF in', required=True)
 parser.add_argument('-somaticseq',  '--somaticseq-goldset',     type=str, help='VCF in', required=True)
 parser.add_argument('-outfile',     '--outfile',                type=str, help='VCF out', required=True)
+parser.add_argument('-neuonly',     '--neusomatic-only',        type=str, help='VCF out', required=True)
 parser.add_argument('-n2confirm',   '--confirmation-threshold', type=int, help='number of positive calls by neusomatic that deems a gold set call as confirmed',  required=False, default=13)
 parser.add_argument('-n4discovery', '--discovery-threshold',    type=int, help='number of positive calls by neusomatic for non-gold-set calls as possibly TP',    required=False, default=21)
 
@@ -25,6 +26,7 @@ goldVcfFile     = args.somaticseq_goldset
 outfile         = args.outfile
 n_confirmation  = args.confirmation_threshold
 n_new_discovery = args.discovery_threshold
+neu_out         = args.neusomatic_only
 
 nan = float('nan')
 
@@ -95,6 +97,18 @@ with genome.open_textfile(neuVcfFile) as neuVcf:
         neu_i  =  neuVcf.readline().rstrip()
 
 
+# Print out data for NeuSomatic Histogram
+neuHist = {}
+for i in range(64):
+    neuHist[i] = 0
+
+for variant_i in neuVariantScores:
+    num_called = num_neuCalls(variant_i, neuVariantScores)
+    neuHist[num_called] += 1
+
+for i in range(64):
+    print(i, neuHist[i], sep='\t')
+
 
 with genome.open_textfile(goldVcfFile) as goldVcf, open(outfile, 'w') as out:
     
@@ -121,7 +135,8 @@ with genome.open_textfile(goldVcfFile) as goldVcf, open(outfile, 'w') as out:
         
         neuCalls = num_neuCalls(variant_i, neuVariantScores)
         
-        gold_item[7] = gold_vcf.info + ';NeuSomaticCalls={}'.format( neuCalls )
+        if 'ArmLossInNormal' not in gold_item[7]:
+            gold_item[7] = gold_vcf.info + ';NeuSomaticCalls={}'.format( neuCalls )
         
         line_out = '\t'.join(gold_item)
         
@@ -132,45 +147,50 @@ with genome.open_textfile(goldVcfFile) as goldVcf, open(outfile, 'w') as out:
         gold_i = goldVcf.readline().rstrip()
 
 
+
+
+with open(neu_out, 'w') as neuout:
 # Now print out the "positives" calls by neuSomatic that wasn't in the SuperSet:
-print('##fileformat=VCFv4.1')
-print('##FILTER=<ID=HighConf,Description="highly confident that it is a real somatic mutation">')
-print('##FILTER=<ID=MedConf,Description="confident that it is a real somatic mutation">')
-print('##FILTER=<ID=LowConf,Description="not very confident that it is a real somatic mutation">')
-print('##FILTER=<ID=Unclassified,Description="likely not a real somatic mutation">')
-print('##INFO=<ID=NeuBWA,Number=1,Type=Integer,Description="Number of times out of 21 pairs of BWA BAMs where NeuSomatic called it PASS">')
-print('##INFO=<ID=NeuNovoAlign,Number=1,Type=Integer,Description="Number of times out of 21 pairs of NovoAlign BAMs where NeuSomatic called it PASS">')
-print('##INFO=<ID=NeuBowtie,Number=1,Type=Integer,Description="Number of times out of 21 pairs of Bowtie BAMs where NeuSomatic called it PASS">')
-print('##INFO=<ID=NeuSomaticCalls,Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">' )
-print('##INFO=<ID=NeuDiscovered,Number=0,Type=Flag,Description="Variant calls discovered by NeuSomatic">' )
-print('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">')
-print('##FORMAT=<ID=NeuSCORE,Number=1,Type=Float,Description="Discovered only by NeuSomatic">' )
+    neuout.write('##fileformat=VCFv4.1\n')
+    neuout.write('##FILTER=<ID=HighConf,Description="highly confident that it is a real somatic mutation">\n')
+    neuout.write('##FILTER=<ID=MedConf,Description="confident that it is a real somatic mutation">\n')
+    neuout.write('##FILTER=<ID=LowConf,Description="not very confident that it is a real somatic mutation">\n')
+    neuout.write('##FILTER=<ID=Unclassified,Description="likely not a real somatic mutation">\n')
+    neuout.write('##INFO=<ID=NeuBWA,Number=1,Type=Integer,Description="Number of times out of 21 pairs of BWA BAMs where NeuSomatic called it PASS">\n')
+    neuout.write('##INFO=<ID=NeuNovoAlign,Number=1,Type=Integer,Description="Number of times out of 21 pairs of NovoAlign BAMs where NeuSomatic called it PASS">\n')
+    neuout.write('##INFO=<ID=NeuBowtie,Number=1,Type=Integer,Description="Number of times out of 21 pairs of Bowtie BAMs where NeuSomatic called it PASS">\n')
+    neuout.write('##INFO=<ID=NeuSomaticCalls,Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">\n' )
+    neuout.write('##INFO=<ID=NeuDiscovered,Number=0,Type=Flag,Description="Variant calls discovered by NeuSomatic">\n' )
+    neuout.write('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
+    neuout.write('##FORMAT=<ID=NeuSCORE,Number=1,Type=Float,Description="Discovered only by NeuSomatic">\n' )
 
 #for sample_i in neu_samples:
 #    print('##FORMAT=<ID={},Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">'.format(sample_i) )
 
-samples_header = '\t'.join(neu_samples)
-print('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT', samples_header, sep='\t')
+    samples_header = '\t'.join(neu_samples)
+    neuout.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t' + samples_header + '\n')
 
-format_string = ':'.join(neu_samples)
-for variant_i in neuVariantScores:
+    format_string = ':'.join(neu_samples)
+    for variant_i in neuVariantScores:
+        
+        variant_j          = [ variant_i[0], variant_i[1], '.', variant_i[2], variant_i[3] ]
+        variant_identifier = '\t'.join( [str(i) for i in variant_j] )
+        
+        num_neuSomaticCalls = num_neuCalls(variant_i, neuVariantScores)
     
-    variant_j          = [ variant_i[0], variant_i[1], '.', variant_i[2], variant_i[3] ]
-    variant_identifier = '\t'.join( [str(i) for i in variant_j] )
+        neu_bwa    = 0
+        neu_novo   = 0
+        neu_bowtie = 0
+        for i, sample_i in enumerate(neu_samples):
+            if neuVariantScores[ variant_i ][i] >= 0.25:
+                if 'bwa' in sample_i:
+                    neu_bwa += 1
+                elif 'novo' in sample_i:
+                    neu_novo += 1
+                elif 'bowtie' in sample_i:
+                    neu_bowtie += 1
+        
+        info_string = 'NeuDiscovered;NeuBWA={};NeuNovoAlign={};NeuBowtie={};NeuSomaticCalls={}'.format(neu_bwa, neu_novo, neu_bowtie, num_neuSomaticCalls)
+        
+        neuout.write(variant_identifier + '\t.\tLowConf\t' + info_string + '\tGT:NeuSCORE\t' + '\t'.join( ['0/1:%s' %i if i>=0 else '.' for i in neuVariantScores[variant_i]] ) + '\n')
     
-    num_neuSomaticCalls = num_neuCalls(variant_i, neuVariantScores)
-
-    neu_bwa    = 0
-    neu_novo   = 0
-    neu_bowtie = 0
-    for i, sample_i in enumerate(neu_samples):
-        if neuVariantScores[ variant_i ][i] >= 0.25:
-            if 'bwa' in sample_i:
-                neu_bwa += 1
-            elif 'novo' in sample_i:
-                neu_novo += 1
-            elif 'bowtie' in sample_i:
-                neu_bowtie += 1
-    
-    info_string = 'NeuDiscovered;NeuBWA={};NeuNovoAlign={};NeuBowtie={};NeuSomaticCalls={}'.format(neu_bwa, neu_novo, neu_bowtie, num_neuSomaticCalls)
-    print(variant_identifier, '.\tLowConf', info_string, 'GT:NeuSCORE', '\t'.join( ['0/1:%s' %i if i>=0 else '.' for i in neuVariantScores[variant_i]] ), sep='\t')
