@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 
 # Post-process GATK4's MuTect2 output. The main purpose is to split multi-allelic records into one variant record per line.
+# The objective is to seperate SNV and INDEL into two files.
+# The primary objective is to extract variant candidate list, i.e., genomic coordinate, reference, and alternate alleles.
+# It does NOT try to resolve different genotypes if there are multiple on a single VCF file. So keep in mind of this limitation. 
 
 import sys, os, argparse, gzip, re
+from copy import copy
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 PRE_DIR = os.path.join(MY_DIR, os.pardir)
+sys.path.append( MY_DIR )
 sys.path.append( PRE_DIR )
 
 import genomicFileHandler.genomic_file_handlers as genome
+import complex2indel
 
 def run():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -61,16 +67,42 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
                     alt_bases = vcf_i.altbase.split(',')
                 elif '/' in vcf_i.altbase:
                     alt_bases = vcf_i.altbase.split('/')
+                else:
+                    raise Exception('Check the line: {}'.format(line_i))
                 
                 for ith_base, altbase_i in enumerate(alt_bases):
 
-                    item[4] = altbase_i
-                    new_line = '\t'.join(item)
-
                     if len(vcf_i.refbase) == 1 and len(altbase_i) == 1:
+                        item_j    = copy(item)
+                        item_j[4] = altbase_i
+                        new_line  = '\t'.join(item_j)
+                        
                         snv_out.write( new_line + '\n' )
-                    elif len(vcf_i.refbase) == 1 or len(vcf_i.altbase) == 1:
+                    
+                    elif len(vcf_i.refbase) == 1 or len(altbase_i) == 1:
+                        item_j    = copy(item)
+                        item_j[4] = altbase_i
+                        new_line  = '\t'.join(item_j)
+                        
                         indel_out.write( new_line + '\n')
+                        
+                    else:
+                        complex_variant = complex2indel.translate(vcf_i.refbase, altbase_i)
+                        
+                        if complex_variant:
+                            (new_ref, new_alt), offset = complex_variant
+                            
+                            if new_ref[0] == new_alt[0] and ( len(new_ref) == 1 or len(new_alt) == 1):
+                                
+                                item_j    = copy(item)
+                                item_j[3] = new_ref
+                                item_j[4] = new_alt
+                                
+                                if offset != 0:
+                                    item_j[1] = str( int(item[1]) + offset )
+                                    
+                                new_line = '\t'.join(item_j)
+                                indel_out.write( new_line + '\n')
 
             line_i = vcf_in.readline().rstrip()
 
