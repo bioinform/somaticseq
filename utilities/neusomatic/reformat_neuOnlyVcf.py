@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import sys, argparse, math, gzip, os, re
+import pandas as pd
+from copy import copy
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 PRE_DIR = os.path.join(MY_DIR, os.pardir)
@@ -25,8 +27,11 @@ outfile      = args.outfile
 
 
 with genome.open_textfile(goldVcf) as gold:
-    sampleOrder = {}
+    sampleOrder     = {}
+    sampleItemOrder = {}
+    
     line_i = gold.readline().rstrip()
+    
     while not line_i.startswith('#CHROM'):
         line_i = gold.readline().rstrip()
     
@@ -38,25 +43,36 @@ with genome.open_textfile(goldVcf) as gold:
     for sample_i in samples:
         sampleOrder[ sample_i ] = i
         i += 1
+        
+    i = 0
+    for sample_i in header:
+        sampleItemOrder[ sample_i ] = i
+        i += 1
+
     
 
 
+
 mod = {}
-labelMods = pd.ExcelFile(modifiers)
+labelMods = pd.ExcelFile(neuMod)
 for sheet_i in ('NeuCalls 32+ and 7+ each map', 'InDel NeuOnly'):
     sheet = labelMods.parse(sheet_i)
-    for index, row in highconf_snvs.iterrows():
-        if 'Unclassified' not in row['Label Change']:
+    for index, row in sheet.iterrows():
+        if 'Unclassified' not in row['Label']:
             variant_i = row['CHROM'], int( row['POS'] ), row['REF'], row['ALT']
-            mod[ variant_i ] = row['Label Change']
+            mod[ variant_i ] = row['Label']
 
 
 
 with genome.open_textfile(neuVcf) as neu, open(outfile, 'w') as out:
     
+    # Write the header:
+    with open('{}/{}'.format(MY_DIR, 'goldsetHeader.vcf') ) as vcfHeader:
+        for line_i in vcfHeader:
+            out.write( line_i )
+    
     line_i = neu.readline().rstrip()
     while line_i.startswith('##'):
-        out.write( line_i + '\n' )
         line_i = neu.readline().rstrip()
         
     neuHeader = line_i.split('\t')
@@ -66,8 +82,7 @@ with genome.open_textfile(neuVcf) as neu, open(outfile, 'w') as out:
         order_i = sampleOrder[ sample_i ]
         neuSampleOrder.append( order_i )
     
-    
-    out.write( chrom_line + '\n' )
+    neuSampleItemOrder = [9+i for i in neuSampleOrder]
     line_i = neu.readline().rstrip()
     
     while line_i:
@@ -78,7 +93,17 @@ with genome.open_textfile(neuVcf) as neu, open(outfile, 'w') as out:
         if variant_i in mod:
             
             item = line_i.split('\t')
-            
             item[6] = mod[ variant_i ]
+            
+            item_out = copy(item)
+            
+            for i, j in enumerate(neuSampleItemOrder):
+                item_out[j] = item[i+9]
+            
+            for i in range(3):
+                item_out.append('./.')
+                
+            line_out = '\t'.join(item_out)
+            out.write( line_out + '\n' )
         
         line_i = neu.readline().rstrip()

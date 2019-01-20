@@ -1,0 +1,84 @@
+##fileformat=VCFv4.1
+##SomaticSeq=v2.7.2-SEQC2
+##reference=file:SEQC2_Resources/GRCh38.d1.vd1.fa
+##FILTER=<ID=AllPASS,Description="Called PASS by every single sample set">
+##FILTER=<ID=Tier1A,Description="For each of the 3 aligners, each of the 5 sites are deemed HighConf, i.e., HighConf for all 15 aligner/site combinations">
+##FILTER=<ID=Tier1B,Description="Each of the 3 alignerCentric Classification is deemed HighConf AND with at least 3/5 sites in each to be HighConf as well">
+##FILTER=<ID=Tier1C,Description="Each of the 3 alignerCentric Classification is deemed HighConf">
+##FILTER=<ID=Tier2A,Description="2 out of 3 alignerCentric Classification is HighConf, with the other one being merely MedConf">
+##FILTER=<ID=Tier2B,Description="2 out of 3 alignerCentric Classification is HighConf, with the other one being LowConf">
+##FILTER=<ID=Tier2C,Description="2 out of 3 alignerCentric Classification is HighConf, with the other one being Unclassified">
+##FILTER=<ID=Tier3A,Description="1 out of 3 alignerCentric Classification is HighConf, with the other two deemed merely MedConf">
+##FILTER=<ID=Tier3B,Description="1 out of 3 alignerCentric Classification is HighConf, with one more deemed merely MedConf">
+##FILTER=<ID=Tier3C,Description="1 out of 3 alignerCentric Classification is HighConf, with no MedConf otherwise">
+##FILTER=<ID=Tier4A,Description="No alignerCentric Classification is deemed HighConf, but all 3 are deemed merely MedConf">
+##FILTER=<ID=Tier4B,Description="No alignerCentric Classification is deemed HighConf, but 2/3 are deemed merely MedConf">
+##FILTER=<ID=Tier4C,Description="No alignerCentric Classification is deemed HighConf, but 1/3 are deemed merely MedConf">
+##FILTER=<ID=REJECT,Description="No HighConf or MedConf for aligner-centric classification of any kind">
+##FILTER=<ID=HighConf,Description="highly confident that it is a real somatic mutation">
+##FILTER=<ID=MedConf,Description="confident that it is a real somatic mutation">
+##FILTER=<ID=LowConf,Description="not very confident that it is a real somatic mutation">
+##FILTER=<ID=Unclassified,Description="likely not a real somatic mutation">
+##INFO=<ID=calledSamples,Number=.,Type=String,Description="Sample names where this variant is called">
+##INFO=<ID=rejectedSamples,Number=.,Type=String,Description="Sample names classified as REJECT by SomaticSeq">
+##INFO=<ID=noCallSamples,Number=.,Type=String,Description="Sample names where the variant is not called by any caller">
+##INFO=<ID=bwa_PASS,Number=.,Type=Integer,Description="# samples PASS by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
+##INFO=<ID=bowtie_PASS,Number=.,Type=Integer,Description="# samples PASS by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
+##INFO=<ID=novo_PASS,Number=.,Type=Integer,Description="# samples PASS by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
+##INFO=<ID=bwa_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
+##INFO=<ID=bowtie_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
+##INFO=<ID=novo_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
+##INFO=<ID=bwa_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
+##INFO=<ID=bowtie_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
+##INFO=<ID=novo_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
+##INFO=<ID=bwaMQ0,Number=1,Type=Integer,Description="MQ0 reads in tumor by bwa">
+##INFO=<ID=bowtieMQ0,Number=1,Type=Integer,Description="MQ0 reads in tumor by bowtie">
+##INFO=<ID=novoMQ0,Number=1,Type=Integer,Description="MQ0 reads in tumor by novo">
+##INFO=<ID=MQ0,Number=1,Type=Integer,Description="MQ0 reads in tumor combining 3 aligners">
+##INFO=<ID=bwaTVAF,Number=1,Type=Float,Description="tumor VAF from bwa data">
+##INFO=<ID=bowtieTVAF,Number=1,Type=Float,Description="tumor VAF from bowtie data">
+##INFO=<ID=novoTVAF,Number=1,Type=Float,Description="tumor VAF from novoalign data">
+##INFO=<ID=TVAF,Number=1,Type=Float,Description="tumor VAF combining 3 aligners">
+##INFO=<ID=bwaNVAF,Number=1,Type=Float,Description="normal VAF from bwa data">
+##INFO=<ID=bowtieNVAF,Number=1,Type=Float,Description="normal VAF from bowtie2 data">
+##INFO=<ID=novoNVAF,Number=1,Type=Float,Description="normal VAF from novoalign data">
+##INFO=<ID=NVAF,Number=1,Type=Float,Description="normal VAF combining 3 aligners">
+##INFO=<ID=nCalledSamples,Number=1,Type=Integer,Description="number of called samples">
+##INFO=<ID=nPASSES,Number=1,Type=Integer,Description="number of samples where the variant is classified as PASS by SomaticSeq">
+##INFO=<ID=nREJECTS,Number=1,Type=Integer,Description="number of samples where the variant is classified as REJECT by SomaticSeq">
+##INFO=<ID=nNoCall,Number=1,Type=Integer,Description="number of samples where the variant is not called by any caller">
+##INFO=<ID=nREJECTorNoCall,Number=1,Type=Integer,Description="number of samples where the variant is classified as REJECT or not called at all">
+##INFO=<ID=nCONSENSUS,Number=1,Type=Integer,Description="number of samples where majority of callers agree">
+##INFO=<ID=bwaClassification,Number=1,Type=String,Description="bwa-centric classification: Strong, Weak, Neutral, or Likely False Positive based on bwa-aligned data sets">
+##INFO=<ID=bowtieClassification,Number=1,Type=String,Description="bowtie-centric classification: Strong, Weak, Neutral, or Likely False Positive based on bowtie-aligned data sets">
+##INFO=<ID=novoClassification,Number=1,Type=String,Description="novo-centric classification: Strong, Weak, Neutral, or Likely False Positive based on novoalign-aligned data sets">
+##INFO=<ID=FLAGS,Number=.,Type=String,Description="Flags: 1) RandN: nREJECTS and nNoCall greater than nPASS, 2) R: nREJECTS greater than nPASS, 3) N: nNoCall greater than nPASS, 4) RplusN: nREJECTS+nNoCall greater than nPASS, 5) MQ0bwa: bwa MQ0 reads more than 10% of bwa reads, 6) MQ0bowtie: bowtie MQ0 reads more than 10% of bowtie reads, 7) MQ0novo: novo MQ0 reads more than 10% of novo reads, 8) bwa0: no PASS sample in bwa, 9) bowtie0: no PASS sample in bowtie, 10) novo0: no PASS sample in novo, 11) bwaOnly: all PASS samples are aligned by bwa, 12) bowtieOnly: all PASS samples are by bowtie, 13) novoOnly: all PASS samples are by novoalign, 14) aligner1.aligner2.inconsistentVAF: tumor VAFs by the two aligners yields a p-value < 0.0027 on chi2_contingency test, 15) inconsistentTitration: the VAF does not vary as expected from tumor purity assessment data sets, 16) ArmLossInNormal: variant residing in one of the 3 arm losses or chrY, 17) NonCallable: variant not in the MajorityAlignersCallable.bed file.">
+##INFO=<ID=bwaDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for bwa-aligned data sets">
+##INFO=<ID=bowtieDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for bowtie-aligned data sets">
+##INFO=<ID=novoDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for novo-aligned data sets">
+##INFO=<ID=NeuSomaticCalls,Number=1,Type=Integer,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">
+##INFO=<ID=NeuBWA,Number=1,Type=Integer,Description="Number of times out of 21 pairs of BWA BAMs where NeuSomatic called it PASS">
+##INFO=<ID=NeuNovoAlign,Number=1,Type=Integer,Description="Number of times out of 21 pairs of NovoAlign BAMs where NeuSomatic called it PASS">
+##INFO=<ID=NeuBowtie,Number=1,Type=Integer,Description="Number of times out of 21 pairs of Bowtie BAMs where NeuSomatic called it PASS">
+##INFO=<ID=NeuSomaticCalls,Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">
+##INFO=<ID=NeuDiscovered,Number=0,Type=Flag,Description="Variant calls discovered by NeuSomatic">
+##FORMAT=<ID=CD4,Number=4,Type=Integer,Description="ref concordant, ref discordant, alt concordant, alt discordant">
+##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="ref forward, ref reverse, alt forward, alt reverse">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=MQ0,Number=1,Type=Integer,Description="Number of reads with mapping quality of 0">
+##FORMAT=<ID=MSDUKT,Number=6,Type=Integer,Description="Calling decision of the 6 algorithms: CGA, SomaticSniper, VarDict, MuSE, Strelka, TNscope">
+##FORMAT=<ID=NUM_TOOLS,Number=1,Type=Float,Description="Number of tools called it Somatic">
+##FORMAT=<ID=SCORE,Number=1,Type=Float,Description="SomaticSeq Probability (either fraction or Phred)">
+##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">
+##FORMAT=<ID=altBQ,Number=1,Type=Float,Description="average base quality score for alternate reads">
+##FORMAT=<ID=altMQ,Number=1,Type=Float,Description="average mapping score for alternate reads">
+##FORMAT=<ID=altNM,Number=1,Type=Float,Description="average edit distance for alternate reads">
+##FORMAT=<ID=fetCD,Number=1,Type=Float,Description="Concordance FET">
+##FORMAT=<ID=fetSB,Number=1,Type=Float,Description="Strand bias FET">
+##FORMAT=<ID=refBQ,Number=1,Type=Float,Description="average base quality score for reference reads">
+##FORMAT=<ID=refMQ,Number=1,Type=Float,Description="average mapping score for reference reads">
+##FORMAT=<ID=refNM,Number=1,Type=Float,Description="average edit distance for reference reads">
+##FORMAT=<ID=zBQ,Number=1,Type=Float,Description="z-score rank sum of base quality">
+##FORMAT=<ID=zMQ,Number=1,Type=Float,Description="z-score rank sum of mapping quality">
+##FORMAT=<ID=NeuSCORE,Number=1,Type=Float,Description="Discovered only by NeuSomatic">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	EA_T_1.bwa	FD_T_1.bwa	FD_T_2.bwa	FD_T_3.bwa	IL_T_1.bwa	IL_T_2.bwa	IL_T_3.bwa	LL_T_1.bwa	NC_T_1.bwa	NS_T_1.bwa	NS_T_2.bwa	NS_T_3.bwa	NS_T_4.bwa	NS_T_5.bwa	NS_T_6.bwa	NS_T_7.bwa	NS_T_8.bwa	NS_T_9.bwa	NV_T_1.bwa	NV_T_2.bwa	NV_T_3.bwa	EA_T_1.bowtie	FD_T_1.bowtie	FD_T_2.bowtie	FD_T_3.bowtie	IL_T_1.bowtie	IL_T_2.bowtie	IL_T_3.bowtie	LL_T_1.bowtie	NC_T_1.bowtie	NS_T_1.bowtie	NS_T_2.bowtie	NS_T_3.bowtie	NS_T_4.bowtie	NS_T_5.bowtie	NS_T_6.bowtie	NS_T_7.bowtie	NS_T_8.bowtie	NS_T_9.bowtie	NV_T_1.bowtie	NV_T_2.bowtie	NV_T_3.bowtie	EA_T_1.novo	FD_T_1.novo	FD_T_2.novo	FD_T_3.novo	IL_T_1.novo	IL_T_2.novo	IL_T_3.novo	LL_T_1.novo	NC_T_1.novo	NS_T_1.novo	NS_T_2.novo	NS_T_3.novo	NS_T_4.novo	NS_T_5.novo	NS_T_6.novo	NS_T_7.novo	NS_T_8.novo	NS_T_9.novo	NV_T_1.novo	NV_T_2.novo	NV_T_3.novo	combined_bwa_normals	combined_bowtie_normals	combined_novo_normals
