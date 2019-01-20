@@ -41,25 +41,14 @@ with genome.open_textfile(goldVcf) as gold:
     
 
 
-
-
 mod = {}
-with open(neuMod) as fn:
-    line_i = fn.readline().rstrip()
-    header = line_i.split('\t')
-    i_label = header.index('Label Change')
-    
-    line_i = fn.readline().rstrip()
-    while line_i:
-        
-        item = line_i.split('\t')
-        if 'Unclassified' not in item[i_label]:
-            
-            mod[ (item[0], int(item[1]), item[2], item[3]) ] = item[i_label]
-        
-        line_i = fn.readline().rstrip()
-
-
+labelMods = pd.ExcelFile(modifiers)
+for sheet_i in ('NeuCalls 32+ and 7+ each map', 'InDel NeuOnly'):
+    sheet = labelMods.parse(sheet_i)
+    for index, row in highconf_snvs.iterrows():
+        if 'Unclassified' not in row['Label Change']:
+            variant_i = row['CHROM'], int( row['POS'] ), row['REF'], row['ALT']
+            mod[ variant_i ] = row['Label Change']
 
 
 
@@ -90,8 +79,6 @@ with genome.open_textfile(neuVcf) as neu, open(outfile, 'w') as out:
             
             item = line_i.split('\t')
             
-            item[7] = mod[ variant_i ]
-            
-        
+            item[6] = mod[ variant_i ]
         
         line_i = neu.readline().rstrip()

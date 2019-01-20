@@ -12,34 +12,28 @@ import genomic_file_handlers as genome
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-original',  '--original-vcf',        type=str, help='VCF in',  required=True)
-parser.add_argument('-mods',      '--modifiers',           type=str, help='TSV in',  required=True, nargs='*')
+parser.add_argument('-mod',       '--modifier',            type=str, help='TSV in',  required=True)
 parser.add_argument('-outfile',   '--outfile',             type=str, help='VCF out', required=True)
 
 
 args = parser.parse_args()
 
 originalFile = args.original_vcf
-modifiers    = args.modifiers
+modifiers    = args.modifier
 outfile      = args.outfile
 
 
 mod = {}
-for file_i in modifiers:
-    
-    with open(file_i) as fn:
-        line_i = fn.readline().rstrip()
-        header = line_i.split('\t')
-        i_label = header.index('Label Change')
-        
-        line_i = fn.readline().rstrip()
-        while line_i:
-            
-            item = line_i.split('\t')
-            if 'NO CHANGE' not in item[i_label]:
-                
-                mod[ (item[0], int(item[1]), item[2], item[3]) ] = item[i_label]
-            
-            line_i = fn.readline().rstrip()
+labelMods = pd.ExcelFile(modifiers)
+
+for sheet_i in ('HighConf NeuCall<=21', 'MedConf NeuCall<=10', 'Unclassified NeuCall majority', 'InDel HighConf Neu<10', 'InDel MedConf Neu<10', 'InDel Unclassified Neu Majority'):
+
+    sheet = labelMods.parse(sheet_i)
+
+    for index, row in sheet.iterrows():
+        if 'NO CHANGE' not in row['Label Change']:
+            variant_i = row['CHROM'], int( row['POS'] ), row['REF'], row['ALT']
+            mod[ variant_i ] = row['Label Change']
 
 
 
@@ -58,9 +52,10 @@ with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
         variant_i = vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase
         
         if variant_i in mod:
-            identifier_i = re.sub(r'HighConf|MedConf|LowConf|Unclassified', mod[variant_i], vcf_i.identifier)
+            
+            conf_level = re.sub(r'HighConf|MedConf|LowConf|Unclassified', mod[variant_i], vcf_i.filters)
             item = line_i.split('\t')
-            item[7] = identifier_i
+            item[6] = conf_level
             line_i = '\t'.join(item)
         
         out.write( line_i + '\n' )
