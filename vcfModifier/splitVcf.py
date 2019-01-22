@@ -98,6 +98,7 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
                                 item_j[3] = new_ref
                                 item_j[4] = new_alt
                                 
+                                # This *may* cause the output VCF file to go out of order
                                 if offset != 0:
                                     item_j[1] = str( int(item[1]) + offset )
                                     
