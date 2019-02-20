@@ -3,9 +3,8 @@
 import sys, argparse, os
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
+sys.path.append( MY_DIR )
 
-
-# scalpel-two-pass,mutect2-arguments:,mutect2-filter-arguments:,varscan-arguments:,varscan-pileup-arguments:,jsm-train-arguments:,jsm-classify-arguments:,somaticsniper-arguments:,vardict-arguments:,muse-arguments:,lofreq-arguments:,scalpel-discovery-arguments:,scalpel-export-arguments:,strelka-config-arguments:,strelka-run-arguments:,somaticseq-arguments:, -
 
 def run():
 
@@ -40,12 +39,10 @@ def run():
     parser.add_argument('-somaticseq', '--run-somaticseq',    action='store_true', help='Run SomaticSeq')
     parser.add_argument('-train',      '--train-somaticseq',  action='store_true', help='SomaticSeq train for classifiers')
 
-
     parser.add_argument('-snvClassifier',   '--snv-classifier',    type=str, help='action for each .cmd',)
     parser.add_argument('-indelClassifier', '--indel-classifier',  type=str, help='action for each somaticseq.cmd',)
     parser.add_argument('-trueSnv',         '--truth-snv',         type=str, help='VCF of true hits')
     parser.add_argument('-trueIndel',       '--truth-indel',       type=str, help='VCF of true hits')
-
 
     parser.add_argument('--mutect2-arguments',            type=str, help='extra parameters')
     parser.add_argument('--mutect2-filter-arguments',     type=str, help='extra parameters')
@@ -65,7 +62,6 @@ def run():
     
     parser.add_argument('--scalpel-two-pass',  action='store_true', help='extra parameters')
 
-    
     # Parse the arguments:
     args = parser.parse_args()
     workflowArguments = vars(args)
