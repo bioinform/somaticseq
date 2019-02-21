@@ -86,6 +86,8 @@ def run():
     args = parser.parse_args()
     workflowArguments = vars(args)
 
+    workflowArguments['reference_dict'] = re.sub(r'\.[a-zA-Z]+$', '', workflowArguments['genome_reference'] ) + '.dict'
+
     return workflowArguments
 
 
@@ -220,7 +222,7 @@ def run_JointSNVMix2(input_parameters, mem=8, skip_size=10000, converge_threshol
     
     logdir         = input_parameters['output_directory'] + os.sep + 'logs'
     outfile        = logdir + os.sep + 'jointsnvmix2.{}.cmd'.format(ts)
-    reference_dict = re.sub(r'\.[a-zA-Z]+$', '', input_parameters['genome_reference'] ) + '.dict'
+    reference_dict = input_parameters['reference_dict']
     
     with open(outfile, 'w') as out:
         
@@ -454,6 +456,92 @@ def run_MuSE(input_parameters, mem=8, outvcf='MuSE.vcf'):
 
 
 
+def run_LoFreq(input_parameters, mem=12, vcfprefix='LoFreq'):
+    
+    logdir         = input_parameters['output_directory'] + os.sep + 'logs'
+    outfile        = logdir + os.sep + 'lofreq.{}.cmd'.format(ts)
+    
+    bed_gz = os.path.basename(input_parameters['inclusion_region']) + '.gz'
+    
+    with open(outfile, 'w') as out:
+
+        out.write( "#!/bin/bash\n\n" )
+        
+        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -S /bin/bash\n' )
+        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
+        out.write( 'set -e\n\n' )
+        
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
+
+        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {}G lethalfang/lofreq:2.1.3.1-1 \\\n'.format(mem) )
+        out.write( 'lofreq somatic \\\n' )
+        out.write( '-t /mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
+        out.write( '-n /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
+        out.write( '--call-indels \\\n' )
+        out.write( '-l /mnt/{SELECTOR} \\\n'.format(SELECTOR=input_parameters['inclusion_region']) )
+        out.write( '-f /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
+        out.write( '-o /mnt/{OUTDIR}/{VCF_PREFIX} \\\n'.format(OUTDIR=input_parameters['output_directory'], VCF_PREFIX=vcfprefix) )
+        out.write( '{EXTRA_ARGS} \\\n'.format(EXTRA_ARGS=input_parameters['lofreq_arguments']) )
+        out.write( '-d /mnt/{DBSNP_GZ}\n'.format(DBSNP_GZ=bed_gz) )
+
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+        
+    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
+
+    return returnCode
+
+
+
+def run_Scalpel(input_parameters, mem=16, outvcf='Scalpel.vcf'):
+    
+    logdir         = input_parameters['output_directory'] + os.sep + 'logs'
+    outfile        = logdir + os.sep + 'scalpel.{}.cmd'.format(ts)
+    
+    twoPassFlag    = '--two-pass' if input_parameters['scalpel_two_pass'] else ''
+    
+    with open(outfile, 'w') as out:
+
+        out.write( "#!/bin/bash\n\n" )
+        
+        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -S /bin/bash\n' )
+        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
+        out.write( 'set -e\n\n' )
+        
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
+
+        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/scalpel:0.5.4 bash -c \\\n'.format(MEM=mem) )
+        out.write( '"/opt/scalpel/scalpel-discovery --somatic \\\n' )
+        out.write( '--ref /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
+        out.write( '--bed /mnt/{SELECTOR} \\\n'.format(SELECTOR=input_parameters['inclusion_region']) )
+        out.write( '--normal /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
+        out.write( '--tumor /mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
+        out.write( '--window 600 \\\n' )
+        out.write( '{TWO_PASS_FLAG} \\\n'.format(TWO_PASS_FLAG=twoPassFlag) )
+        out.write( '{DISCOVERY_ARGS} \\\n'.format(DISCOVERY_ARGS=input_parameters['scalpel_discovery_arguments']) )
+        out.write( '--dir /mnt/{OUTDIR}/scalpel && \\\n'.format(OUTDIR=input_parameters['output_directory']) )
+        out.write( '/opt/scalpel/scalpel-export --somatic \\\n' )
+        out.write( '--db /mnt/{OUTDIR}/scalpel/main/somatic.db.dir \\\n'.format(OUTDIR=input_parameters['output_directory']) )
+        out.write( '--ref /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
+        out.write( '--bed /mnt/{SELECTOR} \\\n'.format(SELECTOR=input_parameters['inclusion_region']) )
+        out.write( '{EXPORT_ARG} \\\n'.format(EXPORT_ARG=input_parameters['scalpel_export_arguments']) )
+        out.write( '> /mnt/{OUTDIR}/scalpel/scalpel.vcf"\n\n'.format(OUTDIR=input_parameters['output_directory']) )
+        
+        out.write( 'docker run --rm -v /:/mnt -u $UID lethalfang/scalpel:0.5.4 bash -c \\\n' )
+        out.write( '"cat /mnt/{OUTDIR}/scalpel/scalpel.vcf | /opt/vcfsorter.pl /mnt/{REF_DICT} - \\\n'.format(OUTDIR=input_parameters['output_directory'], REF_DICT=input_parameters['reference_dict'] ) )
+        out.write( '> /mnt/{OUTDIR}/{OUTVCF}\"\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
+
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+        
+    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
+
+    return returnCode
+
+
+
 def run_Strelka2(input_parameters, mem=4, outdirname='Strelka'):
 
     logdir         = input_parameters['output_directory'] + os.sep + 'logs'
@@ -541,7 +629,7 @@ if __name__ == '__main__':
             os.makedirs(perThreadParameter['output_directory'] + os.sep + 'logs', exist_ok=True)
             
             # Move 1.bed, 2.bed, ..., n.bed to each thread's subdirectory
-            move(workflowArguments['output_directory'] + os.sep + str(thread_i) + '.bed', perThreadParameter['output_directory'])
+            move('{}/{}.bed'.format(workflowArguments['output_directory'], thread_i), '{}/{}.bed'.format(perThreadParameter['output_directory'], thread_i) )
         
         else:
             perThreadParameter = copy(workflowArguments)
@@ -559,6 +647,12 @@ if __name__ == '__main__':
 
         if workflowArguments['run_muse']:
             run_MuSE( perThreadParameter )
+
+        if workflowArguments['run_lofreq']:
+            run_LoFreq( perThreadParameter )
+
+        if workflowArguments['run_scalpel']:
+            run_Scalpel( perThreadParameter )
 
         if workflowArguments['run_strelka2']:
             run_Strelka2( perThreadParameter )
