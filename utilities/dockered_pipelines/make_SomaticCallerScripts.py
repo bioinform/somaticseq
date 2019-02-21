@@ -3,6 +3,7 @@
 import sys, argparse, os, re
 from copy import copy
 from datetime import datetime
+from shutil import move
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 RepoROOT = os.path.join(MY_DIR, os.pardir, os.pardir)
@@ -38,7 +39,7 @@ def run():
     parser.add_argument('-exclude',    '--exclusion-region',     type=str,   help='exclusion bed file', )
     parser.add_argument('-dbsnp',      '--dbsnp-vcf',            type=str,   help='dbSNP vcf file, also requires .idx, .gz, and .gz.tbi files', required=True)
     parser.add_argument('-cosmic',     '--cosmic-vcf',           type=str,   help='cosmic vcf file', )
-    parser.add_argument('-minVAF',     '--minimum-VAF',          type=float, help='minimum VAF to look for', default=0.05)
+    parser.add_argument('-minVAF',     '--minimum-VAF',          type=float, help='minimum VAF to look for',)
     parser.add_argument('-action',     '--action',               type=str,   help='action for each mutation caller\' run script', default='echo')
     parser.add_argument('-somaticAct', '--somaticseq-action',    type=str,   help='action for each somaticseq.cmd', default='echo')
 
@@ -107,17 +108,140 @@ def splitRegions(nthreads, outfiles, bed=None, fai=None):
 
 
 
-def run_MuTect2(input_parameters):
-    pass
+def run_MuTect2(input_parameters, mem=4, nt=4, outvcf='MuTect2.vcf'):
+    
+    logdir         = input_parameters['output_directory'] + os.sep + 'logs'
+    outfile        = logdir + os.sep + 'mutect2.{}.cmd'.format(ts)
 
+    with open(outfile, 'w') as out:
+
+        out.write( "#!/bin/bash\n" )
+        out.write( '\n' )
+        
+        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -S /bin/bash\n' )
+        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
+        out.write( 'set -e\n' )
+        out.write( '\n' )
+        
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
+
+        out.write( 'tumor_name=`docker run --rm -v /:/mnt -u $UID --memory 1g lethalfang/samtools:1.7 samtools view -H /mnt/{TBAM} | egrep -w \'^@RG\' | grep -Po \'SM:[^\\t$]+\' | sed \'s/SM://\' | uniq | sed -e \'s/[[:space:]]*$//\'`\n'.format(TBAM=input_parameters['tumor_bam']) )
+        out.write( 'normal_name=`docker run --rm -v /:/mnt -u $UID --memory 1g lethalfang/samtools:1.7 samtools view -H /mnt/{NBAM} | egrep -w \'^@RG\' | grep -Po \'SM:[^\\t$]+\' | sed \'s/SM://\' | uniq | sed -e \'s/[[:space:]]*$//\'`\n'.format(NBAM=input_parameters['normal_bam']) )
+
+        out.write( '\n' )
+        
+        out.write( 'docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.1.0.0 \\\n' )
+        out.write( 'java -Xmx{MEM}g -jar /gatk/gatk.jar Mutect2 \\\n'.format( MEM=mem) )
+        out.write( '--reference /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
+        out.write( '{SELECTOR_ARG}\n'.format(SELECTOR_ARG='--intervals /mnt/{}'.format( input_parameters['inclusion_region']) if input_parameters['inclusion_region'] else '' ) )
+        out.write( '-input /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
+        out.write( '-input /mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
+        out.write( '--normal-sample ${normal_name} \\\n' )
+        out.write( '--tumor-sample ${tumor_name} \\\n' )
+        out.write( '--native-pair-hmm-threads {threads} \\\n'.format(threads=nt) )
+        out.write( '{EXTRA_ARGUMENTS} \\\n'.format(EXTRA_ARGUMENTS=input_parameters['mutect2_arguments']) )
+        out.write( '--output /mnt/{OUTDIR}/unfiltered.{OUTVCF}.vcf\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
+
+        out.write( '\n' )
+
+        out.write( 'docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.1.0.0 \\\n' )
+        out.write( 'java -Xmx{MEM}g -jar /gatk/gatk.jar FilterMutectCalls \\\n'.format( MEM=mem ) )
+        out.write( '--variant /mnt/{OUTDIR}/unfiltered.{OUTVCF} \\\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
+        out.write( '{EXTRA_ARGUMENTS} \\\n'.format(EXTRA_ARGUMENTS=input_parameters['mutect2_filter_arguments']) )
+        out.write( '--output /mnt/{OUTDIR}/{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
+
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+        
+    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
+
+    return returnCode
+
+
+
+
+def run_VarScan2(input_parameters, mem=4, minVAF=0.10, minMQ=25, minBQ=20, outvcf='VarScan2.vcf'):
+    
+    logdir         = input_parameters['output_directory'] + os.sep + 'logs'
+    outfile        = logdir + os.sep + 'varscan2.{}.cmd'.format(ts)
+    outname        = re.sub(r'\.[a-zA-Z]+$', '', outvcf )
+
+    if input_parameters['minimum_VAF']:
+        minVAF = input_parameters['minimum_VAF']
+
+
+    selector_text  = '-l /mnt/{}'.format(input_parameters['inclusion_region']) if input_parameters['inclusion_region'] else ''
+
+    with open(outfile, 'w') as out:
+        
+        out.write( "#!/bin/bash\n" )
+        out.write( '\n' )
+        
+        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -S /bin/bash\n' )
+        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
+        out.write( 'set -e\n\n' )
+        
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
+
+        out.write( 'docker run --rm -u $UID -v /:/mnt --memory {MEM}G lethalfang/samtools:1.7 bash -c \\\n'.format(MEM=mem) )
+        out.write( '"samtools mpileup \\\n' )
+        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=minMQ, minBQ=minBQ, extra_pileup_arguments=input_parameters['varscan_pileup_arguments'], selector_text=selector_text) )
+        out.write( '/mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
+        out.write( '/mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
+        out.write( '> /mnt/{OUTDIR}/normal.pileup"\n\n'.format(OUTDIR=input_parameters['output_directory']) )
+
+        out.write( 'docker run --rm -u $UID -v /:/mnt --memory {MEM}G lethalfang/samtools:1.7 bash -c \\\n'.format(MEM=mem) )
+        out.write( '"samtools mpileup \\\n' )
+        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=minMQ, minBQ=minBQ, extra_pileup_arguments=input_parameters['varscan_pileup_arguments'], selector_text=selector_text) )
+        out.write( '/mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
+        out.write( '/mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
+        out.write( '> /mnt/{OUTDIR}/tumor.pileup"\n\n'.format(OUTDIR=input_parameters['output_directory']) )
+        
+        out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
+        out.write( 'java -Xmx{MEM}g -jar /VarScan2.3.7.jar somatic \\\n'.format(MEM=mem) )
+        out.write( '/mnt/{OUTDIR}/normal.pileup \\\n'.format(OUTDIR=input_parameters['output_directory']) )
+        out.write( '/mnt/{OUTDIR}/tumor.pileup \\\n'.format(OUTDIR=input_parameters['output_directory']) )
+        out.write( '/mnt/{OUTDIR}/{OUTNAME} {EXTRA_ARGS} --output-vcf 1 --min-var-freq {VAF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname, VAF=minVAF, EXTRA_ARGS=input_parameters['varscan_arguments'] ) )
+        
+        out.write( '\n' )
+        
+        out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
+        out.write( 'java -Xmx${MEM}g -jar /VarScan2.3.7.jar processSomatic \\\n'.format(MEM=mem) )
+        out.write( '/mnt/{OUTDIR}/{OUTNAME}.snp.vcf\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
+        
+        out.write( '\n' )
+        
+        out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
+        out.write( 'java -Xmx{MEM}g -jar /VarScan2.3.7.jar somaticFilter \\\n'.format(MEM=mem) )
+        out.write( '/mnt/{OUTDIR}/{OUTNAME}.snp.Somatic.hc.vcf \\\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
+        out.write( '-indel-file /mnt/{OUTDIR}/{OUTNAME}.indel.vcf \\\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
+        out.write( '-output-file /mnt/{OUTDIR}/{OUTNAME}.snp.Somatic.hc.filter.vcf\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
+        
+        out.write( '\n' )
+        
+        out.write( 'rm {OUTDIR}/normal.pileup\n'.format(OUTDIR=input_parameters['output_directory']) )
+        out.write( 'rm {OUTDIR}/tumor.pileup\n'.format(OUTDIR=input_parameters['output_directory']) )
+        out.write( '\n' )
+        
+        
+    
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+    
+        
+    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
+
+    return returnCode
 
 
 
 
 def run_JointSNVMix2(input_parameters, mem=8, skip_size=10000, converge_threshold=0.01, outvcf='JointSNVMix2.vcf'):
     
-    logdir  = input_parameters['output_directory'] + os.sep + 'logs'
-    outfile = logdir + os.sep + 'jointsnvmix2.{}.cmd'.format(ts)
+    logdir         = input_parameters['output_directory'] + os.sep + 'logs'
+    outfile        = logdir + os.sep + 'jointsnvmix2.{}.cmd'.format(ts)
     reference_dict = re.sub(r'\.[a-zA-Z]+$', '', input_parameters['genome_reference'] ) + '.dict'
     
     with open(outfile, 'w') as out:
@@ -180,10 +304,114 @@ def run_JointSNVMix2(input_parameters, mem=8, skip_size=10000, converge_threshol
         out.write( '\n' )
         out.write( 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
         
-        returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
+    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
 
     return returnCode
 
+
+
+
+def run_SomaticSniper(input_parameters, MQ=1, somaticQuality=15, prior=0.00001, mem=4, outvcf='SomaticSniper.vcf'):
+
+    logdir         = input_parameters['output_directory'] + os.sep + 'logs'
+    outfile        = logdir + os.sep + 'somaticsniper.{}.cmd'.format(ts)
+
+    with open(outfile, 'w') as out:
+        
+        out.write( "#!/bin/bash\n" )
+        out.write( '\n' )
+        
+        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -S /bin/bash\n' )
+        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
+        out.write( 'set -e\n\n' )
+        
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
+        
+        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/somaticsniper:1.0.5.0-2 \\\n'.format(MEM=mem) )
+        out.write( '/opt/somatic-sniper/build/bin/bam-somaticsniper \\\n' )
+        out.write( '-q {MQ} -Q {SQ} -s {PRIOR} -F vcf {EXTRA_ARGS} \\\n'.format(MQ=MQ, SQ=somaticQuality, PRIOR=prior, EXTRA_ARGS=input_parameters['somaticsniper_arguments']) )
+        out.write( '-f /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
+        out.write( '/mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
+        out.write( '/mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
+        out.write( '/mnt/{OUTDIR}/{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
+
+        if input_parameters['threads'] > 1:
+            out.write( '\n\ni=1\n' )
+            out.write( 'while [[ $i -le {} ]]\n'.format(input_parameters['threads']) )
+            out.write( 'do\n' )
+            out.write( '    docker run --rm -v /:/mnt -u $UID lethalfang/bedtools:2.26.0 bash -c "bedtools intersect -a /mnt/{OUTDIR}/{OUTVCF} -b /mnt/{OUTDIR}/${i}/${i}.bed -header | uniq > /mnt/{OUTDIR}/${i}/{OUTVCF}"\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf, i='{i}') )
+            out.write( '    i=$(( $i + 1 ))\n' )
+            out.write( 'done\n' )
+        
+        out.write( '\n' )
+        out.write( 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+
+
+
+    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
+
+    return returnCode
+
+
+
+
+def run_VarDict(input_parameters, mem=14, minVAF=0.05, outvcf='VarDict.vcf'):
+    
+    logdir         = input_parameters['output_directory'] + os.sep + 'logs'
+    outfile        = logdir + os.sep + 'vardict.{}.cmd'.format(ts)
+    
+    if input_parameters['minimum_VAF']:
+        minVAF = input_parameters['minimum_VAF']
+    
+
+    total_bases = 0
+    num_lines   = 0
+
+    if input_parameters['inclusion_region']:
+        bed_file = input_parameters['inclusion_region']
+    else:
+        
+        fai_file = input_parameters['genome_reference'] + '.fai'
+        bed_file = '{}/{}'.format(input_parameters['output_directory'], 'genome.bed')
+        
+        with open(fai_file) as fai, open(bed_file, 'w') as wgs_bed:
+            for line_i in fai:
+                
+                item = line_i.split('\t')
+                
+                total_bases += int( item[1] )
+                num_lines   += 1
+                
+                wgs_bed.write( '{}\t{}\t{}\n'.format(item[0], '0', item[1])
+    
+    
+        
+    
+    
+    with open(outfile, 'w') as out:
+
+        out.write( "#!/bin/bash\n" )
+        out.write( '\n' )
+        
+        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -S /bin/bash\n' )
+        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
+        out.write( 'set -e\n' )
+        out.write( '\n' )
+        
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
+
+
+
+
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+        
+    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
+
+    return returnCode
 
 
 
@@ -194,6 +422,43 @@ if __name__ == '__main__':
     
     subBeds = splitRegions(workflowArguments['threads'], workflowArguments['output_directory'] + os.sep + 'bed', bed=workflowArguments['inclusion_region'], fai=workflowArguments['genome_reference']+'.fai')
 
-    
+    os.makedirs(workflowArguments['output_directory'] + os.sep + 'logs', exist_ok=True)
+
+    # Unparallelizables
     if workflowArguments['run_jointsnvmix2']:
         run_JointSNVMix2(workflowArguments)
+
+    if workflowArguments['run_somaticsniper']:
+        run_SomaticSniper(workflowArguments)
+    
+        
+    for thread_i in range(1, workflowArguments['threads']+1):
+        
+        if workflowArguments['threads'] > 1:
+            
+            perThreadParameter = copy(workflowArguments)
+            
+            # Add OUTDIR/thread_i for each thread
+            perThreadParameter['output_directory'] = workflowArguments['output_directory'] + os.sep + str(thread_i)
+            perThreadParameter['inclusion_region'] = '{}/{}.bed'.format( perThreadParameter['output_directory'], str(thread_i) )
+            
+            os.makedirs(perThreadParameter['output_directory'] + os.sep + 'logs', exist_ok=True)
+            
+            # Move 1.bed, 2.bed, ..., n.bed to each thread's subdirectory
+            move(workflowArguments['output_directory'] + os.sep + str(thread_i) + '.bed', perThreadParameter['output_directory'])
+        
+        else:
+            perThreadParameter = workflowArguments
+        
+        
+        
+        # Invoke parallelizable callers one by one:
+        if workflowArguments['run_mutect2']:
+            run_MuTect2( perThreadParameter )
+            
+        if workflowArguments['run_varscan2']:
+            run_VarScan2( perThreadParameter )
+            
+            
+            
+            
