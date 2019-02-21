@@ -29,21 +29,20 @@ def run():
 
     # Variant Call Type, i.e., snp or indel
     parser.add_argument('-outdir',     '--output-directory',     type=str,   help='Absolute path for output directory', default=os.getcwd())
-    parser.add_argument('-somaticDir', '--somaticseq-directory', type=str,   help='SomaticSeq directory output name', default='SomaticSeq')
-    parser.add_argument('-tbam',       '--tumor-bam',            type=str,   help='tumor bam file', required=True)
-    parser.add_argument('-nbam',       '--normal-bam',           type=str,   help='normal bam file', required=True)
-    parser.add_argument('-tname',      '--tumor-sample-name',    type=str,   help='tumor sample name', default='TUMOR')
-    parser.add_argument('-nname',      '--normal-sample-name',   type=str,   help='normal sample name', default='NORMAL')
+    parser.add_argument('-somaticDir', '--somaticseq-directory', type=str,   help='SomaticSeq directory output name',   default='SomaticSeq')
+    parser.add_argument('-tbam',       '--tumor-bam',            type=str,   help='tumor bam file',       required=True)
+    parser.add_argument('-nbam',       '--normal-bam',           type=str,   help='normal bam file',      required=True)
+    parser.add_argument('-tname',      '--tumor-sample-name',    type=str,   help='tumor sample name',    default='TUMOR')
+    parser.add_argument('-nname',      '--normal-sample-name',   type=str,   help='normal sample name',   default='NORMAL')
     parser.add_argument('-ref',        '--genome-reference',     type=str,   help='reference fasta file', required=True)
-    parser.add_argument('-include',    '--inclusion-region',     type=str,   help='inclusion bed file', default=None)
-    parser.add_argument('-exclude',    '--exclusion-region',     type=str,   help='exclusion bed file', )
+    parser.add_argument('-include',    '--inclusion-region',     type=str,   help='inclusion bed file',  )
+    parser.add_argument('-exclude',    '--exclusion-region',     type=str,   help='exclusion bed file',  )
     parser.add_argument('-dbsnp',      '--dbsnp-vcf',            type=str,   help='dbSNP vcf file, also requires .idx, .gz, and .gz.tbi files', required=True)
-    parser.add_argument('-cosmic',     '--cosmic-vcf',           type=str,   help='cosmic vcf file', )
+    parser.add_argument('-cosmic',     '--cosmic-vcf',           type=str,   help='cosmic vcf file')
     parser.add_argument('-minVAF',     '--minimum-VAF',          type=float, help='minimum VAF to look for',)
     parser.add_argument('-action',     '--action',               type=str,   help='action for each mutation caller\' run script', default='echo')
-    parser.add_argument('-somaticAct', '--somaticseq-action',    type=str,   help='action for each somaticseq.cmd', default='echo')
+    parser.add_argument('-somaticAct', '--somaticseq-action',    type=str,   help='action for each somaticseq.cmd',               default='echo')
 
-    parser.add_argument('-mutect',     '--run-mutect',        action='store_true', help='Run MuTect and Indelocator')
     parser.add_argument('-mutect2',    '--run-mutect2',       action='store_true', help='Run MuTect2')
     parser.add_argument('-varscan2',   '--run-varscan2',      action='store_true', help='Run VarScan2')
     parser.add_argument('-jsm',        '--run-jointsnvmix2',  action='store_true', help='Run JointSNVMix2')
@@ -56,8 +55,8 @@ def run():
     parser.add_argument('-somaticseq', '--run-somaticseq',    action='store_true', help='Run SomaticSeq')
     parser.add_argument('-train',      '--train-somaticseq',  action='store_true', help='SomaticSeq training mode for classifiers')
 
-    parser.add_argument('-snvClassifier',   '--snv-classifier',    type=str, help='action for each .cmd',)
-    parser.add_argument('-indelClassifier', '--indel-classifier',  type=str, help='action for each somaticseq.cmd',)
+    parser.add_argument('-snvClassifier',   '--snv-classifier',    type=str, help='action for each .cmd')
+    parser.add_argument('-indelClassifier', '--indel-classifier',  type=str, help='action for each somaticseq.cmd')
     parser.add_argument('-trueSnv',         '--truth-snv',         type=str, help='VCF of true hits')
     parser.add_argument('-trueIndel',       '--truth-indel',       type=str, help='VCF of true hits')
 
@@ -80,7 +79,7 @@ def run():
     parser.add_argument('--scalpel-two-pass',         action='store_true', help='Invokes two-pass setting in scalpel')
     parser.add_argument('-exome', '--exome-setting',  action='store_true', help='Invokes exome setting in Strelka2 and MuSE')
 
-    parser.add_argument('-nt',        '--threads',        type=int, help='Split the input regions into this many threads', default=12)
+    parser.add_argument('-nt',        '--threads',        type=int, help='Split the input regions into this many threads', default=8)
 
     # Parse the arguments:
     args = parser.parse_args()
@@ -93,7 +92,7 @@ def run():
 
 
 
-def run_MuTect2(input_parameters, mem=4, nt=4, outvcf='MuTect2.vcf'):
+def run_MuTect2(input_parameters, mem=8, nt=4, outvcf='MuTect2.vcf'):
     
     logdir         = input_parameters['output_directory'] + os.sep + 'logs'
     outfile        = logdir + os.sep + 'mutect2.{}.cmd'.format(ts)
@@ -118,9 +117,9 @@ def run_MuTect2(input_parameters, mem=4, nt=4, outvcf='MuTect2.vcf'):
         out.write( 'docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.1.0.0 \\\n' )
         out.write( 'java -Xmx{MEM}g -jar /gatk/gatk.jar Mutect2 \\\n'.format( MEM=mem) )
         out.write( '--reference /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '{SELECTOR_ARG}\n'.format(SELECTOR_ARG='--intervals /mnt/{}'.format( input_parameters['inclusion_region']) if input_parameters['inclusion_region'] else '' ) )
-        out.write( '-input /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
-        out.write( '-input /mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
+        out.write( '{SELECTOR_ARG} \\\n'.format(SELECTOR_ARG='--intervals /mnt/{}'.format( input_parameters['inclusion_region']) if input_parameters['inclusion_region'] else '' ) )
+        out.write( '--input /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
+        out.write( '--input /mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
         out.write( '--normal-sample ${normal_name} \\\n' )
         out.write( '--tumor-sample ${tumor_name} \\\n' )
         out.write( '--native-pair-hmm-threads {threads} \\\n'.format(threads=nt) )
@@ -386,7 +385,7 @@ def run_VarDict(input_parameters, mem=14, minVAF=0.05, outvcf='VarDict.vcf'):
 
         # Decide if Bed file needs to be "split" such that each line has a small enough region
         if total_bases/num_lines > 50000:
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION='latest') )
             out.write( '/opt/somaticseq/utilities/split_mergedBed.py \\\n' )
             out.write( '-infile /mnt/{SELECTOR} -outfile /mnt/{OUTDIR}/split_regions.bed\n\n'.format(SELECTOR=bed_file, OUTDIR=input_parameters['output_directory']) )
 
@@ -461,7 +460,7 @@ def run_LoFreq(input_parameters, mem=12, vcfprefix='LoFreq'):
     logdir         = input_parameters['output_directory'] + os.sep + 'logs'
     outfile        = logdir + os.sep + 'lofreq.{}.cmd'.format(ts)
     
-    bed_gz = os.path.basename(input_parameters['inclusion_region']) + '.gz'
+    dbsnp_gz       = os.path.basename(input_parameters['dbsnp_vcf']) + '.gz'
     
     with open(outfile, 'w') as out:
 
@@ -484,7 +483,7 @@ def run_LoFreq(input_parameters, mem=12, vcfprefix='LoFreq'):
         out.write( '-f /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
         out.write( '-o /mnt/{OUTDIR}/{VCF_PREFIX} \\\n'.format(OUTDIR=input_parameters['output_directory'], VCF_PREFIX=vcfprefix) )
         out.write( '{EXTRA_ARGS} \\\n'.format(EXTRA_ARGS=input_parameters['lofreq_arguments']) )
-        out.write( '-d /mnt/{DBSNP_GZ}\n'.format(DBSNP_GZ=bed_gz) )
+        out.write( '-d /mnt/{DBSNP_GZ}\n'.format(DBSNP_GZ=dbsnp_gz) )
 
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
         
@@ -571,7 +570,7 @@ def run_Strelka2(input_parameters, mem=4, outdirname='Strelka'):
         out.write( '--normalBam=/mnt/{NBAM} \\\n'.format( NBAM=input_parameters['normal_bam'] ) )
         out.write( '--referenceFasta=/mnt/{HUMAN_REFERENCE} \\\n'.format( HUMAN_REFERENCE=input_parameters['genome_reference'] ) )
         out.write( '--callMemMb={MEM} \\\n'.format(MEM=mem*1024) )
-        out.write( '--callRegions=/mnt/{BEDGZ} \\\n'.format(BEDGZ=bed_gz) )
+        out.write( '--callRegions=/mnt/{OUTDIR}/{BEDGZ} \\\n'.format(OUTDIR=input_parameters['output_directory'], BEDGZ=bed_gz) )
         out.write( '{EXOMEFLAG} {EXTRA_ARGS} \\\n'.format(EXOMEFLAG=exomeFlag, EXTRA_ARGS=input_parameters['strelka_config_arguments']) )
         out.write( '--runDir=/mnt/{OUTDIR}/{DIRNAME}\n\n'.format(OUTDIR=input_parameters['output_directory'], DIRNAME=outdirname) )        
         
@@ -586,8 +585,83 @@ def run_Strelka2(input_parameters, mem=4, outdirname='Strelka'):
 
 
 
+def run_SomaticSeq(input_parameters, mem=16):
+    
+    outdir         = input_parameters['output_directory'] + os.sep + input_parameters['somaticseq_directory']
+    logdir         = outdir + os.sep + 'logs'
+    outfile        = logdir + os.sep + 'somaticSeq.{}.cmd'.format(ts)
+    
+    trainFlag       = '--somaticseq-train'                                                 if input_parameters['train_somaticseq'] else ''
+    inclusion       = '--inclusion-region {}'.format(input_parameters['inclusion_region']) if input_parameters['inclusion_region'] else ''
+    exclusion       = '--exclusion-region {}'.format(input_parameters['exclusion_region']) if input_parameters['exclusion_region'] else ''
+    cosmic          = '--cosmic-vcf {}'.format(input_parameters['cosmic_vcf'])             if input_parameters['cosmic_vcf']       else ''
+    dbsnp           = '--dbsnp-vcf {}'.format(input_parameters['dbsnp_vcf'])               if input_parameters['dbsnp_vcf']        else ''
+    snvClassifier   = '--classifier-snv {}'.format(input_parameters['snv_classifier'])     if input_parameters['snv_classifier']   else ''
+    indelClassifier = '--classifier-indel {}'.format(input_parameters['indel_classifier']) if input_parameters['indel_classifier'] else ''
+    trueSnvs        = '--truth-snv {}'.format(input_parameters['truth_snv'])               if input_parameters['truth_snv']        else ''
+    trueIndels      = '--truth-indel {}'.format(input_parameters['truth_indel'])           if input_parameters['truth_indel']      else ''
+    
+    mutect2       = '{}/MuTect2.vcf'.format(input_parameters['output_directory'])                                    if input_parameters['run_mutect2'] else ''
+    varscan_snv   = '{}/VarScan2.snp.vcf'.format(input_parameters['output_directory'])                               if input_parameters['run_varscan2'] else ''
+    varscan_indel = '{}/VarScan2.indel.vcf'.format(input_parameters['output_directory'])                             if input_parameters['run_varscan2'] else ''
+    jsm2          = '{}/JointSNVMix2.vcf'.format(input_parameters['output_directory'])                               if input_parameters['run_jointsnvmix2'] else ''
+    sniper        = '{}/SomaticSniper.vcf'.format(input_parameters['output_directory'])                              if input_parameters['run_somaticsniper'] else ''
+    vardict       = '{}/VarDict.vcf'.format(input_parameters['output_directory'])                                    if input_parameters['run_vardict'] else ''
+    muse          = '{}/MuSE.vcf'.format(input_parameters['output_directory'])                                       if input_parameters['run_muse'] else ''
+    lofreq_snv    = '{}/LoFreq.somatic_final.snvs.vcf.gz'.format(input_parameters['output_directory'])               if input_parameters['run_lofreq'] else ''
+    lofreq_indel  = '{}/LoFreq.somatic_final.indels.vcf.gz'.format(input_parameters['output_directory'])             if input_parameters['run_lofreq'] else ''
+    scalpel       = '{}/Scalpel.vcf'.format(input_parameters['output_directory'])                                    if input_parameters['run_scalpel'] else ''
+    strelka_snv   = '{}/Strelka/results/variants/somatic.snvs.vcf.gz'.format(input_parameters['output_directory'])   if input_parameters['run_strelka2'] else ''
+    strelka_indel = '{}/Strelka/results/variants/somatic.indels.vcf.gz'.format(input_parameters['output_directory']) if input_parameters['run_strelka2'] else ''
+    
+    os.makedirs(logdir, exist_ok=True)
+    with open(outfile, 'w') as out:
+        
+        out.write( "#!/bin/bash\n\n" )
+        
+        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -S /bin/bash\n' )
+        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
+        out.write( 'set -e\n\n' )
+        
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
+        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+        out.write( '/opt/somaticseq/somaticseq/run_somaticseq.py \\\n' )
+        out.write( '{TRAIN} \\\n'.format(TRAIN=trainFlag) )
+        out.write( '--output-directory /mnt/{OUTDIR} \\\n'.format(OUTDIR=outdir) )
+        out.write( '--genome-reference /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
+        out.write( '{INCLUSION} \\\n'.format(INCLUSION=inclusion) )
+        out.write( '{EXCLUSION} \\\n'.format(EXCLUSION=exclusion) )
+        out.write( '{COSMIC} \\\n'.format(COSMIC=cosmic) )
+        out.write( '{DBSNP} \\\n'.format(DBSNP=dbsnp) )
+        out.write( '{SNV_CLASSIFIER} \\\n'.format(SNV_CLASSIFIER=snvClassifier) )
+        out.write( '{INDEL_CLASSIFIER} \\\n'.format(INDEL_CLASSIFIER=indelClassifier) )
+        out.write( '{TRUE_SNV} \\\n'.format(TRUE_SNV=trueSnvs) )
+        out.write( '{TRUE_INDEL} \\\n'.format(TRUE_INDEL=trueIndels) )
+        out.write( '{EXTRA_ARGS} \\\n'.format(EXTRA_ARGS=input_parameters['somaticseq_arguments']) )
+        out.write( 'paired \\\n' )
+        out.write( '--tumor-bam-file  /mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
+        out.write( '--normal-bam-file  /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
+        out.write( '{MUTECT2} \\\n'.format(MUTECT2=mutect2) )
+        out.write( '{VARSCAN_SNV} \\\n'.format(VARSCAN_SNV=varscan_snv) )
+        out.write( '{VARSCAN_INDEL} \\\n'.format(VARSCAN_INDEL=varscan_indel) )
+        out.write( '{JSM} \\\n'.format(JSM=jsm2) )
+        out.write( '{SNIPER} \\\n'.format(SNIPER=sniper) )
+        out.write( '{VARDICT} \\\n'.format(VARDICT=vardict) )
+        out.write( '{MUSE} \\\n'.format(MUSE=muse) )
+        out.write( '{LOFREQ_SNV} \\\n'.format(LOFREQ_SNV=lofreq_snv) )
+        out.write( '{LOFREQ_INDEL} \\\n'.format(LOFREQ_INDEL=lofreq_indel) )
+        out.write( '{SCALPEL} \\\n'.format(SCALPEL=scalpel) )
+        out.write( '{STRELKA2_SNV} \\\n'.format(STRELKA2_SNV=strelka_snv) )
+        out.write( '{STRELKA2_INDEL}\n'.format(STRELKA2_INDEL=strelka_indel) )
 
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+        
+    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
+
+    return returnCode
 
 
 
@@ -657,3 +731,5 @@ if __name__ == '__main__':
         if workflowArguments['run_strelka2']:
             run_Strelka2( perThreadParameter )
 
+        if workflowArguments['run_somaticseq']:
+            run_SomaticSeq( perThreadParameter )
