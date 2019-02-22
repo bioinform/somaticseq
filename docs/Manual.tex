@@ -823,7 +823,8 @@ A schematic of the BAMSurgeon simulation procedure
 
 
 \begin{center}
- \includegraphics[width=6.5in]{../utilities/dockered_pipelines/bamSimulator/replicate_sim.jpg}
+
+  \includegraphics[width=6.5in]{../utilities/dockered_pipelines/bamSimulator/replicate_sim.jpg}
  % replicate_sim.jpg: 2390x586 px, 144dpi, 42.16x10.34 cm, bb=0 0 1195 293
 \end{center}
 
@@ -1437,7 +1438,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
         \begin{itemize}
          
          \item 
-         Replace submission scripts previously in bash by python. 
+         Re-write in Python some somatic caller run script generators that were written in bash, at utilities/dockered\_pipelines/create\_tumor\_normal\_run\_scripts.py and create\_tumor\_only\_run\_scripts.py
                   
         \end{itemize}
 
