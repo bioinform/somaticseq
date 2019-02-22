@@ -115,7 +115,7 @@ def run_MuTect2(input_parameters, mem=8, nt=4, outvcf='MuTect2.vcf'):
         out.write( '--reference /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
         
         if input_parameters['inclusion_region']:
-            out.write( '--intervals /mnt/{INCLUSION}'.format( INCLUSION=input_parameters['inclusion_region']) )
+            out.write( '--intervals /mnt/{INCLUSION} \\\n'.format( INCLUSION=input_parameters['inclusion_region']) )
         
         out.write( '--input /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
         out.write( '--input /mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
