@@ -18,8 +18,7 @@ with open(RepoROOT + os.sep + 'VERSION') as fn:
     line_i = fn.readline().rstrip()
     VERSION = line_i.split('=')[1].lstrip('v')
 
-
-ts = datetime.now().isoformat().replace(':', '.')
+ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 
 
 
@@ -79,7 +78,7 @@ def run():
     parser.add_argument('--scalpel-two-pass',         action='store_true', help='Invokes two-pass setting in scalpel')
     parser.add_argument('-exome', '--exome-setting',  action='store_true', help='Invokes exome setting in Strelka2 and MuSE')
 
-    parser.add_argument('-nt',        '--threads',        type=int, help='Split the input regions into this many threads', default=8)
+    parser.add_argument('-nt',        '--threads',        type=int, help='Split the input regions into this many threads', default=1)
 
     # Parse the arguments:
     args = parser.parse_args()
@@ -114,7 +113,7 @@ def run_MuTect2(input_parameters, mem=8, nt=4, outvcf='MuTect2.vcf'):
 
         out.write( '\n' )
         
-        out.write( 'docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.1.0.0 \\\n' )
+        out.write( 'docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.12.0 \\\n' )
         out.write( 'java -Xmx{MEM}g -jar /gatk/gatk.jar Mutect2 \\\n'.format( MEM=mem) )
         out.write( '--reference /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
         out.write( '{SELECTOR_ARG} \\\n'.format(SELECTOR_ARG='--intervals /mnt/{}'.format( input_parameters['inclusion_region']) if input_parameters['inclusion_region'] else '' ) )
@@ -124,11 +123,11 @@ def run_MuTect2(input_parameters, mem=8, nt=4, outvcf='MuTect2.vcf'):
         out.write( '--tumor-sample ${tumor_name} \\\n' )
         out.write( '--native-pair-hmm-threads {threads} \\\n'.format(threads=nt) )
         out.write( '{EXTRA_ARGUMENTS} \\\n'.format(EXTRA_ARGUMENTS=input_parameters['mutect2_arguments']) )
-        out.write( '--output /mnt/{OUTDIR}/unfiltered.{OUTVCF}.vcf\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
+        out.write( '--output /mnt/{OUTDIR}/unfiltered.{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
 
         out.write( '\n' )
 
-        out.write( 'docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.1.0.0 \\\n' )
+        out.write( 'docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.12.0 \\\n' )
         out.write( 'java -Xmx{MEM}g -jar /gatk/gatk.jar FilterMutectCalls \\\n'.format( MEM=mem ) )
         out.write( '--variant /mnt/{OUTDIR}/unfiltered.{OUTVCF} \\\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
         out.write( '{EXTRA_ARGUMENTS} \\\n'.format(EXTRA_ARGUMENTS=input_parameters['mutect2_filter_arguments']) )
