@@ -190,7 +190,7 @@ def run_VarScan2(input_parameters, mem=4, minVAF=0.10, minMQ=25, minBQ=20, outvc
         out.write( '/mnt/{OUTDIR}/{OUTNAME} {EXTRA_ARGS} --output-vcf 1 --min-var-freq {VAF}\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname, VAF=minVAF, EXTRA_ARGS=input_parameters['varscan_arguments'] ) )
                 
         out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
-        out.write( 'java -Xmx${MEM}g -jar /VarScan2.3.7.jar processSomatic \\\n'.format(MEM=mem) )
+        out.write( 'java -Xmx{MEM}g -jar /VarScan2.3.7.jar processSomatic \\\n'.format(MEM=mem) )
         out.write( '/mnt/{OUTDIR}/{OUTNAME}.snp.vcf\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
                 
         out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
@@ -462,7 +462,7 @@ def run_MuSE(input_parameters, mem=8, outvcf='MuSE.vcf'):
 
 
 
-def run_LoFreq(input_parameters, mem=12, vcfprefix='LoFreq'):
+def run_LoFreq(input_parameters, mem=12, vcfprefix='LoFreq.'):
     
     logdir   = input_parameters['output_directory'] + os.sep + 'logs'
     outfile  = logdir + os.sep + 'lofreq.{}.cmd'.format(ts)
