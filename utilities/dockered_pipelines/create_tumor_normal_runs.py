@@ -109,9 +109,7 @@ def run_MuTect2(input_parameters, mem=8, nt=4, outvcf='MuTect2.vcf'):
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
         out.write( 'tumor_name=`docker run --rm -v /:/mnt -u $UID --memory 1g lethalfang/samtools:1.7 samtools view -H /mnt/{TBAM} | egrep -w \'^@RG\' | grep -Po \'SM:[^\\t$]+\' | sed \'s/SM://\' | uniq | sed -e \'s/[[:space:]]*$//\'`\n'.format(TBAM=input_parameters['tumor_bam']) )
-        out.write( 'normal_name=`docker run --rm -v /:/mnt -u $UID --memory 1g lethalfang/samtools:1.7 samtools view -H /mnt/{NBAM} | egrep -w \'^@RG\' | grep -Po \'SM:[^\\t$]+\' | sed \'s/SM://\' | uniq | sed -e \'s/[[:space:]]*$//\'`\n'.format(NBAM=input_parameters['normal_bam']) )
-
-        out.write( '\n' )
+        out.write( 'normal_name=`docker run --rm -v /:/mnt -u $UID --memory 1g lethalfang/samtools:1.7 samtools view -H /mnt/{NBAM} | egrep -w \'^@RG\' | grep -Po \'SM:[^\\t$]+\' | sed \'s/SM://\' | uniq | sed -e \'s/[[:space:]]*$//\'`\n\n'.format(NBAM=input_parameters['normal_bam']) )
         
         out.write( 'docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.12.0 \\\n' )
         out.write( 'java -Xmx{MEM}g -jar /gatk/gatk.jar Mutect2 \\\n'.format( MEM=mem) )
@@ -123,9 +121,7 @@ def run_MuTect2(input_parameters, mem=8, nt=4, outvcf='MuTect2.vcf'):
         out.write( '--tumor-sample ${tumor_name} \\\n' )
         out.write( '--native-pair-hmm-threads {threads} \\\n'.format(threads=nt) )
         out.write( '{EXTRA_ARGUMENTS} \\\n'.format(EXTRA_ARGUMENTS=input_parameters['mutect2_arguments']) )
-        out.write( '--output /mnt/{OUTDIR}/unfiltered.{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-
-        out.write( '\n' )
+        out.write( '--output /mnt/{OUTDIR}/unfiltered.{OUTVCF}\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
 
         out.write( 'docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.12.0 \\\n' )
         out.write( 'java -Xmx{MEM}g -jar /gatk/gatk.jar FilterMutectCalls \\\n'.format( MEM=mem ) )
@@ -183,30 +179,21 @@ def run_VarScan2(input_parameters, mem=4, minVAF=0.10, minMQ=25, minBQ=20, outvc
         out.write( 'java -Xmx{MEM}g -jar /VarScan2.3.7.jar somatic \\\n'.format(MEM=mem) )
         out.write( '/mnt/{OUTDIR}/normal.pileup \\\n'.format(OUTDIR=input_parameters['output_directory']) )
         out.write( '/mnt/{OUTDIR}/tumor.pileup \\\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( '/mnt/{OUTDIR}/{OUTNAME} {EXTRA_ARGS} --output-vcf 1 --min-var-freq {VAF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname, VAF=minVAF, EXTRA_ARGS=input_parameters['varscan_arguments'] ) )
-        
-        out.write( '\n' )
-        
+        out.write( '/mnt/{OUTDIR}/{OUTNAME} {EXTRA_ARGS} --output-vcf 1 --min-var-freq {VAF}\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname, VAF=minVAF, EXTRA_ARGS=input_parameters['varscan_arguments'] ) )
+                
         out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
         out.write( 'java -Xmx${MEM}g -jar /VarScan2.3.7.jar processSomatic \\\n'.format(MEM=mem) )
-        out.write( '/mnt/{OUTDIR}/{OUTNAME}.snp.vcf\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
-        
-        out.write( '\n' )
-        
+        out.write( '/mnt/{OUTDIR}/{OUTNAME}.snp.vcf\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
+                
         out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
         out.write( 'java -Xmx{MEM}g -jar /VarScan2.3.7.jar somaticFilter \\\n'.format(MEM=mem) )
         out.write( '/mnt/{OUTDIR}/{OUTNAME}.snp.Somatic.hc.vcf \\\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
         out.write( '-indel-file /mnt/{OUTDIR}/{OUTNAME}.indel.vcf \\\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
-        out.write( '-output-file /mnt/{OUTDIR}/{OUTNAME}.snp.Somatic.hc.filter.vcf\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
-        
-        out.write( '\n' )
-        
+        out.write( '-output-file /mnt/{OUTDIR}/{OUTNAME}.snp.Somatic.hc.filter.vcf\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
+                
         out.write( 'rm {OUTDIR}/normal.pileup\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( 'rm {OUTDIR}/tumor.pileup\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( '\n' )
+        out.write( 'rm {OUTDIR}/tumor.pileup\n'.format(OUTDIR=input_parameters['output_directory']) )        
         
-        
-    
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
     
         
@@ -268,8 +255,7 @@ def run_JointSNVMix2(input_parameters, mem=8, skip_size=10000, converge_threshol
         out.write( "/mnt/{OUTDIR}/jsm.parameter.cfg \\\n".format(OUTDIR=input_parameters['output_directory']) )
         out.write( '/dev/stdout | awk -F \'\\t\' \'NR!=1 && \\$4!=\\"N\\" && \\$10+\\$11>=0.95\' | \\\n' )
         out.write( 'awk -F \'\\t\' \'{print \\$1 \\"\\t\\" \\$2 \\"\\t.\\t\\" \\$3 \\"\\t\\" \\$4 \\"\\t.\\t.\\tAAAB=\\" \\$10 \\";AABB=\\" \\$11 \\"\\tRD:AD\\t\\" \\$5 \\":\\" \\$6 \\"\\t\\" \\$7 \\":\\" \\$8}\' \\\n' )
-        out.write( '| /opt/vcfsorter.pl /mnt/{GRCh_DICT} - >> /mnt/{OUTDIR}/{OUTVCF}"\n'.format(GRCh_DICT=reference_dict, OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-        out.write( '\n' )
+        out.write( '| /opt/vcfsorter.pl /mnt/{GRCh_DICT} - >> /mnt/{OUTDIR}/{OUTVCF}"\n\n'.format(GRCh_DICT=reference_dict, OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
         
         if input_parameters['threads'] > 1:
             out.write( '\n\ni=1\n' )
@@ -279,8 +265,7 @@ def run_JointSNVMix2(input_parameters, mem=8, skip_size=10000, converge_threshol
             out.write( '    i=$(( $i + 1 ))\n' )
             out.write( 'done\n' )
         
-        out.write( '\n' )
-        out.write( 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
         
     returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
 
@@ -322,8 +307,7 @@ def run_SomaticSniper(input_parameters, MQ=1, somaticQuality=15, prior=0.00001, 
             out.write( '    i=$(( $i + 1 ))\n' )
             out.write( 'done\n' )
         
-        out.write( '\n' )
-        out.write( 'echo -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
 
 
 
