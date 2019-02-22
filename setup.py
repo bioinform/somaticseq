@@ -20,6 +20,6 @@ setup(
     install_requires=['pysam', 'numpy', 'scipy'],
     scripts=['somaticseq/run_somaticseq.py',
              'somaticseq_parallel.py',
-             'utilities/dockered_pipelines/create_tumor_normal_runs.py',
-             'utilities/dockered_pipelines/create_tumor_only_runs.py',],
+             'utilities/dockered_pipelines/create_tumor_normal_run_scripts.py',
+             'utilities/dockered_pipelines/create_tumor_only_run_scripts.py',],
 )
