@@ -676,7 +676,7 @@ def run_SomaticSeq(input_parameters, mem=16):
         out.write( '--normal-bam-file  /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
         
         if input_parameters['run_mutect2']:
-            out.write( '--mutect-vcf {MUTECT2} \\\n'.format(MUTECT2=mutect2) )
+            out.write( '--mutect2-vcf {MUTECT2} \\\n'.format(MUTECT2=mutect2) )
 
         if input_parameters['run_varscan2']:
             out.write( '--varscan-snv {VARSCAN_SNV} \\\n'.format(VARSCAN_SNV=varscan_snv) )
