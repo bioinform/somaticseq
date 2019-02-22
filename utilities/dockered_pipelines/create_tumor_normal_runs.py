@@ -90,7 +90,6 @@ def run():
 
 
 
-
 def run_MuTect2(input_parameters, mem=8, nt=4, outvcf='MuTect2.vcf'):
     
     logdir  = input_parameters['output_directory'] + os.sep + 'logs'
@@ -468,7 +467,7 @@ def run_LoFreq(input_parameters, mem=12, vcfprefix='LoFreq'):
     logdir   = input_parameters['output_directory'] + os.sep + 'logs'
     outfile  = logdir + os.sep + 'lofreq.{}.cmd'.format(ts)
     
-    dbsnp_gz = os.path.basename(input_parameters['dbsnp_vcf']) + '.gz'
+    dbsnp_gz = input_parameters['dbsnp_vcf'] + '.gz'
     
     with open(outfile, 'w') as out:
 
