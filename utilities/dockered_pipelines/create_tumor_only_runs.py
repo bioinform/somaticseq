@@ -318,75 +318,105 @@ def run_SomaticSeq(input_parameters, mem=16):
     outdir         = input_parameters['output_directory'] + os.sep + input_parameters['somaticseq_directory']
     logdir         = outdir + os.sep + 'logs'
     outfile        = logdir + os.sep + 'somaticSeq.{}.cmd'.format(ts)
-    
-    trainFlag       = '--somaticseq-train'                                                 if input_parameters['train_somaticseq'] else ''
-    inclusion       = '--inclusion-region {}'.format(input_parameters['inclusion_region']) if input_parameters['inclusion_region'] else ''
-    exclusion       = '--exclusion-region {}'.format(input_parameters['exclusion_region']) if input_parameters['exclusion_region'] else ''
-    cosmic          = '--cosmic-vcf {}'.format(input_parameters['cosmic_vcf'])             if input_parameters['cosmic_vcf']       else ''
-    dbsnp           = '--dbsnp-vcf {}'.format(input_parameters['dbsnp_vcf'])               if input_parameters['dbsnp_vcf']        else ''
-    snvClassifier   = '--classifier-snv {}'.format(input_parameters['snv_classifier'])     if input_parameters['snv_classifier']   else ''
-    indelClassifier = '--classifier-indel {}'.format(input_parameters['indel_classifier']) if input_parameters['indel_classifier'] else ''
-    trueSnvs        = '--truth-snv {}'.format(input_parameters['truth_snv'])               if input_parameters['truth_snv']        else ''
-    trueIndels      = '--truth-indel {}'.format(input_parameters['truth_indel'])           if input_parameters['truth_indel']      else ''
-    
-    mutect2       = '{}/MuTect2.vcf'.format(input_parameters['output_directory'])                                    if input_parameters['run_mutect2'] else ''
-    varscan_snv   = '{}/VarScan2.snp.vcf'.format(input_parameters['output_directory'])                               if input_parameters['run_varscan2'] else ''
-    varscan_indel = '{}/VarScan2.indel.vcf'.format(input_parameters['output_directory'])                             if input_parameters['run_varscan2'] else ''
-    jsm2          = '{}/JointSNVMix2.vcf'.format(input_parameters['output_directory'])                               if input_parameters['run_jointsnvmix2'] else ''
-    sniper        = '{}/SomaticSniper.vcf'.format(input_parameters['output_directory'])                              if input_parameters['run_somaticsniper'] else ''
-    vardict       = '{}/VarDict.vcf'.format(input_parameters['output_directory'])                                    if input_parameters['run_vardict'] else ''
-    muse          = '{}/MuSE.vcf'.format(input_parameters['output_directory'])                                       if input_parameters['run_muse'] else ''
-    lofreq_snv    = '{}/LoFreq.somatic_final.snvs.vcf.gz'.format(input_parameters['output_directory'])               if input_parameters['run_lofreq'] else ''
-    lofreq_indel  = '{}/LoFreq.somatic_final.indels.vcf.gz'.format(input_parameters['output_directory'])             if input_parameters['run_lofreq'] else ''
-    scalpel       = '{}/Scalpel.vcf'.format(input_parameters['output_directory'])                                    if input_parameters['run_scalpel'] else ''
-    strelka_snv   = '{}/Strelka/results/variants/somatic.snvs.vcf.gz'.format(input_parameters['output_directory'])   if input_parameters['run_strelka2'] else ''
-    strelka_indel = '{}/Strelka/results/variants/somatic.indels.vcf.gz'.format(input_parameters['output_directory']) if input_parameters['run_strelka2'] else ''
-    
+
+    mutect2       = '{}/MuTect2.vcf'.format(input_parameters['output_directory'])
+    varscan_snv   = '{}/VarScan2.snp.vcf'.format(input_parameters['output_directory'])
+    varscan_indel = '{}/VarScan2.indel.vcf'.format(input_parameters['output_directory'])
+    jsm2          = '{}/JointSNVMix2.vcf'.format(input_parameters['output_directory'])
+    sniper        = '{}/SomaticSniper.vcf'.format(input_parameters['output_directory'])
+    vardict       = '{}/VarDict.vcf'.format(input_parameters['output_directory'])
+    muse          = '{}/MuSE.vcf'.format(input_parameters['output_directory'])
+    lofreq_snv    = '{}/LoFreq.somatic_final.snvs.vcf.gz'.format(input_parameters['output_directory'])
+    lofreq_indel  = '{}/LoFreq.somatic_final.indels.vcf.gz'.format(input_parameters['output_directory'])
+    scalpel       = '{}/Scalpel.vcf'.format(input_parameters['output_directory'])
+    strelka_snv   = '{}/Strelka/results/variants/somatic.snvs.vcf.gz'.format(input_parameters['output_directory'])
+    strelka_indel = '{}/Strelka/results/variants/somatic.indels.vcf.gz'.format(input_parameters['output_directory'])
+
     os.makedirs(logdir, exist_ok=True)
     with open(outfile, 'w') as out:
-        
+
         out.write( "#!/bin/bash\n\n" )
-        
+
         out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
         out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
         out.write( '#$ -S /bin/bash\n' )
         out.write( '#$ -l h_vmem={}G\n'.format(mem) )
         out.write( 'set -e\n\n' )
-        
+
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
         out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
         out.write( '/opt/somaticseq/somaticseq/run_somaticseq.py \\\n' )
-        out.write( '{TRAIN} \\\n'.format(TRAIN=trainFlag) )
+
+        if input_parameters['train_somaticseq']:
+            out.write( '--somaticseq-train \\\n' )
+
         out.write( '--output-directory /mnt/{OUTDIR} \\\n'.format(OUTDIR=outdir) )
         out.write( '--genome-reference /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '{INCLUSION} \\\n'.format(INCLUSION=inclusion) )
-        out.write( '{EXCLUSION} \\\n'.format(EXCLUSION=exclusion) )
-        out.write( '{COSMIC} \\\n'.format(COSMIC=cosmic) )
-        out.write( '{DBSNP} \\\n'.format(DBSNP=dbsnp) )
-        out.write( '{SNV_CLASSIFIER} \\\n'.format(SNV_CLASSIFIER=snvClassifier) )
-        out.write( '{INDEL_CLASSIFIER} \\\n'.format(INDEL_CLASSIFIER=indelClassifier) )
-        out.write( '{TRUE_SNV} \\\n'.format(TRUE_SNV=trueSnvs) )
-        out.write( '{TRUE_INDEL} \\\n'.format(TRUE_INDEL=trueIndels) )
-        out.write( '{EXTRA_ARGS} \\\n'.format(EXTRA_ARGS=input_parameters['somaticseq_arguments']) )
+
+        if input_parameters['inclusion_region']:
+            out.write( '--inclusion-region {} \\\n'.format(input_parameters['inclusion_region']) )
+
+        if input_parameters['exclusion_region']:
+            out.write( '--exclusion-region {} \\\n'.format(input_parameters['exclusion_region'])  )
+
+        if input_parameters['cosmic_vcf']:
+            out.write( '--cosmic-vcf {} \\\n'.format(input_parameters['cosmic_vcf']) )
+
+        if input_parameters['dbsnp_vcf']:
+            out.write( '--dbsnp-vcf {} \\\n'.format(input_parameters['dbsnp_vcf']) )
+
+        if input_parameters['snv_classifier']:
+            out.write( '--classifier-snv {} \\\n'.format(input_parameters['snv_classifier']) )
+    
+        if input_parameters['indel_classifier']:
+            out.write( '--classifier-indel {} \\\n'.format(input_parameters['indel_classifier']) )
+
+        if input_parameters['truth_snv']:
+            out.write( '--truth-snv {}'.format(input_parameters['truth_snv']) )
+
+        if input_parameters['truth_indel']:
+            out.write( '--truth-indel {} \\\n'.format(input_parameters['truth_indel']) )
+
+        if input_parameters['somaticseq_arguments']:
+            out.write( '{EXTRA_ARGS} \\\n'.format(EXTRA_ARGS=input_parameters['somaticseq_arguments']) )
+
         out.write( 'paired \\\n' )
         out.write( '--tumor-bam-file  /mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
         out.write( '--normal-bam-file  /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
-        out.write( '{MUTECT2} \\\n'.format(MUTECT2=mutect2) )
-        out.write( '{VARSCAN_SNV} \\\n'.format(VARSCAN_SNV=varscan_snv) )
-        out.write( '{VARSCAN_INDEL} \\\n'.format(VARSCAN_INDEL=varscan_indel) )
-        out.write( '{JSM} \\\n'.format(JSM=jsm2) )
-        out.write( '{SNIPER} \\\n'.format(SNIPER=sniper) )
-        out.write( '{VARDICT} \\\n'.format(VARDICT=vardict) )
-        out.write( '{MUSE} \\\n'.format(MUSE=muse) )
-        out.write( '{LOFREQ_SNV} \\\n'.format(LOFREQ_SNV=lofreq_snv) )
-        out.write( '{LOFREQ_INDEL} \\\n'.format(LOFREQ_INDEL=lofreq_indel) )
-        out.write( '{SCALPEL} \\\n'.format(SCALPEL=scalpel) )
-        out.write( '{STRELKA2_SNV} \\\n'.format(STRELKA2_SNV=strelka_snv) )
-        out.write( '{STRELKA2_INDEL}\n'.format(STRELKA2_INDEL=strelka_indel) )
+        
+        if input_parameters['run_mutect2']:
+            out.write( '--mutect-vcf {MUTECT2} \\\n'.format(MUTECT2=mutect2) )
+
+        if input_parameters['run_varscan2']:
+            out.write( '{--varscan-snv VARSCAN_SNV} \\\n'.format(VARSCAN_SNV=varscan_snv) )
+            out.write( '{--varscan-indel VARSCAN_INDEL} \\\n'.format(VARSCAN_INDEL=varscan_indel) )
+
+        if input_parameters['run_jointsnvmix2']:
+            out.write( '--jsm-vcf {JSM} \\\n'.format(JSM=jsm2) )
+
+        if input_parameters['run_somaticsniper']:
+            out.write( '--somaticsniper-vcf {SNIPER} \\\n'.format(SNIPER=sniper) )
+
+        if input_parameters['run_vardict']:
+            out.write( '--vardict-vcf {VARDICT} \\\n'.format(VARDICT=vardict) )
+
+        if input_parameters['run_muse']:
+            out.write( '--muse-vcf {MUSE} \\\n'.format(MUSE=muse) )
+
+        if input_parameters['run_lofreq']:
+            out.write( '--lofreq-snv {LOFREQ_SNV} \\\n'.format(LOFREQ_SNV=lofreq_snv) )
+            out.write( '--lofreq-indel {LOFREQ_INDEL} \\\n'.format(LOFREQ_INDEL=lofreq_indel) )
+
+        if input_parameters['run_scalpel']:
+            out.write( '--scalpel-vcf {SCALPEL} \\\n'.format(SCALPEL=scalpel) )
+
+        if input_parameters['run_strelka2']:
+            out.write( '--strelka-snv {STRELKA2_SNV} \\\n'.format(STRELKA2_SNV=strelka_snv) )
+            out.write( '--strelka-indel {STRELKA2_INDEL}\n'.format(STRELKA2_INDEL=strelka_indel) )
 
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
-        
+
     returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
 
     return returnCode
