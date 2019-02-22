@@ -609,18 +609,18 @@ def run_SomaticSeq(input_parameters, mem=16):
     logdir  = outdir + os.sep + 'logs'
     outfile = logdir + os.sep + 'somaticSeq.{}.cmd'.format(ts)
 
-    mutect2       = '{}/MuTect2.vcf'.format(input_parameters['output_directory'])
-    varscan_snv   = '{}/VarScan2.snp.vcf'.format(input_parameters['output_directory'])
-    varscan_indel = '{}/VarScan2.indel.vcf'.format(input_parameters['output_directory'])
-    jsm2          = '{}/JointSNVMix2.vcf'.format(input_parameters['output_directory'])
-    sniper        = '{}/SomaticSniper.vcf'.format(input_parameters['output_directory'])
-    vardict       = '{}/VarDict.vcf'.format(input_parameters['output_directory'])
-    muse          = '{}/MuSE.vcf'.format(input_parameters['output_directory'])
-    lofreq_snv    = '{}/LoFreq.somatic_final.snvs.vcf.gz'.format(input_parameters['output_directory'])
-    lofreq_indel  = '{}/LoFreq.somatic_final.indels.vcf.gz'.format(input_parameters['output_directory'])
-    scalpel       = '{}/Scalpel.vcf'.format(input_parameters['output_directory'])
-    strelka_snv   = '{}/Strelka/results/variants/somatic.snvs.vcf.gz'.format(input_parameters['output_directory'])
-    strelka_indel = '{}/Strelka/results/variants/somatic.indels.vcf.gz'.format(input_parameters['output_directory'])
+    mutect2       = '/mnt/{}/MuTect2.vcf'.format(input_parameters['output_directory'])
+    varscan_snv   = '/mnt/{}/VarScan2.snp.vcf'.format(input_parameters['output_directory'])
+    varscan_indel = '/mnt/{}/VarScan2.indel.vcf'.format(input_parameters['output_directory'])
+    jsm2          = '/mnt/{}/JointSNVMix2.vcf'.format(input_parameters['output_directory'])
+    sniper        = '/mnt/{}/SomaticSniper.vcf'.format(input_parameters['output_directory'])
+    vardict       = '/mnt/{}/VarDict.vcf'.format(input_parameters['output_directory'])
+    muse          = '/mnt/{}/MuSE.vcf'.format(input_parameters['output_directory'])
+    lofreq_snv    = '/mnt/{}/LoFreq.somatic_final.snvs.vcf.gz'.format(input_parameters['output_directory'])
+    lofreq_indel  = '/mnt/{}/LoFreq.somatic_final.indels.vcf.gz'.format(input_parameters['output_directory'])
+    scalpel       = '/mnt/{}/Scalpel.vcf'.format(input_parameters['output_directory'])
+    strelka_snv   = '/mnt/{}/Strelka/results/variants/somatic.snvs.vcf.gz'.format(input_parameters['output_directory'])
+    strelka_indel = '/mnt/{}/Strelka/results/variants/somatic.indels.vcf.gz'.format(input_parameters['output_directory'])
 
     os.makedirs(logdir, exist_ok=True)
     with open(outfile, 'w') as out:
@@ -645,28 +645,28 @@ def run_SomaticSeq(input_parameters, mem=16):
         out.write( '--genome-reference /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
 
         if input_parameters['inclusion_region']:
-            out.write( '--inclusion-region {} \\\n'.format(input_parameters['inclusion_region']) )
+            out.write( '--inclusion-region /mnt/{} \\\n'.format(input_parameters['inclusion_region']) )
 
         if input_parameters['exclusion_region']:
-            out.write( '--exclusion-region {} \\\n'.format(input_parameters['exclusion_region'])  )
+            out.write( '--exclusion-region /mnt/{} \\\n'.format(input_parameters['exclusion_region'])  )
 
         if input_parameters['cosmic_vcf']:
-            out.write( '--cosmic-vcf {} \\\n'.format(input_parameters['cosmic_vcf']) )
+            out.write( '--cosmic-vcf /mnt/{} \\\n'.format(input_parameters['cosmic_vcf']) )
 
         if input_parameters['dbsnp_vcf']:
-            out.write( '--dbsnp-vcf {} \\\n'.format(input_parameters['dbsnp_vcf']) )
+            out.write( '--dbsnp-vcf /mnt/{} \\\n'.format(input_parameters['dbsnp_vcf']) )
 
         if input_parameters['snv_classifier']:
-            out.write( '--classifier-snv {} \\\n'.format(input_parameters['snv_classifier']) )
+            out.write( '--classifier-snv /mnt/{} \\\n'.format(input_parameters['snv_classifier']) )
     
         if input_parameters['indel_classifier']:
-            out.write( '--classifier-indel {} \\\n'.format(input_parameters['indel_classifier']) )
+            out.write( '--classifier-indel /mnt/{} \\\n'.format(input_parameters['indel_classifier']) )
 
         if input_parameters['truth_snv']:
-            out.write( '--truth-snv {}'.format(input_parameters['truth_snv']) )
+            out.write( '--truth-snv /mnt/{}'.format(input_parameters['truth_snv']) )
 
         if input_parameters['truth_indel']:
-            out.write( '--truth-indel {} \\\n'.format(input_parameters['truth_indel']) )
+            out.write( '--truth-indel /mnt/{} \\\n'.format(input_parameters['truth_indel']) )
 
         if input_parameters['somaticseq_arguments']:
             out.write( '{EXTRA_ARGS} \\\n'.format(EXTRA_ARGS=input_parameters['somaticseq_arguments']) )
