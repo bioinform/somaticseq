@@ -9,10 +9,10 @@ This describes a simple way to generate run scripts for each mutation caller we 
 
 ## Example Commands
 
-You may run ```create_tumor_normal_run_scripts.py -h``` to see all the available options for this command.
+You may run ```makeSomaticScripts.py [paired|single] -h``` to see all the available options for this command, in either paired (tumor-normal) or single (tumor-only) mode.
 
 ### Majority-consensus mode (default)
-The following command will create scripts for MuTect2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and Strelka.
+The following command will create scripts for MuTect2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and Strelka in tumor-normal modes.
 Each caller (with the exception of SomaticSniper here) will be split into 12 threads based on equal number of base pairs interrogated in each thread. 
 Then, it will create the SomaticSeq script that merges those 7 callers. This command defaults to majority-vote consensus.
 
@@ -21,7 +21,7 @@ If you do `--action qsub` instead, then those mutation caller scripts will be qs
 You'll still need to mantually run/submit the SomaticSeq script after all the caller jobs are done.
 
 ```
-$PATH/TO/somaticseq/utilities/dockered_pipelines/create_tumor_normal_run_scripts.py \
+$PATH/TO/somaticseq/utilities/dockered_pipelines/makeSomaticScripts.py paired \
 --normal-bam       /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam        /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
@@ -45,6 +45,17 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/create_tumor_normal_run_scripts
 Our tumor-only workflows are not as well validated as the tumor-normal workflows, but SomaticSeq does support it.
 
 Only call for callers that support single-sample modes, i.e., `--run-mutect2`, `--run-varscan2`, `--run-vardict`, `--run-lofreq`, `--run-scalpel`, and/or `--run-strelka2`.
+
+```
+$PATH/TO/somaticseq/utilities/dockered_pipelines/makeSomaticScripts.py single \
+--bam              /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-directory /ABSOLUTE/PATH/TO/RESULTS \
+--dbsnp-vcf        /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--action           echo \
+--threads          12 \
+--run-mutect2 --run-vardict --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq
+```
 
 
 ### What does that command do

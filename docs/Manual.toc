@@ -23,13 +23,12 @@
 \contentsline {subsection}{\numberline {5.1}Location}{10}{subsection.5.1}
 \contentsline {subsection}{\numberline {5.2}Requirements}{10}{subsection.5.2}
 \contentsline {subsection}{\numberline {5.3}Example commands}{10}{subsection.5.3}
-\contentsline {subsubsection}{\numberline {5.3.1}Single-threaded Jobs}{10}{subsubsection.5.3.1}
-\contentsline {subsubsection}{\numberline {5.3.2}Multi-threaded Jobs}{10}{subsubsection.5.3.2}
-\contentsline {subsubsection}{\numberline {5.3.3}SomaticSeq Training}{11}{subsubsection.5.3.3}
-\contentsline {subsubsection}{\numberline {5.3.4}SomaticSeq Prediction}{11}{subsubsection.5.3.4}
-\contentsline {subsubsection}{\numberline {5.3.5}Parameters}{11}{subsubsection.5.3.5}
-\contentsline {subsubsection}{\numberline {5.3.6}What does the single-threaded command do}{12}{subsubsection.5.3.6}
-\contentsline {subsubsection}{\numberline {5.3.7}What does the multi-threaded command do}{13}{subsubsection.5.3.7}
+\contentsline {subsubsection}{\numberline {5.3.1}Tumor-Normal Mode}{10}{subsubsection.5.3.1}
+\contentsline {subsubsection}{\numberline {5.3.2}SomaticSeq Training}{11}{subsubsection.5.3.2}
+\contentsline {subsubsection}{\numberline {5.3.3}SomaticSeq Prediction}{11}{subsubsection.5.3.3}
+\contentsline {subsubsection}{\numberline {5.3.4}Parameters}{11}{subsubsection.5.3.4}
+\contentsline {subsubsection}{\numberline {5.3.5}What does the single-threaded command do}{12}{subsubsection.5.3.5}
+\contentsline {subsubsection}{\numberline {5.3.6}What does the multi-threaded command do}{13}{subsubsection.5.3.6}
 \contentsline {section}{\numberline {6}Use BAMSurgeon to create training data}{14}{section.6}
 \contentsline {subsection}{\numberline {6.1}Requirements}{14}{subsection.6.1}
 \contentsline {subsection}{\numberline {6.2}Three scenario to simulate somatic mutations}{14}{subsection.6.2}
