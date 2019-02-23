@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 version = 'Unknown'
 for line in open('VERSION'):
     if line.startswith('##SomaticSeq='):
-        version = line.strip().split("=")[1].strip()
+        version = line.strip().split("=v")[1].strip()
 
 print(version)
 
