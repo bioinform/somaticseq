@@ -707,7 +707,7 @@ def run_SomaticSeq(input_parameters, mem=16):
 
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
 
-    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
+    returnCode = os.system('{} {}'.format(input_parameters['somaticseq_action'], outfile) )
 
     return returnCode
 
