@@ -21,6 +21,7 @@ with open(RepoROOT + os.sep + 'VERSION') as fn:
 ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 
 
+
 def run():
 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -471,21 +472,19 @@ def run_SomaticSeq(input_parameters, mem=16):
             out.write( '--mutect2-vcf {MUTECT2} \\\n'.format(MUTECT2=mutect2) )
 
         if input_parameters['run_varscan2']:
-            out.write( '--varscan-snv {VARSCAN} \\\n'.format(VARSCAN=varscan) )
-
+            out.write( '--varscan-vcf {VARSCAN} \\\n'.format(VARSCAN=varscan) )
 
         if input_parameters['run_vardict']:
             out.write( '--vardict-vcf {VARDICT} \\\n'.format(VARDICT=vardict) )
 
-
         if input_parameters['run_lofreq']:
-            out.write( '--lofreq-snv {LOFREQ} \\\n'.format(LOFREQ=lofreq) )
+            out.write( '--lofreq-vcf {LOFREQ} \\\n'.format(LOFREQ=lofreq) )
 
         if input_parameters['run_scalpel']:
             out.write( '--scalpel-vcf {SCALPEL} \\\n'.format(SCALPEL=scalpel) )
 
         if input_parameters['run_strelka2']:
-            out.write( '--strelka-snv {STRELKA2} \\\n'.format(STRELKA2=strelka) )
+            out.write( '--strelka-vcf {STRELKA2} \\\n'.format(STRELKA2=strelka) )
 
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
 

@@ -1,0 +1,43 @@
+\babel@toc {english}{}
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}
+\contentsline {subsection}{\numberline {1.1}Dependencies}{2}{subsection.1.1}
+\contentsline {subsection}{\numberline {1.2}Docker images}{2}{subsection.1.2}
+\contentsline {section}{\numberline {2}How to run SomaticSeq}{3}{section.2}
+\contentsline {subsection}{\numberline {2.1}SomaticSeq Training Mode}{3}{subsection.2.1}
+\contentsline {subsection}{\numberline {2.2}SomaticSeq Prediction Mode}{4}{subsection.2.2}
+\contentsline {subsection}{\numberline {2.3}Consensus Mode}{4}{subsection.2.3}
+\contentsline {section}{\numberline {3}Use SomaticSeq as a Python library}{5}{section.3}
+\contentsline {subsection}{\numberline {3.1}somaticseq.somaticseq modules}{5}{subsection.3.1}
+\contentsline {subsubsection}{\numberline {3.1.1}Module: run\_somaticseq}{5}{subsubsection.3.1.1}
+\contentsline {subsubsection}{\numberline {3.1.2}Module: somatic\_vcf2tsv and single\_sample\_vcf2tsv}{6}{subsubsection.3.1.2}
+\contentsline {subsubsection}{\numberline {3.1.3}Module: SSeq\_tsv2vcf}{7}{subsubsection.3.1.3}
+\contentsline {subsection}{\numberline {3.2}somaticseq.utilities modules}{7}{subsection.3.2}
+\contentsline {subsubsection}{\numberline {3.2.1}Module: split\_Bed\_into\_equal\_regions}{7}{subsubsection.3.2.1}
+\contentsline {subsubsection}{\numberline {3.2.2}Module: lociCounterWithLabels}{7}{subsubsection.3.2.2}
+\contentsline {section}{\numberline {4}The step-by-step SomaticSeq Workflow}{7}{section.4}
+\contentsline {subsection}{\numberline {4.1}Apply inclusion and exclusion regions}{7}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}Combine the call sets}{8}{subsection.4.2}
+\contentsline {subsection}{\numberline {4.3}Convert the VCF file into TSV file}{8}{subsection.4.3}
+\contentsline {subsection}{\numberline {4.4}Model Training or Mutation Prediction}{9}{subsection.4.4}
+\contentsline {section}{\numberline {5}To run the dockerized somatic mutation callers}{10}{section.5}
+\contentsline {subsection}{\numberline {5.1}Location}{10}{subsection.5.1}
+\contentsline {subsection}{\numberline {5.2}Requirements}{10}{subsection.5.2}
+\contentsline {subsection}{\numberline {5.3}Example commands}{10}{subsection.5.3}
+\contentsline {subsubsection}{\numberline {5.3.1}Single-threaded Jobs}{10}{subsubsection.5.3.1}
+\contentsline {subsubsection}{\numberline {5.3.2}Multi-threaded Jobs}{10}{subsubsection.5.3.2}
+\contentsline {subsubsection}{\numberline {5.3.3}SomaticSeq Training}{11}{subsubsection.5.3.3}
+\contentsline {subsubsection}{\numberline {5.3.4}SomaticSeq Prediction}{11}{subsubsection.5.3.4}
+\contentsline {subsubsection}{\numberline {5.3.5}Parameters}{11}{subsubsection.5.3.5}
+\contentsline {subsubsection}{\numberline {5.3.6}What does the single-threaded command do}{12}{subsubsection.5.3.6}
+\contentsline {subsubsection}{\numberline {5.3.7}What does the multi-threaded command do}{13}{subsubsection.5.3.7}
+\contentsline {section}{\numberline {6}Use BAMSurgeon to create training data}{14}{section.6}
+\contentsline {subsection}{\numberline {6.1}Requirements}{14}{subsection.6.1}
+\contentsline {subsection}{\numberline {6.2}Three scenario to simulate somatic mutations}{14}{subsection.6.2}
+\contentsline {subsubsection}{\numberline {6.2.1}When you have sequencing replicates of normal samples}{14}{subsubsection.6.2.1}
+\contentsline {subsubsection}{\numberline {6.2.2}This example mimicks DREAM Challenge}{15}{subsubsection.6.2.2}
+\contentsline {subsubsection}{\numberline {6.2.3}Merge and then split the input tumor and normal BAM files}{15}{subsubsection.6.2.3}
+\contentsline {subsection}{\numberline {6.3}Parameters and Options}{16}{subsection.6.3}
+\contentsline {subsubsection}{\numberline {6.3.1}--merge-bam / --split-bam / --indel-realign}{17}{subsubsection.6.3.1}
+\contentsline {subsection}{\numberline {6.4}To create SomaticSeq classifiers}{17}{subsection.6.4}
+\contentsline {section}{\numberline {7}Release Notes}{18}{section.7}
+\contentsline {section}{\numberline {8}Contact Us}{22}{section.8}
