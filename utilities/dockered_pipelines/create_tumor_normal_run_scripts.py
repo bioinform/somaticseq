@@ -5,18 +5,11 @@ from copy import copy
 from datetime import datetime
 from shutil import move
 
-MY_DIR = os.path.dirname(os.path.realpath(__file__))
-RepoROOT = os.path.join(MY_DIR, os.pardir, os.pardir)
+import utilities.split_Bed_into_equal_regions as split_bed
 
-sys.path.append( MY_DIR )
-sys.path.append( os.path.join(MY_DIR, os.pardir) ) # utilities dir for Bed splitting
-sys.path.append( RepoROOT + os.sep + 'somaticseq' )
+import somaticseq._version
 
-import split_Bed_into_equal_regions as split_bed
-
-with open(RepoROOT + os.sep + 'VERSION') as fn:
-    line_i = fn.readline().rstrip()
-    VERSION = line_i.split('=')[1].lstrip('v')
+VERSION = somaticseq._version.__version__
 
 ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 

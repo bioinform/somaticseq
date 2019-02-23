@@ -4,17 +4,9 @@ import sys, argparse, os, re
 from copy import copy
 from shutil import move
 
-MY_DIR = os.path.dirname(os.path.realpath(__file__))
-RepoROOT = os.path.join(MY_DIR, os.pardir, os.pardir)
-
-sys.path.append( MY_DIR )
-sys.path.append( os.path.join(MY_DIR, os.pardir) ) # utilities dir for Bed splitting
-sys.path.append( RepoROOT + os.sep + 'somaticseq' )
-
-import split_Bed_into_equal_regions    as split_bed
-import create_tumor_normal_run_scripts as tumor_normal
-import create_tumor_only_run_scripts   as tumor_only
-
+import utilities.split_Bed_into_equal_regions as split_bed
+import utilities.dockered_pipelines.create_tumor_normal_run_scripts as tumor_normal
+import utilities.dockered_pipelines.create_tumor_only_run_scripts   as tumor_only
 
 
 def run():

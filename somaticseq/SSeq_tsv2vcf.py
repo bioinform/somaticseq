@@ -7,7 +7,7 @@ PRE_DIR = os.path.join(MY_DIR, os.pardir)
 sys.path.append( PRE_DIR )
 
 from genomicFileHandler.genomic_file_handlers import p2phred
-
+from somaticseq._version import vcf_header as version_line
 
 nan = float('nan')
 
@@ -82,13 +82,6 @@ def dp4_to_gt(ref_for, ref_rev, alt_for, alt_rev, hom_threshold=0.85, het_thresh
 
 
 def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_threshold=0.85, het_threshold=0.01, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True):
-
-    try:
-        with open(os.path.join(PRE_DIR, "VERSION")) as version_info_file:
-            version_line = version_info_file.readline()
-    except FileNotFoundError:
-        version_line = '##SomaticSeq\n'
-    
 
     tools_code = {'CGA':           'M',
                   'MuTect':        'M',
