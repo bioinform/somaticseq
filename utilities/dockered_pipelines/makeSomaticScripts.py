@@ -4,6 +4,10 @@ import sys, argparse, os, re
 from copy import copy
 from shutil import move
 
+MY_DIR = os.path.dirname(os.path.realpath(__file__))
+RepoROOT = os.path.join(MY_DIR, os.pardir, os.pardir)
+sys.path.append( RepoROOT )
+
 import utilities.split_Bed_into_equal_regions as split_bed
 import utilities.dockered_pipelines.create_tumor_normal_run_scripts as tumor_normal
 import utilities.dockered_pipelines.create_tumor_only_run_scripts   as tumor_only

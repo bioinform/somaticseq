@@ -5,8 +5,11 @@ from copy import copy
 from datetime import datetime
 from shutil import move
 
-import utilities.split_Bed_into_equal_regions as split_bed
+MY_DIR = os.path.dirname(os.path.realpath(__file__))
+RepoROOT = os.path.join(MY_DIR, os.pardir, os.pardir)
+sys.path.append( RepoROOT )
 
+import utilities.split_Bed_into_equal_regions as split_bed
 import somaticseq._version
 
 VERSION = somaticseq._version.__version__
@@ -245,7 +248,7 @@ def run_VarDict(input_parameters, mem=14, minVAF=0.05, outvcf='VarDict.vcf'):
         out.write( '> /mnt/{OUTDIR}/vardict.var"\n\n'.format(OUTDIR=input_parameters['output_directory']) )
         
         out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/vardictjava:1.5.2 \\\n'.format(MEM=mem) )
-        out.write( 'bash -c "cat /mnt/{OUTDIR}/vardict.var | awk \'NR!=1\' | /opt/VarDict/testsomatic.R | /opt/VarDict/var2vcf_valid.pl -N \'TUMOR\' -f {VAF} \\\n'.format(OUTDIR=input_parameters['output_directory'], VAF=minVAF ) )
+        out.write( 'bash -c "cat /mnt/{OUTDIR}/vardict.var | awk \'NR!=1\' | /opt/VarDict/teststrandbias.R | /opt/VarDict/var2vcf_valid.pl -N \'TUMOR\' -f {VAF} \\\n'.format(OUTDIR=input_parameters['output_directory'], VAF=minVAF ) )
         out.write( '> /mnt/{OUTDIR}/{OUTVCF}"\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
 
 
