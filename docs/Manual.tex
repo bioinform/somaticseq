@@ -1423,7 +1423,10 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
         \begin{itemize}
          
          \item 
-         Re-write in Python some somatic caller run script generators that were written in bash, at utilities/dockered\_pipelines/makeSomaticScripts.py.
+         Re-wrote in Python some somatic caller run script generators that were once written in bash, at utilities/dockered\_pipelines/makeSomaticScripts.py. See Section \ref{dockerized_callers} for details. 
+         
+         \item
+         Fixed setup.py, even though running \textit{./setup.py install} is optional. You can still (always) run scripts from where you downloaded SomaticSeq. 
                   
         \end{itemize}
 

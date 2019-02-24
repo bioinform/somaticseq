@@ -39,4 +39,4 @@
 \contentsline {subsubsection}{\numberline {6.3.1}--merge-bam / --split-bam / --indel-realign}{17}{subsubsection.6.3.1}
 \contentsline {subsection}{\numberline {6.4}To create SomaticSeq classifiers}{17}{subsection.6.4}
 \contentsline {section}{\numberline {7}Release Notes}{18}{section.7}
-\contentsline {section}{\numberline {8}Contact Us}{22}{section.8}
+\contentsline {section}{\numberline {8}Contact Us}{23}{section.8}
