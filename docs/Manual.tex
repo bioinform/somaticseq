@@ -133,6 +133,22 @@ SomaticSeq and the somatic mutation callers that we routinely use were dockerize
 \end{itemize}
 
 
+\section{Download SomaticSeq} \label{download_somaticseq}
+
+Source code of SomaticSeq is available via Github repository in BSD open-source license: \href{https://github.com/bioinform/somaticseq}{https://github.com/bioinform/somaticseq}. The latest source code can be cloned by the git command
+
+\begin{lstlisting}
+git clone https://github.com/bioinform/somaticseq.git
+\end{lstlisting}
+
+Installation is not required to run SomaticSeq, but the simplest way to place SomaticSeq in your path is to run the setup.py install command in the somaticseq repo, i.e., 
+
+\begin{lstlisting}
+./setup.py install
+\end{lstlisting}
+
+
+
 \section{How to run SomaticSeq} \label{Wrapper_script}
 
 The \textit{somaticseq/run\_somaticseq.py} calls a series of programs and procedures \textbf{after} you have run your individual somatic mutation callers, and \textit{somaticseq\_parallel.py} is a wrapper script that allows parallel processing. Section \ref{dockerized_callers} will teach you how to run those mutation callers that we have been dockerized. It also includes ways to create semi-simulated training data that can be used to create SomaticSeq classifiers. In the next section, we will describe the workflow in this wrapper script in detail. 
