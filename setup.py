@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 
 from setuptools import setup, find_packages
-
-version = 'Unknown'
-for line in open('VERSION'):
-    if line.startswith('##SomaticSeq='):
-        version = line.strip().split("=v")[1].strip()
+from somaticseq._version import  __version__ as version
 
 print(version)
 
@@ -17,6 +13,7 @@ setup(
     author_email='li_tai.fang@roche.com',
     url='https://github.com/bioinform/somaticseq',
     packages=find_packages(),
+    package_data={'': ['*.R']},
     install_requires=['pysam', 'numpy', 'scipy'],
     scripts=['somaticseq/run_somaticseq.py',
              'somaticseq_parallel.py',

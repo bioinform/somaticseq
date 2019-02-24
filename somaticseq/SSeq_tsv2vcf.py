@@ -197,7 +197,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
 
         # Create vcf headers:
         vcf.write('##fileformat=VCFv4.1\n')
-        vcf.write(version_line)
+        vcf.write(version_line + '\n')
         vcf.write('##FILTER=<ID=LowQual,Description="Less confident somatic mutation calls with probability value at least {}">\n'.format(lowqual_score) )
         vcf.write('##FILTER=<ID=PASS,Description="Accept as a confident somatic mutation calls with probability value at least {}">\n'.format(pass_score) )
         vcf.write('##FILTER=<ID=REJECT,Description="Rejected as a confident somatic mutation with ONCOSCORE below 2">\n')
