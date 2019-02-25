@@ -79,7 +79,7 @@ def run():
     infiles  = args.input_files
     outfile  = args.output_file
 
-    if infiles[0].lower().endswith('.vcf'):
+    if infiles[0].lower().endswith('.vcf') or infiles[0].lower().endswith('.vcf'.gz):
         filetype = 'vcf'
     elif infiles[0].lower().endswith('.tsv'):
         filetype = 'tsv'
