@@ -730,6 +730,8 @@ def merge_results(input_parameters, mem=2):
     strelka_snv   = '/mnt/' + prjdir + '/{}/Strelka/results/variants/somatic.snvs.vcf.gz'
     strelka_indel = '/mnt/' + prjdir + '/{}/Strelka/results/variants/somatic.indels.vcf.gz'
 
+    somaticdir    = input_parameters['somaticseq_directory']
+    
     os.makedirs(logdir, exist_ok=True)
     with open(outfile, 'w') as out:
 
@@ -855,7 +857,7 @@ def merge_results(input_parameters, mem=2):
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
-                out.write(  '/mnt/{}/{}/Ensemble.sSNV.tsv'.format(prjdir, i) + ' ' )
+                out.write(  '/mnt/{}/{}/{}/Ensemble.sSNV.tsv'.format(prjdir, i, somaticdir) + ' ' )
                 
             out.write( '\\\n' )
             out.write('-outfile /mnt/{}/Ensemble.sSNV.tsv\n\n'.format(prjdir) )
@@ -865,7 +867,7 @@ def merge_results(input_parameters, mem=2):
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
-                out.write(  '/mnt/{}/{}/Ensemble.sINDEL.tsv'.format(prjdir, i) + ' ' )
+                out.write(  '/mnt/{}/{}/{}/Ensemble.sINDEL.tsv'.format(prjdir, i, somaticdir) + ' ' )
                 
             out.write( '\\\n' )
             out.write('-outfile /mnt/{}/Ensemble.sINDEL.tsv\n\n'.format(prjdir) )
@@ -874,11 +876,11 @@ def merge_results(input_parameters, mem=2):
             # If asked to create classifier, do it here when TSV files are combined
             if input_parameters['train_somaticseq'] and input_parameters['truth_snv']:
                 out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-                out.write( '/opt/somaticseq/r_scripts/ada_model_builder_ntChange.R /mnt/{}/Ensemble.sSNV.tsv Consistent_Mates Inconsistent_Mates \\\n\n'.format(prjdir) )
+                out.write( '/opt/somaticseq/r_scripts/ada_model_builder_ntChange.R /mnt/{}/Ensemble.sSNV.tsv Consistent_Mates Inconsistent_Mates \n\n'.format(prjdir) )
 
             if input_parameters['train_somaticseq'] and input_parameters['truth_indel']:
                 out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-                out.write( '/opt/somaticseq/r_scripts/ada_model_builder_ntChange.R /mnt/{}/Ensemble.sINDEL.tsv Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates \\\n\n'.format(prjdir) )
+                out.write( '/opt/somaticseq/r_scripts/ada_model_builder_ntChange.R /mnt/{}/Ensemble.sINDEL.tsv Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates \n\n'.format(prjdir) )
 
 
             # If in prediction mode, combine SSeq.Classified.sSNV.vcf, else Consensus.sSNV.vcf
@@ -888,7 +890,7 @@ def merge_results(input_parameters, mem=2):
                 out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
-                    out.write(  '/mnt/{}/{}/SSeq.Classified.sSNV.vcf'.format(prjdir, i) + ' ' )
+                    out.write(  '/mnt/{}/{}/{}/SSeq.Classified.sSNV.vcf'.format(prjdir, i, somaticdir) + ' ' )
                     
                 out.write( '\\\n' )
                 out.write('-outfile /mnt/{}/SSeq.Classified.sSNV.vcf\n\n'.format(prjdir) )
@@ -898,7 +900,7 @@ def merge_results(input_parameters, mem=2):
                 out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
-                    out.write(  '/mnt/{}/{}/SSeq.Classified.sSNV.tsv'.format(prjdir, i) + ' ' )
+                    out.write(  '/mnt/{}/{}/{}/SSeq.Classified.sSNV.tsv'.format(prjdir, i, somaticdir) + ' ' )
                     
                 out.write( '\\\n' )
                 out.write('-outfile /mnt/{}/SSeq.Classified.sSNV.tsv\n\n'.format(prjdir) )
@@ -909,7 +911,7 @@ def merge_results(input_parameters, mem=2):
                 out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
-                    out.write(  '/mnt/{}/{}/Consensus.sSNV.vcf'.format(prjdir, i) + ' ' )
+                    out.write(  '/mnt/{}/{}/{}/Consensus.sSNV.vcf'.format(prjdir, i, somaticdir) + ' ' )
                     
                 out.write( '\\\n' )
                 out.write('-outfile /mnt/{}/Consensus.sSNV.vcf\n\n'.format(prjdir) )
@@ -922,7 +924,7 @@ def merge_results(input_parameters, mem=2):
                 out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
-                    out.write(  '/mnt/{}/{}/SSeq.Classified.sINDEL.vcf'.format(prjdir, i) + ' ' )
+                    out.write(  '/mnt/{}/{}/{}/SSeq.Classified.sINDEL.vcf'.format(prjdir, i, somaticdir) + ' ' )
                     
                 out.write( '\\\n' )
                 out.write('-outfile /mnt/{}/SSeq.Classified.sINDEL.vcf\n\n'.format(prjdir) )
@@ -932,7 +934,7 @@ def merge_results(input_parameters, mem=2):
                 out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
-                    out.write(  '/mnt/{}/{}/SSeq.Classified.sINDEL.tsv'.format(prjdir, i) + ' ' )
+                    out.write(  '/mnt/{}/{}/{}/SSeq.Classified.sINDEL.tsv'.format(prjdir, i, somaticdir) + ' ' )
                     
                 out.write( '\\\n' )
                 out.write('-outfile /mnt/{}/SSeq.Classified.sINDEL.tsv\n\n'.format(prjdir) )
@@ -943,7 +945,7 @@ def merge_results(input_parameters, mem=2):
                 out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
-                    out.write(  '/mnt/{}/{}/Consensus.sINDEL.vcf'.format(prjdir, i) + ' ' )
+                    out.write(  '/mnt/{}/{}/{}/Consensus.sINDEL.vcf'.format(prjdir, i, somaticdir) + ' ' )
                     
                 out.write( '\\\n' )
                 out.write('-outfile /mnt/{}/Consensus.sINDEL.vcf\n\n'.format(prjdir) )
