@@ -585,7 +585,7 @@ def merge_results(input_parameters, mem=2):
                 out.write( strelka.format(i) + ' ' )
                 
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/Strelka.snv.vcf\n\n'.format(prjdir) )
+            out.write('-outfile /mnt/{}/Strelka.vcf\n\n'.format(prjdir) )
 
 
         ###### SomaticSeq #####
