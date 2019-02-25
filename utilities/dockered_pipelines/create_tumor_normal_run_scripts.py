@@ -631,7 +631,7 @@ def run_SomaticSeq(input_parameters, mem=16):
 
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
-        out.write( 'docker pull lethalfang/somaticseq:{VERSION} \\\n\n'.format(VERSION=VERSION) )
+        out.write( 'docker pull lethalfang/somaticseq:{VERSION} \n\n'.format(VERSION=VERSION) )
         out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
         out.write( '/opt/somaticseq/somaticseq/run_somaticseq.py \\\n' )
 
