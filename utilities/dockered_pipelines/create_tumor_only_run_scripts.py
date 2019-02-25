@@ -429,7 +429,7 @@ def run_SomaticSeq(input_parameters, mem=16):
         out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
         out.write( '/opt/somaticseq/somaticseq/run_somaticseq.py \\\n' )
 
-        if input_parameters['train_somaticseq']:
+        if input_parameters['train_somaticseq'] and input_parameters['threads'] == 1:
             out.write( '--somaticseq-train \\\n' )
 
         out.write( '--output-directory /mnt/{OUTDIR} \\\n'.format(OUTDIR=outdir) )
@@ -492,6 +492,9 @@ def run_SomaticSeq(input_parameters, mem=16):
 
 
 def merge_results(input_parameters, mem=2):
+
+    if input_parameters['train_somaticseq']:
+        mem=16
 
     prjdir  = input_parameters['output_directory']
     logdir  = prjdir + os.sep + 'logs'
@@ -605,6 +608,16 @@ def merge_results(input_parameters, mem=2):
             
             out.write( '\\\n' )
             out.write('-outfile /mnt/{}/Ensemble.sINDEL.tsv\n\n'.format(prjdir) )
+
+
+            # If asked to create classifier, do it here when TSV files are combined
+            if input_parameters['train_somaticseq'] and input_parameters['truth_snv']:
+                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write( '/opt/somaticseq/r_scripts/ada_model_builder_ntChange.R /mnt/{}/Ensemble.sSNV.tsv Consistent_Mates Inconsistent_Mates \\\n\n'.format(prjdir) )
+
+            if input_parameters['train_somaticseq'] and input_parameters['truth_indel']:
+                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write( '/opt/somaticseq/r_scripts/ada_model_builder_ntChange.R /mnt/{}/Ensemble.sINDEL.tsv Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates \\\n\n'.format(prjdir) )
 
 
             # If in prediction mode, combine SSeq.Classified.sSNV.vcf, else Consensus.sSNV.vcf
