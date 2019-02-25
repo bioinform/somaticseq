@@ -11,7 +11,7 @@
 * [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing in invoked, and/or when any bed files are used as input files
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
 * At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus.
-* To install SomaticSeq scripts into your PATH, cd into the somaticseq directory and run ```./setup.py install```.
+* To install SomaticSeq scripts into your PATH, `cd somaticseq` and then run `./setup.py install`.
 
 ## Example commands
 * At minimum, given the results of the individual mutation caller(s), SomaticSeq will extract sequencing features for the combined call set. Required inputs are `--output-directory`, `--genome-reference`, `paired|single`, `--tumor-bam-file`, and `--normal-bam-file`. Everything else is optional.
@@ -22,7 +22,7 @@
 
 ```
 # Merge caller results and extract SomaticSeq features
-$somaticseq/somaticseq/run_somaticseq.py \
+$somaticseq/somaticseq_parallel.py \
 --output-directory  $OUTPUT_DIR \
 --genome-reference  GRCh38.fa \
 --inclusion-region  genome.bed \
@@ -45,7 +45,7 @@ paired \
 ```
 
 * `--inclusion-region` or `--exclusion-region` will require BEDTools in your path.
-* The command can be parallelized using `$somaticseq/somaticseq_parallel.py` script, with identical input options except for `--threads X` placed before the `paired` option to indicate X threads. The `somaticseq_parallel.py` is simply a script to create multiple sub-BED files, and then invokes `somaticseq/run_somaticseq.py` on each of those sub-BED files in parallel, then merge the results. It requires BEDTools in your path.
+* To split the job into multiple threads, place `--threads X` before the `paired` option to indicate X threads. It simply creates multiple BED file (each consisting of 1/X of total base pairs) for SomaticSeq to run on each of those sub-BED files in parallel. It then merges the results. This requires `bedtools` in your path.
 * For all input VCF files, either .vcf or .vcf.gz are acceptable.
 
 Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two additional files (classifiers) will be created, i.e., *Ensemble.sSNV.tsv.ntChange.Classifier.RData* and *Ensemble.sINDEL.tsv.ntChange.Classifier.RData*.
