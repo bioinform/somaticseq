@@ -1014,8 +1014,10 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 		  SSeq\_merged.vcf2tsv.py can annotate dbSNP and COSMIC information directly if BED file or a list of chromosome coordinates are used as input in lieu of an annotated VCF file. 
 		
 		  \item
-		  Consolidated feature sets, e.g., removed some redunda
-		  Fixed a bug: if JointSNVMix2 is not included, the values should be ``NaN'' instead of 0's. This is to keep consistency with how we handle all other callersnt feature sets coming from different resources.
+		  Consolidated feature sets, e.g., removed some redundant features
+		  
+		  \item
+		  Fixed a bug: if JointSNVMix2 is not included, the values should be ``NaN'' instead of 0's. This is to keep consistency with how we handle all other caller decision.
 		\end{itemize}
 	
 	
@@ -1412,7 +1414,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 		\begin{itemize}
 		
 		  \item
-		  When splitting MuTect2 files into SNV and INDEL, make sure either the ref base or the alt base (but not both) consists of a single base, i.e., discarding stuff like GCAA>GCT.
+		  When splitting MuTect2 files into SNV and INDEL, make sure either the ref base or the alt base (but not both) consists of a single base, i.e., discarding stuff like GCAA$>$GCT.
 		  
 		  \item
 		  Fixed a bug introduced in v3.0.1 that caused the program to handle .vcf.gz files incorrectly.
