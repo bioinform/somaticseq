@@ -184,7 +184,7 @@ if __name__ == '__main__':
                 # Results combiner
                 tumor_normal.merge_results(workflowArguments)
 
-                
+
             else:
                 perThreadParameter = copy(workflowArguments)
                 perThreadParameter['inclusion_region'] = bed_file
@@ -243,7 +243,11 @@ if __name__ == '__main__':
                 
                 # Move 1.bed, 2.bed, ..., n.bed to each thread's subdirectory
                 move('{}/{}.bed'.format(workflowArguments['output_directory'], thread_i), '{}/{}.bed'.format(perThreadParameter['output_directory'], thread_i) )
-            
+                
+                # Results combiner
+                tumor_only.merge_results(workflowArguments)
+
+
             else:
                 perThreadParameter = copy(workflowArguments)
                 perThreadParameter['inclusion_region'] = bed_file

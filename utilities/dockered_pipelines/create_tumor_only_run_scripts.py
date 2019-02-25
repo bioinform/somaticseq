@@ -490,6 +490,194 @@ def run_SomaticSeq(input_parameters, mem=16):
 
 
 
+def merge_results(input_parameters, mem=2):
+
+    prjdir  = input_parameters['output_directory']
+    logdir  = prjdir + os.sep + 'logs'
+    outfile = logdir + os.sep + 'mergeResults.{}.cmd'.format(ts)
+
+    mutect2 = '/mnt/' + prjdir + '/{}/MuTect2.vcf'
+    varscan = '/mnt/' + prjdir + '/{}/VarScan2.vcf'
+    vardict = '/mnt/' + prjdir + '/{}/VarDict.vcf'
+    lofreq  = '/mnt/' + prjdir + '/{}/LoFreq.vcf'
+    scalpel = '/mnt/' + prjdir + '/{}/Scalpel.vcf'
+    strelka = '/mnt/' + prjdir + '/{}/Strelka/results/variants/variants.vcf.gz'
+
+    os.makedirs(logdir, exist_ok=True)
+    with open(outfile, 'w') as out:
+
+        out.write( "#!/bin/bash\n\n" )
+
+        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write( '#$ -S /bin/bash\n' )
+        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
+        out.write( 'set -e\n\n' )
+
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
+
+        if input_parameters['run_mutect2']:
+            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            
+            for i in range(1, input_parameters['threads']+1):
+                out.write( mutect2.format(i) + ' ' )
+                
+            out.write( '\\\n' )
+            out.write('-outfile /mnt/{}/MuTect2.vcf\n\n'.format(prjdir) )
+
+
+        if input_parameters['run_varscan2']:
+            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            
+            for i in range(1, input_parameters['threads']+1):
+                out.write( varscan.format(i) + ' ' )
+            
+            out.write( '\\\n' )
+            out.write('-outfile /mnt/{}/VarScan2.vcf\n\n'.format(prjdir) )
+
+
+        if input_parameters['run_vardict']:
+            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            
+            for i in range(1, input_parameters['threads']+1):
+                out.write( vardict.format(i) + ' ' )
+            
+            out.write( '\\\n' )
+            out.write('-outfile /mnt/{}/VarDict.vcf\n\n'.format(prjdir) )
+
+
+        if input_parameters['run_lofreq']:
+            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            
+            for i in range(1, input_parameters['threads']+1):
+                out.write( lofreq.format(i) + ' ' )
+            
+            out.write( '\\\n' )
+            out.write('-outfile /mnt/{}/LoFreq.vcf\n\n'.format(prjdir) )
+
+
+        if input_parameters['run_scalpel']:
+            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            
+            for i in range(1, input_parameters['threads']+1):
+                out.write( scalpel.format(i) + ' ' )
+            
+            out.write( '\\\n' )
+            out.write('-outfile /mnt/{}/Scalpel.vcf\n\n'.format(prjdir) )
+
+
+        if input_parameters['run_strelka2']:
+            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            
+            for i in range(1, input_parameters['threads']+1):
+                out.write( strelka.format(i) + ' ' )
+                
+            out.write( '\\\n' )
+            out.write('-outfile /mnt/{}/Strelka.snv.vcf\n\n'.format(prjdir) )
+
+
+        ###### SomaticSeq #####
+        if input_parameters['run_somaticseq']:
+            
+            # Ensemble.sSNV.tsv
+            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            
+            for i in range(1, input_parameters['threads']+1):
+                out.write(  '/mnt/{}/{}/Ensemble.sSNV.tsv'.format(prjdir, i) + ' ' )
+            
+            out.write( '\\\n' )
+            out.write('-outfile /mnt/{}/Ensemble.sSNV.tsv\n\n'.format(prjdir) )
+
+            # Ensemble.sINDEL.tsv
+            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            
+            for i in range(1, input_parameters['threads']+1):
+                out.write(  '/mnt/{}/{}/Ensemble.sINDEL.tsv'.format(prjdir, i) + ' ' )
+            
+            out.write( '\\\n' )
+            out.write('-outfile /mnt/{}/Ensemble.sINDEL.tsv\n\n'.format(prjdir) )
+
+
+            # If in prediction mode, combine SSeq.Classified.sSNV.vcf, else Consensus.sSNV.vcf
+            if input_parameters['snv_classifier']:
+                
+                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+                
+                for i in range(1, input_parameters['threads']+1):
+                    out.write(  '/mnt/{}/{}/SSeq.Classified.sSNV.vcf'.format(prjdir, i) + ' ' )
+                
+                out.write( '\\\n' )
+                out.write('-outfile /mnt/{}/SSeq.Classified.sSNV.vcf\n\n'.format(prjdir) )
+                
+                # SSeq.Classified.sSNV.tsv
+                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+                
+                for i in range(1, input_parameters['threads']+1):
+                    out.write(  '/mnt/{}/{}/SSeq.Classified.sSNV.tsv'.format(prjdir, i) + ' ' )
+                    
+                out.write( '\\\n' )
+                out.write('-outfile /mnt/{}/SSeq.Classified.sSNV.tsv\n\n'.format(prjdir) )
+
+            # Consensus mode: Consensus.sSNV.vcf
+            else:
+                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+                
+                for i in range(1, input_parameters['threads']+1):
+                    out.write(  '/mnt/{}/{}/Consensus.sSNV.vcf'.format(prjdir, i) + ' ' )
+                    
+                out.write( '\\\n' )
+                out.write('-outfile /mnt/{}/Consensus.sSNV.vcf\n\n'.format(prjdir) )
+            
+            
+            # If in prediction mode, combine SSeq.Classified.sINDEL.vcf, else Consensus.sINDEL.vcf
+            if input_parameters['indel_classifier']:
+                
+                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+                
+                for i in range(1, input_parameters['threads']+1):
+                    out.write(  '/mnt/{}/{}/SSeq.Classified.sINDEL.vcf'.format(prjdir, i) + ' ' )
+                    
+                out.write( '\\\n' )
+                out.write('-outfile /mnt/{}/SSeq.Classified.sINDEL.vcf\n\n'.format(prjdir) )
+
+                # SSeq.Classified.sINDEL.tsv
+                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+                
+                for i in range(1, input_parameters['threads']+1):
+                    out.write(  '/mnt/{}/{}/SSeq.Classified.sINDEL.tsv'.format(prjdir, i) + ' ' )
+                    
+                out.write( '\\\n' )
+                out.write('-outfile /mnt/{}/SSeq.Classified.sINDEL.tsv\n\n'.format(prjdir) )
+
+            # Consensus mode: Consensus.sINDEL.vcf
+            else:
+                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+                
+                for i in range(1, input_parameters['threads']+1):
+                    out.write(  '/mnt/{}/{}/Consensus.sINDEL.vcf'.format(prjdir, i) + ' ' )
+                    
+                out.write( '\\\n' )
+                out.write('-outfile /mnt/{}/Consensus.sINDEL.vcf\n\n'.format(prjdir) )
+
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+
+    return True
+
+
 
 ##########################################################
 
