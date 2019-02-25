@@ -741,7 +741,7 @@ def merge_results(input_parameters, mem=2):
 
         if input_parameters['run_mutect2']:
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( mutect2.format(i) + ' ' )
@@ -752,7 +752,7 @@ def merge_results(input_parameters, mem=2):
 
         if input_parameters['run_varscan2']:
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( varscan_snv.format(i) + ' ' )
@@ -761,7 +761,7 @@ def merge_results(input_parameters, mem=2):
             out.write('-outfile /mnt/{}/VarScan2.snv.vcf\n\n'.format(prjdir) )
 
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( varscan_indel.format(i) + ' ' )
@@ -772,7 +772,7 @@ def merge_results(input_parameters, mem=2):
 
         if input_parameters['run_vardict']:
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( vardict.format(i) + ' ' )
@@ -783,7 +783,7 @@ def merge_results(input_parameters, mem=2):
 
         if input_parameters['run_muse']:
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( muse.format(i) + ' ' )
@@ -794,7 +794,7 @@ def merge_results(input_parameters, mem=2):
 
         if input_parameters['run_lofreq']:
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( lofreq_snv.format(i) + ' ' )
@@ -803,7 +803,7 @@ def merge_results(input_parameters, mem=2):
             out.write('-outfile /mnt/{}/LoFreq.snv.vcf\n\n'.format(prjdir) )
 
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( lofreq_indel.format(i) + ' ' )
@@ -814,7 +814,7 @@ def merge_results(input_parameters, mem=2):
 
         if input_parameters['run_scalpel']:
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( scalpel.format(i) + ' ' )
@@ -825,7 +825,7 @@ def merge_results(input_parameters, mem=2):
 
         if input_parameters['run_strelka2']:
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( strelka_snv.format(i) + ' ' )
@@ -834,7 +834,7 @@ def merge_results(input_parameters, mem=2):
             out.write('-outfile /mnt/{}/Strelka.snv.vcf\n\n'.format(prjdir) )
 
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( strelka_indel.format(i) + ' ' )
@@ -847,7 +847,7 @@ def merge_results(input_parameters, mem=2):
             
             # Ensemble.sSNV.tsv
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write(  '/mnt/{}/{}/Ensemble.sSNV.tsv'.format(prjdir, i) + ' ' )
@@ -857,7 +857,7 @@ def merge_results(input_parameters, mem=2):
 
             # Ensemble.sINDEL.tsv
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-            out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write(  '/mnt/{}/{}/Ensemble.sINDEL.tsv'.format(prjdir, i) + ' ' )
@@ -870,7 +870,7 @@ def merge_results(input_parameters, mem=2):
             if input_parameters['snv_classifier']:
                 
                 out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-                out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+                out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
                     out.write(  '/mnt/{}/{}/SSeq.Classified.sSNV.vcf'.format(prjdir, i) + ' ' )
@@ -880,7 +880,7 @@ def merge_results(input_parameters, mem=2):
                 
                 # SSeq.Classified.sSNV.tsv
                 out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-                out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+                out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
                     out.write(  '/mnt/{}/{}/SSeq.Classified.sSNV.tsv'.format(prjdir, i) + ' ' )
@@ -891,7 +891,7 @@ def merge_results(input_parameters, mem=2):
             # Consensus mode: Consensus.sSNV.vcf
             else:
                 out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-                out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+                out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
                     out.write(  '/mnt/{}/{}/Consensus.sSNV.vcf'.format(prjdir, i) + ' ' )
@@ -904,7 +904,7 @@ def merge_results(input_parameters, mem=2):
             if input_parameters['indel_classifier']:
                 
                 out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-                out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+                out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
                     out.write(  '/mnt/{}/{}/SSeq.Classified.sINDEL.vcf'.format(prjdir, i) + ' ' )
@@ -914,7 +914,7 @@ def merge_results(input_parameters, mem=2):
 
                 # SSeq.Classified.sINDEL.tsv
                 out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-                out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+                out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
                     out.write(  '/mnt/{}/{}/SSeq.Classified.sINDEL.tsv'.format(prjdir, i) + ' ' )
@@ -925,7 +925,7 @@ def merge_results(input_parameters, mem=2):
             # Consensus mode: Consensus.sINDEL.vcf
             else:
                 out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-                out.write( '/opt/somaticseq/somaticseq/concat.py -infiles \\\n' )
+                out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
                     out.write(  '/mnt/{}/{}/Consensus.sINDEL.vcf'.format(prjdir, i) + ' ' )
