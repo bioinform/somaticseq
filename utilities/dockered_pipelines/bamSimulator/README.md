@@ -167,19 +167,18 @@ This is the approach described in our [2017 AACR Abstract](http://dx.doi.org/10.
 
 
 ## To create SomaticSeq classifiers
-* After the mutation simulation jobs are completed, you may create classifiers with the training data with the following command:
+* After the mutation simulation jobs are completed, you may create classifiers with the training data with the following (example) command:
 * See [our somatic mutation pipeline](..) for more details.
 
 ```
-$PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_multiThreads.sh \
---output-dir      /ABSOLUTE/PATH/TO/trainingSet/somaticMutationPipeline \
---normal-bam      /ABSOLUTE/PATH/TO/trainingSet/syntheticNormal.bam \
---tumor-bam       /ABSOLUTE/PATH/TO/trainingSet/syntheticTumor.bam \
---human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
---dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
---thread          24 \
---truth-snv       /ABSOLUTE/PATH/TO/trainingSet/synthetic_snvs.vcf \
---truth-indel     /ABSOLUTE/PATH/TO/trainingSet/synthetic_indels.leftAlign.vcf \
---action          echo \
---mutect2 --somaticsniper --vardict --muse --lofreq --strelka --somaticseq
+$PATH/TO/somaticseq/utilities/dockered_pipelines/makeSomaticScripts.py paired \
+--normal-bam       /ABSOLUTE/PATH/TO/trainingSet/syntheticNormal.bam \
+--tumor-bam        /ABSOLUTE/PATH/TO/trainingSet/syntheticTumor.bam \
+--genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-directory /ABSOLUTE/PATH/TO/trainingSet/somaticMutationPipeline \
+--dbsnp-vcf        /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--truth-snv        /ABSOLUTE/PATH/TO/trainingSet/synthetic_snvs.vcf \
+--truth-indel      /ABSOLUTE/PATH/TO/trainingSet/synthetic_indels.leftAlign.vcf \
+--threads          16 \
+--run-mutect2 --run-vardict --run-muse --run-lofreq --run-strelka2 --run-somaticseq --train-somaticseq
 ```
