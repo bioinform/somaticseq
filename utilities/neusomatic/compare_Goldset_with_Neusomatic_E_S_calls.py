@@ -246,43 +246,63 @@ with open(neu_out, 'w') as neuout:
         variant_j          = [ variant_i[0], variant_i[1], '.', variant_i[2], variant_i[3] ]
         variant_identifier = '\t'.join( [str(i) for i in variant_j] )
         
-        num_S = num_neuCalls(variant_i, neuS_VariantScores)
-        num_E = num_neuCalls(variant_i, neuE_VariantScores)
-        
-        neuS_bwa    = 0
-        neuS_novo   = 0
-        neuS_bowtie = 0
-        neuE_bwa    = 0
-        neuE_novo   = 0
-        neuE_bowtie = 0
-        
-        for i, sample_i in enumerate(neu_samples):
-            if neuS_VariantScores[ variant_i ][i] >= neuPassThreshold:
-                if 'bwa' in sample_i:
-                    neuS_bwa += 1
-                elif 'novo' in sample_i:
-                    neuS_novo += 1
-                elif 'bowtie' in sample_i:
-                    neuS_bowtie += 1
-        
-        for i, sample_i in enumerate(neu_samples):
-            if neuE_VariantScores[ variant_i ][i] >= neuPassThreshold:
-                if 'bwa' in sample_i:
-                    neuE_bwa += 1
-                elif 'novo' in sample_i:
-                    neuE_novo += 1
-                elif 'bowtie' in sample_i:
-                    neuE_bowtie += 1
+        try:
+            num_S       = num_neuCalls(variant_i, neuS_VariantScores)
+            neuS_bwa    = 0
+            neuS_novo   = 0
+            neuS_bowtie = 0
+            
+            for i, sample_i in enumerate(neu_samples):
+                if neuS_VariantScores[ variant_i ][i] >= neuPassThreshold:
+                    if 'bwa' in sample_i:
+                        neuS_bwa += 1
+                    elif 'novo' in sample_i:
+                        neuS_novo += 1
+                    elif 'bowtie' in sample_i:
+                        neuS_bowtie += 1
+        except KeyError:
+            num_S = neuS_bwa = neuS_novo = neuS_bowtie = 0
+
+        try:
+            num_E       = num_neuCalls(variant_i, neuE_VariantScores)
+            neuE_bwa    = 0
+            neuE_novo   = 0
+            neuE_bowtie = 0
+            
+            for i, sample_i in enumerate(neu_samples):
+                if neuE_VariantScores[ variant_i ][i] >= neuPassThreshold:
+                    if 'bwa' in sample_i:
+                        neuE_bwa += 1
+                    elif 'novo' in sample_i:
+                        neuE_novo += 1
+                    elif 'bowtie' in sample_i:
+                        neuE_bowtie += 1
+        except KeyError:
+            num_E = neuE_bwa = neuE_novo = neuE_bowtie
 
         info_string = 'NeuDiscovered;NeuS_BWA={};NeuE_BWA={};NeuS_NovoAlign={};NeuE_NovoAlign={};NeuS_Bowtie={};NeuE_Bowtie={};NeuS_SomaticCalls={};NeuE_SomaticCalls={}'.format(neuS_bwa, neuE_bwa, neuS_novo, neuE_novo, neuS_bowtie, neuE_bowtie, num_S, num_E)
         
         
         string_of_samples = []
-        for i,j in (neuS_VariantScores[variant_i], neuE_VariantScores[variant_i]):
-            i = str(i) if i>=0 else '.'
-            j = str(j) if j>=0 else '.'
+        
+        S_Scores = []
+        E_Scores = []
+        if variant_i in neuS_VariantScores:
+            for i in neuS_VariantScores[variant_i]:
+                i = str(i) if i>=0 else '.'
+                S_Scores.append(i)
+        else:
+            S_Scores = ['.'] * len(neu_samples)
+            
+        if variant_i in neuE_VariantScores:
+            for j in neuE_VariantScores[variant_i]:
+                j = str(j) if j>=0 else '.'
+                E_Scores.append( j )
+        else:
+            E_Scores = ['.'] * len(neu_samples)
+        
+        for i,j in zip(S_Scores, E_Scores):
             string_of_samples.append( '0/1:{}:{}'.format(i,j) )
         
-        
-        neuout.write(variant_identifier + '\t.\tLowConf\t' + info_string + '\tGT:NeuS_SCORE\tNeuE_SCORE\t' + '\t'.join( string_of_samples ) + '\n')
+        neuout.write(variant_identifier + '\t.\tLowConf\t' + info_string + '\tGT:NeuS_SCORE:NeuE_SCORE\t' + '\t'.join( string_of_samples ) + '\n')
     
