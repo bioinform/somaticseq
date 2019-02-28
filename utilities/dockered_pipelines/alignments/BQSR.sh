@@ -87,7 +87,7 @@ fi
 
 echo "" >> $out_script
 
-echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-0 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-1 \\" >> $out_script
 echo "java -Xmx8g -jar /usr/GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T BaseRecalibrator \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
@@ -99,7 +99,7 @@ echo "" >> $out_script
 
 if [[ $plotBQSR ]]
 then
-    echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-0 \\" >> $out_script
+    echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-1 \\" >> $out_script
     echo "java -Xmx8g -jar /usr/GenomeAnalysisTK.jar \\" >> $out_script
     echo "-T BaseRecalibrator \\" >> $out_script
     echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
@@ -121,7 +121,7 @@ then
     echo "" >> $out_script
 fi
 
-echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-0 \\" >> $out_script
+echo "docker run --rm -v /:/mnt -u $UID broadinstitute/gatk3:3.8-1 \\" >> $out_script
 echo "java -Xmx8g -jar /usr/GenomeAnalysisTK.jar \\" >> $out_script
 echo "-T PrintReads \\" >> $out_script
 echo "-R /mnt/${HUMAN_REFERENCE} \\" >> $out_script
