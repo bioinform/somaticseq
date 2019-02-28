@@ -30,7 +30,7 @@ left_beta=2
 right_beta=2
 aligner='mem'
 
-realign_arguments='-dt NONE --maxReadsForConsensuses 150000 --maxReadsInMemory 500000 --maxReadsForRealignment 2000000'
+realign_arguments='--maxReadsForConsensuses 300 --maxReadsInMemory 150000 --maxReadsForRealignment 20000'
 
 while true; do
     case "$1" in
