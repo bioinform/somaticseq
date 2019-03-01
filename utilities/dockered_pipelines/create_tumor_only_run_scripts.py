@@ -454,7 +454,7 @@ def run_SomaticSeq(input_parameters, mem=16):
             out.write( '--classifier-indel /mnt/{} \\\n'.format(input_parameters['indel_classifier']) )
 
         if input_parameters['truth_snv']:
-            out.write( '--truth-snv /mnt/{}'.format(input_parameters['truth_snv']) )
+            out.write( '--truth-snv /mnt/{} \\\n'.format(input_parameters['truth_snv']) )
 
         if input_parameters['truth_indel']:
             out.write( '--truth-indel /mnt/{} \\\n'.format(input_parameters['truth_indel']) )
