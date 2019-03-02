@@ -1,6 +1,26 @@
 ##fileformat=VCFv4.1
-##SomaticSeq=v2.7.2-SEQC2
-##reference=file:SEQC2_Resources/GRCh38.d1.vd1.fa
+##SomaticSeq=v2-SEQC2
+##reference=file:///home/fangl10/data/SEQC2_Resources/GRCh38.d1.vd1.fa
+##FORMAT=<ID=CD4,Number=4,Type=Integer,Description="ref concordant, ref discordant, alt concordant, alt discordant">
+##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="ref forward, ref reverse, alt forward, alt reverse">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=MQ0,Number=1,Type=Integer,Description="Number of reads with mapping quality of 0">
+##FORMAT=<ID=MSDUKT,Number=6,Type=Integer,Description="Calling decision of the 6 algorithms: CGA, SomaticSniper, VarDict, MuSE, Strelka, TNscope">
+##FORMAT=<ID=NUM_TOOLS,Number=1,Type=Float,Description="Number of tools called it Somatic">
+##FORMAT=<ID=SCORE,Number=1,Type=Float,Description="SomaticSeq Probability (either fraction or Phred)">
+##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">
+##FORMAT=<ID=altBQ,Number=1,Type=Float,Description="average base quality score for alternate reads">
+##FORMAT=<ID=altMQ,Number=1,Type=Float,Description="average mapping score for alternate reads">
+##FORMAT=<ID=altNM,Number=1,Type=Float,Description="average edit distance for alternate reads">
+##FORMAT=<ID=fetCD,Number=1,Type=Float,Description="Concordance FET">
+##FORMAT=<ID=fetSB,Number=1,Type=Float,Description="Strand bias FET">
+##FORMAT=<ID=refBQ,Number=1,Type=Float,Description="average base quality score for reference reads">
+##FORMAT=<ID=refMQ,Number=1,Type=Float,Description="average mapping score for reference reads">
+##FORMAT=<ID=refNM,Number=1,Type=Float,Description="average edit distance for reference reads">
+##FORMAT=<ID=zBQ,Number=1,Type=Float,Description="z-score rank sum of base quality">
+##FORMAT=<ID=zMQ,Number=1,Type=Float,Description="z-score rank sum of mapping quality">
+##FORMAT=<ID=NeuS_SCORE,Number=1,Type=Float,Description="NeuSomatic-S score for those discovered only by NeuSomatic">
+##FORMAT=<ID=NeuE_SCORE,Number=1,Type=Float,Description="NeuSomatic-E score for those discovered only by NeuSomatic">
 ##FILTER=<ID=AllPASS,Description="Called PASS by every single sample set">
 ##FILTER=<ID=Tier1A,Description="For each of the 3 aligners, each of the 5 sites are deemed HighConf, i.e., HighConf for all 15 aligner/site combinations">
 ##FILTER=<ID=Tier1B,Description="Each of the 3 alignerCentric Classification is deemed HighConf AND with at least 3/5 sites in each to be HighConf as well">
@@ -56,29 +76,15 @@
 ##INFO=<ID=bwaDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for bwa-aligned data sets">
 ##INFO=<ID=bowtieDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for bowtie-aligned data sets">
 ##INFO=<ID=novoDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for novo-aligned data sets">
-##INFO=<ID=NeuSomaticCalls,Number=1,Type=Integer,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">
-##INFO=<ID=NeuBWA,Number=1,Type=Integer,Description="Number of times out of 21 pairs of BWA BAMs where NeuSomatic called it PASS">
-##INFO=<ID=NeuNovoAlign,Number=1,Type=Integer,Description="Number of times out of 21 pairs of NovoAlign BAMs where NeuSomatic called it PASS">
-##INFO=<ID=NeuBowtie,Number=1,Type=Integer,Description="Number of times out of 21 pairs of Bowtie BAMs where NeuSomatic called it PASS">
-##INFO=<ID=NeuSomaticCalls,Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic called it PASS">
+##INFO=<ID=NeuSomaticS,Number=1,Type=Integer,Description="Number of times out of 63 pairs of BAMs where NeuSomatic-S called it PASS">
+##INFO=<ID=NeuSomaticE,Number=1,Type=Integer,Description="Number of times out of 63 pairs of BAMs where NeuSomatic-E called it PASS">
 ##INFO=<ID=NeuDiscovered,Number=0,Type=Flag,Description="Variant calls discovered by NeuSomatic">
-##FORMAT=<ID=CD4,Number=4,Type=Integer,Description="ref concordant, ref discordant, alt concordant, alt discordant">
-##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="ref forward, ref reverse, alt forward, alt reverse">
-##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-##FORMAT=<ID=MQ0,Number=1,Type=Integer,Description="Number of reads with mapping quality of 0">
-##FORMAT=<ID=MSDUKT,Number=6,Type=Integer,Description="Calling decision of the 6 algorithms: CGA, SomaticSniper, VarDict, MuSE, Strelka, TNscope">
-##FORMAT=<ID=NUM_TOOLS,Number=1,Type=Float,Description="Number of tools called it Somatic">
-##FORMAT=<ID=SCORE,Number=1,Type=Float,Description="SomaticSeq Probability (either fraction or Phred)">
-##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">
-##FORMAT=<ID=altBQ,Number=1,Type=Float,Description="average base quality score for alternate reads">
-##FORMAT=<ID=altMQ,Number=1,Type=Float,Description="average mapping score for alternate reads">
-##FORMAT=<ID=altNM,Number=1,Type=Float,Description="average edit distance for alternate reads">
-##FORMAT=<ID=fetCD,Number=1,Type=Float,Description="Concordance FET">
-##FORMAT=<ID=fetSB,Number=1,Type=Float,Description="Strand bias FET">
-##FORMAT=<ID=refBQ,Number=1,Type=Float,Description="average base quality score for reference reads">
-##FORMAT=<ID=refMQ,Number=1,Type=Float,Description="average mapping score for reference reads">
-##FORMAT=<ID=refNM,Number=1,Type=Float,Description="average edit distance for reference reads">
-##FORMAT=<ID=zBQ,Number=1,Type=Float,Description="z-score rank sum of base quality">
-##FORMAT=<ID=zMQ,Number=1,Type=Float,Description="z-score rank sum of mapping quality">
-##FORMAT=<ID=NeuSCORE,Number=1,Type=Float,Description="Discovered only by NeuSomatic">
+##INFO=<ID=NeuS_BWA,Number=1,Type=Integer,Description="Number of times out of 21 pairs of BWA BAMs where NeuSomatic-S called it PASS">
+##INFO=<ID=NeuS_NovoAlign,Number=1,Type=Integer,Description="Number of times out of 21 pairs of NovoAlign BAMs where NeuSomatic-S called it PASS">
+##INFO=<ID=NeuS_Bowtie,Number=1,Type=Integer,Description="Number of times out of 21 pairs of Bowtie BAMs where NeuSomatic-S called it PASS">
+##INFO=<ID=NeuS_SomaticCalls,Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic-S called it PASS">
+##INFO=<ID=NeuE_BWA,Number=1,Type=Integer,Description="Number of times out of 21 pairs of BWA BAMs where NeuSomatic-E called it PASS">
+##INFO=<ID=NeuE_NovoAlign,Number=1,Type=Integer,Description="Number of times out of 21 pairs of NovoAlign BAMs where NeuSomatic-E called it PASS">
+##INFO=<ID=NeuE_Bowtie,Number=1,Type=Integer,Description="Number of times out of 21 pairs of Bowtie BAMs where NeuSomatic-E called it PASS">
+##INFO=<ID=NeuE_SomaticCalls,Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic-E called it PASS">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	EA_T_1.bwa	FD_T_1.bwa	FD_T_2.bwa	FD_T_3.bwa	IL_T_1.bwa	IL_T_2.bwa	IL_T_3.bwa	LL_T_1.bwa	NC_T_1.bwa	NS_T_1.bwa	NS_T_2.bwa	NS_T_3.bwa	NS_T_4.bwa	NS_T_5.bwa	NS_T_6.bwa	NS_T_7.bwa	NS_T_8.bwa	NS_T_9.bwa	NV_T_1.bwa	NV_T_2.bwa	NV_T_3.bwa	EA_T_1.bowtie	FD_T_1.bowtie	FD_T_2.bowtie	FD_T_3.bowtie	IL_T_1.bowtie	IL_T_2.bowtie	IL_T_3.bowtie	LL_T_1.bowtie	NC_T_1.bowtie	NS_T_1.bowtie	NS_T_2.bowtie	NS_T_3.bowtie	NS_T_4.bowtie	NS_T_5.bowtie	NS_T_6.bowtie	NS_T_7.bowtie	NS_T_8.bowtie	NS_T_9.bowtie	NV_T_1.bowtie	NV_T_2.bowtie	NV_T_3.bowtie	EA_T_1.novo	FD_T_1.novo	FD_T_2.novo	FD_T_3.novo	IL_T_1.novo	IL_T_2.novo	IL_T_3.novo	LL_T_1.novo	NC_T_1.novo	NS_T_1.novo	NS_T_2.novo	NS_T_3.novo	NS_T_4.novo	NS_T_5.novo	NS_T_6.novo	NS_T_7.novo	NS_T_8.novo	NS_T_9.novo	NV_T_1.novo	NV_T_2.novo	NV_T_3.novo	combined_bwa_normals	combined_bowtie_normals	combined_novo_normals
