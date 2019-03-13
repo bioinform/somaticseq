@@ -5,7 +5,8 @@
 ##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="ref forward, ref reverse, alt forward, alt reverse">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=MQ0,Number=1,Type=Integer,Description="Number of reads with mapping quality of 0">
-##FORMAT=<ID=MSDUKT,Number=6,Type=Integer,Description="Calling decision of the 6 algorithms: CGA, SomaticSniper, VarDict, MuSE, Strelka, TNscope">
+##FORMAT=<ID=MSDUKT,Number=6,Type=Integer,Description="Calling decision of the 6 algorithms: MuTect2, SomaticSniper, VarDict, MuSE, Strelka, TNscope">
+##FORMAT=<ID=MDKT,Number=,Type=Integer,Description="Calling decision of the 6 algorithms: MuTect2, VarDict, Strelka, TNscope">
 ##FORMAT=<ID=NUM_TOOLS,Number=1,Type=Float,Description="Number of tools called it Somatic">
 ##FORMAT=<ID=SCORE,Number=1,Type=Float,Description="SomaticSeq Probability (either fraction or Phred)">
 ##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">
