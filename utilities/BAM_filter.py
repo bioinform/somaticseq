@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, argparse, pysam, gzip, time
-import regex as re
-import numpy
+import sys, argparse, pysam, gzip, time, re, numpy
 from os import sep
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)

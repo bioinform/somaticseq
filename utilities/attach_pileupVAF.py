@@ -3,7 +3,7 @@
 # Last updated: 8/29/2015
 
 import math, argparse, sys, os, gzip
-import regex as re
+import re
 
 nan = float('nan')
 inf = float('inf')

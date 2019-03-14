@@ -6,8 +6,7 @@
 # Output will be Tumor and then Normal. 
 
 
-import sys, argparse, os
-import regex as re
+import sys, argparse, os, re
 import gzip
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
