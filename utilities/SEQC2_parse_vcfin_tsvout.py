@@ -43,11 +43,9 @@ for line_i in sys.stdin:
 
             if re.search(r'COSM[0-9]+', vcf_i.identifier):
             
-                cosmics = set( re.findall(r'COS[MN][0-9]+', vcf_i.identifier) )
+                cosmics = list(set( re.findall(r'COS[MN][0-9]+', vcf_i.identifier) ))
                 
-                cosmic_identities = ''
-                for id_i in cosmics:
-                    cosmic_identities = cosmic_identities + ',{}'.format(id_i)
+                cosmic_identities = ','.join(cosmics)
                 
                 cosmic_cnt = vcf_i.get_info_value('COSMIC_CNT')
             
