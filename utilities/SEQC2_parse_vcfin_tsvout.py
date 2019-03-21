@@ -48,6 +48,8 @@ for line_i in sys.stdin:
                 cosmic_identities = ','.join(cosmics)
                 
                 cosmic_cnt = vcf_i.get_info_value('COSMIC_CNT')
+                if not cosmic_cnt:
+                    cosmic_cnt = '.'
             
             else:
                 cosmic_identities = cosmic_cnt = '.'
