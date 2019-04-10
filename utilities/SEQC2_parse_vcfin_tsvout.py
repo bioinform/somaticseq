@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+# zcat annotated.sINDEL.MDKT.GoldSet.v1.0.recal.vcf.gz | intersectBed -a stdin -b UCSC_track_genecode29_codingRegions.hg38.bed | uniq | egrep 'COSM[0-9]+' | SEQC2_parse_vcfin_tsvout.py
 
 import sys, os, re
 
@@ -55,7 +56,7 @@ for line_i in sys.stdin:
                 cosmic_identities = cosmic_cnt = '.'
                 
             
-            extra_line = '\t'.join((tumorVaf, cosmic_identities, cosmic_cnt, tumorVaf, num_called ))
+            extra_line = '\t'.join((cosmic_identities, cosmic_cnt, tumorVaf, num_called ))
                 
         # Germline        
         elif 'called_prob' in vcf_i.info:
