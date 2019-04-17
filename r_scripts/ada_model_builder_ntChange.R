@@ -27,7 +27,7 @@ train_data$GC2TA[ (train_data$REF=='G' & train_data$ALT=='T') | (train_data$REF=
 train_data$GC2AT[ (train_data$REF=='G' & train_data$ALT=='A') | (train_data$REF=='C' & train_data$ALT=='T') ] = 1
 train_data$TA2AT[ (train_data$REF=='T' & train_data$ALT=='A') | (train_data$REF=='A' & train_data$ALT=='T') ] = 1
 train_data$TA2GC[ (train_data$REF=='T' & train_data$ALT=='G') | (train_data$REF=='A' & train_data$ALT=='C') ] = 1
-train_data$TA2CG[ (train_data$REF=='T' & train_data$ALT=='T') | (train_data$REF=='A' & train_data$ALT=='G') ] = 1
+train_data$TA2CG[ (train_data$REF=='T' & train_data$ALT=='C') | (train_data$REF=='A' & train_data$ALT=='G') ] = 1
 
 # Do not use these for training
 train_data$CHROM      <- NULL
