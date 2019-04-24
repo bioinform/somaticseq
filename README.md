@@ -22,7 +22,7 @@
 
 ```
 # Merge caller results and extract SomaticSeq features
-$somaticseq/somaticseq_parallel.py \
+somaticseq_parallel.py \
 --output-directory  $OUTPUT_DIR \
 --genome-reference  GRCh38.fa \
 --inclusion-region  genome.bed \
@@ -49,7 +49,6 @@ paired \
 * For all input VCF files, either .vcf or .vcf.gz are acceptable.
 
 Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two additional files (classifiers) will be created, i.e., *Ensemble.sSNV.tsv.ntChange.Classifier.RData* and *Ensemble.sINDEL.tsv.ntChange.Classifier.RData*.
-
 * `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires the following inputs, R and ada package in R.
 * `--truth-snv`:        if you have ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL
