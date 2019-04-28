@@ -19,6 +19,7 @@
 \definecolor{mygray}{rgb}{0.9,0.9,0.9}
 \definecolor{mymauve}{rgb}{0.58,0,0.82}
 
+
 \lstset{ %
   backgroundcolor=\color{mygray},  % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
   basicstyle=\footnotesize,        % the size of the fonts that are used for the code
@@ -29,11 +30,11 @@
   deletekeywords={...},            % if you want to delete keywords from the given language
   escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
   extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
-  frame=single,	                   % adds a frame around the code
+  frame=single,	                  % adds a frame around the code
   keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
   keywordstyle=\color{blue},       % keyword style
-  language=bash,                 % the language of the code
-  otherkeywords={*,...},            % if you want to add more keywords to the set
+  language=bash,                   % the language of the code
+  otherkeywords={*,...},           % if you want to add more keywords to the set
   numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
   numbersep=5pt,                   % how far the line-numbers are from the code
   numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
@@ -43,7 +44,7 @@
   showtabs=false,                  % show tabs within strings adding particular underscores
   stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
   stringstyle=\color{mymauve},     % string literal style
-  tabsize=2,	                   % sets default tabsize to 2 spaces
+  tabsize=2,	                       % sets default tabsize to 2 spaces
   title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
 }
 
@@ -71,37 +72,47 @@
 \tableofcontents
 
 
+% Need line for each paragraph:
+\setlength{\parskip}{\baselineskip}
+
 
 \section{Introduction} \label{Introduction}
 
-SomaticSeq is a flexible post-somatic-mutation-calling algorithm for improved accuracy. It is compatible with 10+ somatic mutation caller(s). Any combination of them can be used to obtain a combined call set with sequencing features extracted into TSV and VCF files. In addition, SomaticSeq uses machine learning (adaptive boosting) to distinguish true mutations from false positives from that call set. The mutation callers we have incorporated are MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka, and TNscope. You may incorporate some or all of those callers into your own pipeline with SomaticSeq.
+SomaticSeq is a flexible post-somatic-mutation-calling algorithm for improved accuracy. It is compatible with 10+ somatic mutation callers. Any combination of them can be used to obtain a combined call set with sequencing features extracted into TSV and VCF files. In addition, SomaticSeq uses machine learning to distinguish true mutations from false positives from that call set. The mutation callers we have incorporated are MuTect/Indelocator/MuTect2 \cite{mutect}, VarScan2 \cite{varscan2}, JointSNVMix \cite{jointsnvmix2}, SomaticSniper \cite{somaticsniper}, VarDict \cite{vardict}, MuSE \cite{muse}, LoFreq \cite{lofreq}, Scalpel \cite{scalpel}, Strelka2 \cite{strelka2}, TNscope \cite{tnscope}, and Platypus \cite{platypus}. You may incorporate some or all of those callers into your own pipeline with SomaticSeq.
 
-The manuscript, An ensemble approach to accurately detect somatic mutations using SomaticSeq, was published in \href{http://dx.doi.org/10.1186/s13059-015-0758-2}{Genome Biology 2015, 16:197}. 
+
+The manuscript, An ensemble approach to accurately detect somatic mutations using SomaticSeq, was published in \href{http://dx.doi.org/10.1186/s13059-015-0758-2}{Genome Biology 2015, 16:197} \cite{Fang_2015}. 
 The SomaticSeq project is located at \href{https://github.com/bioinform/somaticseq}{\textit{https://github.com/bioinform/somaticseq}}. 
 There have been some major improvements in SomaticSeq since that Genome Biology publication in 2015. 
 
-The wrapper script somaticseq/run\_somaticseq.py and its parallelized cousin somaticseq\_parallel.py can 1) train the call set into a classifier, 2) predict high-confidence somatic mutations from the call set based on a pre-defined classifier, or 3) default to consensus mode, i.e., extract sequencing features and output the TSV and VCF files, and then label the calls (i.e., PASS, LowQual, or REJECT) based on majority vote of the tools.
+The script  somaticseq\_parallel.py can 1) train the call set into a classifier, 2) predict high-confidence somatic mutations from the call set based on a pre-defined classifier, or 3) default to consensus mode, i.e., extract sequencing features and output the TSV and VCF files, and then label the calls (i.e., PASS, LowQual, or REJECT) based on majority vote of the tools.
+
+
 
 \subsection{Dependencies}
 
-\begin{itemize}
+\begin{enumerate}
 
-\item
-Python 3, plus pysam (v0.14.1), numpy (v1.14.3), and scipy (v1.1.0). The versions in parentheses are in our docker images and validated to work, though other versions should work, too.
+    \item
+    SomaticSeq was written in \emph{Python 3} under Linux environment. In addition, Python libraries of \emph{numpy}, \emph{scipy}, and \emph{pysam} are also required. 
 
-\item
-R, plus the \href{https://cran.r-project.org/package=ada}{ada} package in R.
+    \item
+    SomaticSeq also uses \emph{BEDTools} \cite{bedtools} to manipulate bed file inputs, i.e., regions to include and/or exclude in the workflow. 
 
-\item
-BEDTools (if inclusion and/or an exclusion region files are supplied, and/or running somaticseq\_parallel.py instead of somaticseq/run\_somaticseq.py)
+    \item
+    \emph{R} and \emph{ada} library were implemented as the machine learning algorithm. 
 
-\item
-Optional: dbSNP in VCF format (if you want to use dbSNP membership as a part of the training).
+    \item
+    At its core, SomaticSeq combines and then filters the results of multiple somatic mutation detection algorithms based on many sequencing features. Generally speaking, at least one compatible caller needs to be run to generate a list of mutation candidates for SomaticSeq to evaluate. It is compatible with the following callers: the original MuTect/Indelocator as well as GATK4's Mutect2 \cite{mutect}, VarScan2 \cite{varscan2}, JointSNVMix2 \cite{jointsnvmix2}, SomaticSniper \cite{somaticsniper}, VarDict \cite{vardict}, MuSE \cite{muse}, LoFreq \cite{lofreq}, Scalpel \cite{scalpel}, Strelka2 \cite{strelka2}, TNscope \cite{tnscope}, and Platypus \cite{platypus}.  
+    
+    \item
+    \emph{Docker} [\href{http://www.docker.com}{http://www.docker.com}] is a container technology that can be used to package softwares and their dependencies in a portable Docker images, which can be used to execute a workflow reproducibly across different platforms and environments. SomaticSeq does not require Docker \textit{per se}, but we have created Docker images of it, along with a number of compatible somatic mutation callers to make life easier for new users. The advantage of using container technologies like Docker, is that one does not necessarily have to create the right software environment with the correct dependencies for every software in a workflow, e.g,. by creating a Docker image for MuTect2, the users can simply use that Docker image for MuTect 2 tasks. Otherwise, they must make sure to have the correct Java version and others dependencies to run MuTect2, and that those dependencies do not conflict with other software that may need different Java versions. 
 
-\item
-At least one of MuTect/Indelocator/MuTect2, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus. Those are the tools we have incorporated in SomaticSeq. If there are other somatic tools that may be good addition to our list, please make the suggestion to us. 
+\end{enumerate}
 
-\end{itemize}
+
+
+
 
 
 \subsection{Docker images}
@@ -124,7 +135,7 @@ SomaticSeq and the somatic mutation callers that we routinely use were dockerize
 
   \item MuSE:          \href{https://hub.docker.com/r/marghoob/muse}{https://hub.docker.com/r/marghoob/muse}
 
-  \item LoFreq:        \href{https://hub.docker.com/r/marghoob/lofreq}{https://hub.docker.com/r/marghoob/lofreq}
+  \item LoFreq:        \href{https://hub.docker.com/r/lethalfang/lofreq}{https://hub.docker.com/r/lethalfang/lofreq}
 
   \item Scalpel:       \href{https://hub.docker.com/r/lethalfang/scalpel}{https://hub.docker.com/r/lethalfang/scalpel}
 
@@ -133,16 +144,16 @@ SomaticSeq and the somatic mutation callers that we routinely use were dockerize
 \end{itemize}
 
 
-\section{Download SomaticSeq} \label{download_somaticseq}
 
-Source code of SomaticSeq is available via Github repository in BSD open-source license: \href{https://github.com/bioinform/somaticseq}{https://github.com/bioinform/somaticseq}. The latest source code can be cloned by the git command
+\section{Download and install SomaticSeq} \label{download_somaticseq}
 
+Source code of SomaticSeq is available via Github repository in BSD 2-Clause open source license: \href{https://github.com/bioinform/somaticseq}{https://github.com/bioinform/somaticseq}. The latest source code can be cloned by the git command:
 \begin{lstlisting}
 git clone https://github.com/bioinform/somaticseq.git
 \end{lstlisting}
 
-Installation is not required to run SomaticSeq, but the simplest way to place SomaticSeq in your path is to run the setup.py install command in the somaticseq repo, i.e., 
 
+Installation is not required to run SomaticSeq, but we recommend it. The core scripts somaticseq\_parallel.py and run\_somaticseq.py will be in your path. 
 \begin{lstlisting}
 ./setup.py install
 \end{lstlisting}
@@ -151,7 +162,7 @@ Installation is not required to run SomaticSeq, but the simplest way to place So
 
 \section{How to run SomaticSeq} \label{Wrapper_script}
 
-The \textit{somaticseq/run\_somaticseq.py} calls a series of programs and procedures \textbf{after} you have run your individual somatic mutation callers, and \textit{somaticseq\_parallel.py} is a wrapper script that allows parallel processing. Section \ref{dockerized_callers} will teach you how to run those mutation callers that we have been dockerized. It also includes ways to create semi-simulated training data that can be used to create SomaticSeq classifiers. In the next section, we will describe the workflow in this wrapper script in detail. 
+The \textit{somaticseq\_parallel.py} module calls a series of programs and procedures \textbf{after} you have run your individual somatic mutation callers. Section \ref{dockerized_callers} will teach you how to run those mutation callers that we have been dockerized. It also includes ways to create semi-simulated training data that can be used to create SomaticSeq classifiers. In the next section, we will describe the workflow in this wrapper script in detail. 
 
 Both paired and single modes are supported, although single mode is not as well validated scientifically as the paired mode. To see the required and optional input files and parameters to \textit{somaticseq\_parallel.py}:
 
@@ -159,47 +170,41 @@ Both paired and single modes are supported, although single mode is not as well 
 # See the global input parameters
 somaticseq_parallel.py --help
 
-# Input parameters for paired-sample mode (i.e., tumor-normal)
+# Parameters for paired-sample mode (i.e., tumor-normal)
 somaticseq_parallel.py paired --help
 
-# Input parameters for single-sample mode
+# Parameters for single-sample mode
 somaticseq_parallel.py single --help
 \end{lstlisting}
 
 
 \subsection{SomaticSeq Training Mode} \label{somaticseq_train}
 
-To create SomaticSeq classifiers, you need a VCF file containing true SNVs and a VCF file containing true INDELs. There is also an option to include a list of regions to include and/or exclude from this exercise. The exclusion or inclusion regions can be VCF or BED files. An inclusion region may be subset of the call sets where you have validated their true/false mutation status, so that only those regions will be used for training. An exclusion region can be regions where the ``truth'' is ambigious. All the variants in the truth VCF files are assumed to be true positives. Every mutation call not in the truth VCF files is assumed to be false positives (as long as the genomic coordiante is in inclusion region and not in exclusion region if those regions are provided). 
+To create SomaticSeq classifiers, you need a VCF file containing true SNVs and a VCF file containing true INDELs, and invoke the training node with \emph{\texttt{--}somaticseq-train} flag. There is also an option to include a list of regions to include and/or exclude from this exercise. The exclusion or inclusion regions can be VCF or BED files. An inclusion region may be subset of the call sets where you have validated their true/false mutation status, so that only those regions will be used for training. An exclusion region can be regions where the ``truth'' is ambigious. All the variants in the truth VCF files are assumed to be true positives and will be labeled such. Every mutation call not in the truth VCF files is assumed to be false positives and will be labeled as such (as long as the genomic coordiante is in inclusion region and not in exclusion region if those regions are provided). 
 
-All the output VCF files from individual callers are optional. Those VCF files can be bgzipped if they have .vcf.gz extensions. It is imperative that you will use the same parameter for prediction as you do for training. 
+All the VCF files from individual callers are optional, but you need at least one or there will be nothing to do. All VCF files can be bgzipped if they have .vcf.gz extensions. It is imperative that you will use the same parameter for prediction as you do for training. 
+
 
 \begin{lstlisting}
-# An example command for SomaticSeq Training.
 somaticseq_parallel.py \
---somaticseq-train \
---output-directory  $OUTPUT_DIR \
+--output-directory  OUTPUT_DIR \
 --genome-reference  GRCh38.fa \
---truth-snv         truePositives.snv.vcf \
---truth-indel       truePositives.indel.vcf \
 --inclusion-region  genome.bed \
 --exclusion-region  blacklist.bed \
---threads           12 \
-paired \
+--truth-snv         truePositives.snv.vcf \
+--truth-indel       truePositives.indel.vcf \
+--threads           28 \
+--somaticseq-train  \
+paired              \
 --tumor-bam-file    tumor.bam \
 --normal-bam-file   matched_normal.bam \
---mutect2-vcf       MuTect2/variants.vcf \
---varscan-snv       VarScan2/variants.snp.vcf \
---varscan-indel     VarScan2/variants.indel.vcf \
---jsm-vcf           JointSNVMix2/variants.snp.vcf \
---somaticsniper-vcf SomaticSniper/variants.snp.vcf \
---vardict-vcf       VarDict/variants.vcf \
---muse-vcf          MuSE/variants.snp.vcf \
---lofreq-snv        LoFreq/variants.snp.vcf \
---lofreq-indel      LoFreq/variants.indel.vcf \
---scalpel-vcf       Scalpel/variants.indel.vcf \
---strelka-snv       Strelka/variants.snv.vcf \
---strelka-indel     Strelka/variants.indel.vcf
+--mutect2-vcf       MuTect2.vcf \
+--vardict-vcf       VarDict.vcf \
+--muse-vcf          MuSE.vcf \
+--strelka-snv       Strelka/results/variants/somatic.snvs.vcf.gz \
+--strelka-indel     Strelka/results/variants/somatic.indels.vcf.gz
 \end{lstlisting}
+
 
 For the command's argument placement, caller output and bam files are input ``after'' \textit{paired} or \textit{single} option. Everything else goes before, e.g., reference, ground truths, resources such as dbSNP and COSMIC, etc. 
 
@@ -214,80 +219,95 @@ SomaticSeq supports any combination of the somatic mutation callers we have inco
 
 Make sure the classifiers (.RData files) are supplied, Without either of them, or it will fall back to the simple caller consensus mode.
 
-
 \begin{lstlisting}
 # The *.RData files are trained classifier from the training mode.
 somaticseq_parallel.py \
 --classifier-snv    Ensemble.sSNV.tsv.ntChange.Classifier.RData \
 --classifier-indel  Ensemble.sINDEL.tsv.ntChange.Classifier.RData \
---output-directory  $OUTPUT_DIR \
+--output-directory  OUTPUT_DIR \
 --genome-reference  GRCh38.fa \
 --inclusion-region  genome.bed \
 --exclusion-region  blacklist.bed \
 --threads           12 \
-paired \
+paired              \
 --tumor-bam-file    tumor.bam \
 --normal-bam-file   matched_normal.bam \
 --mutect2-vcf       MuTect2/variants.vcf \
---varscan-snv       VarScan2/variants.snp.vcf \
---varscan-indel     VarScan2/variants.indel.vcf \
---jsm-vcf           JointSNVMix2/variants.snp.vcf \
---somaticsniper-vcf SomaticSniper/variants.snp.vcf \
 --vardict-vcf       VarDict/variants.vcf \
 --muse-vcf          MuSE/variants.snp.vcf \
---lofreq-snv        LoFreq/variants.snp.vcf \
---lofreq-indel      LoFreq/variants.indel.vcf \
---scalpel-vcf       Scalpel/variants.indel.vcf \
 --strelka-snv       Strelka/variants.snv.vcf \
 --strelka-indel     Strelka/variants.indel.vcf
 \end{lstlisting}
 
 
 
-\subsection{Consensus Mode} \label{somaticseq_default_mode}
+\subsection{SomaticSeq Consensus Mode} \label{somaticseq_default_mode}
 
-Same as the commands previously, but without including classifiers or invoking \textit{--somaticseq-train}. Without those information, SomaticSeq will forgo machine learning, and fall back into a simple majority vote.
-
-
-
-
-\section{Use SomaticSeq as a Python library} \label{somaticseq_package}
-
-
-Section \ref{Wrapper_script} described how to use SomaticSeq as a standalone software, but SomaticSeq can also be treated as a python library for your own software. 
-
-
-\subsection{somaticseq.somaticseq modules} \label{module:somaticseq}
-
-The directory \textit{somaticseq/somaticseq} contain some of the critical modules of SomaticSeq, and many can be used as a function of a library. 
-
-
-\subsubsection{Module: run\_somaticseq} \label{run_somaticseq}
-
-The script \textit{somaticseq/somaticseq/run\_somaticseq.py} contains the module to convert individual VCF files (each from a popular somatic mutation caller) to SomaticSeq TSV and VCF files. 
-
-The code to produce the .TSV and .VCF files described in Section \ref{Wrapper_script}, for example, would be something like this:
+Same as the commands previously, but without including the classifiers (.RData files) or invoking \textit{--somaticseq-train}. Without those information, SomaticSeq will forgo machine learning, and fall back into a simple majority vote. The following is an example:
 
 \begin{lstlisting}
+# The *.RData files are trained classifier from the training mode.
+somaticseq_parallel.py \
+--output-directory  OUTPUT_DIR \
+--genome-reference  GRCh38.fa \
+--inclusion-region  genome.bed \
+--exclusion-region  blacklist.bed \
+--threads           12 \
+paired              \
+--tumor-bam-file    tumor.bam \
+--normal-bam-file   matched_normal.bam \
+--mutect2-vcf       MuTect2/variants.vcf \
+--vardict-vcf       VarDict/variants.vcf \
+--muse-vcf          MuSE/variants.snp.vcf \
+--strelka-snv       Strelka/variants.snv.vcf \
+--strelka-indel     Strelka/variants.indel.vcf
+\end{lstlisting}
 
+
+
+
+
+
+
+\section{SomaticSeq as a Python library} \label{somaticseq_package}
+
+
+Section \ref{Wrapper_script} described how to use SomaticSeq as a software. It is also possible to treat SomaticSeq as a python library extension for your own software. So here we describe in detail the procedures and functions that make up SomaticSeq. 
+ 
+
+\subsection{Module: somaticseq\_parallel.py} \label{module:somaticseq_parallel}
+
+The \emph{somaticseq\_parallel.py} script simply calls for \emph{somaticseq/run\_somaticseq.py} module (Sec. \ref{module:run_somaticseq}), and parallelize the runs by splitting the input BED file into a number of equal-sized (in terms of total base pairs) regions. The BED file splitting is achieved by \emph{utilities/split\_Bed\_into\_equal\_regions.py} (Sec. \ref{module:split_bed}).
+
+
+\subsection{Module: somaticseq/run\_somaticseq.py} \label{module:run_somaticseq}
+
+The core module for SomaticSeq is \emph{somaticseq/run\_somaticseq.py}. It converts individual VCF files from somatic mutation caller(s) into SomaticSeq TSV and VCF files. There are two main functions in the module, \emph{runPaired} and \emph{runSingle}. Depending on the mode, either of them can be called. For example:
+
+\begin{lstlisting}
   # Module is located somaticseq/somaticseq/run_somaticseq.py
   import somaticseq.somaticseq.run_somaticseq as run_somaticseq
   
   run_somaticseq.runPaired(outdir='/PATH/TO/SomaticSeq', ref='/PATH/TO/GRCh38.fa', tbam='/PATH/TO/tumor.bwa.bam', nbam='/PATH/TO/normal.bwa.bam', tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', cosmic='/PATH/TO/COSMIC.v85.vcf', inclusion='/PATH/TO/Exon_Capture.bed', exclusion='/PATH/TO/ignore.bed', mutect=None, indelocator=None, mutect2='/PATH/TO/MuTect2.vcf', varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict='/PATH/TO/VarDict.vcf', muse='/PATH/TO/MuSE.vcf', lofreq_snv='/PATH/TO/LoFreq.snv.vcf.gz', lofreq_indel='/PATH/TO/LoFreq.indel.vcf.gz', scalpel=None, strelka_snv='/PATH/TO/Strelka/results/variants/somatic_ssnv.vcf.gz', strelka_indel='/PATH/TO/Strelka/results/variants/somatic_sindel.vcf.gz', tnscope=None, platypus=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False)
-
 \end{lstlisting}
 
-The parameters of \textit{ensembleOutPrefix}, \textit{consensusOutPrefix}, and \textit{classifiedOutPrefix} will dictate the output file names under outdir.
+The parameters of \emph{ensembleOutPrefix}, \emph{consensusOutPrefix}, and \emph{classifiedOutPrefix} will dictate the output file names under outdir.
+
+
+We'll briefly describe the procedures of runPaired here. First of all, the \emph{somaticseq/combine\_callers.py} module (combinePaired function) will combine all the input VCF files into two minimal VCF files, one for SNVs and one for INDELs, that include each unique variant call. These VCF files serve as input files for the next steps, where features are extracted from each of the variant and then converted to the SomaticSeq TSV files by the \emph{somaticseq/somatic\_vcf2tsv.py} module (Sec. \ref{module:vcf2tsv}).
+
+If training mode was invoked (Sec. \ref{somaticseq_train}), SomaticSeq classifiers would be built (Sec. \ref{module:r_train}). If prediction mode was invoked, an additional TSV file with prediction scores will be created (Sec. \ref{module:r_predict}). 
+
+Finally, the TSV files will be converted to SomaticSeq VCF file output by somaticseq/SSeq\_tsv2vcf.py (Sec. \ref{module:vcf2tsv}). 
+
 
 
 Likewise, the single sample mode to convert various individual VCF outputs would be something like this:
 
 \begin{lstlisting}
-
   import somaticseq.somaticseq.run_somaticseq as run_somaticseq
   
   run_somaticseq.runSingle(outdir='/PATH/TO/SomaticSeq', ref='/PATH/TO/GRCh38.fa', bam='/PATH/TO/tumor.bwa.bam', tumor_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', cosmic='/PATH/TO/COSMIC.v85.vcf', inclusion='/PATH/TO/Exon_Capture.bed', exclusion='/PATH/TO/ignore.bed', mutect=None, mutect2='/PATH/TO/MuTect2.vcf', varscan=None, vardict='/PATH/TO/VarDict.vcf', lofreq='/PATH/TO/LoFreq.vcf', scalpel=None, strelka='/PATH/TO/Strelka.vcf', min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False)
-
 \end{lstlisting}
 
 
@@ -315,26 +335,22 @@ somaticseq\_train: if True, and also if truth\_snv or truth\_indel are present, 
 
 
 
-\subsubsection{Module: somatic\_vcf2tsv and single\_sample\_vcf2tsv} \label{vcf2tsv}
+\subsection{Module: somaticseq/somatic\_vcf2tsv.py and somaticseq/single\_sample\_vcf2tsv.py} \label{module:vcf2tsv}
 
 Another useful module is the command to extract SomaticSeq features for variants in \emph{any} VCF file, and output the results to a TSV file. The following function requires both tumor and normal BAM files, and the reference genome. COSMIC, dbSNP, etc. are optional. None for any null inputs. min\_mq = 0 for this purpose. This is a filter to only output variants that has been called by a minimum number of tools (which you may specify as VCF inputs such as mutect, varscan, etc.)
 
 \begin{lstlisting}
-
   import somaticseq.somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
   
   somatic_vcf2tsv.vcf2tsv(is_vcf='/PATH/TO/variants.vcf', is_bed=None, is_pos=None, nbam_fn='/PATH/TO/normal.bam', tbam_fn='/PATH/TO/tumor.bam', truth=None, cosmic='/PATH/TO/COSMIC.v85.vcf', dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', mutect=None, varscan=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq=None, scalpel=None, strelka=None, tnscope=None, platypus=None, dedup=True, min_mq=1, min_bq=5, min_caller=0, ref_fa='/PATH/TO/GRCh38.fa', p_scale=None, outfile='/PATH/TO/SomaticSeq.FeaturesExtracted.tsv')
-
 \end{lstlisting}
 
 You may also extract sequencing info for any VCF file if you just have one bam file
 
 \begin{lstlisting}
-
   import somaticseq.somaticseq.single_sample_vcf2tsv as single_sample_vcf2tsv
   
   single_sample_vcf2tsv.vcf2tsv(is_vcf='/PATH/TO/variants.vcf', is_bed=None, is_pos=None, bam_fn='/PATH/TO/tumor.bam', truth=None, cosmic='/PATH/TO/COSMIC.v85.vcf', dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', mutect=None, varscan=None, vardict=None, muse=None, lofreq=None, scalpel=None, strelka=None, dedup=True, min_mq=1, min_bq=5, min_caller=0, ref_fa='/PATH/TO/GRCh38.fa', p_scale=None, outfile='/PATH/TO/SomaticSeq.FeaturesExtracted.tsv')
-
 \end{lstlisting}
 
 Both \textit{somaticseq/somaticseq/somatic\_vcf2tsv.py} and \textit{somaticseq/somaticseq/single\_sample\_vcf2tsv.py} may also be run as standalone scripts. Invoke the script with -h to learn their usages. 
@@ -351,21 +367,28 @@ Parameters:
 \end{itemize}
 
 
+The module can also be run independently on any VCF file to extract SomaticSeq-related features for the variants in the VCF files. To find out how to use them, do this in the command shell: 
+
+\begin{lstlisting}
+somaticseq/somatic_vcf2tsv.py -h
+somaticseq/single_sample_vcf2tsv.py -h
+\end{lstlisting}
 
 
 
 
-\subsubsection{Module: SSeq\_tsv2vcf}
 
-This module converts SomaticSeq's TSV file (described in Sec. \ref{vcf2tsv}) to SomaticSeq VCF files.
+
+
+\subsection{Module: somaticseq/SSeq\_tsv2vcf.py} \label{module:tsv2vcf}
+
+This module converts SomaticSeq's TSV file (described in Sec. \ref{module:vcf2tsv}) to SomaticSeq VCF files.
 
 
 \begin{lstlisting}
-
   import somaticseq.somaticseq.SSeq_tsv2vcf as SSeq_tsv2vcf
   
   SSeq_tsv2vcf.tsv2vcf(tsv_fn='/PATH/TO/SomaticSeq.tsv', vcf_fn='/PATH/TO/SomaticSeq.vcf', tools=['MuTect2', 'SomaticSniper', 'Strelka'], pass_score=0.5, lowqual_score=0.1, hom_threshold=0.85, het_threshold=0.01, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True)
-  
 \end{lstlisting}
 
 Parameters:
@@ -381,14 +404,51 @@ Parameters:
 
 \end{itemize}
 
+The script can also be run independently. 
+
+\begin{lstlisting}
+somaticseq/SSeq_tsv2vcf -h
+\end{lstlisting}
 
 
 
 
 
-\subsection{somaticseq.utilities modules} \label{module:utilities}
+\subsection{R scripts for machine learning} \label{module:r_scripts}
 
-\subsubsection{Module: split\_Bed\_into\_equal\_regions}
+The training and prediction scripts are written in R.
+
+\subsubsection{Training with ada} \label{module:r_train}
+
+r\_scripts/ada\_model\_builder\_ntChange.R is the script that is called during SomaticSeq pipeline to make classifiers. You can also run them indepedently with labeled Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv files. The command is:
+
+\begin{lstlisting}
+# Training:
+r_scripts/ada_model_builder_ntChange.R Ensemble.sSNV.tsv   Consistent_Mates Inconsistent_Mates
+r_scripts/ada_model_builder_ntChange.R Ensemble.sINDEL.tsv Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates
+\end{lstlisting}
+	
+\textit{Ensemble.sSNV.tsv.ntChange.Classifier.RData} and \textit{Ensemble.sINDEL.tsv.ntChange.Classifier.RData} will be created from model training. The arguments after \textit{Ensemble.sSNV.tsv} and \textit{Ensemble.sINDEL.tsv} tells the builder script to ignore those features in training. These features do not improve accuracy in our data sets (mostly WGS data, but they may help other data sets)
+
+
+\subsubsection{Prediction with trained ada model} \label{module:r_predict}
+
+r\_scripts/ada\_model\_predictor.R is the prediction script. To run it independently, the command is
+	
+\begin{lstlisting}
+# Mutation prediction:
+r_script/ada_model_predictor.R Ensemble.sSNV.tsv.Classifier.RData   Ensemble.sSNV.tsv   Predicted.sSNV.tsv
+r_script/ada_model_predictor.R Ensemble.sINDEL.tsv.Classifier.RData Ensemble.sINDEL.tsv Predicted.sINDEL.tsv
+\end{lstlisting}
+
+
+
+
+
+
+\subsection{utilities modules} \label{module:utilities}
+
+\subsubsection{Module: split\_Bed\_into\_equal\_regions} \label{module:split_bed}
 
 Given a .bed or a .fa.fai file, it will split the input region into N number of bed files, such that each bed file has equal-sized regions in them. 
 
@@ -398,9 +458,7 @@ Given a .bed or a .fa.fai file, it will split the input region into N number of 
 Given a list of .bed files and a .fa.fai file, it will return a .bed file detailing which regions were contained from which .bed inputs. 
 
 \begin{lstlisting}
-
   somaticseq/utilities/lociCounterWithLabels.py -fai GRCh38.fa.fai -beds 1.bed 2.bed 3.bed -labels 01 02 03 -out overlapping.bed
-
 \end{lstlisting}
 
 Parameters:
@@ -414,123 +472,17 @@ Parameters:
 
 
 
-\section{The step-by-step SomaticSeq Workflow} \label{step_by_step_procedures}
-
-We'll describe the workflow here.
-
-\subsection{Apply inclusion and exclusion regions}
-
-This step may be needed for model training. BEDTools is invoked by SomaticSeq. An inclusion region means we will only use calls inside these regions. An exclusion region means we do not care about calls inside this region. DREAM Challenge had exclusion regions, e.g., blacklisted regions, etc. It is also a routine used to parallelize the process by splitting large regions into equal-sized (in terms of number of pairs) regions, so that they can be processed in parallel.  
-
-
-
-\subsection{Combine the call sets}
-We use \textit{vcfModifier/getUniqueVcfPositions.py} and \textit{bedtools sort} to combine the VCF files from different callers. For each caller output, intermediate VCF file(s) may be created to separate the SNVs and INDELs calls, and also remove some REJECT calls to reduce file sizes.
-
-The following scripts are used to modify original VCF outputs.
-
-
-\begin{lstlisting}
-  vcfModifier/modify_JointSNVMix2.py
-  vcfModifier/modify_MuTect2.py
-  vcfModifier/modify_MuTect.py
-  vcfModifier/modify_SomaticSniper.py
-  vcfModifier/modify_ssMuTect2.py
-  vcfModifier/modify_ssStrelka.py
-  vcfModifier/modify_Strelka.py
-  vcfModifier/modify_VarDict.py
-  vcfModifier/modify_VarScan2.py
-\end{lstlisting}
-
-modify\_ssTOOL.py denotes it's for single-sample mode. 
-
-JointSNVMix2 does not output VCF files. In our own \href{https://github.com/bioinform/somaticseq/blob/master/utilities/dockered_pipelines/mutation_callers/submit_JointSNVMix2.sh}{workflow}, we convert its output into a basic VCF file with an 2 awk one-liners, which you may see at \textit{utilities/dockered\_pipelines/mutation\_callers/submit\_JointSNVMix2.sh}.
-
-\begin{lstlisting}
-# To avoid text files on the order of terabytes, this awk one-liner keeps entries where the reference is not "N", and the somatic probabilities are at least 0.95.
-awk -F "\t" 'NR!=1 && $4!="N" && $10+$11>=0.95'
-	
-# This awk one-liner converts the text file into a basic VCF file
-awk -F "\t" '{print $1 "\t" $2 "\t.\t" $3 "\t" $4 "\t.\t.\tAAAB=" $10 ";AABB=" $11 "\tRD:AD\t" $5 ":" $6 "\t" $7 ":" $8}'
-
-## The actual commands we've used in our workflow:
-echo -e '##fileformat=VCFv4.1' > unsorted.vcf
-echo -e '##INFO=<ID=AAAB,Number=1,Type=Float,Description="Probability of Joint Genotype AA in Normal and AB in Tumor">' >> unsorted.vcf
-echo -e '##INFO=<ID=AABB,Number=1,Type=Float,Description="Probability of Joint Genotype AA in Normal and BB in Tumor">' >> unsorted.vcf
-echo -e '##FORMAT=<ID=RD,Number=1,Type=Integer,Description="Depth of reference-supporting bases (reads1)">' >> unsorted.vcf
-echo -e '##FORMAT=<ID=AD,Number=1,Type=Integer,Description="Depth of variant-supporting bases (reads2)">' >> unsorted.vcf
-echo -e '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNORMAL\tTUMOR' >> unsorted.vcf
-
-python $PATH/TO/jsm.py classify joint_snv_mix_two genome.GRCh37.fa normal.bam tumor.bam trained.parameter.cfg /dev/stdout |\
-awk -F "\t" 'NR!=1 && $4!="N" && $10+$11>=0.95' |\
-awk -F "\t" '{print $1 "\t" $2 "\t.\t" $3 "\t" $4 "\t.\t.\tAAAB=" $10 ";AABB=" $11 "\tRD:AD\t" $5 ":" $6 "\t" $7 ":" $8}' >> unsorted.vcf
-\end{lstlisting}
-	
 
 
 
 
-\subsection{Convert the VCF file into TSV file}
-This script \textit{somaticseq/somatic\_vcf2tsv.py} works for all VCF files (requires input for two BAM files). It extracts information from the BAM files, as well as some individual callers' output VCF files. If the ground truth VCF file is included, a called variant will be annotated as a true positive, and everything will be annotated as a false positive. \textit{somaticseq/single\_sample\_vcf2tsv.py} is used for single-sample mode. 
-
-
-At the end of this, \textit{Ensemble.sSNV.tsv} and \textit{Ensemble.sINDEL.tsv} are created. 
-
-All the options for \textit{somaticseq/somatic\_vcf2tsv.py} or \textit{somaticseq/single\_sample\_vcf2tsv.py} can be found by running. 
-
-\begin{lstlisting}
-somaticseq/somatic_vcf2tsv.py -h
-somaticseq/single_sample_vcf2tsv.py -h
-\end{lstlisting}
-
-
-Note: Do not worry if Python throws a warning like this. 
-
-\begin{lstlisting}
-RuntimeWarning: invalid value encountered in double_scalars
-  z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
-\end{lstlisting}
-
-This is to tell you that scipy was attempting some statistical test with empty data. That's usually due to the fact that normal BAM file has no variant reads at that given position. That is why lots of values are NaN for the normal. 
 
 
 
 
-\subsection{Model Training or Mutation Prediction}
-
-You can use Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv files either for model training (provided that their mutation status is annotated with 0 or 1) or mutation prediction. This is done with stochastic boosting algorithm we have implemented in R. 
-	
-Model training:
-\begin{lstlisting}
-# Training:
-r_scripts/ada_model_builder_ntChange.R Ensemble.sSNV.tsv   Consistent_Mates Inconsistent_Mates
-r_scripts/ada_model_builder_ntChange.R Ensemble.sINDEL.tsv Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates
-\end{lstlisting}
-	
-\textit{Ensemble.sSNV.tsv.ntChange.Classifier.RData} and \textit{Ensemble.sINDEL.tsv.ntChange.Classifier.RData} will be created from model training. The arguments after \textit{Ensemble.sSNV.tsv} and \textit{Ensemble.sINDEL.tsv} tells the builder script to ignore those features in training. These features do not improve accuracy in our data sets (mostly WGS data, but they may help other data sets)
-	
-
-Mutation prediction:
-	
-\begin{lstlisting}
-# Mutation prediction:
-r_script/ada_model_predictor.R Ensemble.sSNV.tsv.Classifier.RData   Ensemble.sSNV.tsv   Trained.sSNV.tsv
-r_script/ada_model_predictor.R Ensemble.sINDEL.tsv.Classifier.RData Ensemble.sINDEL.tsv Trained.sINDEL.tsv
-\end{lstlisting}
-
-	
-After mutation prediction, if you feel like it, you may convert Trained.sSNV.tsv and Trained.sINDEL.tsv into VCF files. Use -tools to list ONLY the individual tools used to have appropriately annotated VCF files. Accepted tools are MuTect2/MuTect/Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka, and/or TNscope. To list a tool without having run it, the VCF will be annotated as if the tool was run but did not identify that position as a somatic variant, which is probably undesireable. 
 
 
-\begin{lstlisting}
-# Probability above 0.7 labeled PASS (-pass 0.7), and between 0.1 and 0.7 labeled LowQual (-low 0.1):
-# Use -all to include REJECT calls in the VCF file
-# Use -phred to convert probability values (between 0 to 1) into Phred scale in the QUAL column in the VCF file
 
-somaticseq/SSeq_tsv2vcf.py -tsv Trained.sSNV.tsv   -vcf Trained.sSNV.vcf   -pass 0.7 -low 0.1 -tools MuTect2 VarScan2 JointSNVMix2 SomaticSniper VarDict MuSE LoFreq Strelka -all -phred
-
-somaticseq/SSeq_tsv2vcf.py -tsv Trained.sINDEL.tsv -vcf Trained.sINDEL.vcf -pass 0.7 -low 0.1 -tools MuTect2 VarScan2 VarDict LoFreq Scalpel Strelka -all -phred
-\end{lstlisting}
 
 
 
@@ -564,7 +516,7 @@ makeSomaticScripts.py [paired|single] -h
 
 \begin{lstlisting}
 # Example command to submit the run scripts for each of the following somatic mutation callers
-$PATH/TO/somaticseq/utilities/dockered_pipelines/makeSomaticScripts.py paired \
+makeSomaticScripts.py paired \
 --normal-bam       /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam        /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
@@ -589,7 +541,7 @@ The \textit{\texttt{--}threads 12} will create 12 equal-size regions in 12 bed f
 As things are currently set up, training mode is best run seperately \textbf{after} you've run the workflows above, because we don't have a workflow engine to manage and then merge the result of each thread. You may invoke ```--train-somaticseq``` here, but SomaticSeq will train on each thread. Now if you use just a single thread (e.g., ```--threads 1``` is the default), you may train it just fine. In this case, two classifiers will be created (*.RData files), one for SNV and one for INDEL.
 
 \begin{lstlisting}
-$PATH/TO/somaticseq/utilities/dockered_pipelines/makeSomaticScripts.py paired \
+makeSomaticScripts.py paired \
 --normal-bam       /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam        /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
@@ -611,7 +563,7 @@ For multi-threaded job, you should not invoke somaticseq-train. Instead, you sho
 \subsubsection{SomaticSeq Prediction}
 
 \begin{lstlisting}
-$PATH/TO/somaticseq/utilities/dockered_pipelines/makeSomaticScripts.py paired \
+makeSomaticScripts.py paired \
 --normal-bam       /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam        /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
@@ -940,17 +892,16 @@ After the mutation simulation jobs are completed, you may create classifiers wit
 See our \href{https://github.com/bioinform/somaticseq/blob/master/utilities/dockered_pipelines}{somatic mutation pipeline} for more details.
 
 \begin{lstlisting}
-$PATH/TO/somaticseq/utilities/dockered_pipelines/submit_callers_multiThreads.sh \
---output-dir      /ABSOLUTE/PATH/TO/trainingSet/somaticMutationPipeline \
---normal-bam      /ABSOLUTE/PATH/TO/trainingSet/syntheticNormal.bam \
---tumor-bam       /ABSOLUTE/PATH/TO/trainingSet/syntheticTumor.bam \
---human-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
---dbsnp           /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
---thread          24 \
---truth-snv       /ABSOLUTE/PATH/TO/trainingSet/synthetic_snvs.vcf \
---truth-indel     /ABSOLUTE/PATH/TO/trainingSet/synthetic_indels.leftAlign.vcf \
---action          echo \
---mutect2 --somaticsniper --vardict --muse --lofreq --strelka --somaticseq
+makeSomaticScripts.py paired \
+--normal-bam       /ABSOLUTE/PATH/TO/trainingSet/syntheticNormal.bam \
+--tumor-bam        /ABSOLUTE/PATH/TO/trainingSet/syntheticTumor.bam \
+--genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-directory /ABSOLUTE/PATH/TO/trainingSet/somaticMutationPipeline \
+--dbsnp-vcf        /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--truth-snv        /ABSOLUTE/PATH/TO/trainingSet/synthetic_snvs.vcf \
+--truth-indel      /ABSOLUTE/PATH/TO/trainingSet/synthetic_indels.leftAlign.vcf \
+--threads          16 \
+--run-mutect2 --run-vardict --run-muse --run-lofreq --run-strelka2 --run-somaticseq --train-somaticseq
 \end{lstlisting}
 
 
@@ -1465,6 +1416,18 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 
 \section{Contact Us}
 For suggestions, bug reports, or technical support, please post in \href{https://github.com/bioinform/somaticseq/issues}{https://github.com/bioinform/somaticseq/issues}. The developers are alerted when issues are created there. Alternatively, you may also email \href{mailto:li_tai.fang@roche.com}{li\_tai.fang@roche.com}. 
+
+
+
+
+
+%% REFERENCES
+\bibliographystyle{unsrt}
+\bibliography{Refs}
+
+
+
+
 
 \end{sloppypar}
 \end{document}
