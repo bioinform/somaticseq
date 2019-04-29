@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-import argparse, gzip, re, sys
+import argparse, gzip, re, sys, os
 from os.path import basename
 from copy import copy
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-fai',    '--fai-file',   type=str,  help='.fa.fai file',  required=True,  default=None)
-parser.add_argument('-beds',   '--bed-files',  type=str,  help='BED files', nargs='*', required=True,  default=None)
+parser.add_argument('-beddir', '--bed-dir',    type=str,  help='BED files',     required=True,  default=None)
 parser.add_argument('-out',    '--bed-out',    type=str,  help='BED file out', required=False,  default=None)
 parser.add_argument('-labels', '--bed-labels', type=str,  help='Use these labels instead of bed file names', nargs='*', required=False,  default=None)
 
@@ -14,16 +14,18 @@ parser.add_argument('-labels', '--bed-labels', type=str,  help='Use these labels
 args = parser.parse_args()
 
 fai_file   = args.fai_file
-bed_files  = args.bed_files
+bed_dir    = args.bed_dir
 bed_out    = args.bed_out
 bed_labels = args.bed_labels
+
+bed_files = [ i for i in os.listdir(bed_dir) if re.search(r'\.bed$', i) ] 
 
 bed_out = args.bed_out if args.bed_out else sys.stdout
 
 if bed_labels:
     assert len(bed_labels) == len(bed_files)
 else:
-    bed_labels = [basename(bed_file_i) for bed_file_i in bed_files]
+    bed_labels = [basename(bed_file_i).replace('.bed', '') for bed_file_i in bed_files]
 
 def fai2bed(file_name):
         
