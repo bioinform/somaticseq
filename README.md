@@ -5,7 +5,7 @@
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
 
 ## SEQC2 branch
-This is a special project branch based on SomaticSeq v2. Project documentation can also be found at https://sites.google.com/view/seqc2.
+This is a special branch based on SomaticSeq v2. Lots of custom scripts were created to complete the SEQC-II cancer reference samples project. Project documentation can also be found at [here](https://sites.google.com/view/seqc2). For regular uses, please use version 3 (master) branch. 
 
 ## Requirements
 * Python 3, plus regex, pysam, numpy, and scipy libraries
