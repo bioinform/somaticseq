@@ -30,7 +30,7 @@
   deletekeywords={...},            % if you want to delete keywords from the given language
   escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
   extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
-  frame=single,	                  % adds a frame around the code
+  frame=single,                    % adds a frame around the code
   keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
   keywordstyle=\color{blue},       % keyword style
   language=bash,                   % the language of the code
@@ -44,7 +44,7 @@
   showtabs=false,                  % show tabs within strings adding particular underscores
   stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
   stringstyle=\color{mymauve},     % string literal style
-  tabsize=2,	                       % sets default tabsize to 2 spaces
+  tabsize=2,                       % sets default tabsize to 2 spaces
   title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
 }
 
@@ -427,14 +427,14 @@ r\_scripts/ada\_model\_builder\_ntChange.R is the script that is called during S
 r_scripts/ada_model_builder_ntChange.R Ensemble.sSNV.tsv   Consistent_Mates Inconsistent_Mates
 r_scripts/ada_model_builder_ntChange.R Ensemble.sINDEL.tsv Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates
 \end{lstlisting}
-	
+      
 \textit{Ensemble.sSNV.tsv.ntChange.Classifier.RData} and \textit{Ensemble.sINDEL.tsv.ntChange.Classifier.RData} will be created from model training. The arguments after \textit{Ensemble.sSNV.tsv} and \textit{Ensemble.sINDEL.tsv} tells the builder script to ignore those features in training. These features do not improve accuracy in our data sets (mostly WGS data, but they may help other data sets)
 
 
 \subsubsection{Prediction with trained ada model} \label{module:r_predict}
 
 r\_scripts/ada\_model\_predictor.R is the prediction script. To run it independently, the command is
-	
+      
 \begin{lstlisting}
 # Mutation prediction:
 r_script/ada_model_predictor.R Ensemble.sSNV.tsv.Classifier.RData   Ensemble.sSNV.tsv   Predicted.sSNV.tsv
@@ -916,34 +916,26 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 \begin{enumerate}
 
 
-	\item Version 1.0
-	
-		Version used to generate data in the manuscript and \href{https://www.synapse.org/#!Synapse:syn312572/wiki/72943}{Stage 5 of the ICGC-TCGA DREAM Somatic Mutation Challenge}, where SomaticSeq's results were \#1 for INDEL and \#2 for SNV. 
-		
-		In the original manuscript, VarDict's var2vcf\_somatic.pl script was used to generate VarDict VCFs, and subsequently ``-filter somatic'' was used for SSeq\_merged.vcf2tsv.py. Since then (including DREAM Challenge Stage 5), VarDict recommends var2vcf\_paired.pl over var2vcf\_somatic.pl, and subsequently ``-filter paired'' was used for SSeq\_merged.vcf2tsv.py. The difference in SomaticSeq results, however, is pretty much negligible. 
-	
-	
-	
-	\item Version 1.1
-	
-		Automated the SomaticSeq.Wrapper.sh script for both training and prediction mode. No change to any algorithm. 
-	
-	
-	
-	\item Version 1.2
-	
-		Have implemented the following improvement, mostly for indels:
-		
-		\begin{itemize}
-		 
-		  \item 
-		  SSeq\_merged.vcf2tsv.py can now accept pileup files to extract read depth and DP4 (reference forward, reference reverse, alternate forward, and alternate reverse) information (mainly for indels). Previously, that information can only be extracted from SAMtools VCF. Since the SAMtools or HaplotypeCaller generated VCFs hardly contain any indel information, this option improves the indel model. The SomaticSeq.Wrapper.sh script is modified accordingly.
-		 
-		  \item
-		  Extract mapping quality (MQ) from VarDict output if this information cannot be found in SAMtools VCF (also mostly benefits the indel model). 
-		 
-		  \item
-		  Indel length now positive for insertions and negative for deletions, instead of using the absolute value previously. 
+    \item Version 1.0
+    Version used to generate data in the manuscript and \href{https://www.synapse.org/#!Synapse:syn312572/wiki/72943}{Stage 5 of the ICGC-TCGA DREAM Somatic Mutation Challenge}, where SomaticSeq's results were \#1 for INDEL and \#2 for SNV. 
+
+    In the original manuscript, VarDict's var2vcf\_somatic.pl script was used to generate VarDict VCFs, and subsequently ``-filter somatic'' was used for SSeq\_merged.vcf2tsv.py. Since then (including DREAM Challenge Stage 5), VarDict recommends var2vcf\_paired.pl over var2vcf\_somatic.pl, and subsequently ``-filter paired'' was used for SSeq\_merged.vcf2tsv.py. The difference in SomaticSeq results, however, is pretty much negligible. 
+
+    \item Version 1.1
+    Automated the SomaticSeq.Wrapper.sh script for both training and prediction mode. No change to any algorithm. 
+
+    \item Version 1.2
+    Have implemented the following improvement, mostly for indels:
+
+    \begin{itemize}
+
+      \item 
+      SSeq\_merged.vcf2tsv.py can now accept pileup files to extract read depth and DP4 (reference forward, reference reverse, alternate forward, and alternate reverse) information (mainly for indels). Previously, that information can only be extracted from SAMtools VCF. Since the SAMtools or HaplotypeCaller generated VCFs hardly contain any indel information, this option improves the indel model. The SomaticSeq.Wrapper.sh script is modified accordingly.
+	    \item
+	    Extract mapping quality (MQ) from VarDict output if this information cannot be found in SAMtools VCF (also mostly benefits the indel model). 
+	   
+	    \item
+	    Indel length now positive for insertions and negative for deletions, instead of using the absolute value previously. 
 	 
 	\end{itemize}
 	
