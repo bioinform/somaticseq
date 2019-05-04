@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,down-sample:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,left-beta:,right-beta:,min-depth:,max-depth:,min-variant-reads:,aligner:,out-script:,seed:,action:,threads:,merge-bam,split-bam,clean-bam,indel-realign,merge-output-bams,keep-intermediates -n 'BamSimulator.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,tumor-bam-out:,tumor-bam-in:,normal-bam-out:,normal-bam-in:,split-proportion:,down-sample:,num-snvs:,num-indels:,max-indel-len:,num-svs:,min-vaf:,max-vaf:,left-beta:,right-beta:,min-depth:,max-depth:,min-variant-reads:,aligner:,out-script:,seed:,action:,threads:,merge-bam,split-bam,clean-bam,indel-realign,merge-output-bams,keep-intermediates -n 'BamSimulator.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -28,6 +28,8 @@ proportion=0.5
 down_sample=1
 left_beta=2
 right_beta=2
+max_indel_len=18
+
 
 aligner='mem'
 
@@ -101,6 +103,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  num_indels=$2 ; shift 2 ;;
+            esac ;;
+
+        --max-indel-len )
+            case "$2" in
+                "") shift 2 ;;
+                *)  max_indel_len=$2 ; shift 2 ;;
             esac ;;
 
         --num-svs )
@@ -403,7 +411,7 @@ do
     --genome-reference ${HUMAN_REFERENCE} \
     --selector ${ith_selector} \
     --num-snvs ${per_thread_snvs} --num-indels ${per_thread_indels} --num-svs ${per_thread_svs} \
-    --min-vaf ${min_vaf} --max-vaf ${max_vaf} \
+    --min-vaf ${min_vaf} --max-vaf ${max_vaf} --max-indel-len ${max_indel_len} \
     --left-beta ${left_beta} --right-beta ${right_beta} \
     --seed $seed \
     --out-script $out_script

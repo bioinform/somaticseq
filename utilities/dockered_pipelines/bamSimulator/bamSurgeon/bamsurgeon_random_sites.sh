@@ -3,7 +3,7 @@
 
 set -e
 
-OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,num-snvs:,num-indels:,num-svs:,min-vaf:,max-vaf:,left-beta:,right-beta:,out-script:,seed:,standalone -n 'bamsurgeon_split_BAM.sh'  -- "$@"`
+OPTS=`getopt -o o: --long output-dir:,genome-reference:,selector:,num-snvs:,num-indels:,num-svs:,max-indel-len:,min-vaf:,max-vaf:,left-beta:,right-beta:,out-script:,seed:,standalone -n 'bamsurgeon_split_BAM.sh'  -- "$@"`
 
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
@@ -22,6 +22,7 @@ min_vaf=0.05
 max_vaf=0.5
 left_beta=2
 right_beta=2
+max_indel_len=18
 
 while true; do
     case "$1" in
@@ -59,6 +60,12 @@ while true; do
             case "$2" in
                 "") shift 2 ;;
                 *)  num_svs=$2 ; shift 2 ;;
+            esac ;;
+
+        --max-indel-len )
+            case "$2" in
+                "") shift 2 ;;
+                *)  max_indel_len=$2 ; shift 2 ;;
             esac ;;
 
         --min-vaf )
@@ -157,7 +164,7 @@ echo "--minvaf $min_vaf \\" >> $out_script
 echo "--maxvaf $max_vaf \\" >> $out_script
 echo "--vafbeta1 $left_beta \\" >> $out_script
 echo "--vafbeta2 $right_beta \\" >> $out_script
-echo "--avoidN indel --maxlen 18  \\" >> $out_script
+echo "--avoidN indel --maxlen ${max_indel_len}  \\" >> $out_script
 echo "| vcfsorter.pl /mnt/${hg_dict} - > /mnt/${outdir}/random_sINDEL.bed\"" >> $out_script
 echo "" >> $out_script
 
