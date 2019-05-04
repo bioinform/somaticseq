@@ -1,11 +1,18 @@
+# SEQC2 branch
+This is a special branch based on SomaticSeq v2.8.1.
+
+Lots of custom scripts were created here to complete the SEQC-II cancer reference samples project. 
+
+Analysis documentation and latest information about the project can also be found at [**https://sites.google.com/view/seqc2**](https://sites.google.com/view/seqc2). 
+
+For regular uses, please use version 3 (master) branch.
+
+
 # SomaticSeq
 
 * SomaticSeq is an ensemble caller that has the ability to use machine learning to filter out false positives. The detailed documentation is included in the package, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). A quick guide can also be found [here](http://bioinform.github.io/somaticseq/).
 * SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
-
-## SEQC2 branch
-This is a special branch based on SomaticSeq v2. Lots of custom scripts were created to complete the SEQC-II cancer reference samples project. Project documentation can also be found at [here](https://sites.google.com/view/seqc2). For regular uses, please use version 3 (master) branch. 
 
 ## Requirements
 * Python 3, plus regex, pysam, numpy, and scipy libraries
