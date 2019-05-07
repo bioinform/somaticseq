@@ -25,7 +25,7 @@ test_data$GC2TA[ (test_data$REF=='G' & test_data$ALT=='T') | (test_data$REF=='C'
 test_data$GC2AT[ (test_data$REF=='G' & test_data$ALT=='A') | (test_data$REF=='C' & test_data$ALT=='T') ] = 1
 test_data$TA2AT[ (test_data$REF=='T' & test_data$ALT=='A') | (test_data$REF=='A' & test_data$ALT=='T') ] = 1
 test_data$TA2GC[ (test_data$REF=='T' & test_data$ALT=='G') | (test_data$REF=='A' & test_data$ALT=='C') ] = 1
-test_data$TA2CG[ (test_data$REF=='T' & test_data$ALT=='T') | (test_data$REF=='A' & test_data$ALT=='G') ] = 1
+test_data$TA2CG[ (test_data$REF=='T' & test_data$ALT=='C') | (test_data$REF=='A' & test_data$ALT=='G') ] = 1
 
 
 # Handle empty input data
