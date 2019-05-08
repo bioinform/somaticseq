@@ -3,7 +3,7 @@
 * This is a special branch based on SomaticSeq v2.8.1.
 * Lots of custom scripts were created here to complete the [SEQC-II](https://www.fda.gov/science-research/bioinformatics-tools/microarraysequencing-quality-control-maqcseqc#MAQC_IV) cancer reference samples project. 
 * Analysis documentation and latest updates about the project can also be found at [**https://sites.google.com/view/seqc2**](https://sites.google.com/view/seqc2). 
-* All the somatic mutation call sets for the reference samples are stored on the [**NCBI ftp site**](https://bit.ly/2VoRHDt).
+* All the somatic mutation call sets for the reference samples are stored on the [**NCBI ftp site**](http://bit.ly/2PUT72o).
 * For regular uses, please use version 3 ([master](https://github.com/bioinform/somaticseq)) branch.
 
 # SomaticSeq
