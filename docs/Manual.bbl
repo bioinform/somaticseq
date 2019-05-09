@@ -1,0 +1,101 @@
+\begin{thebibliography}{10}
+
+\bibitem{mutect}
+Kristian Cibulskis, Michael~S Lawrence, Scott~L Carter, Andrey Sivachenko,
+  David Jaffe, Carrie Sougnez, Stacey Gabriel, Matthew Meyerson, Eric~S Lander,
+  and Gad Getz.
+\newblock {Sensitive detection of somatic point mutations in impure and
+  heterogeneous cancer samples.}
+\newblock {\em Nat Biotechnol}, 31(3):213--219, Mar 2013.
+
+\bibitem{varscan2}
+Daniel~C Koboldt, Qunyuan Zhang, David~E Larson, Dong Shen, Michael~D McLellan,
+  Ling Lin, Christopher~A Miller, Elaine~R Mardis, Li~Ding, and Richard~K
+  Wilson.
+\newblock {VarScan 2: somatic mutation and copy number alteration discovery in
+  cancer by exome sequencing.}
+\newblock {\em {Genome Res.}}, 22(3):568--76, March 2012.
+
+\bibitem{jointsnvmix2}
+Andrew Roth, Jiarui Ding, Ryan Morin, Anamaria Crisan, Gavin Ha, Ryan Giuliany,
+  Ali Bashashati, Martin Hirst, Gulisa Turashvili, Arusha Oloumi, Marco~A
+  Marra, Samuel Aparicio, and Sohrab~P Shah.
+\newblock {JointSNVMix: a probabilistic model for accurate detection of somatic
+  mutations in normal/tumour paired next-generation sequencing data.}
+\newblock {\em {Bioinformatics}}, 28(7):907--13, April 2012.
+
+\bibitem{somaticsniper}
+David~E Larson, Christopher~C Harris, Ken Chen, Daniel~C Koboldt, Travis~E
+  Abbott, David~J Dooling, Timothy~J Ley, Elaine~R Mardis, Richard~K Wilson,
+  and Li~Ding.
+\newblock {SomaticSniper: identification of somatic point mutations in whole
+  genome sequencing data.}
+\newblock {\em {Bioinformatics}}, 28(3):311--7, February 2012.
+
+\bibitem{vardict}
+Zhongwu Lai, Aleksandra Markovets, Miika Ahdesmaki, Brad Chapman, Oliver
+  Hofmann, Robert McEwen, Justin Johnson, Brian Dougherty, J~Carl Barrett, and
+  Jonathan~R Dry.
+\newblock {VarDict: a novel and versatile variant caller for next-generation
+  sequencing in cancer research.}
+\newblock {\em {Nucleic Acids Res.}}, 44(11):e108, 06 2016.
+
+\bibitem{muse}
+Yu~Fan, Liu Xi, Daniel S~T Hughes, Jianjun Zhang, Jianhua Zhang, P~Andrew
+  Futreal, David~A Wheeler, and Wenyi Wang.
+\newblock {MuSE: accounting for tumor heterogeneity using a sample-specific
+  error model improves sensitivity and specificity in mutation calling from
+  sequencing data.}
+\newblock {\em {Genome Biol.}}, 17(1):178, 08 2016.
+
+\bibitem{lofreq}
+Andreas Wilm, Pauline Poh~Kim Aw, Denis Bertrand, Grace Hui~Ting Yeo, Swee~Hoe
+  Ong, Chang~Hua Wong, Chiea~Chuen Khor, Rosemary Petric, Martin~Lloyd Hibberd,
+  and Niranjan Nagarajan.
+\newblock {LoFreq: a sequence-quality aware, ultra-sensitive variant caller for
+  uncovering cell-population heterogeneity from high-throughput sequencing
+  datasets.}
+\newblock {\em {Nucleic Acids Res.}}, 40(22):11189--201, December 2012.
+
+\bibitem{scalpel}
+Giuseppe Narzisi, Jason~A O'Rawe, Ivan Iossifov, Han Fang, Yoon-Ha Lee, Zihua
+  Wang, Yiyang Wu, Gholson~J Lyon, Michael Wigler, and Michael~C Schatz.
+\newblock {Accurate de novo and transmitted indel detection in exome-capture
+  data using microassembly.}
+\newblock {\em {Nat. Methods}}, 11(10):1033--6, October 2014.
+
+\bibitem{strelka2}
+Sangtae Kim, Konrad Scheffler, Aaron~L Halpern, Mitchell~A Bekritsky, Eunho
+  Noh, Morten K{\"a}llberg, Xiaoyu Chen, Yeonbin Kim, Doruk Beyter, Peter
+  Krusche, and Christopher~T Saunders.
+\newblock {Strelka2: fast and accurate calling of germline and somatic
+  variants.}
+\newblock {\em {Nat. Methods}}, 15(8):591--594, August 2018.
+
+\bibitem{tnscope}
+Donald Freed, Renke Pan, and Rafael Aldana.
+\newblock Tnscope: Accurate detection of somatic mutations with haplotype-based
+  variant candidate detection and machine learning filtering.
+\newblock {\em bioRxiv}, 2018.
+
+\bibitem{platypus}
+Helga Thorvaldsdottir, James~T. Robinson, and Jill~P. Mesirov.
+\newblock {Integrative Genomics Viewer (IGV): high-performance genomics data
+  visualization and exploration.}
+\newblock {\em Brief Bioinform}, 14(2):178--192, Mar 2013.
+
+\bibitem{Fang_2015}
+Li~Tai Fang, Pegah~Tootoonchi Afshar, Aparna Chhibber, Marghoob Mohiyuddin,
+  Yu~Fan, John~C. Mu, Greg Gibeling, Sharon Barr, Narges~Bani Asadi, Mark~B.
+  Gerstein, and et~al.
+\newblock An ensemble approach to accurately detect somatic mutations using
+  somaticseq.
+\newblock {\em Genome Biology}, 16(1), Sep 2015.
+
+\bibitem{bedtools}
+Aaron~R. Quinlan and Ira~M. Hall.
+\newblock {BEDTools: a flexible suite of utilities for comparing genomic
+  features}.
+\newblock {\em Bioinformatics}, 26(6):841--842, 01 2010.
+
+\end{thebibliography}

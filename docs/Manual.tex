@@ -1401,6 +1401,17 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 		\end{itemize}
 
 
+	\item Version 3.2.2
+	
+		\begin{itemize}
+		
+			\item Also fixed the TA2CG feature in ada\_model\_predictor.R
+			
+			\item Modified utilities/dockered\_pipelines/create\_tumor\_normal\_run\_scripts.py and utilities/dockered\_pipelines/create\_tumor\_only\_run\_scripts.py to pre-process bed file for VarDict (i.e., limit each line of bed file to 5000 bp) no matter what. Originally the process is triggered if average bp per line was greater than 50,000 bp. That assumption broke down in multi-threaded tasks, when the final sub bed file contained many decoy or non-human contigs that drove the average bp/line in a bed file below 50,000 bp, and the resulting job caused VarDict to run out of memory. This is to rectify that issue. 
+		
+		\end{itemize}
+
+
 \end{enumerate}
 
 
