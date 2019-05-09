@@ -178,7 +178,7 @@ def run_VarScan2(input_parameters, mem=4, minVAF=0.10, minMQ=25, minBQ=20, outvc
 
 
 
-def run_VarDict(input_parameters, mem=14, minVAF=0.05, outvcf='VarDict.vcf'):
+def run_VarDict(input_parameters, mem=14, minVAF=0.05, process_bed=True, outvcf='VarDict.vcf'):
     
     logdir         = input_parameters['output_directory'] + os.sep + 'logs'
     outfile        = logdir + os.sep + 'vardict.{}.cmd'.format(ts)
@@ -228,7 +228,7 @@ def run_VarDict(input_parameters, mem=14, minVAF=0.05, outvcf='VarDict.vcf'):
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
         # Decide if Bed file needs to be "split" such that each line has a small enough region
-        if total_bases/num_lines > 50000:
+        if process_bed or total_bases/num_lines > 50000:
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION='latest') )
             out.write( '/opt/somaticseq/utilities/split_mergedBed.py \\\n' )
             out.write( '-infile /mnt/{SELECTOR} -outfile /mnt/{OUTDIR}/split_regions.bed\n\n'.format(SELECTOR=bed_file, OUTDIR=input_parameters['output_directory']) )
