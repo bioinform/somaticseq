@@ -322,9 +322,12 @@ else
         bam_file_for_spikein="${in_tumor}"
     fi
     
-    ln -s /mnt/${in_normal}     ${outdir}/Designated.Normal.bam
-    ln -s /mnt/${in_normal}.bai ${outdir}/Designated.Normal.bam.bai
-    final_normal_bam="${outdir}/Designated.Normal.bam"
+    if [[ $in_normal ]]
+    then
+        ln -s /mnt/${in_normal}     ${outdir}/Designated.Normal.bam
+        ln -s /mnt/${in_normal}.bai ${outdir}/Designated.Normal.bam.bai
+        final_normal_bam="${outdir}/Designated.Normal.bam"
+    fi
     
 fi
 
@@ -390,11 +393,6 @@ then
 fi
 
 
-#echo "" >> $out_script
-#echo "mv ${final_tumor_bam} ${outdir}/${out_tumor}" >> $out_script
-#echo "mv ${final_tumor_bam}.bai ${outdir}/${out_tumor}.bai" >> $out_script
-#echo "" >> $out_script
-
 
 if [[ $indel_realign ]]
 then
@@ -421,12 +419,17 @@ then
 
 else
 
-    echo "mv ${final_normal_bam}     ${outdir}/${out_normal}" >> $out_script
-    echo "mv ${final_tumor_bam}      ${outdir}/${out_tumor}" >> $out_script
-    echo "" >> $out_script
-    echo "mv ${final_tumor_bam}.bai  ${outdir}/${out_tumor}.bai" >> $out_script
-    echo "mv ${final_normal_bam}.bai ${outdir}/${out_normal}.bai" >> $out_script
     
+    echo "mv ${final_tumor_bam}      ${outdir}/${out_tumor}" >> $out_script
+    echo "mv ${final_tumor_bam}.bai  ${outdir}/${out_tumor}.bai" >> $out_script
+
+    echo "" >> $out_script
+
+    if [[ $in_normal ]]
+    then
+        echo "mv ${final_normal_bam}     ${outdir}/${out_normal}" >> $out_script
+        echo "mv ${final_normal_bam}.bai ${outdir}/${out_normal}.bai" >> $out_script
+    fi
 
 fi
 

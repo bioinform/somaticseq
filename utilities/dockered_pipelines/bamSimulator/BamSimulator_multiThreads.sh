@@ -300,9 +300,10 @@ do
         --out-script $out_script
         
         files_to_delete="${outdir}/${ith_thread}.normal.bam ${outdir}/${ith_thread}.normal.bam.bai $files_to_delete"
+        in_normal="${outdir}/${ith_thread}.normal.bam"
     fi
     
-    in_normal="${outdir}/${ith_thread}.normal.bam"
+    
     
     # By default, the input tumor gets to be added until instructed otherwise:
     bam_file_to_be_split=${in_tumor}
@@ -399,9 +400,12 @@ do
             bam_file_for_spikein="${in_tumor}"
         fi
         
-        ln -s /mnt/${in_normal}     ${outdir}/Designated.Normal.bam
-        ln -s /mnt/${in_normal}.bai ${outdir}/Designated.Normal.bam.bai
-        final_normal_bam="${outdir}/Designated.Normal.bam"
+        if [[ $in_normal ]]
+        then
+            ln -s /mnt/${in_normal}     ${outdir}/Designated.Normal.bam
+            ln -s /mnt/${in_normal}.bai ${outdir}/Designated.Normal.bam.bai
+            final_normal_bam="${outdir}/Designated.Normal.bam"
+        fi
         
     fi
 
@@ -503,11 +507,16 @@ do
         
     else
     
-        echo "mv ${final_normal_bam}     ${outdir}/${out_normal}" >> $out_script
+        
         echo "mv ${final_tumor_bam}      ${outdir}/${out_tumor}" >> $out_script
-        echo "" >> $out_script
-        echo "mv ${final_normal_bam}.bai ${outdir}/${out_normal}.bai" >> $out_script
         echo "mv ${final_tumor_bam}.bai  ${outdir}/${out_tumor}.bai" >> $out_script
+        echo "" >> $out_script
+        
+        if [[ $in_normal ]]
+        then
+            echo "mv ${final_normal_bam}     ${outdir}/${out_normal}" >> $out_script
+            echo "mv ${final_normal_bam}.bai ${outdir}/${out_normal}.bai" >> $out_script
+        fi
     
     fi
     
@@ -527,7 +536,11 @@ do
     ${action} $out_script
 
     tbams_to_merge="${outdir}/${out_tumor} ${tbams_to_merge}"
-    nbams_to_merge="${outdir}/${out_normal} ${nbams_to_merge}"
+    
+    if [[ $in_normal_whole ]]
+    then
+        nbams_to_merge="${outdir}/${out_normal} ${nbams_to_merge}"
+    fi
     
     ith_thread=$(( $ith_thread + 1))
 
