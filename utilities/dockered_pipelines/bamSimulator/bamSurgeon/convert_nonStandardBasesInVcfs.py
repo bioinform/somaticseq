@@ -5,7 +5,7 @@ import sys, re
 
 for line_i in sys.stdin:
     
-    if line_i.startswith:
+    if line_i.startswith('#'):
         print(line_i, end='')
         
     else:
