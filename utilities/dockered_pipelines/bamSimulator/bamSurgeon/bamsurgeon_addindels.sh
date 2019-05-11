@@ -166,7 +166,11 @@ echo "docker run -v /:/mnt -u $UID --rm lethalfang/bamsurgeon:1.1-3 bash -c \\" 
 echo "\"/usr/local/bamsurgeon/scripts/makevcf_indels.py \\" >> $out_script
 echo "/mnt/${outdir}/addindel_logs_unsorted.${outbam} /mnt/${HUMAN_REFERENCE} \\" >> $out_script
 echo "| bedtools sort -header -faidx /mnt/${HUMAN_REFERENCE}.fai \\" >> $out_script
-echo "> /mnt/${outdir}/synthetic_indels.vcf\"" >> $out_script
+echo "> /mnt/${outdir}/synthetic_pre.indels.vcf\"" >> $out_script
+echo "" >> $out_script
+
+echo "docker run --rm -v /:/mnt -u $UID lethalfang/somaticseq:latest bash -c \\" >> $out_script
+echo "cat /mnt/${outdir}/synthetic_pre.indels.vcf | /opt/somaticseq/utilities/dockered_pipelines/bamSimulator/bamSurgeon/convert_nonStandardBasesInVcfs.py > /mnt/${outdir}/synthetic_indels.vcf" >> $out_script
 echo "" >> $out_script
 
 echo "docker run --rm -v /:/mnt -u $UID lethalfang/somaticseq:base-1.1 bash -c \\" >> $out_script
