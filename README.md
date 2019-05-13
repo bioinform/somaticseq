@@ -53,7 +53,7 @@ Additional parameters to be specified **before** `paired` option to invoke train
 * `--truth-snv`:        if you have ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL
 
-Additional input files to be specified **before** `paired` option invoke prediction mode (to use classifiers to score variants). Four additional files will be created, i.e., *Seq.Classified.sSNV.vcf*, *SSeq.Classified.sSNV.tsv*,  *SSeq.Classified.sINDEL.vcf*, and *SSeq.Classified.sINDEL.tsv*.
+Additional input files to be specified **before** `paired` option invoke prediction mode (to use classifiers to score variants). Four additional files will be created, i.e., *SSeq.Classified.sSNV.vcf*, *SSeq.Classified.sSNV.tsv*,  *SSeq.Classified.sINDEL.vcf*, and *SSeq.Classified.sINDEL.tsv*.
 * `--classifier-snv`:   classifier (.RData file) previously built for SNV
 * `--classifier-indel`: classifier (.RData file) previously built for INDEL
 
