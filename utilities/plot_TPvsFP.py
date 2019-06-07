@@ -16,15 +16,17 @@ parser.add_argument('-height',  '--pic-height', type=float, help='pic height', r
 parser.add_argument('-text',    '--extra-title-text', type=str, help='2nd line of title text', required=False, default='')
 
 args       = parser.parse_args()
+
 fn         = args.input_tsv_file
+label0     = args.label0
+label1     = args.label1
+save_figs  = args.save_figures
 prefix     = args.figure_prefix
 w          = args.pic_width
 h          = args.pic_height
 extra_text = args.extra_title_text
 
 
-
-#yplot.ion()
 
 def namestr(obj, namespace=globals() ):
     
@@ -36,7 +38,6 @@ def namestr(obj, namespace=globals() ):
             new_collection = i
     
     return new_collection
-
 
 
 def plot_2hist(false_values, true_values, hist_bins=None, labels=None, hist_title=None ):
@@ -56,10 +57,10 @@ def plot_2hist(false_values, true_values, hist_bins=None, labels=None, hist_titl
         label0 = labels[0]
         label1 = labels[1]
     
-    pyplot.hist([ [false_values], [true_values] ], bins, color=('red', 'blue'), label=(label0,label1), normed=True )
+    pyplot.hist([ false_values, true_values ], bins, color=('red', 'blue'), label=(label0,label1), normed=True )
     
     pyplot.legend(loc='upper right', fontsize=18)
-    pyplot.title( hist_title,  fontsize=24)
+    pyplot.title( hist_title,  fontsize=18)
     
     pyplot.tick_params(axis='x', labelsize=16)
     pyplot.tick_params(axis='y', labelsize=16)
@@ -69,7 +70,7 @@ def plot_2hist(false_values, true_values, hist_bins=None, labels=None, hist_titl
 
 
 def figure_display(fn_string, pre_string=prefix, fig_number=1):
-    if args.save_figures:
+    if save_figs:
         pyplot.savefig('{}.{}.{}.{}'.format(pre_string, str(fig_number), fn_string, 'pdf') )
     else:
         pyplot.show()
@@ -119,33 +120,34 @@ for i in range(var1_index, len(header) ):
     #print(data_is_wrong.std(), data_is_right.std(), sep='\t', end='\t' )
     #print(numpy.median(data_is_wrong), numpy.median(data_is_right), sep='\t', end='\t' )
     
-    #try:
-        #print(data_is_wrong.min(), data_is_right.min(), sep='\t', end='\t' )
-        #print(numpy.percentile(data_is_wrong, 10), numpy.percentile(data_is_right, 10), sep='\t', end='\t' )
-        #print(numpy.percentile(data_is_wrong, 20), numpy.percentile(data_is_right, 20), sep='\t', end='\t' )
-        #print(numpy.percentile(data_is_wrong, 30), numpy.percentile(data_is_right, 30), sep='\t', end='\t' )
-        #print(numpy.percentile(data_is_wrong, 40), numpy.percentile(data_is_right, 40), sep='\t', end='\t' )
-        #print(numpy.percentile(data_is_wrong, 50), numpy.percentile(data_is_right, 50), sep='\t', end='\t' )
-        #print(numpy.percentile(data_is_wrong, 60), numpy.percentile(data_is_right, 60), sep='\t', end='\t' )
-        #print(numpy.percentile(data_is_wrong, 70), numpy.percentile(data_is_right, 70), sep='\t', end='\t' )
-        #print(numpy.percentile(data_is_wrong, 80), numpy.percentile(data_is_right, 80), sep='\t', end='\t' )
-        #print(numpy.percentile(data_is_wrong, 90), numpy.percentile(data_is_right, 90), sep='\t', end='\t' )
-        #print(data_is_wrong.max(), data_is_right.max(), sep='\t', end='\t' )
+    # try:
+        # print(data_is_wrong.min(), data_is_right.min(), sep='\t', end='\t' )
+        # print(numpy.percentile(data_is_wrong, 10), numpy.percentile(data_is_right, 10), sep='\t', end='\t' )
+        # print(numpy.percentile(data_is_wrong, 20), numpy.percentile(data_is_right, 20), sep='\t', end='\t' )
+        # print(numpy.percentile(data_is_wrong, 30), numpy.percentile(data_is_right, 30), sep='\t', end='\t' )
+        # print(numpy.percentile(data_is_wrong, 40), numpy.percentile(data_is_right, 40), sep='\t', end='\t' )
+        # print(numpy.percentile(data_is_wrong, 50), numpy.percentile(data_is_right, 50), sep='\t', end='\t' )
+        # print(numpy.percentile(data_is_wrong, 60), numpy.percentile(data_is_right, 60), sep='\t', end='\t' )
+        # print(numpy.percentile(data_is_wrong, 70), numpy.percentile(data_is_right, 70), sep='\t', end='\t' )
+        # print(numpy.percentile(data_is_wrong, 80), numpy.percentile(data_is_right, 80), sep='\t', end='\t' )
+        # print(numpy.percentile(data_is_wrong, 90), numpy.percentile(data_is_right, 90), sep='\t', end='\t' )
+        # print(data_is_wrong.max(), data_is_right.max(), sep='\t', end='\t' )
         
-    #except ValueError:
-        #pass
+    # except ValueError:
+        # pass
     
-    #print('')
+    # print('')
         
 
 
 for fig_n,var_i in enumerate( header[var1_index::] ):
     
     pyplot.figure(fig_n+1)
+    
     try:
-        plot_2hist( vars()[var_i + '_False'], vars()[var_i + '_True'], labels=(args.label0, args.label1), hist_title=var_i )
+        plot_2hist( vars()[var_i + '_False'], vars()[var_i + '_True'], labels=(label0, label1), hist_title=var_i )
         figure_display( var_i, prefix, '%03d' % (fig_n+1) )
-
+        
     except ValueError:
         pass
     
@@ -194,15 +196,15 @@ with open(fn) as f:
         
         line_i = f.readline().rstrip()
 
-pyplot.figure( fig_n+1 )
-pyplot.bar( (1,2,3,4,5,6), (GC2CG[0], GC2TA[0], GC2AT[0], TA2AT[0], TA2GC[0], TA2CG[0]  ), 0.1, color="red")
-pyplot.bar( (1.1, 2.1, 3.1, 4.1, 5.1, 6.1), (GC2CG[1], GC2TA[1], GC2AT[1], TA2AT[1], TA2GC[1], TA2CG[1]  ), 0.1, color="green")
-pyplot.legend( (args.label0, args.label1) )
-pyplot.xticks( (1,2,3,4,5,6), ('G>C', 'G>T', 'G>A', 'T>A', 'T>G', 'T>C') )
-pyplot.savefig('fig.' + '%03d' % (fig_n+1) + '_' + 'ntChange' + '.pdf')
 
 
 
+# pyplot.figure( fig_n+1 )
+# pyplot.bar( (1,2,3,4,5,6), (GC2CG[0], GC2TA[0], GC2AT[0], TA2AT[0], TA2GC[0], TA2CG[0]  ), 0.1, color="red")
+# pyplot.bar( (1.1, 2.1, 3.1, 4.1, 5.1, 6.1), (GC2CG[1], GC2TA[1], GC2AT[1], TA2AT[1], TA2GC[1], TA2CG[1]  ), 0.1, color="green")
+# pyplot.legend( (label0, label1) )
+# pyplot.xticks( (1,2,3,4,5,6), ('G>C', 'G>T', 'G>A', 'T>A', 'T>G', 'T>C') )
+# pyplot.savefig('fig.' + '%03d' % (fig_n+1) + '_' + 'ntChange' + '.pdf')
 
 
 
@@ -214,3 +216,5 @@ pyplot.savefig('fig.' + '%03d' % (fig_n+1) + '_' + 'ntChange' + '.pdf')
 #pyplot.tick_params(axis='y', labelsize=14)
 #pyplot.ylabel('Log (N)', fontsize=16)
 #pyplot.xlabel('P', fontsize=16)
+
+#input('Press Enter to quit. ')
