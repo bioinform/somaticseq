@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# In version 1.1, instead of using consensus vote for LL/EA/NC, the classification used the combined training set trained from the other sequencing centers
+
 import sys, argparse, math, gzip, os, re
 from copy import copy
 
