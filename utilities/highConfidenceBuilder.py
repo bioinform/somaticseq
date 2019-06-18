@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# In version 1.1, instead of using consensus vote for LL/EA/NC, the classification used the combined training set trained from the other sequencing centers
+# In version 1.1, instead of using consensus vote for LL/EA/NC, the classification used the combined training set from the other sequencing centers
 
 import sys, argparse, math, gzip, os, re
 from copy import copy
@@ -216,7 +216,6 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
             rejected_samples = []
             missing_samples  = []
             
-            
             # Look for "PASS" calls, either model classified or consensus, in BWA:
             for aligner_i, call_i in zip(aligners, all_tumor_indices):
                 
@@ -224,6 +223,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     
                     score = vcf_i.get_sample_value('SCORE', call_i)
                     
+                    # In v1.1, all calls should have scores, all "PASS" will be called samples. 
                     if score and score != '.' and float(score) >= pass_score:
                         
                         nPASS += 1
@@ -241,7 +241,8 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                             alignerClassifications[ aligner_i ]['Others']['PASS'] += 1
                         else:
                             raise Exception('Wrong Site Code')
-                        
+                    
+                    # Likewise, in v1.1, all will have a score. 
                     elif score and score != '.' and float(score) < reject_score:
                         
                         nREJECT += 1
@@ -265,7 +266,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         elif samples[call_i].startswith('NV_'):
                             alignerClassifications[ aligner_i ]['NV']['NeutralEvidence'] += 1
                         elif samples[call_i].startswith('FD_'):
-                            alignerClassifications[ aligner_i ]['FD']['NeutralEvidence'] += 1                        
+                            alignerClassifications[ aligner_i ]['FD']['NeutralEvidence'] += 1
                         elif samples[call_i].startswith('NS_'):
                             alignerClassifications[ aligner_i ]['NS']['NeutralEvidence'] += 1
                         elif re.match(r'(EA|NC|LL)_', samples[call_i]):
@@ -275,15 +276,18 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     if n_tools and n_tools != '.' and int(n_tools) > ncallers:
                         
                         nConsensus += 1
+                        
+                        # Should not occur
                         if (not score) or score == '.':
                             called_samples.append( samples[call_i] )
+                            print( 'No Score:', samples[call_i], vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase )
                         
                         if   samples[call_i].startswith('IL_'):
                             alignerClassifications[ aligner_i ]['IL']['Consensus'] += 1
                         elif samples[call_i].startswith('NV_'):
                             alignerClassifications[ aligner_i ]['NV']['Consensus'] += 1
                         elif samples[call_i].startswith('FD_'):
-                            alignerClassifications[ aligner_i ]['FD']['Consensus'] += 1                        
+                            alignerClassifications[ aligner_i ]['FD']['Consensus'] += 1
                         elif samples[call_i].startswith('NS_'):
                             alignerClassifications[ aligner_i ]['NS']['Consensus'] += 1
                         elif re.match(r'(EA|NC|LL)_', samples[call_i]):
@@ -380,17 +384,14 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         nreject_i    = alignerClassifications[ aligner_i ][ site_i ][ 'REJECT' ] + alignerClassifications[ aligner_i ][ site_i ][ 'Missing' ]
                         nconsensus_i = alignerClassifications[ aligner_i ][ site_i ][ 'Consensus' ]
                         
-                        if site_i != 'Others':
-                            alignerSiteScores[ aligner_i ][ site_i ] = npass_i*passAdditive + nlowqual_i*lowQualAdditive + nreject_i*rejectAdditive
-                        else:
-                            alignerSiteScores[ aligner_i ][ site_i ] = nconsensus_i*passAdditive + nreject_i*rejectAdditive
+                        alignerSiteScores[ aligner_i ][ site_i ] = npass_i*passAdditive + nlowqual_i*lowQualAdditive + nreject_i*rejectAdditive
         
                 # StrongEvidence = 3; WeakEvidence = 1; NeutralEvidence = 0; LikelyFalsePositive = -3
                 alignerSiteClassification = { 'bwa': {}, 'bowtie': {}, 'novo': {} }
                 for aligner_i in alignerSiteScores:
                     for site_i in alignerSiteScores[ aligner_i ]:
                         
-                        if not (site_i == 'NS' or site_i == 'Others'): # NS has 9 replicates:
+                        if not (site_i == 'NS'): # NS has 9 replicates:
                             
                             if alignerSiteScores[ aligner_i ][ site_i ] >= 2:
                                 alignerSiteClassification[ aligner_i ][ site_i ] = 3
@@ -424,15 +425,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                             else:
                                 raise Exception('Debug')
                                 
-                        elif site_i == 'Others':
-                            
-                            if alignerSiteScores[ aligner_i ][ site_i ] >= 2:
-                                alignerSiteClassification[ aligner_i ][ site_i ] = 3
-                            elif alignerSiteScores[ aligner_i ][ site_i ] >= 1:
-                                alignerSiteClassification[ aligner_i ][ site_i ] = 1
-                            else:
-                                alignerSiteClassification[ aligner_i ][ site_i ] = 0
-                                
+
                 
                 
                 alignerCentricClassification = {'bwa': {'StrongEvidence': 0, 'WeakEvidence': 0, 'NeutralEvidence': 0, 'LikelyFalsePositive': 0, 'TOTAL': 0}, \
