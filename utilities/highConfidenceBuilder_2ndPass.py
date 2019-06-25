@@ -260,6 +260,8 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         rejected_others         = []
         reject_lowVarDP = reject_germline = reject_lowBQ = reject_lowMQ = reject_highNM = reject_highMQ0 = reject_highPoors = reject_highOthers = 0
         reject_sites = set()
+        
+        
         if nREJECTS > 0:
             
             # Get the samples that give REJECT calls:

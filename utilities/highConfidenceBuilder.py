@@ -340,6 +340,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                 n_cd4_4 = {'bwa': 0, 'bowtie': 0, 'novo': 0}
                 n_mq0   = {'bwa': 0, 'bowtie': 0, 'novo': 0}
                 
+                # Combine counts for all the normal samples
                 for aligner_i, normal_i in zip(aligners, all_normal_indices):
                     
                     if re.match( gt, vcf_i.get_sample_value('GT', normal_i) ):
@@ -381,7 +382,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                         
                         npass_i      = alignerClassifications[ aligner_i ][ site_i ][ 'PASS' ]
                         nlowqual_i   = alignerClassifications[ aligner_i ][ site_i ][ 'NeutralEvidence' ]
-                        nreject_i    = alignerClassifications[ aligner_i ][ site_i ][ 'REJECT' ] + alignerClassifications[ aligner_i ][ site_i ][ 'Missing' ]
+                        nreject_i    = alignerClassifications[ aligner_i ][ site_i ][ 'REJECT' ] + alignerClassifications[ aligner_i ][ site_i ][ 'Missing' ] # Missing call is considered a REJECT call here.
                         nconsensus_i = alignerClassifications[ aligner_i ][ site_i ][ 'Consensus' ]
                         
                         alignerSiteScores[ aligner_i ][ site_i ] = npass_i*passAdditive + nlowqual_i*lowQualAdditive + nreject_i*rejectAdditive

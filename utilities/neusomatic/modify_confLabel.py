@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Make calls into LowConf if nREJECTS is too high
+
 import sys, argparse, math, gzip, os, re
 import pandas as pd
 
@@ -12,8 +14,10 @@ import genomic_file_handlers as genome
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-original',  '--original-vcf',        type=str, help='VCF in',  required=True)
-parser.add_argument('-mod',       '--modifier',            type=str, help='TSV in',  required=True)
+parser.add_argument('-mod',       '--modifier',            type=str, help='.xlsx in',  required=True)
 parser.add_argument('-outfile',   '--outfile',             type=str, help='VCF out', required=True)
+parser.add_argument('-maxREJECS', '--maxREJECTS',          type=int, help='If nREJCETS>input, demote the variant call to LowConf', required=True)
+
 parser.add_argument('--promote-long-deletions',  action='store_true', help='Up MedConf >=15-bp indels to HighConf')
 
 
@@ -24,11 +28,13 @@ modifiers         = args.modifier
 outfile           = args.outfile
 promote_long_dels = args.promote_long_deletions
 len_long_del      = 16
+maxRejects        = args.maxREJECTS
+
 
 mod = {}
 labelMods = pd.ExcelFile(modifiers)
 
-for sheet_i in ('HighConf NeuCall<=21', 'MedConf NeuCall<=10', 'Unclassified NeuCall majority', 'InDel HighConf Neu<=21', 'InDel MedConf Neu<=10', 'InDel Unclassified Neu Majority'):
+for sheet_i in ('HighConf SNV Neu<30 | NeuS<20', 'MedConf SNV Neu<=10', 'Unclassified SNV Neu>=30', ):
 
     sheet = labelMods.parse(sheet_i)
 
@@ -37,6 +43,8 @@ for sheet_i in ('HighConf NeuCall<=21', 'MedConf NeuCall<=10', 'Unclassified Neu
             variant_i = row['CHROM'], int( row['POS'] ), row['REF'], row['ALT']
             mod[ variant_i ] = row['Label Change']
 
+
+labelMods.close()
 
 
 with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
@@ -65,6 +73,24 @@ with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
                 item = line_i.split('\t')
                 item[6] = conf_level
                 line_i = '\t'.join(item)
+        
+        # If the HighConf or MedConf calls have too many nREJECTS, or discrepency with NeuSomaticS
+        elif re.search(r'HighConf|MedConf', vcf_i.filters) and ( int( vcf_i.get_info_value('nREJECTS') ) > maxRejects or int( vcf_i.get_info_value('NeuSomaticS') ) < 30 ):
+            
+            conf_level = re.sub(r'HighConf|MedConf', 'LowConf', vcf_i.filters)
+            item = line_i.split('\t')
+            item[6] = conf_level
+            line_i = '\t'.join(item)
+
+
+        elif re.search(r'Unclassified', vcf_i.filters) and \
+        ( int( vcf_i.get_info_value('NeuSomaticS') ) >= 30 or int( vcf_i.get_info_value('NeuSomaticE') ) >= 30 ) and ( int(vcf_i.get_info_value('nREJECTS')) < int(vcf_i.get_info_value('nPASSES')) ) :
+            
+            conf_level = re.sub(r'Unclassified', 'LowConf', vcf_i.filters)
+            item = line_i.split('\t')
+            item[6] = conf_level
+            line_i = '\t'.join(item)
+
         
         out.write( line_i + '\n' )
         line_i = original.readline().rstrip()
