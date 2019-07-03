@@ -34,7 +34,8 @@ maxRejects        = args.maxREJECTS
 mod = {}
 labelMods = pd.ExcelFile(modifiers)
 
-for sheet_i in ('HighConf SNV Neu<30 | NeuS<20', 'MedConf SNV Neu<=10', 'Unclassified SNV Neu>=30', 'HighConf indel Neu<30'):
+for sheet_i in ('HighConf SNV Neu<30 | NeuS<20', 'MedConf SNV Neu<=10',   'Unclassified SNV Neu>=30', \
+                'HighConf indel Neu<30',         'MedConf indel Neu<=10', 'Unclassified indel Neu>=30'):
 
     sheet = labelMods.parse(sheet_i)
 
@@ -62,18 +63,18 @@ labelMods.close()
 
 
 with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
-    
+
     line_i = original.readline().rstrip()
-    
+
     while line_i.startswith('#'):
         out.write( line_i + '\n' )
         line_i = original.readline().rstrip()
-        
+
     while line_i:
-        
+
         vcf_i = genome.Vcf_line( line_i )
         variant_i = vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase
-        
+
         if variant_i in mod:
             
             conf_level = re.sub(r'HighConf|MedConf|LowConf|Unclassified', mod[variant_i], vcf_i.filters)
@@ -84,7 +85,7 @@ with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
 
         elif re.search(r'Unclassified', vcf_i.filters) and \
         ( int( vcf_i.get_info_value('NeuSomaticS') ) >= 30 or int( vcf_i.get_info_value('NeuSomaticE') ) >= 30 ) and ( int(vcf_i.get_info_value('nREJECTS')) < int(vcf_i.get_info_value('nPASSES')) ) :
-            
+
             conf_level = re.sub(r'Unclassified', 'LowConf', vcf_i.filters)
             item = line_i.split('\t')
             print( '\t'.join(item[:8]) )
@@ -94,7 +95,7 @@ with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
 
         # Implicitly indel
         elif promote_long_dels:
-            
+
             # Promote long deletions in MedConf to HighConf
             if (len(vcf_i.refbase) >= len_long_del) and (len(vcf_i.altbase) == 1) and ('MedConf' in vcf_i.filters):
                 conf_level = re.sub(r'MedConf', 'HighConf', vcf_i.filters)
@@ -102,22 +103,22 @@ with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
                 print( '\t'.join(item[:8]) )
                 item[6] = conf_level
                 line_i = '\t'.join(item)
-                            
+
             # Demote some HighConf indels to LowConf
             elif (len(vcf_i.refbase) < len_long_del) and (len(vcf_i.altbase) == 1) and ('HighConf' in vcf_i.filters):
-                
+
                 if ( int( vcf_i.get_info_value('nREJECTS') ) > maxRejects and int( vcf_i.get_info_value('NeuSomaticS') ) < 25 ):
-                
+
                     conf_level = re.sub(r'HighConf', 'LowConf', vcf_i.filters)
                     item = line_i.split('\t')
                     print( '\t'.join(item[:8]) )
                     item[6] = conf_level
                     line_i = '\t'.join(item)
-                    
+
         # SNV here and below:
         # If the HighConf or MedConf calls have too many nREJECTS, or discrepency with NeuSomaticS
         elif re.search(r'HighConf|MedConf', vcf_i.filters) and ( int( vcf_i.get_info_value('nREJECTS') ) > maxRejects and int( vcf_i.get_info_value('NeuSomaticS') ) < 30 ):
-            
+
             conf_level = re.sub(r'HighConf|MedConf', 'LowConf', vcf_i.filters)
             item = line_i.split('\t')
             print( '\t'.join(item[:8]) )
@@ -125,6 +126,6 @@ with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
             line_i = '\t'.join(item)
 
 
-        
+
         out.write( line_i + '\n' )
         line_i = original.readline().rstrip()
