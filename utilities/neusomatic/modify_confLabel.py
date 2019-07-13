@@ -31,6 +31,20 @@ len_long_del      = 12
 maxRejects        = args.maxREJECTS
 
 
+def relabel(vcf_line, newLabel):
+    
+    vcf_i = genome.Vcf_line( vcf_line )
+    
+    filterColumn = re.sub(r'HighConf|MedConf|LowConf|Unclassified', newLabel, vcf_i.filters)
+    item         = vcf_line.split('\t')
+    item[6]      = filterColumn
+        
+    line_i       = '\t'.join(item)
+    
+    return line_i
+
+
+
 mod = {}
 labelMods = pd.ExcelFile(modifiers)
 
@@ -125,6 +139,14 @@ with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
             item[6] = conf_level
             line_i = '\t'.join(item)
 
+
+        elif re.search(r'HighConf|MedConf', vcf_i.filters) and ( 20*int( vcf_i.get_info_value('nREJECTS')) >= int( vcf_i.get_info_value('nPASSES')) ):
+
+            conf_level = re.sub(r'HighConf|MedConf', 'LowConf', vcf_i.filters)
+            item = line_i.split('\t')
+            print( '\t'.join(item[:8]) )
+            item[6] = conf_level
+            line_i = '\t'.join(item)
 
 
         out.write( line_i + '\n' )
