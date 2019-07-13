@@ -138,47 +138,71 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
                         score_ns_bowtie  = 0
                     
                     try:
-                        score_ns_bwa     = deep_vcf.get_sample_value('SCORE', i_ns_bwa)
+                        score_ns_bwa     = float(deep_vcf.get_sample_value('SCORE', i_ns_bwa))
                     except TypeError:
                         score_ns_bwa     = 0
                     except IndexError:
                         score_ns_bwa     = 0
                         
                     try:
-                        score_ns_novo    = deep_vcf.get_sample_value('SCORE', i_ns_novo)
+                        score_ns_novo    = float(deep_vcf.get_sample_value('SCORE', i_ns_novo))
                     except TypeError:
                         score_ns_novo    = 0
                     except IndexError:
                         score_ns_novo    = 0
                         
                     try:
-                        score_spp_bowtie = deep_vcf.get_sample_value('SCORE', i_spp_bowtie)
+                        score_spp_bowtie = float(deep_vcf.get_sample_value('SCORE', i_spp_bowtie))
                     except TypeError:
                         score_spp_bowtie = 0
                     except IndexError:
                         score_spp_bowtie = 0
                         
                     try:
-                        score_spp_bwa    = deep_vcf.get_sample_value('SCORE', i_spp_bwa)
+                        score_spp_bwa    = float(deep_vcf.get_sample_value('SCORE', i_spp_bwa))
                     except TypeError:
                         score_spp_bwa    = 0
                     except IndexError:
                         score_spp_bwa    = 0
                         
                     try:
-                        score_spp_novo   = deep_vcf.get_sample_value('SCORE', i_spp_novo)
+                        score_spp_novo   = float(deep_vcf.get_sample_value('SCORE', i_spp_novo))
                     except TypeError:
                         score_spp_novo   = 0
                     except IndexError:
                         score_spp_novo   = 0
                     
 
-                    filter_field   = 'REJECTFORNOW'
+                    if score_spp_novo   >= genome.phred2p(1-0.7) and \
+                       score_spp_bwa    >= genome.phred2p(1-0.7) and \
+                       score_spp_bowtie >= genome.phred2p(1-0.7) and \
+                       score_ns_novo    >= genome.phred2p(1-0.7) and \
+                       score_ns_bwa     >= genome.phred2p(1-0.7) and \
+                       score_ns_bowtie  >= genome.phred2p(1-0.7):
+                           
+                        filter_field  = 'HighConf'
+                        writeThis     = True
+
+                    elif ( score_spp_novo >= genome.phred2p(1-0.7) + score_spp_bwa >= genome.phred2p(1-0.7) + score_spp_bowtie >= genome.phred2p(1-0.7) + score_ns_novo >= genome.phred2p(1-0.7) + score_ns_bwa >= genome.phred2p(1-0.7) + score_ns_bowtie >= genome.phred2p(1-0.7) ) >= 4 and \
+                          ( score_spp_novo <= genome.phred2p(1-0.1) + score_spp_bwa <= genome.phred2p(1-0.1) + score_spp_bowtie <= genome.phred2p(1-0.1) + score_ns_novo <= genome.phred2p(1-0.1) + score_ns_bwa <= genome.phred2p(1-0.1) + score_ns_bowtie <= genome.phred2p(1-0.1) ) == 0:
+                        
+                        filter_field = 'MedConf'
+                        writeThis    = True
+                        
+                    elif ( score_spp_novo >= genome.phred2p(1-0.7) + score_spp_bwa >= genome.phred2p(1-0.7) + score_spp_bowtie >= genome.phred2p(1-0.7) + score_ns_novo >= genome.phred2p(1-0.7) + score_ns_bwa >= genome.phred2p(1-0.7) + score_ns_bowtie >= genome.phred2p(1-0.7) ) > ( score_spp_novo <= genome.phred2p(1-0.1) + score_spp_bwa <= genome.phred2p(1-0.1) + score_spp_bowtie <= genome.phred2p(1-0.1) + score_ns_novo <= genome.phred2p(1-0.1) + score_ns_bwa <= genome.phred2p(1-0.1) + score_ns_bowtie <= genome.phred2p(1-0.1) ):
+                        
+                        filter_field = 'LowConf'
+                        writeThis    = True
+
+                    else:
+                        writeThis = False
+
+
+                    if writeThis:
+                        info           = 'nPASSES=0;FLAGS=DeeperSeqOnly'
+                        format_field   = 'GT:CD4:DP4:MQ0:{}:NUM_TOOLS:SCORE:VAF:altBQ:altMQ:altNM:fetCD:fetSB:refBQ:refMQ:refNM:zBQ:zMQ'.format(toolString)
+                        samples_string = '\t'.join( ['./.'] * num_samples )
                     
-                    info           = 'nPASSES=0;FLAGS=DeeperSeqOnly'
-                    format_field   = 'GT:CD4:DP4:MQ0:{}:NUM_TOOLS:SCORE:VAF:altBQ:altMQ:altNM:fetCD:fetSB:refBQ:refMQ:refNM:zBQ:zMQ'.format(toolString)
-                    samples_string = '\t'.join( ['./.'] * num_samples )
+                        line_out = '\t'.join(deep_item[:6]) + '\t' + filter_field + '\t' + info + '\t' + format_field + '\t' + samples_string
                     
-                    line_out = '\t'.join(deep_item[:6]) + '\t' + filter_field + '\t' + info + '\t' + format_field + '\t' + samples_string
-                    
-                    out.write(line_out + '\n')
+                        out.write(line_out + '\n')

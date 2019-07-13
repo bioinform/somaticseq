@@ -355,26 +355,35 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                 if ( ('Unclassified' in my_call.filters) or ('LowConf' in my_call.filters) or ('MedConf' in my_call.filters) ) and \
                 (tvaf <= 0.12 and nPASSES >= 15 and nREJECTS <= 10):
 
+                    if ( ('LowConf' in my_call.filters) or ('MedConf' in my_call.filters) ) and \
+                       nREJECTS == 0 and \
+                       ( nova_bwa_PASS + spp_bwa_PASS + nova_bowtie_PASS + spp_bowtie_PASS + nova_novo_PASS + spp_novo_PASS == 6 ) :
+
+                        vcf_items[6] = re.sub('MedConf|LowConf', 'HighConf', vcf_items[6])
 
                     ##########
                     # Promote to "WeakEvidence"
                     if ( nova_bwa_PASS + spp_bwa_PASS + nova_bowtie_PASS + spp_bowtie_PASS + nova_novo_PASS + spp_novo_PASS >=4 ) and \
                     ( nova_hasPASS and spp_hasPASS and bwa_hasPASS and bowtie_hasPASS and novo_hasPASS) and \
                     not (nova_hasREJECT or nova_hasMissing or spp_hasREJECT or spp_hasMissing):
+                        
                         vcf_items[6] = re.sub('Unclassified|LowConf', 'MedConf', vcf_items[6])
                     
                     # Promote one ladder up if PASS by Burrows-Wheeler (bwa or bowtie) and NovoAlign
                     # "Missing" in 450X is worse than "missing" in 50X, so it's considered as "bad" as REJECT, i.e., two PASSES and one LowQual
                     elif ( nova_hasPASS and spp_hasPASS and bwa_hasPASS and bowtie_hasPASS and novo_hasPASS) and \
                     not (nova_hasREJECT or nova_hasMissing or spp_hasREJECT or spp_hasMissing ):
+                        
                         vcf_items[6] = re.sub('Unclassified', 'LowConf', vcf_items[6])
                         vcf_items[6] = re.sub('LowConf',      'MedConf', vcf_items[6])
                         
                     elif nova_hasPASS and spp_hasPASS and bwa_hasPASS and bowtie_hasPASS and novo_hasPASS:
+                        
                         vcf_items[6] = re.sub('Unclassified', 'LowConf', vcf_items[6])
                     
                     # Demotion
                     elif not (nova_hasPASS or spp_hasPASS) and (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing):
+                        
                         vcf_items[6] = re.sub('MedConf', 'LowConf',     vcf_items[6])
                         vcf_items[6] = re.sub('LowConf', 'Unclassified', vcf_items[6])
                         
@@ -382,6 +391,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                 elif 'LowConf' in my_call.filters  and tvaf >= 0.3:
                     
                     if (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing) and (bwa_REJECT or bwa_Missing) and (bowtie_REJECT or bowtie_Missing) and (novo_REJECT or novo_Missing) and not (nova_hasPASS or spp_hasPASS):
+                        
                         vcf_items[6] = re.sub('LowConf', 'Unclassified', vcf_items[6])
                         
                     
