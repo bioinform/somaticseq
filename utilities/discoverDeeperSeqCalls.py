@@ -163,7 +163,7 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
                     except IndexError:
                         score_spp_novo   = 0
 
-
+                    # Called PASS in every DeeperSeq data set
                     if score_spp_novo   >= genome.p2phred(1-0.7) and \
                        score_spp_bwa    >= genome.p2phred(1-0.7) and \
                        score_spp_bowtie >= genome.p2phred(1-0.7) and \
@@ -177,12 +177,14 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
                         filter_field  = 'HighConf'
                         writeThis     = True
 
+                    # Called PASS in at least 4 DeeperSeq data set with no REJECT
                     elif ( score_spp_novo >= genome.p2phred(1-0.7) + score_spp_bwa >= genome.p2phred(1-0.7) + score_spp_bowtie >= genome.p2phred(1-0.7) + score_ns_novo >= genome.p2phred(1-0.7) + score_ns_bwa >= genome.p2phred(1-0.7) + score_ns_bowtie >= genome.p2phred(1-0.7) ) >= 4 and \
                           ( score_spp_novo <= genome.p2phred(1-0.1) + score_spp_bwa <= genome.p2phred(1-0.1) + score_spp_bowtie <= genome.p2phred(1-0.1) + score_ns_novo <= genome.p2phred(1-0.1) + score_ns_bwa <= genome.p2phred(1-0.1) + score_ns_bowtie <= genome.p2phred(1-0.1) ) == 0:
                         
                         filter_field = 'MedConf'
                         writeThis    = True
-                        
+                    
+                    # Called PASS in at least 2 DeeperSeq data set, and more PASSES than REJECTS
                     elif ( score_spp_novo >= genome.p2phred(1-0.7) + score_spp_bwa >= genome.p2phred(1-0.7) + score_spp_bowtie >= genome.p2phred(1-0.7) + score_ns_novo >= genome.p2phred(1-0.7) + score_ns_bwa >= genome.p2phred(1-0.7) + score_ns_bowtie >= genome.p2phred(1-0.7) ) >= 2 and \
                     ( score_spp_novo >= genome.p2phred(1-0.7) + score_spp_bwa >= genome.p2phred(1-0.7) + score_spp_bowtie >= genome.p2phred(1-0.7) + score_ns_novo >= genome.p2phred(1-0.7) + score_ns_bwa >= genome.p2phred(1-0.7) + score_ns_bowtie >= genome.p2phred(1-0.7) ) > ( score_spp_novo <= genome.p2phred(1-0.1) + score_spp_bwa <= genome.p2phred(1-0.1) + score_spp_bowtie <= genome.p2phred(1-0.1) + score_ns_novo <= genome.p2phred(1-0.1) + score_ns_bwa <= genome.p2phred(1-0.1) + score_ns_bowtie <= genome.p2phred(1-0.1) ):
                         
