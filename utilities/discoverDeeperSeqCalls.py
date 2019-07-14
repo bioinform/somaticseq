@@ -106,7 +106,7 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
 
 
             # gold set
-            got_gold, gold_variants, gold_i = genome.find_vcf_at_coordinate(my_coordinate, gold_i,    gold,    chrom_seq)
+            got_gold, gold_variants, gold_i = genome.find_vcf_at_coordinate(my_coordinate, gold_i, gold, chrom_seq)
             
             # Now, use pysam to look into the BAM file(s), variant by variant from the input:
             for ith_call, my_call in enumerate( variants_at_my_coordinate ):
