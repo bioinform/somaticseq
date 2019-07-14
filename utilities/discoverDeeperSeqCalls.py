@@ -32,9 +32,7 @@ chrom_seq    = genome.faiordict2contigorder(fai_file, 'fai')
 
 with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as gold,  open(outfile, 'w') as out:
     
-    deep_i = deep.readline().rstrip()
     gold_i = gold.readline().rstrip()
-
     while gold_i.startswith('##'):
         out.write( gold_i + '\n' )
         gold_i = gold.readline().rstrip()
@@ -43,6 +41,7 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
     num_samples = len(gold_header[9::])
     gold_i = gold.readline().rstrip()
     
+    deep_i = deep.readline().rstrip()
     while deep_i.startswith('##'):
         deep_i = deep.readline().rstrip()
 
@@ -56,47 +55,49 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
     
     deep_i = deep.readline().rstrip()
 
-
-
     # First coordinate:
     coordinate_i = re.match( genome.pattern_chr_position, deep_i )
     coordinate_i = coordinate_i.group() if coordinate_i else ''
 
-
     while deep_i:
         
-        deep_vcf = genome.Vcf_line( deep_i )
+        deep_vcf         = genome.Vcf_line( deep_i )
+        deep_coordinates = [(deep_vcf.chromosome, deep_vcf.position)]
+
+        variants_at_deep_coordinate = []
         
-        my_coordinates = [(deep_vcf.chromosome, deep_vcf.position)]
-        
-        variants_at_my_coordinate = []
-        variants_at_my_coordinate.append( deep_vcf )
+        alt_bases = deep_vcf.altbase.split(',')
+        for alt_i in alt_bases:
+            vcf_i = copy.copy(deep_vcf)
+            vcf_i.altbase = alt_i
+            variants_at_deep_coordinate.append( vcf_i )
 
         # As long as the "coordinate" stays the same, it will keep reading until it's different.
-        while my_coordinates[0] == (deep_vcf.chromosome, deep_vcf.position):
+        while deep_coordinates[0] == (deep_vcf.chromosome, deep_vcf.position):
 
-            deep_i = deep.readline().rstrip()
+            deep_i   = deep.readline().rstrip()
             deep_vcf = genome.Vcf_line( deep_i )
 
             ###### VCF order checking ######
             coordinate_j = re.match( genome.pattern_chr_position, deep_i )
             coordinate_j = coordinate_j.group() if coordinate_j else ''
+            
             if genome.whoisbehind(coordinate_i, coordinate_j, chrom_seq) == 1:
                 raise Exception( '{} does not seem to be properly sorted.'.format(deeperseq) )
             coordinate_i = coordinate_j
 
-            if my_coordinates[0] == (deep_vcf.chromosome, deep_vcf.position):
-                variants_at_my_coordinate.append( deep_vcf )     
+            if deep_coordinates[0] == (deep_vcf.chromosome, deep_vcf.position):
+                variants_at_deep_coordinate.append( deep_vcf )
             ###### VCF order checking ######
 
 
         ##### ##### ##### ##### ##### #####
-        for my_coordinate in my_coordinates:
+        for deep_coordinate_i in deep_coordinates:
 
             ref_bases = []
             alt_bases = []
             
-            for variant_i in variants_at_my_coordinate:
+            for variant_i in variants_at_deep_coordinate:
 
                 ref_base  = variant_i.refbase
                 first_alt = variant_i.altbase.split(',')[0]
@@ -106,65 +107,62 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
 
 
             # gold set
-            got_gold, gold_variants, gold_i = genome.find_vcf_at_coordinate(my_coordinate, gold_i, gold, chrom_seq)
-            
-            # Now, use pysam to look into the BAM file(s), variant by variant from the input:
-            for ith_call, my_call in enumerate( variants_at_my_coordinate ):
-                
-                vcf_items = my_call.vcf_line.split('\t')
+            got_gold, gold_variants, gold_i = genome.find_vcf_at_coordinate(deep_coordinate_i, gold_i, gold, chrom_seq)
 
-                variant_id = ( (my_call.chromosome, my_call.position), my_call.refbase, my_call.altbase )
+            # Now, use pysam to look into the BAM file(s), variant by variant from the input:
+            for ith_call, deep_call in enumerate( variants_at_deep_coordinate ):
+
+                vcf_items  = deep_call.vcf_line.split('\t')
+
+                variant_id = ( (deep_call.chromosome, deep_call.position), deep_call.refbase, deep_call.altbase )
                 ref_base   = ref_bases[ith_call]
                 first_alt  = alt_bases[ith_call]
 
-
                 # This variant call does NOT exist at all in the gold set VCF in any form or confidence level
                 if variant_id not in gold_variants:
-                    
-                    deep_item = deep_i.split('\t')
-                    
+
                     try:
-                        score_ns_bowtie  = float(deep_vcf.get_sample_value('SCORE', i_ns_bowtie))
+                        score_ns_bowtie  = float(vcf_i.get_sample_value('SCORE', i_ns_bowtie))
                     except TypeError:
                         score_ns_bowtie  = 0
                     except IndexError:
                         score_ns_bowtie  = 0
-                    
+
                     try:
-                        score_ns_bwa     = float(deep_vcf.get_sample_value('SCORE', i_ns_bwa))
+                        score_ns_bwa     = float(vcf_i.get_sample_value('SCORE', i_ns_bwa))
                     except TypeError:
                         score_ns_bwa     = 0
                     except IndexError:
                         score_ns_bwa     = 0
-                        
+
                     try:
-                        score_ns_novo    = float(deep_vcf.get_sample_value('SCORE', i_ns_novo))
+                        score_ns_novo    = float(vcf_i.get_sample_value('SCORE', i_ns_novo))
                     except TypeError:
                         score_ns_novo    = 0
                     except IndexError:
                         score_ns_novo    = 0
-                        
+
                     try:
-                        score_spp_bowtie = float(deep_vcf.get_sample_value('SCORE', i_spp_bowtie))
+                        score_spp_bowtie = float(vcf_i.get_sample_value('SCORE', i_spp_bowtie))
                     except TypeError:
                         score_spp_bowtie = 0
                     except IndexError:
                         score_spp_bowtie = 0
-                        
+
                     try:
-                        score_spp_bwa    = float(deep_vcf.get_sample_value('SCORE', i_spp_bwa))
+                        score_spp_bwa    = float(vcf_i.get_sample_value('SCORE', i_spp_bwa))
                     except TypeError:
                         score_spp_bwa    = 0
                     except IndexError:
                         score_spp_bwa    = 0
-                        
+
                     try:
-                        score_spp_novo   = float(deep_vcf.get_sample_value('SCORE', i_spp_novo))
+                        score_spp_novo   = float(vcf_i.get_sample_value('SCORE', i_spp_novo))
                     except TypeError:
                         score_spp_novo   = 0
                     except IndexError:
                         score_spp_novo   = 0
-                    
+
 
                     if score_spp_novo   >= genome.p2phred(1-0.7) and \
                        score_spp_bwa    >= genome.p2phred(1-0.7) and \
@@ -172,7 +170,10 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
                        score_ns_novo    >= genome.p2phred(1-0.7) and \
                        score_ns_bwa     >= genome.p2phred(1-0.7) and \
                        score_ns_bowtie  >= genome.p2phred(1-0.7):
-                           
+                        
+                        if deep_call.position == 36887769:
+                            print(score_ns_bowtie, score_ns_bwa, score_ns_novo, score_spp_bowtie, score_spp_bwa, score_spp_novo)
+                        
                         filter_field  = 'HighConf'
                         writeThis     = True
 
@@ -182,7 +183,8 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
                         filter_field = 'MedConf'
                         writeThis    = True
                         
-                    elif ( score_spp_novo >= genome.p2phred(1-0.7) + score_spp_bwa >= genome.p2phred(1-0.7) + score_spp_bowtie >= genome.p2phred(1-0.7) + score_ns_novo >= genome.p2phred(1-0.7) + score_ns_bwa >= genome.p2phred(1-0.7) + score_ns_bowtie >= genome.p2phred(1-0.7) ) > ( score_spp_novo <= genome.p2phred(1-0.1) + score_spp_bwa <= genome.p2phred(1-0.1) + score_spp_bowtie <= genome.p2phred(1-0.1) + score_ns_novo <= genome.p2phred(1-0.1) + score_ns_bwa <= genome.p2phred(1-0.1) + score_ns_bowtie <= genome.p2phred(1-0.1) ):
+                    elif ( score_spp_novo >= genome.p2phred(1-0.7) + score_spp_bwa >= genome.p2phred(1-0.7) + score_spp_bowtie >= genome.p2phred(1-0.7) + score_ns_novo >= genome.p2phred(1-0.7) + score_ns_bwa >= genome.p2phred(1-0.7) + score_ns_bowtie >= genome.p2phred(1-0.7) ) >= 2 and \
+                    ( score_spp_novo >= genome.p2phred(1-0.7) + score_spp_bwa >= genome.p2phred(1-0.7) + score_spp_bowtie >= genome.p2phred(1-0.7) + score_ns_novo >= genome.p2phred(1-0.7) + score_ns_bwa >= genome.p2phred(1-0.7) + score_ns_bowtie >= genome.p2phred(1-0.7) ) > ( score_spp_novo <= genome.p2phred(1-0.1) + score_spp_bwa <= genome.p2phred(1-0.1) + score_spp_bowtie <= genome.p2phred(1-0.1) + score_ns_novo <= genome.p2phred(1-0.1) + score_ns_bwa <= genome.p2phred(1-0.1) + score_ns_bowtie <= genome.p2phred(1-0.1) ):
                         
                         filter_field = 'LowConf'
                         writeThis    = True
@@ -191,11 +193,11 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
                         writeThis = False
 
 
-                    if writeThis:
+                    if writeThis and len(variants_at_deep_coordinate) == 1:
                         info           = 'nPASSES=0;nREJECTS=.;FLAGS=DeeperSeqOnly'
                         format_field   = 'GT:CD4:DP4:MQ0:{}:NUM_TOOLS:SCORE:VAF:altBQ:altMQ:altNM:fetCD:fetSB:refBQ:refMQ:refNM:zBQ:zMQ'.format(toolString)
                         samples_string = '\t'.join( ['./.'] * num_samples )
                     
-                        line_out = '\t'.join(deep_item[:6]) + '\t' + filter_field + '\t' + info + '\t' + format_field + '\t' + samples_string
-                    
+                        line_out = '{}\t{}\t{}\t{}\t{}\t{}'.format(vcf_i.chromosome, vcf_i.position, '.', vcf_i.refbase, vcf_i.altbase, '.') + '\t' + filter_field + '\t' + info + '\t' + format_field + '\t' + samples_string
+                        
                         out.write(line_out + '\n')
