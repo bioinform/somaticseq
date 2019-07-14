@@ -19,23 +19,16 @@ parser.add_argument('-outfile',    '--outfile',          type=str, help='VCF out
 parser.add_argument('-toolString', '--tool-string',   type=str, help='MSDUKT or MDKT', required=True)
 
 parser.add_argument('-ref',      '--genome-reference', type=str,   help='.fasta.fai file to get the contigs', required=True)
-parser.add_argument('-exclude',  '--exclude-bed',      type=str, help='BED file of 3 arms that can be excluded', required=True)
-parser.add_argument('-callable', '--callable-bed',     type=str, help='BED file considered to be callable lock', required=True)
 
 
 args         = parser.parse_args()
 deeperseq    = args.deeperseq_vcf
 goldset      = args.goldset_vcf
 outfile      = args.outfile
-exclusionBed = args.exclude_bed
-callableBed  = args.callable_bed
 toolString   = args.tool_string
 
 fai_file     = args.genome_reference + '.fai'
 chrom_seq    = genome.faiordict2contigorder(fai_file, 'fai')
-exclusions   = BedFile(exclusionBed)
-callableLoci = BedFile(callableBed)
-
 
 with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as gold,  open(outfile, 'w') as out:
     
@@ -173,23 +166,23 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
                         score_spp_novo   = 0
                     
 
-                    if score_spp_novo   >= genome.phred2p(1-0.7) and \
-                       score_spp_bwa    >= genome.phred2p(1-0.7) and \
-                       score_spp_bowtie >= genome.phred2p(1-0.7) and \
-                       score_ns_novo    >= genome.phred2p(1-0.7) and \
-                       score_ns_bwa     >= genome.phred2p(1-0.7) and \
-                       score_ns_bowtie  >= genome.phred2p(1-0.7):
+                    if score_spp_novo   >= genome.p2phred(1-0.7) and \
+                       score_spp_bwa    >= genome.p2phred(1-0.7) and \
+                       score_spp_bowtie >= genome.p2phred(1-0.7) and \
+                       score_ns_novo    >= genome.p2phred(1-0.7) and \
+                       score_ns_bwa     >= genome.p2phred(1-0.7) and \
+                       score_ns_bowtie  >= genome.p2phred(1-0.7):
                            
                         filter_field  = 'HighConf'
                         writeThis     = True
 
-                    elif ( score_spp_novo >= genome.phred2p(1-0.7) + score_spp_bwa >= genome.phred2p(1-0.7) + score_spp_bowtie >= genome.phred2p(1-0.7) + score_ns_novo >= genome.phred2p(1-0.7) + score_ns_bwa >= genome.phred2p(1-0.7) + score_ns_bowtie >= genome.phred2p(1-0.7) ) >= 4 and \
-                          ( score_spp_novo <= genome.phred2p(1-0.1) + score_spp_bwa <= genome.phred2p(1-0.1) + score_spp_bowtie <= genome.phred2p(1-0.1) + score_ns_novo <= genome.phred2p(1-0.1) + score_ns_bwa <= genome.phred2p(1-0.1) + score_ns_bowtie <= genome.phred2p(1-0.1) ) == 0:
+                    elif ( score_spp_novo >= genome.p2phred(1-0.7) + score_spp_bwa >= genome.p2phred(1-0.7) + score_spp_bowtie >= genome.p2phred(1-0.7) + score_ns_novo >= genome.p2phred(1-0.7) + score_ns_bwa >= genome.p2phred(1-0.7) + score_ns_bowtie >= genome.p2phred(1-0.7) ) >= 4 and \
+                          ( score_spp_novo <= genome.p2phred(1-0.1) + score_spp_bwa <= genome.p2phred(1-0.1) + score_spp_bowtie <= genome.p2phred(1-0.1) + score_ns_novo <= genome.p2phred(1-0.1) + score_ns_bwa <= genome.p2phred(1-0.1) + score_ns_bowtie <= genome.p2phred(1-0.1) ) == 0:
                         
                         filter_field = 'MedConf'
                         writeThis    = True
                         
-                    elif ( score_spp_novo >= genome.phred2p(1-0.7) + score_spp_bwa >= genome.phred2p(1-0.7) + score_spp_bowtie >= genome.phred2p(1-0.7) + score_ns_novo >= genome.phred2p(1-0.7) + score_ns_bwa >= genome.phred2p(1-0.7) + score_ns_bowtie >= genome.phred2p(1-0.7) ) > ( score_spp_novo <= genome.phred2p(1-0.1) + score_spp_bwa <= genome.phred2p(1-0.1) + score_spp_bowtie <= genome.phred2p(1-0.1) + score_ns_novo <= genome.phred2p(1-0.1) + score_ns_bwa <= genome.phred2p(1-0.1) + score_ns_bowtie <= genome.phred2p(1-0.1) ):
+                    elif ( score_spp_novo >= genome.p2phred(1-0.7) + score_spp_bwa >= genome.p2phred(1-0.7) + score_spp_bowtie >= genome.p2phred(1-0.7) + score_ns_novo >= genome.p2phred(1-0.7) + score_ns_bwa >= genome.p2phred(1-0.7) + score_ns_bowtie >= genome.p2phred(1-0.7) ) > ( score_spp_novo <= genome.p2phred(1-0.1) + score_spp_bwa <= genome.p2phred(1-0.1) + score_spp_bowtie <= genome.p2phred(1-0.1) + score_ns_novo <= genome.p2phred(1-0.1) + score_ns_bwa <= genome.p2phred(1-0.1) + score_ns_bowtie <= genome.p2phred(1-0.1) ):
                         
                         filter_field = 'LowConf'
                         writeThis    = True
@@ -199,7 +192,7 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
 
 
                     if writeThis:
-                        info           = 'nPASSES=0;FLAGS=DeeperSeqOnly'
+                        info           = 'nPASSES=0;nREJECTS=.;FLAGS=DeeperSeqOnly'
                         format_field   = 'GT:CD4:DP4:MQ0:{}:NUM_TOOLS:SCORE:VAF:altBQ:altMQ:altNM:fetCD:fetSB:refBQ:refMQ:refNM:zBQ:zMQ'.format(toolString)
                         samples_string = '\t'.join( ['./.'] * num_samples )
                     
