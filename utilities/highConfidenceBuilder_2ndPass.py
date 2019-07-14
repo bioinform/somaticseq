@@ -35,6 +35,11 @@ callableBed    = args.callable_bed
 pass_score     = args.pass_score
 reject_score   = args.reject_score
 
+# Load two bed files
+exclusions = BedFile(exclusionBed)
+callableLoci = BedFile(callableBed)
+
+
 # quasi-constants
 # Established in LTF's jupyter notebook: HCC1395/HighConfidenceCalls/draft.beta.2a.ipynb
 if args.variant_type.upper() == 'SNV':
@@ -70,9 +75,17 @@ def all_indices(pattern_to_be_matched, my_list):
     return [ i for i,j in enumerate(my_list) if j == pattern_to_be_matched ]
 
 
-# Load two bed files
-exclusions = BedFile(exclusionBed)
-callableLoci = BedFile(callableBed)
+def binom_interval(success, total, confidence=0.95):
+    assert success <= total
+    quantile = (1 - confidence) / 2
+    lower = stats.beta.ppf(quantile, success, total - success + 1)
+    upper = stats.beta.ppf(1 - quantile, success + 1, total - success)
+    if math.isnan(lower):
+        lower = 0
+    if math.isnan(upper):
+        upper = 1
+    return lower, upper
+
 
 
 with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_in,  open(outfile, 'w') as vcfout:
@@ -90,6 +103,8 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
     vcfout.write('##INFO=<ID=bwaDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for bwa-aligned data sets">\n')
     vcfout.write('##INFO=<ID=bowtieDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for bowtie-aligned data sets">\n')
     vcfout.write('##INFO=<ID=novoDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for novo-aligned data sets">\n')
+    vcfout.write('##INFO=<ID=NVAF95,Number=2,Type=Float,Description="Estimated 95% confidence interval for VAF in normal samples, calculated from combined coverage depths from all three aligners">\n')
+    vcfout.write('##INFO=<ID=TVAF95,Number=2,Type=Float,Description="Estimated 95% confidence interval for VAF in tumor samples, calculated from combined coverage depths from all three aligners">\n')
     
     
     vcfout.write( vcf_line + '\n' )
@@ -240,10 +255,14 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         except ZeroDivisionError:
             TVAF = 0
         
+        TVAF95 = '%.2g,%.2g' % binom_interval(sum(bwa_tVDP) + sum(bowtie_tVDP) + sum(novo_tVDP), sum(bwa_tDP) + sum(bowtie_tDP) + sum(novo_tDP))
+        
         try:
             NVAF = ( sum(bwa_nVDP) + sum(bowtie_nVDP) + sum(novo_nVDP) ) / ( sum(bwa_nDP) + sum(bowtie_nDP) + sum(novo_nDP) )
         except ZeroDivisionError:
             NVAF = 0
+            
+        NVAF95 = '%.2g,%.2g' % binom_interval(sum(bwa_nVDP) + sum(bowtie_nVDP) + sum(novo_nVDP), sum(bwa_nDP) + sum(bowtie_nDP) + sum(novo_nDP))
 
 
         # Get called samples stats (would by pass if no REJECT or NoCall)
@@ -940,6 +959,9 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         vcf_info_item.append( 'bwaDP={},{}'.format(bwaTotalTumorVDP, bwaTotalTumorDP) )
         vcf_info_item.append( 'bowtieDP={},{}'.format(bowtieTotalTumorVDP, bowtieTotalTumorDP) )
         vcf_info_item.append( 'novoDP={},{}'.format(novoTotalTumorVDP, novoTotalTumorDP) )
+        
+        vcf_info_item.append( 'TVAF95={}'.format(TVAF95) )
+        vcf_info_item.append( 'NVAF95={}'.format(NVAF95) )
         
         vcf_items[7] = ';'.join( vcf_info_item )
         
