@@ -36,7 +36,8 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
     while gold_i.startswith('##'):
         out.write( gold_i + '\n' )
         gold_i = gold.readline().rstrip()
-
+        
+    out.write( gold_i + '\n' )
     gold_header = gold_i.split('\t')
     num_samples = len(gold_header[9::])
     gold_i = gold.readline().rstrip()
@@ -52,7 +53,7 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
     i_spp_bowtie = deep_header.index('SPP300X.Tumor.bowtie') - 9
     i_spp_bwa    = deep_header.index('SPP300X.Tumor.bwa')    - 9
     i_spp_novo   = deep_header.index('SPP300X.Tumor.novo')   - 9
-    
+        
     deep_i = deep.readline().rstrip()
 
     # First coordinate:
@@ -162,7 +163,7 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
                         score_spp_novo   = 0
                     except IndexError:
                         score_spp_novo   = 0
-
+                        
                     # Called PASS in every DeeperSeq data set
                     if score_spp_novo   >= genome.p2phred(1-0.7) and \
                        score_spp_bwa    >= genome.p2phred(1-0.7) and \
@@ -170,23 +171,21 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
                        score_ns_novo    >= genome.p2phred(1-0.7) and \
                        score_ns_bwa     >= genome.p2phred(1-0.7) and \
                        score_ns_bowtie  >= genome.p2phred(1-0.7):
-                        
-                        if deep_call.position == 36887769:
-                            print(score_ns_bowtie, score_ns_bwa, score_ns_novo, score_spp_bowtie, score_spp_bwa, score_spp_novo)
-                        
+                                                
                         filter_field  = 'HighConf'
                         writeThis     = True
 
                     # Called PASS in at least 4 DeeperSeq data set with no REJECT
-                    elif ( score_spp_novo >= genome.p2phred(1-0.7) + score_spp_bwa >= genome.p2phred(1-0.7) + score_spp_bowtie >= genome.p2phred(1-0.7) + score_ns_novo >= genome.p2phred(1-0.7) + score_ns_bwa >= genome.p2phred(1-0.7) + score_ns_bowtie >= genome.p2phred(1-0.7) ) >= 4 and \
-                          ( score_spp_novo <= genome.p2phred(1-0.1) + score_spp_bwa <= genome.p2phred(1-0.1) + score_spp_bowtie <= genome.p2phred(1-0.1) + score_ns_novo <= genome.p2phred(1-0.1) + score_ns_bwa <= genome.p2phred(1-0.1) + score_ns_bowtie <= genome.p2phred(1-0.1) ) == 0:
+                    elif ( (score_spp_novo >= genome.p2phred(1-0.7)) + (score_spp_bwa >= genome.p2phred(1-0.7)) + (score_spp_bowtie >= genome.p2phred(1-0.7)) + (score_ns_novo >= genome.p2phred(1-0.7)) + (score_ns_bwa >= genome.p2phred(1-0.7)) + (score_ns_bowtie >= genome.p2phred(1-0.7)) ) >= 4 and \
+                          ( (score_spp_novo <= genome.p2phred(1-0.1)) + (score_spp_bwa <= genome.p2phred(1-0.1)) + (score_spp_bowtie <= genome.p2phred(1-0.1)) + (score_ns_novo <= genome.p2phred(1-0.1)) + (score_ns_bwa <= genome.p2phred(1-0.1)) + (score_ns_bowtie <= genome.p2phred(1-0.1)) ) == 0:
                         
                         filter_field = 'MedConf'
                         writeThis    = True
                     
                     # Called PASS in at least 2 DeeperSeq data set, and more PASSES than REJECTS
-                    elif ( score_spp_novo >= genome.p2phred(1-0.7) + score_spp_bwa >= genome.p2phred(1-0.7) + score_spp_bowtie >= genome.p2phred(1-0.7) + score_ns_novo >= genome.p2phred(1-0.7) + score_ns_bwa >= genome.p2phred(1-0.7) + score_ns_bowtie >= genome.p2phred(1-0.7) ) >= 2 and \
-                    ( score_spp_novo >= genome.p2phred(1-0.7) + score_spp_bwa >= genome.p2phred(1-0.7) + score_spp_bowtie >= genome.p2phred(1-0.7) + score_ns_novo >= genome.p2phred(1-0.7) + score_ns_bwa >= genome.p2phred(1-0.7) + score_ns_bowtie >= genome.p2phred(1-0.7) ) > ( score_spp_novo <= genome.p2phred(1-0.1) + score_spp_bwa <= genome.p2phred(1-0.1) + score_spp_bowtie <= genome.p2phred(1-0.1) + score_ns_novo <= genome.p2phred(1-0.1) + score_ns_bwa <= genome.p2phred(1-0.1) + score_ns_bowtie <= genome.p2phred(1-0.1) ):
+                    elif ( (score_ns_novo >= genome.p2phred(1-0.7)) + (score_ns_bwa >= genome.p2phred(1-0.7)) + (score_ns_bowtie >= genome.p2phred(1-0.7)) ) >= 1 and \
+                         ( (score_spp_novo >= genome.p2phred(1-0.7)) + (score_spp_bwa >= genome.p2phred(1-0.7)) + (score_spp_bowtie >= genome.p2phred(1-0.7)) ) >= 1 and \
+                    ( (score_spp_novo >= genome.p2phred(1-0.7)) + (score_spp_bwa >= genome.p2phred(1-0.7)) + (score_spp_bowtie >= genome.p2phred(1-0.7)) + (score_ns_novo >= genome.p2phred(1-0.7)) + (score_ns_bwa >= genome.p2phred(1-0.7)) + (score_ns_bowtie >= genome.p2phred(1-0.7)) ) > ( (score_spp_novo <= genome.p2phred(1-0.1)) + (score_spp_bwa <= genome.p2phred(1-0.1)) + (score_spp_bowtie <= genome.p2phred(1-0.1)) + (score_ns_novo <= genome.p2phred(1-0.1)) + (score_ns_bwa <= genome.p2phred(1-0.1)) + (score_ns_bowtie <= genome.p2phred(1-0.1)) ):
                         
                         filter_field = 'LowConf'
                         writeThis    = True
