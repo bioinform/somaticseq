@@ -391,12 +391,67 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             mdk = '.,.,.,.'
         elif 'MSDUKT' in format_item:
             mdk = '.,.,.,.,.,.'
-        
-        vcf_items[i_bwa_normal_index] = '{GT}:{CD4}:{DP4}:{MDKT}:{MQ0}:{NUM_TOOLS}:{SCORE}:{VAF}'.format(GT='0/0', CD4='{},{},{},{}'.format(sum(bwa_nRefCond), sum(bwa_nRefDisc), sum(bwa_nAltCond), sum(bwa_nAltDisc)), DP4='{},{},{},{}'.format(sum(bwa_nRefFor), sum(bwa_nRefRev), sum(bwa_nAltFor), sum(bwa_nAltRev)), MDKT=mdk, MQ0=bwa_nMQ0, NUM_TOOLS='.', SCORE='.', VAF='%.3f' % bwaNVAF )
 
-        vcf_items[i_novo_normal_index] = '{GT}:{CD4}:{DP4}:{MDKT}:{MQ0}:{NUM_TOOLS}:{SCORE}:{VAF}'.format(GT='0/0', CD4='{},{},{},{}'.format(sum(novo_nRefCond), sum(novo_nRefDisc), sum(novo_nAltCond), sum(novo_nAltDisc)), DP4='{},{},{},{}'.format(sum(novo_nRefFor), sum(novo_nRefRev), sum(novo_nAltFor), sum(novo_nAltRev)), MDKT=mdk, MQ0=novo_nMQ0, NUM_TOOLS='.', SCORE='.', VAF='%.3f' % novoNVAF )
 
-        vcf_items[i_bowtie_normal_index] = '{GT}:{CD4}:{DP4}:{MDKT}:{MQ0}:{NUM_TOOLS}:{SCORE}:{VAF}'.format(GT='0/0', CD4='{},{},{},{}'.format(sum(bowtie_nRefCond), sum(bowtie_nRefDisc), sum(bowtie_nAltCond), sum(bowtie_nAltDisc)), DP4='{},{},{},{}'.format(sum(bowtie_nRefFor), sum(bowtie_nRefRev), sum(bowtie_nAltFor), sum(bowtie_nAltRev)), MDKT=mdk, MQ0=bowtie_nMQ0, NUM_TOOLS='.', SCORE='.', VAF='%.3f' % bowtieNVAF )
+
+        normal_sample_item = []
+        for format_item_i in format_item:
+            if format_item_i == 'GT':
+                normal_sample_item.append( '0/0' )
+            elif format_item_i == 'CD4':
+                normal_sample_item.append( '{},{},{},{}'.format(sum(bwa_nRefCond), sum(bwa_nRefDisc), sum(bwa_nAltCond), sum(bwa_nAltDisc)) )
+            elif format_item_i == 'DP4':
+                normal_sample_item.append( '{},{},{},{}'.format(sum(bwa_nRefFor), sum(bwa_nRefRev), sum(bwa_nAltFor), sum(bwa_nAltRev)) )
+            elif format_item_i == 'MQ0':
+                normal_sample_item.append( str(bwa_nMQ0) )
+            elif format_item_i == 'NUM_TOOLS':
+                normal_sample_item.append( '.' )
+            elif format_item_i == 'VAF':
+                normal_sample_item.append( '%.3f' % bwaNVAF  )
+            else:
+                normal_sample_item.append( '.' )
+
+        vcf_items[i_bwa_normal_index] = ':'.join( normal_sample_item )
+
+
+        normal_sample_item = []
+        for format_item_i in format_item:
+            if format_item_i == 'GT':
+                normal_sample_item.append( '0/0' )
+            elif format_item_i == 'CD4':
+                normal_sample_item.append( '{},{},{},{}'.format(sum(bowtie_nRefCond), sum(bowtie_nRefDisc), sum(bowtie_nAltCond), sum(bowtie_nAltDisc)) )
+            elif format_item_i == 'DP4':
+                normal_sample_item.append( '{},{},{},{}'.format(sum(bowtie_nRefFor), sum(bowtie_nRefRev), sum(bowtie_nAltFor), sum(bowtie_nAltRev)) )
+            elif format_item_i == 'MQ0':
+                normal_sample_item.append( str(bowtie_nMQ0) )
+            elif format_item_i == 'NUM_TOOLS':
+                normal_sample_item.append( '.' )
+            elif format_item_i == 'VAF':
+                normal_sample_item.append( '%.3f' % bowtieNVAF  )
+            else:
+                normal_sample_item.append( '.' )
+
+        vcf_items[i_bowtie_normal_index] = ':'.join( normal_sample_item )
+
+
+        normal_sample_item = []
+        for format_item_i in format_item:
+            if format_item_i == 'GT':
+                normal_sample_item.append( '0/0' )
+            elif format_item_i == 'CD4':
+                normal_sample_item.append( '{},{},{},{}'.format(sum(novo_nRefCond), sum(novo_nRefDisc), sum(novo_nAltCond), sum(novo_nAltDisc)) )
+            elif format_item_i == 'DP4':
+                normal_sample_item.append( '{},{},{},{}'.format(sum(novo_nRefFor), sum(novo_nRefRev), sum(novo_nAltFor), sum(novo_nAltRev)) )
+            elif format_item_i == 'MQ0':
+                normal_sample_item.append( str(novo_nMQ0) )
+            elif format_item_i == 'NUM_TOOLS':
+                normal_sample_item.append( '.' )
+            elif format_item_i == 'VAF':
+                normal_sample_item.append( '%.3f' % novoNVAF  )
+            else:
+                normal_sample_item.append( '.' )
+
+        vcf_items[i_novo_normal_index] = ':'.join( normal_sample_item )
 
         # Averaging over the no-called samples
         average_nocalls_varDP = sum(nocalled_variant_depths)/len(nocalled_variant_depths)    
