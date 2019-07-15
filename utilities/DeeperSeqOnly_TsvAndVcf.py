@@ -5,7 +5,6 @@
 
 import sys, argparse, math, gzip, os, re, copy, math
 import scipy.stats as stats
-from bedFileHandler import BedFile
 
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -83,6 +82,10 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
     bowtie_normal_index = samples.index('combined_bowtie_normals')
     novo_normal_index   = samples.index('combined_novo_normals')
     
+    i_bwa_normal_index    = vcf_header.index('combined_bwa_normals')
+    i_bowtie_normal_index = vcf_header.index('combined_bowtie_normals')
+    i_novo_normal_index   = vcf_header.index('combined_novo_normals')
+    
     total_tumor_samples = len(bwa_tumors) + len(bowtie_tumors) + len(novo_tumors)
     total_tumor_seq_sites = len(bwa_tumors)
     
@@ -97,13 +100,17 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
     i_bwa_tVDPfor    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bwa_bam_ALT_FOR', item_i) ]
     i_bwa_tVDPrev    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bwa_bam_ALT_REV', item_i) ]
     i_bwa_nDP        = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_DP',      item_i) ]
+    i_bwa_nRDPfor    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_REF_FOR', item_i) ]
+    i_bwa_nRDPrev    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_REF_REV', item_i) ]
     i_bwa_nVDPfor    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_ALT_FOR', item_i) ]
     i_bwa_nVDPrev    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_ALT_REV', item_i) ]
-    
+
     i_bowtie_tDP     = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bowtie_bam_DP',      item_i) ]
     i_bowtie_tVDPfor = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bowtie_bam_ALT_FOR', item_i) ]
     i_bowtie_tVDPrev = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bowtie_bam_ALT_REV', item_i) ]
     i_bowtie_nDP     = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_DP',      item_i) ]
+    i_bowtie_nRDPfor = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_REF_FOR', item_i) ]
+    i_bowtie_nRDPrev = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_REF_REV', item_i) ]
     i_bowtie_nVDPfor = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_ALT_FOR', item_i) ]
     i_bowtie_nVDPrev = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_ALT_REV', item_i) ]
     
@@ -111,13 +118,33 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
     i_novo_tVDPfor   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.novo_bam_ALT_FOR', item_i) ]
     i_novo_tVDPrev   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.novo_bam_ALT_REV', item_i) ]
     i_novo_nDP       = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_DP',      item_i) ]
+    i_novo_nRDPfor   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_REF_FOR', item_i) ]
+    i_novo_nRDPrev   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_REF_REV', item_i) ]
     i_novo_nVDPfor   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_ALT_FOR', item_i) ]
     i_novo_nVDPrev   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_ALT_REV', item_i) ]
     
     i_bwa_tMQ0       = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bwa_bam_MQ0',    item_i) ]
     i_bowtie_tMQ0    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.bowtie_bam_MQ0', item_i) ]
     i_novo_tMQ0      = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_T_[0-9]+.novo_bam_MQ0',   item_i) ]
-    
+    i_bwa_nMQ0       = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_MQ0',    item_i) ]
+    i_bowtie_nMQ0    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_MQ0', item_i) ]
+    i_novo_nMQ0      = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_MQ0',   item_i) ]
+
+    # for combined normal samples
+    i_bwa_nRefCond    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_REF_Concordant', item_i) ]
+    i_bwa_nRefDisc    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_REF_Discordant', item_i) ]
+    i_bwa_nAltCond    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_ALT_Concordant', item_i) ]
+    i_bwa_nAltDisc    = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bwa_bam_ALT_Discordant', item_i) ]
+    i_novo_nRefCond   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_REF_Concordant', item_i) ]
+    i_novo_nRefDisc   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_REF_Discordant', item_i) ]
+    i_novo_nAltCond   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_ALT_Concordant', item_i) ]
+    i_novo_nAltDisc   = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.novo_bam_ALT_Discordant', item_i) ]
+    i_bowtie_nRefCond = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_REF_Concordant', item_i) ]
+    i_bowtie_nRefDisc = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_REF_Discordant', item_i) ]
+    i_bowtie_nAltCond = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_ALT_Concordant', item_i) ]
+    i_bowtie_nAltDisc = [i for i,item_i in enumerate(tsv_headers) if re.search(r'\w\w_N_[0-9]+.bowtie_bam_ALT_Discordant', item_i) ]
+
+
     vcf_line = vcf_in.readline().rstrip()
     tsv_line = tsv_in.readline().rstrip()
     
@@ -138,26 +165,54 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         bwaMQ0    = sum( [int(tsv_items[i]) for i in i_bwa_tMQ0] )
         bowtieMQ0 = sum( [int(tsv_items[i]) for i in i_bowtie_tMQ0] )
         novoMQ0   = sum( [int(tsv_items[i]) for i in i_novo_tMQ0] )
-        
+
+        bwa_nMQ0    = sum( [int(tsv_items[i]) for i in i_bwa_nMQ0] )
+        bowtie_nMQ0 = sum( [int(tsv_items[i]) for i in i_bowtie_nMQ0] )
+        novo_nMQ0   = sum( [int(tsv_items[i]) for i in i_novo_nMQ0] )
+
         flag_string = vcf_i.get_info_value('FLAGS')
         flags_i = flag_string.split(',') if flag_string else []
 
-        # Get more accurate VAF stats:
+        # Get more accurate VAF stats
         bwa_tDP     = [ int(tsv_items[i]) for i in i_bwa_tDP ]
         bwa_tVDP    = [ int(tsv_items[i]) for i in i_bwa_tVDPfor ]    + [ int(tsv_items[i]) for i in i_bwa_tVDPrev ]
         bwa_nDP     = [ int(tsv_items[i]) for i in i_bwa_nDP ]
-        bwa_nVDP    = [ int(tsv_items[i]) for i in i_bwa_nVDPfor ]    + [ int(tsv_items[i]) for i in i_bwa_nVDPrev ]        
+        bwa_nVDP    = [ int(tsv_items[i]) for i in i_bwa_nVDPfor ]    + [ int(tsv_items[i]) for i in i_bwa_nVDPrev ]
+        bwa_nRefCond = [ int(tsv_items[i]) for i in i_bwa_nRefCond ]
+        bwa_nRefDisc = [ int(tsv_items[i]) for i in i_bwa_nRefDisc ]
+        bwa_nAltCond = [ int(tsv_items[i]) for i in i_bwa_nAltCond ]
+        bwa_nAltDisc = [ int(tsv_items[i]) for i in i_bwa_nAltDisc ]
+        bwa_nRefFor  = [ int(tsv_items[i]) for i in i_bwa_nRDPfor ]
+        bwa_nRefRev  = [ int(tsv_items[i]) for i in i_bwa_nRDPrev ]
+        bwa_nAltFor  = [ int(tsv_items[i]) for i in i_bwa_nVDPfor ]
+        bwa_nAltRev  = [ int(tsv_items[i]) for i in i_bwa_nVDPrev ]
         
         bowtie_tDP  = [ int(tsv_items[i]) for i in i_bowtie_tDP ]
         bowtie_tVDP = [ int(tsv_items[i]) for i in i_bowtie_tVDPfor ] + [ int(tsv_items[i]) for i in i_bowtie_tVDPrev ]
         bowtie_nDP  = [ int(tsv_items[i]) for i in i_bowtie_nDP ]
         bowtie_nVDP = [ int(tsv_items[i]) for i in i_bowtie_nVDPfor ] + [ int(tsv_items[i]) for i in i_bowtie_nVDPrev ]
-        
+        bowtie_nRefCond = [ int(tsv_items[i]) for i in i_bowtie_nRefCond ]
+        bowtie_nRefDisc = [ int(tsv_items[i]) for i in i_bowtie_nRefDisc ]
+        bowtie_nAltCond = [ int(tsv_items[i]) for i in i_bowtie_nAltCond ]
+        bowtie_nAltDisc = [ int(tsv_items[i]) for i in i_bowtie_nAltDisc ]
+        bowtie_nRefFor  = [ int(tsv_items[i]) for i in i_bowtie_nRDPfor ]
+        bowtie_nRefRev  = [ int(tsv_items[i]) for i in i_bowtie_nRDPrev ]
+        bowtie_nAltFor  = [ int(tsv_items[i]) for i in i_bowtie_nVDPfor ]
+        bowtie_nAltRev  = [ int(tsv_items[i]) for i in i_bowtie_nVDPrev ]
+
         novo_tDP    = [ int(tsv_items[i]) for i in i_novo_tDP ]
         novo_tVDP   = [ int(tsv_items[i]) for i in i_novo_tVDPfor ]   + [ int(tsv_items[i]) for i in i_novo_tVDPrev ]
         novo_nDP    = [ int(tsv_items[i]) for i in i_novo_nDP ]
         novo_nVDP   = [ int(tsv_items[i]) for i in i_novo_nVDPfor ]   + [ int(tsv_items[i]) for i in i_novo_nVDPrev ]
-        
+        novo_nRefCond = [ int(tsv_items[i]) for i in i_novo_nRefCond ]
+        novo_nRefDisc = [ int(tsv_items[i]) for i in i_novo_nRefDisc ]
+        novo_nAltCond = [ int(tsv_items[i]) for i in i_novo_nAltCond ]
+        novo_nAltDisc = [ int(tsv_items[i]) for i in i_novo_nAltDisc ]
+        novo_nRefFor  = [ int(tsv_items[i]) for i in i_novo_nRDPfor ]
+        novo_nRefRev  = [ int(tsv_items[i]) for i in i_novo_nRDPrev ]
+        novo_nAltFor  = [ int(tsv_items[i]) for i in i_novo_nVDPfor ]
+        novo_nAltRev  = [ int(tsv_items[i]) for i in i_novo_nVDPrev ]
+
         bwaTotalTumorVDP    = sum(bwa_tVDP)
         bwaTotalTumorDP     = sum(bwa_tDP)
         bwaTotalTumorRDP    = bwaTotalTumorDP - bwaTotalTumorVDP
@@ -332,16 +387,20 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             # Replace the original ./. with this string:
             vcf_items[col_i] = new_sample_string
         
+        if 'MDKT' in format_item:
+            mdk = '.,.,.,.'
+        elif 'MSDUKT' in format_item:
+            mdk = '.,.,.,.,.,.'
+        
+        vcf_items[i_bwa_normal_index] = '{GT}:{CD4}:{DP4}:{MDKT}:{MQ0}:{NUM_TOOLS}:{SCORE}:{VAF}'.format(GT='0/0', CD4='{},{},{},{}'.format(sum(bwa_nRefCond), sum(bwa_nRefDisc), sum(bwa_nAltCond), sum(bwa_nAltDisc)), DP4='{},{},{},{}'.format(sum(bwa_nRefFor), sum(bwa_nRefRev), sum(bwa_nAltFor), sum(bwa_nAltRev)), MDKT=mdk, MQ0=bwa_nMQ0, NUM_TOOLS='.', SCORE='.', VAF='%.3f' % bwaNVAF )
+
+        vcf_items[i_novo_normal_index] = '{GT}:{CD4}:{DP4}:{MDKT}:{MQ0}:{NUM_TOOLS}:{SCORE}:{VAF}'.format(GT='0/0', CD4='{},{},{},{}'.format(sum(novo_nRefCond), sum(novo_nRefDisc), sum(novo_nAltCond), sum(novo_nAltDisc)), DP4='{},{},{},{}'.format(sum(novo_nRefFor), sum(novo_nRefRev), sum(novo_nAltFor), sum(novo_nAltRev)), MDKT=mdk, MQ0=novo_nMQ0, NUM_TOOLS='.', SCORE='.', VAF='%.3f' % novoNVAF )
+
+        vcf_items[i_bowtie_normal_index] = '{GT}:{CD4}:{DP4}:{MDKT}:{MQ0}:{NUM_TOOLS}:{SCORE}:{VAF}'.format(GT='0/0', CD4='{},{},{},{}'.format(sum(bowtie_nRefCond), sum(bowtie_nRefDisc), sum(bowtie_nAltCond), sum(bowtie_nAltDisc)), DP4='{},{},{},{}'.format(sum(bowtie_nRefFor), sum(bowtie_nRefRev), sum(bowtie_nAltFor), sum(bowtie_nAltRev)), MDKT=mdk, MQ0=bowtie_nMQ0, NUM_TOOLS='.', SCORE='.', VAF='%.3f' % bowtieNVAF )
+
         # Averaging over the no-called samples
         average_nocalls_varDP = sum(nocalled_variant_depths)/len(nocalled_variant_depths)    
         
-
-
-
-
-
-
-
         
         vcf_info_item = vcf_items[7].split(';')
         
