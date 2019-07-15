@@ -48,8 +48,8 @@ def relabel(vcf_line, newLabel):
 mod = {}
 labelMods = pd.ExcelFile(modifiers)
 
-for sheet_i in ('HighConf SNV Neu<30 | NeuS<20', 'MedConf SNV Neu<=10',   'Unclassified SNV Neu>=30', \
-                'HighConf indel Neu<30',         'MedConf indel Neu<=10', 'Unclassified indel Neu>=30'):
+for sheet_i in ('HighConf SNV Neu<30 | NeuS<20', 'MedConf SNV Neu<=10',   'LowConf SNV >=30 calls',   'Unclassified SNV Neu>=30', \
+                'HighConf indel Neu<30',         'MedConf indel Neu<=10', 'LowConf indel >=30 calls', 'Unclassified indel Neu>=30'):
 
     sheet = labelMods.parse(sheet_i)
 

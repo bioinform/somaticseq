@@ -55,7 +55,7 @@ with genome.open_textfile(goldVcf) as gold:
 
 mod = {}
 labelMods = pd.ExcelFile(neuMod)
-for sheet_i in ('NeuCalls 32+ and 7+ each map', 'InDel NeuOnly'):
+for sheet_i in ('NeuSnvOnly', 'NeuIndelOnly'):
     sheet = labelMods.parse(sheet_i)
     for index, row in sheet.iterrows():
         if 'Unclassified' not in row['Label']:
