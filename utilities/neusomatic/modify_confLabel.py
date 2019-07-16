@@ -119,7 +119,7 @@ with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
                 line_i = '\t'.join(item)
 
             # Demote some HighConf indels to LowConf
-            elif (len(vcf_i.refbase) < len_long_del) and (len(vcf_i.altbase) == 1) and ('HighConf' in vcf_i.filters):
+            elif (len(vcf_i.refbase) < len_long_del) and ('HighConf' in vcf_i.filters):
 
                 if ( int( vcf_i.get_info_value('nREJECTS') ) > maxRejects and int( vcf_i.get_info_value('NeuSomaticS') ) < 25 ):
 
