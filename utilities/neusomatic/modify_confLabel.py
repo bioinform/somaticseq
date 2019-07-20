@@ -38,8 +38,20 @@ def relabel(vcf_line, newLabel):
     filterColumn = re.sub(r'HighConf|MedConf|LowConf|Unclassified', newLabel, vcf_i.filters)
     item         = vcf_line.split('\t')
     item[6]      = filterColumn
-        
-    line_i       = '\t'.join(item)
+    
+    originalLabel = re.search(r'(HighConf|MedConf|LowConf|Unclassified)', vcf_i.filters).groups()[0]
+    
+    if 'FLAGS' in vcf_i.info:
+        infoItems = vcf_i.info.split(';')
+        for i, item_i in enumerate(infoItems):
+            if item_i.startswith('FLAGS'):
+                infoItems[i] = infoItems[i] + ',relabeled_from_{}'.format(originalLabel)
+        newInfo = ';'.join(infoItems)
+    else:
+        newInfo = vcf_i.info + ';FLAGS=relabeled_from_{}'.format(originalLabel)
+    
+    item[7] = newInfo
+    line_i  = '\t'.join(item)
     
     return line_i
 
