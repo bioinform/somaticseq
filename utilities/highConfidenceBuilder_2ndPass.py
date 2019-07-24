@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Re-count MQ0's and re-calculate VAF's
-# Different from seqc2_v0.3: Have to have nREJECTS > nPASSES instead of nREJECTS + nNoCall > nPASSES to be "Likely False Positive"
+# in truth v1.1: 1) Add 95% binomial confidence interval for TVAF and NVAF calculated from bwa alignments. 2) Add germline signal demotion for Tier 1 calls as well, as low germline signal in WGS data sets will likely be replicated and "amplified" in deep sequencing data sets, proving their false-positive status. 
 
 import sys, argparse, math, gzip, os, re, copy, math
 import scipy.stats as stats
@@ -103,8 +103,8 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
     vcfout.write('##INFO=<ID=bwaDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for bwa-aligned data sets">\n')
     vcfout.write('##INFO=<ID=bowtieDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for bowtie-aligned data sets">\n')
     vcfout.write('##INFO=<ID=novoDP,Number=2,Type=Integer,Description="combined tumor variant depth, total depth, for novo-aligned data sets">\n')
-    vcfout.write('##INFO=<ID=NVAF95,Number=2,Type=Float,Description="Estimated 95% confidence interval for VAF in normal samples, calculated from combined coverage depths from all three aligners">\n')
-    vcfout.write('##INFO=<ID=TVAF95,Number=2,Type=Float,Description="Estimated 95% confidence interval for VAF in tumor samples, calculated from combined coverage depths from all three aligners">\n')
+    vcfout.write('##INFO=<ID=NVAF95,Number=2,Type=Float,Description="Estimated 95% confidence interval for VAF in normal samples, calculated from bwa alignments from all 21 sequencing replicates">\n')
+    vcfout.write('##INFO=<ID=TVAF95,Number=2,Type=Float,Description="Estimated 95% confidence interval for VAF in tumor samples, calculated from bwa alignments from all 21 sequencing replicates">\n')
     
     
     vcfout.write( vcf_line + '\n' )
@@ -255,14 +255,15 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         except ZeroDivisionError:
             TVAF = 0
         
-        TVAF95 = '%.2g,%.2g' % binom_interval(sum(bwa_tVDP) + sum(bowtie_tVDP) + sum(novo_tVDP), sum(bwa_tDP) + sum(bowtie_tDP) + sum(novo_tDP))
+        TVAF95 = '%.2g,%.2g' % binom_interval(sum(bwa_tVDP), sum(bwa_tDP))
         
         try:
             NVAF = ( sum(bwa_nVDP) + sum(bowtie_nVDP) + sum(novo_nVDP) ) / ( sum(bwa_nDP) + sum(bowtie_nDP) + sum(novo_nDP) )
         except ZeroDivisionError:
             NVAF = 0
             
-        NVAF95 = '%.2g,%.2g' % binom_interval(sum(bwa_nVDP) + sum(bowtie_nVDP) + sum(novo_nVDP), sum(bwa_nDP) + sum(bowtie_nDP) + sum(novo_nDP))
+        NVAF95 = '%.2g,%.2g' % binom_interval(sum(bwa_nVDP), sum(bwa_nDP))
+
 
 
         # Get called samples stats (would by pass if no REJECT or NoCall)
@@ -345,8 +346,6 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         
             # Averaging over the rejected samples:
             average_rejects_varDP = sum(rejected_variant_depths)/len(rejected_variant_depths)
-            
-            
         
         # Try to find reasons for missing call altogether
         nocalls                 = []
@@ -547,12 +546,27 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             
             # Averaging over the called samples
             average_calls_variant_depths = sum(called_variant_depths)/len(called_variant_depths)
-        
-        
+
+
+
+        ##### GERMLINE SIGNAL? #####
+        num_samples_with_germline_signal = 0
+        normal_vardps = called_normal_vardp + nocalled_normal_vardp + rejected_normal_vardp
+        for nvar in normal_vardps:
+            if nvar >= 2:
+                num_samples_with_germline_signal += 1
+        ###################################################################
+
+
+
+
         # For Tier 1 calls, assign "StrongestEvidence" unless bad mapping or something:
         if (vcf_i.filters == 'AllPASS') or re.match(r'Tier1', vcf_i.filters):
             
-            if not isCallable:
+            if num_samples_with_germline_signal >= (1/3) * total_tumor_samples:
+                vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'NeutralEvidence')
+
+            elif not isCallable:
                 vcf_items[ i_filters ] = '{};{}'.format(vcf_items[ i_filters ], 'WeakEvidence')
             
             # If high number of MQ0 reads in 2/3 aligners.
@@ -763,14 +777,6 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
             ###################################################################
 
 
-            ##### GERMLINE SIGNAL? #####
-            num_samples_with_germline_signal = 0
-            normal_vardps = called_normal_vardp + nocalled_normal_vardp + rejected_normal_vardp
-            for nvar in normal_vardps:
-                if nvar >= 2:
-                    num_samples_with_germline_signal += 1
-            ###################################################################
-            
             
             ##### IDENTIFY Aligners or Platform/Sites that's not deemed PASS.
             # ALIGNER: BWA
