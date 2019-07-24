@@ -53,6 +53,19 @@ def rename(line_i):
     return line_i
 
 
+def addFlag(info_line):
+    
+    if 'FLAGS' in info_line:
+        infoItems = info_line.split(';')
+        for i, item_i in enumerate(infoItems):
+            if item_i.startswith('FLAGS'):
+                infoItems[i] = infoItems[i] + ',300xRelabeled'
+        newInfo = ';'.join(infoItems)
+    else:
+        newInfo = info_line + ';FLAGS=300xRelabeled'
+        
+    return newInfo
+
 
 with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
     
@@ -360,6 +373,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                        ( nova_bwa_PASS + spp_bwa_PASS + nova_bowtie_PASS + spp_bowtie_PASS + nova_novo_PASS + spp_novo_PASS == 6 ) :
 
                         vcf_items[6] = re.sub('MedConf|LowConf', 'HighConf', vcf_items[6])
+                        vcf_items[7] = addFlag(vcf_items[7])
 
                     ##########
                     # Promote to "WeakEvidence"
@@ -368,6 +382,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                     not (nova_hasREJECT or nova_hasMissing or spp_hasREJECT or spp_hasMissing):
                         
                         vcf_items[6] = re.sub('Unclassified|LowConf', 'MedConf', vcf_items[6])
+                        vcf_items[7] = addFlag(vcf_items[7])
                     
                     # Promote one ladder up if PASS by Burrows-Wheeler (bwa or bowtie) and NovoAlign
                     # "Missing" in 450X is worse than "missing" in 50X, so it's considered as "bad" as REJECT, i.e., two PASSES and one LowQual
@@ -376,24 +391,26 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         
                         vcf_items[6] = re.sub('Unclassified', 'LowConf', vcf_items[6])
                         vcf_items[6] = re.sub('LowConf',      'MedConf', vcf_items[6])
+                        vcf_items[7] = addFlag(vcf_items[7])
                         
                     elif nova_hasPASS and spp_hasPASS and bwa_hasPASS and bowtie_hasPASS and novo_hasPASS:
                         
                         vcf_items[6] = re.sub('Unclassified', 'LowConf', vcf_items[6])
-                    
+                        vcf_items[7] = addFlag(vcf_items[7])
+                        
                     # Demotion
                     elif not (nova_hasPASS or spp_hasPASS) and (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing):
                         
                         vcf_items[6] = re.sub('MedConf', 'LowConf',     vcf_items[6])
                         vcf_items[6] = re.sub('LowConf', 'Unclassified', vcf_items[6])
-                        
+                        vcf_items[7] = addFlag(vcf_items[7])
 
                 elif 'LowConf' in my_call.filters  and tvaf >= 0.3:
                     
                     if (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing) and (bwa_REJECT or bwa_Missing) and (bowtie_REJECT or bowtie_Missing) and (novo_REJECT or novo_Missing) and not (nova_hasPASS or spp_hasPASS):
                         
                         vcf_items[6] = re.sub('LowConf', 'Unclassified', vcf_items[6])
-                        
+                        vcf_items[7] = addFlag(vcf_items[7])
                     
                 # Write
                 line_out = '\t'.join(vcf_items)
