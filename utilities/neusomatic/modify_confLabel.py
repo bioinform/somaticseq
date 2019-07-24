@@ -72,18 +72,18 @@ for sheet_i in ('HighConf SNV Neu<30 | NeuS<20', 'MedConf SNV Neu<=10',   'LowCo
             variant_i = row['CHROM'], int( row['POS'] ), row['REF'], row['ALT']
             mod[ variant_i ] = row['Label Change']
             
-        else:
-            if sheet_i.startswith('HighConf'):
-                variant_i = row['CHROM'], int( row['POS'] ), row['REF'], row['ALT']
-                mod[ variant_i ] = 'HighConf'
+        # else:
+            # if sheet_i.startswith('HighConf'):
+                # variant_i = row['CHROM'], int( row['POS'] ), row['REF'], row['ALT']
+                # mod[ variant_i ] = 'HighConf'
                 
-            elif sheet_i.startswith('MedConf'):
-                variant_i = row['CHROM'], int( row['POS'] ), row['REF'], row['ALT']
-                mod[ variant_i ] = 'MedConf'
+            # elif sheet_i.startswith('MedConf'):
+                # variant_i = row['CHROM'], int( row['POS'] ), row['REF'], row['ALT']
+                # mod[ variant_i ] = 'MedConf'
                 
-            elif sheet_i.startswith('Unclassified'):
-                variant_i = row['CHROM'], int( row['POS'] ), row['REF'], row['ALT']
-                mod[ variant_i ] = 'Unclassified'
+            # elif sheet_i.startswith('Unclassified'):
+                # variant_i = row['CHROM'], int( row['POS'] ), row['REF'], row['ALT']
+                # mod[ variant_i ] = 'Unclassified'
 
 
 labelMods.close()

@@ -195,7 +195,7 @@ with genome.open_textfile(deeperseq) as deep,  genome.open_textfile(goldset) as 
 
 
                     if writeThis and len(variants_at_deep_coordinate) == 1:
-                        info           = 'nPASSES=0;nREJECTS=.;FLAGS=DeeperSeqOnly'
+                        info           = 'nPASSES=0;nREJECTS=.;bwaMQ0=.;bowtieMQ0=.;novoMQ0=.;MQ0=.;bwaTVAF=.;bowtieTVAF=.;novoTVAF=.;TVAF=.;bwaNVAF=.;bowtieNVAF=.;novoNVAF=.;NVAF=.;FLAGS=DeeperSeqOnly'
                         format_field   = 'GT:CD4:DP4:MQ0:{}:NUM_TOOLS:SCORE:VAF:altBQ:altMQ:altNM:fetCD:fetSB:refBQ:refMQ:refNM:zBQ:zMQ'.format(toolString)
                         samples_string = '\t'.join( ['./.'] * num_samples )
                     
