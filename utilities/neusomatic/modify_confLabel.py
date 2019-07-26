@@ -143,7 +143,7 @@ with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
             line_i = relabel(line_i, 'LowConf')
 
 
-        elif re.search(r'HighConf|MedConf', vcf_i.filters) and ( 20*int( vcf_i.get_info_value('nREJECTS')) >= int( vcf_i.get_info_value('nPASSES')) ):
+        elif re.search(r'HighConf|MedConf', vcf_i.filters) and ( 10*int( vcf_i.get_info_value('nREJECTS')) > int( vcf_i.get_info_value('nPASSES')) ):
 
             item = line_i.split('\t')
             print( '\t'.join(item[:8]) )
