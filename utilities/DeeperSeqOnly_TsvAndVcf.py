@@ -24,7 +24,7 @@ vcfin          = args.vcf_infile
 tsvin          = args.tsv_infile
 outfile        = args.outfile
 
-
+nan = math.nan
 
 def all_indices(pattern_to_be_matched, my_list):
     return [ i for i,j in enumerate(my_list) if j == pattern_to_be_matched ]
