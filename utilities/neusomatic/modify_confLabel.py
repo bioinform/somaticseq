@@ -136,13 +136,18 @@ with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
 
         # SNV here and below:
         # If the HighConf or MedConf calls have too many nREJECTS, or discrepency with NeuSomaticS
-        elif re.search(r'HighConf|MedConf', vcf_i.filters) and ( int( vcf_i.get_info_value('nREJECTS') ) > maxRejects and int( vcf_i.get_info_value('NeuSomaticS') ) < 30 ):
+        elif re.search(r'HighConf', vcf_i.filters) and ( int( vcf_i.get_info_value('nREJECTS') ) > maxRejects and int( vcf_i.get_info_value('NeuSomaticS') ) < 30 ):
 
             item = line_i.split('\t')
             print( '\t'.join(item[:8]) )
             line_i = relabel(line_i, 'LowConf')
 
-
+        elif re.search(r'HighConf|MedConf', vcf_i.filters) and ( int( vcf_i.get_info_value('nREJECTS') ) > maxRejects and int( vcf_i.get_info_value('NeuSomaticS') ) < 20 ):
+            item = line_i.split('\t')
+            print( '\t'.join(item[:8]) )
+            line_i = relabel(line_i, 'LowConf')
+        
+        
         elif re.search(r'HighConf|MedConf', vcf_i.filters) and ( 10*int( vcf_i.get_info_value('nREJECTS')) > int( vcf_i.get_info_value('nPASSES')) ):
 
             item = line_i.split('\t')
