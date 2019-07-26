@@ -8,18 +8,20 @@ import argparse
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-vaf',     '--vafs',     type=float, nargs='*', help='VAF', default=0.05)
 parser.add_argument('-dp',      '--dp',      type=int, help='WGS depth', default=50)
-parser.add_argument('-deep',    '--deep-dp', type=int, help='combined WGS depth', default=300)
+parser.add_argument('-deep1',   '--deep-dp1', type=int, help='combined WGS depth', default=300)
+parser.add_argument('-deep2',   '--deep-dp2', type=int, help='combined WGS depth', default=380)
 parser.add_argument('-varWgs',  '--variant-read-WGS', type=int, help='min reads in WGS to get a call', default=3)
 parser.add_argument('-varDeep', '--variant-read-Deep', type=int, help='min reads in combined WGS to get a call', default=3)
 
 
 
-args    = parser.parse_args()
-vafs    = args.vafs
-dp      = args.dp
-deepCov = args.deep_dp
-vReads  = args.variant_read_WGS
-vDeep   = args.variant_read_Deep
+args     = parser.parse_args()
+vafs     = args.vafs
+dp       = args.dp
+deepCov1 = args.deep_dp1
+deepCov2 = args.deep_dp2
+vReads   = args.variant_read_WGS
+vDeep    = args.variant_read_Deep
 
 
 
@@ -57,14 +59,23 @@ for vaf in vafs:
     
     
     # Not Called in deeperSeq
-    P_notCalledDeep = 0
+    P1_notCalledDeep = 0
     for i in range(vDeep):
-        P_notCalledDeep += nCr(deepCov,i) * ( vaf**i * (1-vaf)**(deepCov-i) )
+        P1_notCalledDeep += nCr(deepCov1,i) * ( vaf**i * (1-vaf)**(deepCov1-i) )
     
-    P_calledDeep = 1 - P_notCalledDeep
+    P1_calledDeep = 1 - P1_notCalledDeep
+
+
+    P2_notCalledDeep = 0
+    for i in range(vDeep):
+        P2_notCalledDeep += nCr(deepCov2,i) * ( vaf**i * (1-vaf)**(deepCov2-i) )
     
+    P2_calledDeep = 1 - P2_notCalledDeep
+
+
     # Probability of variant reads found in both 300X Data Sets
-    P_Rescued = P_calledDeep**2
+    P_Rescued = P1_calledDeep * P2_calledDeep
+
     
     # There are 21 replicates, so the probability it will be called at least once:
     P = 1 - P_notCalled**21
@@ -91,9 +102,8 @@ for vaf in vafs:
     (1-P_atLeast5outta9) * nCr(4,3) * (P_atLeast2outta3**3 * (1-P_atLeast2outta3)**1)
     
     
-    P_Rescued = P_calledDeep**2
     
     P_gotTruth = P_HighConfDirectly + (1-P_HighConfDirectly)*P_Rescued
     
-    print(vaf, P_HighConfDirectly, P_gotTruth, sep='\t')
+    print(vaf, P, P_HighConfDirectly, P_gotTruth, sep='\t')
     
