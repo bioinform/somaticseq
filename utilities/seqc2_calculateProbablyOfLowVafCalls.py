@@ -46,7 +46,7 @@ for i in range(dp+1):
     P += nCr(dp,i) * ( vafs[0]**i * (1-vafs[0])**(dp-i) )
 
 
-
+print('VAF\tP(≥1/21)\tP(HighConfRightAway)\tP(Rescued)')
 for vaf in vafs:
     
     # P_notCalled is the probability that a replicate will have either 0, 1, or just 2 variant reads, i.e., not enough to confidently call a somatic mutation in a particular replicate

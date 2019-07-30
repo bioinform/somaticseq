@@ -78,10 +78,6 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     vcfout.write('##INFO=<ID=bowtie_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
     vcfout.write('##INFO=<ID=novo_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
 
-    vcfout.write('##INFO=<ID=bwa_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
-    vcfout.write('##INFO=<ID=bowtie_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
-    vcfout.write('##INFO=<ID=novo_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">\n')
-
     vcfout.write('##INFO=<ID=bwaMQ0,Number=1,Type=Integer,Description="MQ0 reads in tumor by bwa">\n')
     vcfout.write('##INFO=<ID=bowtieMQ0,Number=1,Type=Integer,Description="MQ0 reads in tumor by bowtie">\n')
     vcfout.write('##INFO=<ID=novoMQ0,Number=1,Type=Integer,Description="MQ0 reads in tumor by novo">\n')
@@ -96,12 +92,8 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
     vcfout.write('##INFO=<ID=novoNVAF,Number=1,Type=Float,Description="normal VAF from novoalign data">\n')
     vcfout.write('##INFO=<ID=NVAF,Number=1,Type=Float,Description="normal VAF combining 3 aligners">\n')
     
-    vcfout.write('##INFO=<ID=nCalledSamples,Number=1,Type=Integer,Description="number of called samples">\n')    
     vcfout.write('##INFO=<ID=nPASSES,Number=1,Type=Integer,Description="number of samples where the variant is classified as PASS by SomaticSeq">\n')
     vcfout.write('##INFO=<ID=nREJECTS,Number=1,Type=Integer,Description="number of samples where the variant is classified as REJECT by SomaticSeq">\n')
-    vcfout.write('##INFO=<ID=nNoCall,Number=1,Type=Integer,Description="number of samples where the variant is not called by any caller">\n')
-    vcfout.write('##INFO=<ID=nREJECTorNoCall,Number=1,Type=Integer,Description="number of samples where the variant is classified as REJECT or not called at all">\n')
-    vcfout.write('##INFO=<ID=nCONSENSUS,Number=1,Type=Integer,Description="number of samples where majority of callers agree">\n')
     
     vcfout.write('##INFO=<ID=bwaClassification,Number=1,Type=String,Description="bwa-centric classification: Strong, Weak, Neutral, or Likely False Positive based on bwa-aligned data sets">\n')
     vcfout.write('##INFO=<ID=bowtieClassification,Number=1,Type=String,Description="bowtie-centric classification: Strong, Weak, Neutral, or Likely False Positive based on bowtie-aligned data sets">\n')
@@ -623,7 +615,7 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     
                     flag_string = ';FLAGS=' + ','.join(flags) if flags else ''
                     
-                    info_column = 'calledSamples={calledSamples};rejectedSamples={rejectedSamples};noCallSamples={noCallSamples};bwa_PASS={bwa_PASS};bowtie_PASS={bowtie_PASS};novo_PASS={novo_PASS};bwa_REJECT={bwa_REJECT};bowtie_REJECT={bowtie_REJECT};novo_REJECT={novo_REJECT};bwa_Consensus={bwa_Consensus};bowtie_Consensus={bowtie_Consensus};novo_Consensus={novo_Consensus};bwaMQ0={bwaMQ0};bowtieMQ0={bowtieMQ0};novoMQ0={novoMQ0};MQ0={MQ0};bwaTVAF={bwaTVAF};bowtieTVAF={bowtieTVAF};novoTVAF={novoTVAF};TVAF={TVAF};bwaNVAF={bwaNVAF};bowtieNVAF={bowtieNVAF};novoNVAF={novoNVAF};NVAF={NVAF};nCalledSamples={nCalledSamples};nPASSES={nPasses};nREJECTS={nRejects};nNoCall={nNoCall};nREJECTorNoCall={nREJECTorNoCall};nCONSENSUS={nConsensus};bwaClassification={bwaClass};bowtieClassification={bowtieClass};novoClassification={novoClass}{FLAGS}'.format( \
+                    info_column = 'calledSamples={calledSamples};rejectedSamples={rejectedSamples};noCallSamples={noCallSamples};bwa_PASS={bwa_PASS};bowtie_PASS={bowtie_PASS};novo_PASS={novo_PASS};bwa_REJECT={bwa_REJECT};bowtie_REJECT={bowtie_REJECT};novo_REJECT={novo_REJECT};bwaMQ0={bwaMQ0};bowtieMQ0={bowtieMQ0};novoMQ0={novoMQ0};MQ0={MQ0};bwaTVAF={bwaTVAF};bowtieTVAF={bowtieTVAF};novoTVAF={novoTVAF};TVAF={TVAF};bwaNVAF={bwaNVAF};bowtieNVAF={bowtieNVAF};novoNVAF={novoNVAF};NVAF={NVAF};nPASSES={nPasses};nREJECTS={nRejects};bwaClassification={bwaClass};bowtieClassification={bowtieClass};novoClassification={novoClass}{FLAGS}'.format( \
                     calledSamples=called_samples_string, \
                     rejectedSamples=rejected_samples_string, \
                     noCallSamples=nocall_sample_string, \
@@ -633,13 +625,10 @@ with genome.open_textfile(infile) as vcfin, open(outfile, 'w') as vcfout:
                     bwa_REJECT='{},{},{},{},{}'.format(alignerClassifications['bwa']['IL']['REJECT'], alignerClassifications['bwa']['NV']['REJECT'], alignerClassifications['bwa']['FD']['REJECT'], alignerClassifications['bwa']['NS']['REJECT'], alignerClassifications['bwa']['Others']['REJECT']), \
                     bowtie_REJECT='{},{},{},{},{}'.format(alignerClassifications['bowtie']['IL']['REJECT'], alignerClassifications['bowtie']['NV']['REJECT'], alignerClassifications['bowtie']['FD']['REJECT'], alignerClassifications['bowtie']['NS']['REJECT'], alignerClassifications['bowtie']['Others']['REJECT']), \
                     novo_REJECT='{},{},{},{},{}'.format(alignerClassifications['novo']['IL']['REJECT'], alignerClassifications['novo']['NV']['REJECT'], alignerClassifications['novo']['FD']['REJECT'], alignerClassifications['novo']['NS']['REJECT'], alignerClassifications['novo']['Others']['REJECT']), \
-                    bwa_Consensus='{},{},{},{},{}'.format(alignerClassifications['bwa']['IL']['Consensus'], alignerClassifications['bwa']['NV']['Consensus'], alignerClassifications['bwa']['FD']['Consensus'], alignerClassifications['bwa']['NS']['Consensus'], alignerClassifications['bwa']['Others']['Consensus']), \
-                    bowtie_Consensus='{},{},{},{},{}'.format(alignerClassifications['bowtie']['IL']['Consensus'], alignerClassifications['bowtie']['NV']['Consensus'], alignerClassifications['bowtie']['FD']['Consensus'], alignerClassifications['bowtie']['NS']['Consensus'], alignerClassifications['bowtie']['Others']['Consensus']), \
-                    novo_Consensus='{},{},{},{},{}'.format(alignerClassifications['novo']['IL']['Consensus'], alignerClassifications['novo']['NV']['Consensus'], alignerClassifications['novo']['FD']['Consensus'], alignerClassifications['novo']['NS']['Consensus'], alignerClassifications['novo']['Others']['Consensus']), \
                     bwaMQ0=t_MQ0['bwa'], bowtieMQ0=t_MQ0['bowtie'], novoMQ0=t_MQ0['novo'], MQ0=t_MQ0['bwa']+t_MQ0['bowtie']+t_MQ0['novo'], \
                     bwaTVAF='%.3f' % t_vaf['bwa'], bowtieTVAF='%.3f' % t_vaf['bowtie'], novoTVAF='%.3f' % t_vaf['novo'], TVAF='%.3f' % t_vaf['Overall'], \
                     bwaNVAF='%.3f' % n_vaf['bwa'], bowtieNVAF='%.3f' % n_vaf['bowtie'], novoNVAF='%.3f' % n_vaf['novo'], NVAF='%.3f' % n_vaf['Overall'], \
-                    nCalledSamples=len(called_samples), nPasses=nPASS, nRejects=nREJECT, nNoCall=nNoCall, nREJECTorNoCall=nNoCall+nREJECT, nConsensus=nConsensus, \
+                    nPasses=nPASS, nRejects=nREJECT, \
                     bwaClass=alignerCentricClassification[ 'bwa' ]['EvidenceLevel'], \
                     bowtieClass=alignerCentricClassification[ 'bowtie' ]['EvidenceLevel'], \
                     novoClass=alignerCentricClassification[ 'novo' ]['EvidenceLevel'], \
