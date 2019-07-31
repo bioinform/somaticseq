@@ -51,9 +51,6 @@
 ##INFO=<ID=bwa_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
 ##INFO=<ID=bowtie_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
 ##INFO=<ID=novo_REJECT,Number=.,Type=Integer,Description="# samples REJECT by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
-##INFO=<ID=bwa_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
-##INFO=<ID=bowtie_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
-##INFO=<ID=novo_Consensus,Number=.,Type=Integer,Description="# samples majority caller by IL, NV, FD, NS, and Others (i.e., EA, NC, and LL)">
 ##INFO=<ID=bwaMQ0,Number=1,Type=Integer,Description="MQ0 reads in tumor by bwa">
 ##INFO=<ID=bowtieMQ0,Number=1,Type=Integer,Description="MQ0 reads in tumor by bowtie">
 ##INFO=<ID=novoMQ0,Number=1,Type=Integer,Description="MQ0 reads in tumor by novo">
@@ -69,9 +66,6 @@
 ##INFO=<ID=nCalledSamples,Number=1,Type=Integer,Description="number of called samples">
 ##INFO=<ID=nPASSES,Number=1,Type=Integer,Description="number of samples where the variant is classified as PASS by SomaticSeq">
 ##INFO=<ID=nREJECTS,Number=1,Type=Integer,Description="number of samples where the variant is classified as REJECT by SomaticSeq">
-##INFO=<ID=nNoCall,Number=1,Type=Integer,Description="number of samples where the variant is not called by any caller">
-##INFO=<ID=nREJECTorNoCall,Number=1,Type=Integer,Description="number of samples where the variant is classified as REJECT or not called at all">
-##INFO=<ID=nCONSENSUS,Number=1,Type=Integer,Description="number of samples where majority of callers agree">
 ##INFO=<ID=bwaClassification,Number=1,Type=String,Description="bwa-centric classification: Strong, Weak, Neutral, or Likely False Positive based on bwa-aligned data sets">
 ##INFO=<ID=bowtieClassification,Number=1,Type=String,Description="bowtie-centric classification: Strong, Weak, Neutral, or Likely False Positive based on bowtie-aligned data sets">
 ##INFO=<ID=novoClassification,Number=1,Type=String,Description="novo-centric classification: Strong, Weak, Neutral, or Likely False Positive based on novoalign-aligned data sets">
