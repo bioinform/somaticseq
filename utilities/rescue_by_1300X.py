@@ -56,21 +56,27 @@ for i_th_file, file_i in enumerate(deeps):
             
             vcf_i = genome.Vcf_line( line_i.rstrip() )
             
-            variant_id = vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase
+            variant_position = vcf_i.chromosome, vcf_i.position
+            nt_change        = vcf_i.refbase, vcf_i.altbase
+            variant_id       = vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase
             
             score_i = float( vcf_i.get_info_value('SCORE') )
             vardp_i = int( vcf_i.get_info_value('AO') )
             dp_i    = int( vcf_i.get_info_value('DP') )
             vaf_i   = vardp_i / dp_i
 
-            if variant_id not in deepVariantDict:
-                deepVariantDict[variant_id] = {}
-                deepVariantDict[variant_id]['isCallable'] = callableLoci.inRegion(variant_id[0], variant_id[1])
+            if variant_position not in deepVariantDict:
+                deepVariantDict[variant_position] = {}
+                
+            if nt_change not in deepVariantDict[variant_position]:
+                
+                deepVariantDict[variant_position][nt_change] = {}
+                deepVariantDict[variant_position][nt_change]['isCallable'] = callableLoci.inRegion(variant_id[0], variant_id[1])
                 
                 for i in range(i_th_file):
-                    deepVariantDict[variant_id][i] = {}
+                    deepVariantDict[variant_position][nt_change][i] = {}
 
-            deepVariantDict[variant_id][i_th_file] = {'SCORE': score_i, 'VarDP': vardp_i, 'DP': dp_i, 'VAF': vaf_i, 'Classification': vcf_i.filters}
+            deepVariantDict[variant_position][nt_change][i_th_file] = {'SCORE': score_i, 'VarDP': vardp_i, 'DP': dp_i, 'VAF': vaf_i, 'Classification': vcf_i.filters}
 
 
 with genome.open_textfile(goldset) as gold:

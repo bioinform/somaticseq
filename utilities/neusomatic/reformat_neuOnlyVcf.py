@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# To promote a call, make sure the REJECTS in the WGS are consistent with low depth low variant counts
+# Also to make sure the Neu-classified variant call is the same variant call in question
+
 import sys, argparse, math, gzip, os, re
 import pandas as pd
 from copy import copy
