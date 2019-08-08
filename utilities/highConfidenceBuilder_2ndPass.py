@@ -195,7 +195,12 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
         
         nPASSES   = int( vcf_i.get_info_value('nPASSES') )
         nREJECTS  = int( vcf_i.get_info_value('nREJECTS') )
-        nNoCall   = int( vcf_i.get_info_value('nNoCall') )
+        
+        missingSamples = vcf_i.get_info_value('noCallSamples')
+        if missingSamples == '.':
+            nNoCall = 0
+        else:
+            nNoCall = len( missingSamples.split(',') )
         
         flag_string = vcf_i.get_info_value('FLAGS')
         flags_i = flag_string.split(',') if flag_string else []
@@ -494,6 +499,7 @@ with genome.open_textfile(vcfin) as vcf_in,  genome.open_textfile(tsvin) as tsv_
                 
                 # Replace the original ./. with this string:
                 vcf_items[col_i] = new_sample_string
+                print(new_sample_string)
             
             # Averaging over the no-called samples
             average_nocalls_varDP = sum(nocalled_variant_depths)/len(nocalled_variant_depths)    
