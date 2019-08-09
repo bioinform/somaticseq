@@ -27,10 +27,10 @@ args         = parser.parse_args()
 deeps        = args.deep_vcfs
 goldset      = args.goldset_vcf
 outfile      = args.outfile
-
 callableLoci = BedFile(args.callable_bed)
 
-def confidentlyCalled(variant_id, deepVariantDict=deepVariantDict):
+
+def confidentlyCalled(variant_id, deepVariantDict):
     
     position = variant_id[0], variant_id[1]
     ntChange = variant_id[2], variant_id[3]
@@ -75,7 +75,7 @@ def p_of_2proportions(P1, P2, N1, N2):
 
 
 
-def sameVariant(variant_id, deepVariantDict=deepVariantDict, vcf_i=vcf_i):
+def sameVariant(variant_id, deepVariantDict, vcf_i):
     # I'll call them the same variants if 2 out of 3 alignments, the VAF does not differ significantly
     bwa_dps = vcf_i.get_info_value('bwaDP').split(',')
     novo_dps = vcf_i.get_info_value('novoDP').split(',')
@@ -179,12 +179,21 @@ for i_th_file, file_i in enumerate(deeps):
                 deepVariantDict[variant_position][nt_change] = {}
                 deepVariantDict[variant_position][nt_change]['isCallable'] = callableLoci.inRegion(variant_id[0], variant_id[1])
                 
-                for i in range(i_th_file):
-                    deepVariantDict[variant_position][nt_change][i] = {}
+            #for i in range(i_th_file):
+            #    if i not in deepVariantDict[variant_position][nt_change]:
+            #        deepVariantDict[variant_position][nt_change][i] = {'SCORE': math.nan, 'VarDP': math.nan, 'DP': math.nan, 'VAF': math.nan, 'Classification': 'MISSING' }
 
             deepVariantDict[variant_position][nt_change][i_th_file] = {'SCORE': score_i, 'VarDP': vardp_i, 'DP': dp_i, 'VAF': vaf_i, 'Classification': vcf_i.filters}
 
+for position_i in deepVariantDict:
+    for variant_i in deepVariantDict[position_i]:
+        for i in (0, 1, 2):
+            if i not in deepVariantDict[position_i][variant_i]:
+                deepVariantDict[position_i][variant_i][i] = {'SCORE': math.nan, 'VarDP': math.nan, 'DP': math.nan, 'VAF': math.nan, 'Classification': 'MISSING' }
 
+
+
+superSetPositions = set()
 with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
     
     line_i = gold.readline().rstrip()
@@ -224,13 +233,16 @@ with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
         ntChange_i = vcf_i.refbase, vcf_i.altbase
         variant_i  = vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase
         
+        superSetPositions.add( position_i )
         # Decide here if we want to trigger the routine to promote calls:
         if  re.search(r'LowConf|Unclassified', vcf_i.filters) and (not vcf_i.get_info_value('NeuDiscovered')) and (position_i in deepVariantDict) and (ntChange_i in deepVariantDict[position_i]):
+        
+            deepCall_i = confidentlyCalled(variant_i, deepVariantDict)
             
             # Unclassified calls can be more aggressively moved into LowConf, because well, LowConf
-            if (deepCall_i == 1) and ('Unclassified' in vcf_i.filters) and sameVariant(variant_i, deepVariantDict, vcf_i):
+            if (deepCall_i >= 0.5) and ('Unclassified' in vcf_i.filters) and sameVariant(variant_i, deepVariantDict, vcf_i):
 
-                line_i = relabel( line_i.rstrip(), 'LowConf', 'promote1300X' ) + '\n'
+                line_i = relabel( line_i.rstrip(), 'LowConf', 'Unclassified_to_LowConf_1300X' ) + '\n'
                 
             # For LowConf calls to be promoted to MedConf using this data set, we want to make sure the Rejects/Missings are due to low variant count, and NOT due to other genomics or sequencing issues
             if (deepCall_i == 1) and ('LowConf' in vcf_i.filters) and sameVariant(variant_i, deepVariantDict, vcf_i):
@@ -247,31 +259,90 @@ with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
                 novoNormalVarDP   = int(novoNormalDP4[2])   + int(novoNormalDP4[3])
                 bowtieNormalVarDP = int(bowtieNormalDP4[2]) + int(bowtieNormalDP4[3])
                 
+                # No germline signal
                 noGermlineSignal  = (bwaNormalVarDP<10) and (novoNormalVarDP<10) and (bowtieNormalVarDP<10)
                 
-                # Promotion is for low VAF calls, so this is to check Missing/REJECT calls are consistent with distribution of low VAF variants
-                # First of all, for missing samples, most of them have to be missing due to lack of variant reads (say, <3 for missing <=3 for reject)
-                missingSamples = vcf_i.get_info_value('noCallSamples')
-                missingSamples = missingSamples.split(',') if missingSamples and missingSamples != '.' else []
                 
-                nMissingSampleNoSignal = 0
-                for sample_i in missingSamples:
-                    i       = samples.index(sample_i)
-                    dp4_i   = vcf_i.get_sample_value('DP4', i).split(',')
-                    varDP_i = int(dp4_i[2]) + int(dp4_i[3])
-                    if varDP_i <= 2:
-                        nMissingSampleNoSignal += 1
-                
-                rejectedSamples = vcf_i.get_info_value('rejectedSamples')
-                rejectedSamples = rejectedSamples.split(',') if rejectedSamples and rejectedSamples != '.' else []
-                
-                nRejectedSampleNoSignal = 0
-                for sample_i in rejectedSamples:
-                    i       = samples.index(sample_i)
-                    dp4_i   = vcf_i.get_sample_value('DP4', i).split(',')
-                    varDP_i = int(dp4_i[2]) + int(dp4_i[3])
-                    if varDP_i <= 2:
-                        nRejectedSampleNoSignal += 1
+                if noMappingIssue and noGermlineSignal:
+                    
+                    # Promotion is for low VAF calls, so this is to check Missing/REJECT calls are consistent with distribution of low VAF variants
+                    # First of all, for missing samples, most of them have to be missing due to lack of variant reads (say, <3 for missing <=3 for reject)
+                    missingSamples = vcf_i.get_info_value('noCallSamples')
+                    missingSamples = missingSamples.split(',') if missingSamples and missingSamples != '.' else []
+                    
+                    nMissingSampleNoSignal       = 0
+                    index_nMissingSampleNoSignal = []
+                    varDP_MissingNoSignal        = []
+                    DP_MissingNoSignal           = []
+                    for sample_i in missingSamples:
+                        i       = samples.index(sample_i)
+                        dp4_i   = vcf_i.get_sample_value('DP4', i).split(',')
+                        varDP_i = int(dp4_i[2]) + int(dp4_i[3])
+                        DP_i    = varDP_i + int(dp4_i[0]) + int(dp4_i[1])
+                        if varDP_i < 3:
+                            varDP_MissingNoSignal.append(varDP_i)
+                            DP_MissingNoSignal.append(DP_i)
+                            index_nMissingSampleNoSignal.append(i)
+                            nMissingSampleNoSignal += 1
+                    
+                    rejectedSamples = vcf_i.get_info_value('rejectedSamples')
+                    rejectedSamples = rejectedSamples.split(',') if rejectedSamples and rejectedSamples != '.' else []
+                    
+                    nRejectedSampleNoSignal       = 0
+                    index_nRejectedSampleNoSignal = []
+                    varDP_RejectedSampleNoSignal  = []
+                    DP_RejectedSampleNoSignal     = []
+                    for sample_i in rejectedSamples:
+                        i       = samples.index(sample_i)
+                        dp4_i   = vcf_i.get_sample_value('DP4', i).split(',')
+                        varDP_i = int(dp4_i[2]) + int(dp4_i[3])
+                        DP_i    = varDP_i + int(dp4_i[0]) + int(dp4_i[1])
+                        if varDP_i <= 3:
+                            varDP_RejectedSampleNoSignal.append(varDP_i)
+                            DP_RejectedSampleNoSignal.append(DP_i)
+                            nRejectedSampleNoSignal += 1
+                            index_nRejectedSampleNoSignal.append(i)
 
-        
+                    if nRejectedSampleNoSignal >= int( len(rejectedSamples) * 0.8 ) and nMissingSampleNoSignal >= int( len(missingSamples) * 0.8 ):
+                        line_i = relabel( line_i.rstrip(), 'MedConf', 'LowConf_to_MedConf_1300X' ) + '\n'
+                        
+            # Remove the items that was used
+            del deepVariantDict[position_i][ntChange_i]
+            
+        elif (position_i in deepVariantDict) and (ntChange_i in deepVariantDict[position_i]):
+            del deepVariantDict[position_i][ntChange_i]
+    
         out.write( line_i )
+
+
+
+
+# Write the header:
+with open('{}/{}'.format(MY_DIR, 'neusomatic/goldsetHeader.vcf') ) as vcfHeader:
+    for line_i in vcfHeader:
+        print( line_i.rstrip() )
+
+i = 0
+for position_i in deepVariantDict:
+    if deepVariantDict[position_i] and (position_i not in superSetPositions):
+        for variant_i in deepVariantDict[position_i]:
+            if deepVariantDict[position_i][variant_i]['isCallable'] and confidentlyCalled((position_i[0], position_i[1], variant_i[0], variant_i[1]), deepVariantDict) == 1:
+                
+                bwaVarDp    = deepVariantDict[position_i][variant_i][0]['VarDP']
+                bwaDp       = deepVariantDict[position_i][variant_i][0]['DP']
+                bwaVaf      = '%.3f' % deepVariantDict[position_i][variant_i][0]['VAF']
+                novoVarDp   = deepVariantDict[position_i][variant_i][1]['VarDP']
+                novoDp      = deepVariantDict[position_i][variant_i][1]['DP']
+                novoVaf     = '%.3f' % deepVariantDict[position_i][variant_i][1]['VAF']
+                bowtieVarDp = deepVariantDict[position_i][variant_i][2]['VarDP']
+                bowtieDp    = deepVariantDict[position_i][variant_i][2]['DP']
+                bowtieVaf   = '%.3f' % deepVariantDict[position_i][variant_i][2]['VAF']
+                tVaf        = '%.3f' % ((bwaVarDp+novoVarDp+bowtieVarDp) / (bwaDp+novoDp+bowtieDp))
+                
+                line_out_i  = '{}\t{}\t.\t{}\t{}\t.\tLowConf'.format(position_i[0], position_i[1], variant_i[0], variant_i[1])
+                info_string = 'bwa_PASS=0,0,0,0,0;bowtie_PASS=0,0,0,0,0;novo_PASS=0,0,0,0,0;bwa_REJECT=.;bowtie_REJECT=.;novo_REJECT=.;bwaMQ0=.;bowtieMQ0=.;novoMQ0=.;MQ0=.;bwaTVAF={bwaTVAF};bowtieTVAF={bowtieTVAF};novoTVAF={novoTVAF};TVAF={TVAF};bwaNVAF=.;bowtieNVAF=.;novoNVAF=.;NVAF=.;nPASSES=0;nREJECTS=.;bwaDP={bwaVarDp},{bwaDp};bowtieDP={bowtieVarDp},{bowtieDp};novoDP={novoVarDp},{novoDp};FLAGS=Discovered_in_1300X'.format(bwaTVAF=bwaVaf, bowtieTVAF=bowtieVaf, novoTVAF=novoVaf, TVAF=tVaf, bwaVarDp=bwaVarDp, bwaDp=bwaDp, bowtieVarDp=bowtieVarDp, bowtieDp=bowtieDp, novoVarDp=novoVarDp, novoDp=novoDp)
+                
+                dummy_sample_strongs = '\t'.join( ['./.']*21 )
+                
+                print( line_out_i, info_string, dummy_sample_strongs, sep='\t' )
+                i += 1
