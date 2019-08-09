@@ -43,14 +43,42 @@ fai_file  = args.genome_reference + '.fai'
 chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
 
 
-def rename(line_i):
+# def rename(line_i):
     
-    line_i = re.sub( 'StrongEvidence', 'HighConf', line_i )
-    line_i = re.sub( 'WeakEvidence', 'MedConf', line_i )
-    line_i = re.sub( 'NeutralEvidence', 'LowConf', line_i )
-    line_i = re.sub( 'LikelyFalsePositive', 'Unclassified', line_i )
+    # line_i = re.sub( 'StrongEvidence',      'HighConf',     line_i )
+    # line_i = re.sub( 'WeakEvidence',        'MedConf',      line_i )
+    # line_i = re.sub( 'NeutralEvidence',     'LowConf',      line_i )
+    # line_i = re.sub( 'LikelyFalsePositive', 'Unclassified', line_i )
 
+    # return line_i
+
+
+
+def relabel(vcf_line, newLabel, additional_flag):
+    
+    vcf_i = genome.Vcf_line( vcf_line )
+    item  = vcf_line.split('\t')
+    
+    filterColumn = re.sub(r'HighConf|MedConf|LowConf|Unclassified', newLabel, vcf_i.filters)
+    item         = vcf_line.split('\t')
+    item[6]      = filterColumn
+    
+    originalLabel = re.search(r'(HighConf|MedConf|LowConf|Unclassified)', vcf_i.filters).groups()[0]
+    
+    if 'FLAGS' in vcf_i.info:
+        infoItems = vcf_i.info.split(';')
+        for i, item_i in enumerate(infoItems):
+            if item_i.startswith('FLAGS'):
+                infoItems[i] = infoItems[i] + ',{}'.format(additional_flag)
+        newInfo = ';'.join(infoItems)
+    else:
+        newInfo = vcf_i.info + ';FLAGS={}'.format(additional_flag)
+    
+    item[7] = newInfo
+    line_i  = '\t'.join(item)
+    
     return line_i
+
 
 
 def addFlag(info_line):
@@ -104,12 +132,10 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
         spp_novo_line = spp_novo.readline().rstrip()
 
 
-
-
     # Copy the headlines, but add two additional lines
     while line_i.startswith('#'):
 
-        line_i = rename( line_i )
+        #line_i = rename( line_i )
         fout.write( line_i + '\n' )
         line_i = fin.readline().rstrip()
 
@@ -120,7 +146,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
 
     while line_i:
         
-        line_i = rename( line_i )
+        #line_i = rename( line_i )
         my_vcf = genome.Vcf_line( line_i )
         
         my_coordinates = [(my_vcf.chromosome, my_vcf.position)]
@@ -132,7 +158,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
         while my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
 
             line_i = fin.readline().rstrip()
-            line_i = rename( line_i )
+            #line_i = rename( line_i )
             my_vcf = genome.Vcf_line( line_i )
 
 
@@ -368,54 +394,68 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                 if ( ('Unclassified' in my_call.filters) or ('LowConf' in my_call.filters) or ('MedConf' in my_call.filters) ) and \
                 (tvaf <= 0.12 and nPASSES >= 15 and nREJECTS <= 10):
 
-                    if ( ('LowConf' in my_call.filters) or ('MedConf' in my_call.filters) ) and \
-                       nREJECTS == 0 and \
+                    if ( ('LowConf' in my_call.filters) or ('MedConf' in my_call.filters) ) and nREJECTS == 0 and \
                        ( nova_bwa_PASS + spp_bwa_PASS + nova_bowtie_PASS + spp_bowtie_PASS + nova_novo_PASS + spp_novo_PASS == 6 ) :
 
-                        vcf_items[6] = re.sub('MedConf|LowConf', 'HighConf', vcf_items[6])
-                        vcf_items[7] = addFlag(vcf_items[7])
-
+                        confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
+                        line_out    = relabel(line_i, 'HighConf', '{}_from_{}_by_300X'.format(confLabel_i, 'HighConf'))
+                        
                     ##########
                     # Promote to "WeakEvidence"
-                    if ( nova_bwa_PASS + spp_bwa_PASS + nova_bowtie_PASS + spp_bowtie_PASS + nova_novo_PASS + spp_novo_PASS >=4 ) and \
-                    ( nova_hasPASS and spp_hasPASS and bwa_hasPASS and bowtie_hasPASS and novo_hasPASS) and \
-                    not (nova_hasREJECT or nova_hasMissing or spp_hasREJECT or spp_hasMissing):
+                    elif ( nova_bwa_PASS + spp_bwa_PASS + nova_bowtie_PASS + spp_bowtie_PASS + nova_novo_PASS + spp_novo_PASS >=4 ) and \
+                         ( nova_hasPASS and spp_hasPASS and bwa_hasPASS and bowtie_hasPASS and novo_hasPASS) and \
+                         ( not (nova_hasREJECT or nova_hasMissing or spp_hasREJECT or spp_hasMissing) ):
+
+                        confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
                         
-                        vcf_items[6] = re.sub('Unclassified|LowConf', 'MedConf', vcf_items[6])
-                        vcf_items[7] = addFlag(vcf_items[7])
-                    
+                        if confLabel_i != 'MedConf':
+                            line_out = relabel(line_i, 'MedConf', '{}_from_{}_by_300X'.format(confLabel_i, 'MedConf'))
+
                     # Promote one ladder up if PASS by Burrows-Wheeler (bwa or bowtie) and NovoAlign
                     # "Missing" in 450X is worse than "missing" in 50X, so it's considered as "bad" as REJECT, i.e., two PASSES and one LowQual
                     elif ( nova_hasPASS and spp_hasPASS and bwa_hasPASS and bowtie_hasPASS and novo_hasPASS) and \
-                    not (nova_hasREJECT or nova_hasMissing or spp_hasREJECT or spp_hasMissing ):
+                         ( not (nova_hasREJECT or nova_hasMissing or spp_hasREJECT or spp_hasMissing) ):
+
+                        confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
                         
-                        vcf_items[6] = re.sub('Unclassified', 'LowConf', vcf_items[6])
-                        vcf_items[6] = re.sub('LowConf',      'MedConf', vcf_items[6])
-                        vcf_items[7] = addFlag(vcf_items[7])
-                        
+                        if confLabel_i == 'Unclassified':
+                            line_out = relabel(line_i, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
+                        elif confLabel_i == 'LowConf':
+                            line_out = relabel(line_i, 'MedConf', '{}_from_{}_by_300X'.format(confLabel_i, 'MedConf'))
+
                     elif nova_hasPASS and spp_hasPASS and bwa_hasPASS and bowtie_hasPASS and novo_hasPASS:
-                        
-                        vcf_items[6] = re.sub('Unclassified', 'LowConf', vcf_items[6])
-                        vcf_items[7] = addFlag(vcf_items[7])
-                        
+
+                        confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
+
+                        if confLabel_i == 'Unclassified':
+                            line_out = relabel(line_i, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
+
                     # Demotion
                     elif not (nova_hasPASS or spp_hasPASS) and (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing):
-                        
-                        vcf_items[6] = re.sub('MedConf', 'LowConf',     vcf_items[6])
-                        vcf_items[6] = re.sub('LowConf', 'Unclassified', vcf_items[6])
-                        vcf_items[7] = addFlag(vcf_items[7])
+
+                        confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
+
+                        if confLabel_i == 'MedConf':
+                            line_out = relabel(line_i, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
+                        elif confLabel_i == 'LowConf':
+                            line_out = relabel(line_i, 'Unclassified', '{}_from_{}_by_300X'.format(confLabel_i, 'Unclassified'))
+
 
                 elif 'LowConf' in my_call.filters  and tvaf >= 0.3:
                     
                     if (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing) and (bwa_REJECT or bwa_Missing) and (bowtie_REJECT or bowtie_Missing) and (novo_REJECT or novo_Missing) and not (nova_hasPASS or spp_hasPASS):
-                        
-                        vcf_items[6] = re.sub('LowConf', 'Unclassified', vcf_items[6])
-                        vcf_items[7] = addFlag(vcf_items[7])
-                    
-                # Write
-                line_out = '\t'.join(vcf_items)
-                fout.write( line_out + '\n' )
 
+                        confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
+
+                        if confLabel_i == 'LowConf':
+                            line_out = relabel(line_i, 'Unclassified', '{}_from_{}_by_300X'.format(confLabel_i, 'Unclassified'))
+
+
+                else:
+                    line_out = line_i
+
+                # Write
+                fout.write( line_out + '\n' )
 
 
     opened_files = (nova_bwa, nova_bowtie, nova_novo)
