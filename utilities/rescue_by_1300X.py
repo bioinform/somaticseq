@@ -342,7 +342,7 @@ for position_i in deepVariantDict:
                 line_out_i  = '{}\t{}\t.\t{}\t{}\t.\tLowConf'.format(position_i[0], position_i[1], variant_i[0], variant_i[1])
                 info_string = 'bwa_PASS=0,0,0,0,0;bowtie_PASS=0,0,0,0,0;novo_PASS=0,0,0,0,0;bwa_REJECT=.;bowtie_REJECT=.;novo_REJECT=.;bwaMQ0=.;bowtieMQ0=.;novoMQ0=.;MQ0=.;bwaTVAF={bwaTVAF};bowtieTVAF={bowtieTVAF};novoTVAF={novoTVAF};TVAF={TVAF};bwaNVAF=.;bowtieNVAF=.;novoNVAF=.;NVAF=.;nPASSES=0;nREJECTS=.;bwaDP={bwaVarDp},{bwaDp};bowtieDP={bowtieVarDp},{bowtieDp};novoDP={novoVarDp},{novoDp};FLAGS=Discovered_in_1300X'.format(bwaTVAF=bwaVaf, bowtieTVAF=bowtieVaf, novoTVAF=novoVaf, TVAF=tVaf, bwaVarDp=bwaVarDp, bwaDp=bwaDp, bowtieVarDp=bowtieVarDp, bowtieDp=bowtieDp, novoVarDp=novoVarDp, novoDp=novoDp)
                 
-                dummy_sample_strings = '\t'.join( ['./.']*21 )
+                dummy_sample_strings = '\t'.join( ['./.']*66 )
                 
                 print( line_out_i, info_string, 'GT:CD4:DP4:MQ0:MSDUKT:NUM_TOOLS:SCORE:VAF:altBQ:altMQ:altNM:fetCD:fetSB:refBQ:refMQ:refNM:zBQ:zMQ', dummy_sample_strings, sep='\t' )
                 i += 1
