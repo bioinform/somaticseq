@@ -207,7 +207,6 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                 tvaf      = float( my_call.get_info_value('TVAF') )
                 nPASSES   = int( my_call.get_info_value('nPASSES') )
                 nREJECTS  = int( my_call.get_info_value('nREJECTS') )
-                
 
                 bwaVDP,    bwaDP    = [ int(i) for i in my_call.get_info_value('bwaDP').split(',') ]
                 bowtieVDP, bowtieDP = [ int(i) for i in my_call.get_info_value('bowtieDP').split(',') ]
@@ -431,19 +430,19 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                             line_out = relabel(line_i, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
 
                     # Demotion
-                    elif not (nova_hasPASS or spp_hasPASS) and (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing):
+                    elif (not (nova_hasPASS or spp_hasPASS)) and (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing):
 
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
 
                         if confLabel_i == 'MedConf':
                             line_out = relabel(line_i, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
-                        elif confLabel_i == 'LowConf':
-                            line_out = relabel(line_i, 'Unclassified', '{}_from_{}_by_300X'.format(confLabel_i, 'Unclassified'))
+                        # elif confLabel_i == 'LowConf':
+                            # line_out = relabel(line_i, 'Unclassified', '{}_from_{}_by_300X'.format(confLabel_i, 'Unclassified'))
 
 
                 elif 'LowConf' in my_call.filters  and tvaf >= 0.3:
                     
-                    if (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing) and (bwa_REJECT or bwa_Missing) and (bowtie_REJECT or bowtie_Missing) and (novo_REJECT or novo_Missing) and not (nova_hasPASS or spp_hasPASS):
+                    if (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing) and (bwa_REJECT or bwa_Missing) and (bowtie_REJECT or bowtie_Missing) and (novo_REJECT or novo_Missing) and ( not (nova_hasPASS or spp_hasPASS) ):
 
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
 
