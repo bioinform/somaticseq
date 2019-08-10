@@ -438,6 +438,9 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                             line_out = relabel(line_i, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
                         # elif confLabel_i == 'LowConf':
                             # line_out = relabel(line_i, 'Unclassified', '{}_from_{}_by_300X'.format(confLabel_i, 'Unclassified'))
+                            
+                    else:
+                        line_out = line_i
 
 
                 elif 'LowConf' in my_call.filters  and tvaf >= 0.3:
