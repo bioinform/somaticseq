@@ -17,7 +17,6 @@ parser.add_argument('-infile',      '--infile',           type=str, help='VCF in
 args = parser.parse_args()
 
 infile = args.infile
-outfile = args.outfile 
 
 def p_of_2proportions(n1, n2, N):
     """
