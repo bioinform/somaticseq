@@ -397,7 +397,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                        ( nova_bwa_PASS + spp_bwa_PASS + nova_bowtie_PASS + spp_bowtie_PASS + nova_novo_PASS + spp_novo_PASS == 6 ) :
 
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
-                        line_out    = relabel(line_i, 'HighConf', '{}_from_{}_by_300X'.format(confLabel_i, 'HighConf'))
+                        line_out    = relabel(my_call.vcf_line, 'HighConf', '{}_from_{}_by_300X'.format(confLabel_i, 'HighConf'))
                         
                     ##########
                     # Promote to "WeakEvidence"
@@ -408,7 +408,9 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
                         
                         if confLabel_i != 'MedConf':
-                            line_out = relabel(line_i, 'MedConf', '{}_from_{}_by_300X'.format(confLabel_i, 'MedConf'))
+                            line_out = relabel(my_call.vcf_line, 'MedConf', '{}_from_{}_by_300X'.format(confLabel_i, 'MedConf'))
+                        else:
+                            line_out = my_call.vcf_line
 
                     # Promote one ladder up if PASS by Burrows-Wheeler (bwa or bowtie) and NovoAlign
                     # "Missing" in 450X is worse than "missing" in 50X, so it's considered as "bad" as REJECT, i.e., two PASSES and one LowQual
@@ -420,14 +422,18 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         if confLabel_i == 'Unclassified':
                             line_out = relabel(line_i, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
                         elif confLabel_i == 'LowConf':
-                            line_out = relabel(line_i, 'MedConf', '{}_from_{}_by_300X'.format(confLabel_i, 'MedConf'))
+                            line_out = relabel(my_call.vcf_line, 'MedConf', '{}_from_{}_by_300X'.format(confLabel_i, 'MedConf'))
+                        else:
+                            line_out = my_call.vcf_line
 
                     elif nova_hasPASS and spp_hasPASS and bwa_hasPASS and bowtie_hasPASS and novo_hasPASS:
 
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
 
                         if confLabel_i == 'Unclassified':
-                            line_out = relabel(line_i, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
+                            line_out = relabel(my_call.vcf_line, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
+                        else:
+                            line_out = my_call.vcf_line
 
                     # Demotion
                     elif (not (nova_hasPASS or spp_hasPASS)) and (nova_hasREJECT or nova_hasMissing) and (spp_hasREJECT or spp_hasMissing):
@@ -435,12 +441,14 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
 
                         if confLabel_i == 'MedConf':
-                            line_out = relabel(line_i, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
+                            line_out = relabel(my_call.vcf_line, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
                         # elif confLabel_i == 'LowConf':
                             # line_out = relabel(line_i, 'Unclassified', '{}_from_{}_by_300X'.format(confLabel_i, 'Unclassified'))
+                        else:
+                            line_out = my_call.vcf_line
                             
                     else:
-                        line_out = line_i
+                        line_out = my_call.vcf_line
 
 
                 elif 'LowConf' in my_call.filters  and tvaf >= 0.3:
@@ -450,11 +458,16 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
 
                         if confLabel_i == 'LowConf':
-                            line_out = relabel(line_i, 'Unclassified', '{}_from_{}_by_300X'.format(confLabel_i, 'Unclassified'))
+                            line_out = relabel(my_call.vcf_line, 'Unclassified', '{}_from_{}_by_300X'.format(confLabel_i, 'Unclassified'))
+                        else:
+                            line_out = my_call.vcf_line
+                            
+                    else:
+                        line_out = my_call.vcf_line
 
 
                 else:
-                    line_out = line_i
+                    line_out = my_call.vcf_line
 
                 # Write
                 fout.write( line_out + '\n' )
