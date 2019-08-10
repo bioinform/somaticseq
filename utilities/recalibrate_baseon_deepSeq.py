@@ -81,20 +81,6 @@ def relabel(vcf_line, newLabel, additional_flag):
 
 
 
-def addFlag(info_line):
-    
-    if 'FLAGS' in info_line:
-        infoItems = info_line.split(';')
-        for i, item_i in enumerate(infoItems):
-            if item_i.startswith('FLAGS'):
-                infoItems[i] = infoItems[i] + ',300xRelabeled'
-        newInfo = ';'.join(infoItems)
-    else:
-        newInfo = info_line + ';FLAGS=300xRelabeled'
-        
-    return newInfo
-
-
 with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
     
     line_i = fin.readline().rstrip()
