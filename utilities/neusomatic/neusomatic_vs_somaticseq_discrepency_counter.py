@@ -44,7 +44,7 @@ with genome.open_textfile(infile) as vin:
         
         vcf_i = genome.Vcf_line( line_i.rstrip() )
         
-        if not re.search('ArmLossInNormal|NonCallable|_by_300X', vcf_i.info):
+        if not re.search('ArmLossInNormal|NonCallable|_by_300X|DeeperSeqOnly', vcf_i.info):
             neuE = int(vcf_i.get_info_value('NeuSomaticE'))
             neuS = int(vcf_i.get_info_value('NeuSomaticE'))
             sSeq = int(vcf_i.get_info_value('nPASSES'))
@@ -53,5 +53,5 @@ with genome.open_textfile(infile) as vin:
             p_sSeq_neuE = p_of_2proportions(sSeq, neuE)
             p_sSeq_neuS = p_of_2proportions(sSeq, neuS)
 
-            if p_sSeq_neuE<0.05 and p_sSeq_neuS<0.05:
+            if (p_sSeq_neuE<0.01) and (p_sSeq_neuS<0.01):
                 print(vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase, vcf_i.filters, sSeq, neuE, neuS, nRej)
