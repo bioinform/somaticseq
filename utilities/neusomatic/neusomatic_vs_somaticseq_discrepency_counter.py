@@ -18,7 +18,7 @@ args = parser.parse_args()
 
 infile = args.infile
 
-def p_of_2proportions(n1, n2, N):
+def p_of_2proportions(n1, n2, N=63):
     """
     Calculate the 2-tailed p-value of the null hypothesis that, two propertions are not statistically different given sample sizes.
     """
