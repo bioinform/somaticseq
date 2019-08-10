@@ -48,7 +48,7 @@ with genome.open_textfile(infile) as vin:
             neuE = int(vcf_i.get_info_value('NeuSomaticE'))
             neuS = int(vcf_i.get_info_value('NeuSomaticE'))
             sSeq = int(vcf_i.get_info_value('nPASSES'))
-            nRej = int(vcf_i.get_info_value('nREJECTS'))
+            nRej = vcf_i.get_info_value('nREJECTS')
             
             p_sSeq_neuE = p_of_2proportions(sSeq, neuE)
             p_sSeq_neuS = p_of_2proportions(sSeq, neuS)
