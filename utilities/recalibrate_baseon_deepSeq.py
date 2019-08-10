@@ -397,7 +397,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                        ( nova_bwa_PASS + spp_bwa_PASS + nova_bowtie_PASS + spp_bowtie_PASS + nova_novo_PASS + spp_novo_PASS == 6 ) :
 
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
-                        line_out    = relabel(my_call.vcf_line, 'HighConf', '{}_from_{}_by_300X'.format(confLabel_i, 'HighConf'))
+                        line_out    = relabel(my_call.vcf_line, 'HighConf', '{}_to_{}_by_300X'.format(confLabel_i, 'HighConf'))
                         
                     ##########
                     # Promote to "WeakEvidence"
@@ -408,7 +408,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
                         
                         if confLabel_i != 'MedConf':
-                            line_out = relabel(my_call.vcf_line, 'MedConf', '{}_from_{}_by_300X'.format(confLabel_i, 'MedConf'))
+                            line_out = relabel(my_call.vcf_line, 'MedConf', '{}_to_{}_by_300X'.format(confLabel_i, 'MedConf'))
                         else:
                             line_out = my_call.vcf_line
 
@@ -420,9 +420,9 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
                         
                         if confLabel_i == 'Unclassified':
-                            line_out = relabel(line_i, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
+                            line_out = relabel(line_i, 'LowConf', '{}_to_{}_by_300X'.format(confLabel_i, 'LowConf'))
                         elif confLabel_i == 'LowConf':
-                            line_out = relabel(my_call.vcf_line, 'MedConf', '{}_from_{}_by_300X'.format(confLabel_i, 'MedConf'))
+                            line_out = relabel(my_call.vcf_line, 'MedConf', '{}_to_{}_by_300X'.format(confLabel_i, 'MedConf'))
                         else:
                             line_out = my_call.vcf_line
 
@@ -431,7 +431,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
 
                         if confLabel_i == 'Unclassified':
-                            line_out = relabel(my_call.vcf_line, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
+                            line_out = relabel(my_call.vcf_line, 'LowConf', '{}_to_{}_by_300X'.format(confLabel_i, 'LowConf'))
                         else:
                             line_out = my_call.vcf_line
 
@@ -441,9 +441,9 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
 
                         if confLabel_i == 'MedConf':
-                            line_out = relabel(my_call.vcf_line, 'LowConf', '{}_from_{}_by_300X'.format(confLabel_i, 'LowConf'))
+                            line_out = relabel(my_call.vcf_line, 'LowConf', '{}_to_{}_by_300X'.format(confLabel_i, 'LowConf'))
                         # elif confLabel_i == 'LowConf':
-                            # line_out = relabel(line_i, 'Unclassified', '{}_from_{}_by_300X'.format(confLabel_i, 'Unclassified'))
+                            # line_out = relabel(line_i, 'Unclassified', '{}_to_{}_by_300X'.format(confLabel_i, 'Unclassified'))
                         else:
                             line_out = my_call.vcf_line
                             
@@ -458,7 +458,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
                         confLabel_i = re.search(r'Unclassified|LowConf|MedConf', my_call.filters).group()
 
                         if confLabel_i == 'LowConf':
-                            line_out = relabel(my_call.vcf_line, 'Unclassified', '{}_from_{}_by_300X'.format(confLabel_i, 'Unclassified'))
+                            line_out = relabel(my_call.vcf_line, 'Unclassified', '{}_to_{}_by_300X'.format(confLabel_i, 'Unclassified'))
                         else:
                             line_out = my_call.vcf_line
                             
