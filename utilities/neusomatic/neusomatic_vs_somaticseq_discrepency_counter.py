@@ -39,19 +39,36 @@ with genome.open_textfile(infile) as vin:
     line_i = vin.readline()
     while line_i.startswith('#'):
         line_i = vin.readline()
-        
-    for line_i in vin:
-        
-        vcf_i = genome.Vcf_line( line_i.rstrip() )
-        
-        if not re.search('ArmLossInNormal|NonCallable|_by_300X|DeeperSeqOnly', vcf_i.info):
-            neuE = int(vcf_i.get_info_value('NeuSomaticE'))
-            neuS = int(vcf_i.get_info_value('NeuSomaticE'))
-            sSeq = int(vcf_i.get_info_value('nPASSES'))
-            nRej = vcf_i.get_info_value('nREJECTS')
-            
-            p_sSeq_neuE = p_of_2proportions(sSeq, neuE)
-            p_sSeq_neuS = p_of_2proportions(sSeq, neuS)
 
-            if (p_sSeq_neuE<0.01) and (p_sSeq_neuS<0.01):
-                print(vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase, vcf_i.filters, sSeq, neuE, neuS, nRej)
+    for line_i in vin:
+
+        vcf_i = genome.Vcf_line( line_i.rstrip() )
+
+        if not re.search('ArmLossInNormal|NonCallable|DeeperSeqOnly', vcf_i.info):
+            neuE = int(vcf_i.get_info_value('NeuSomaticE'))
+            neuS = int(vcf_i.get_info_value('NeuSomaticS'))
+            sSeq = int(vcf_i.get_info_value('nPASSES'))
+            
+            try:
+                nRej = int(vcf_i.get_info_value('nREJECTS'))
+            except TypeError:
+                nRej = math.nan
+
+            # Returns <0.5 if NeuSomatic PASSES < SomaticSeq PASSES
+            p_sSeq_neuE = stats.fisher_exact( ((sSeq, neuE), (63-sSeq, 63-neuE)) )[1]
+            p_sSeq_neuS = stats.fisher_exact( ((sSeq, neuS), (63-sSeq, 63-neuS)) )[1]
+
+            if ('HighConf' in vcf_i.filters)       and (p_sSeq_neuE<0.05 and p_sSeq_neuS<0.05) and (neuE<=31 and neuS<=31):
+                print(vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase, 'HighConf,mostDiscrepant', sSeq, neuE, neuS, nRej, sep='\t')
+
+            elif ('HighConf' in vcf_i.filters)     and (p_sSeq_neuS<0.05)                      and (neuS<=31) and (nRej>=4):
+                print(vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase, 'HighConf,lessDiscrepant', sSeq, neuE, neuS, nRej, sep='\t')
+            
+            elif ('MedConf' in vcf_i.filters)      and (p_sSeq_neuE<0.05 or  p_sSeq_neuS<0.05) and (neuE<=10 or neuS<=10):
+                print(vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase, 'MedConf,Discrepant', sSeq, neuE, neuS, nRej, sep='\t')
+
+            elif ('LowConf' in vcf_i.filters)      and (p_sSeq_neuE<0.05 or  p_sSeq_neuS<0.05) and (neuE>=32 and neuS>=32):
+                print(vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase, 'LowConf,Discrepant', sSeq, neuE, neuS, nRej, sep='\t')
+
+            elif ('Unclassified' in vcf_i.filters) and (p_sSeq_neuE<0.05 or  p_sSeq_neuS<0.05) and (neuE>=32 and neuS>=32):
+                print(vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase, 'Unclassified,Discrepant', sSeq, neuE, neuS, nRej, sep='\t')
