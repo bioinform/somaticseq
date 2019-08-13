@@ -31,7 +31,7 @@ len_long_del      = 12
 maxRejects        = args.maxREJECTS
 
 
-def relabel(vcf_line, newLabel):
+def relabel(vcf_line, newLabel, additionalString=''):
     
     vcf_i = genome.Vcf_line( vcf_line )
     item  = vcf_line.split('\t')
@@ -46,10 +46,10 @@ def relabel(vcf_line, newLabel):
         infoItems = vcf_i.info.split(';')
         for i, item_i in enumerate(infoItems):
             if item_i.startswith('FLAGS'):
-                infoItems[i] = infoItems[i] + ',relabeled_from_{}'.format(originalLabel)
+                infoItems[i] = infoItems[i] + ',{}Relabeled_{}_to_{}'.format(additionalString, originalLabel, newLabel)
         newInfo = ';'.join(infoItems)
     else:
-        newInfo = vcf_i.info + ';FLAGS=relabeled_from_{}'.format(originalLabel)
+        newInfo = vcf_i.info + ';FLAGS={}Relabeled_{}_to_{}'.format(additionalString, originalLabel, newLabel)
     
     item[7] = newInfo
     line_i  = '\t'.join(item)
@@ -61,8 +61,8 @@ def relabel(vcf_line, newLabel):
 mod = {}
 labelMods = pd.ExcelFile(modifiers)
 
-for sheet_i in ('HighConf SNV Neu<30 | NeuS<20', 'MedConf SNV Neu<=10',   'LowConf SNV >=30 calls',   'Unclassified SNV Neu>=30', \
-                'HighConf indel Neu<30',         'MedConf indel Neu<=10', 'LowConf indel >=30 calls', 'Unclassified indel Neu>=30'):
+for sheet_i in ('HighConf SNV',   'MedConf SNV',   'LowConf SNV',   'Unclassified SNV', \
+                'HighConf Indel', 'MedConf Indel', 'LowConf Indel', 'Unclassified Indel'):
 
     sheet = labelMods.parse(sheet_i)
 
@@ -90,7 +90,7 @@ with genome.open_textfile(originalFile) as original, open(outfile, 'w') as out:
         variant_i = vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase
 
         if variant_i in mod:
-            line_i = relabel(line_i, mod[variant_i])
+            line_i = relabel(line_i, mod[variant_i], 'Manually')
 
 
         elif re.search(r'Unclassified', vcf_i.filters) and \
