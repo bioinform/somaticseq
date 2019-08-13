@@ -64,7 +64,7 @@ with genome.open_textfile(infile) as vin:
             elif ('HighConf' in vcf_i.filters)     and (p_sSeq_neuS<0.05)                      and (neuS<=31) and (nRej>=4):
                 print(vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase, 'HighConf,lessDiscrepant', sSeq, neuE, neuS, nRej, sep='\t')
             
-            elif ('MedConf' in vcf_i.filters)      and (p_sSeq_neuE<0.05 or  p_sSeq_neuS<0.05) and (neuE<=10 or neuS<=10):
+            elif ('MedConf' in vcf_i.filters) and (((p_sSeq_neuE<0.05 or p_sSeq_neuS<0.05) and (neuE<=10 and neuS<=10)) or ((p_sSeq_neuE<0.05 and p_sSeq_neuS<0.05) and (neuE<=10 or neuS<=10))):
                 print(vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase, 'MedConf,Discrepant', sSeq, neuE, neuS, nRej, sep='\t')
 
             elif ('LowConf' in vcf_i.filters)      and (p_sSeq_neuE<0.05 or  p_sSeq_neuS<0.05) and (neuE>=32 and neuS>=32):
