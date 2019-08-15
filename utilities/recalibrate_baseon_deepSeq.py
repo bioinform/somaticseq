@@ -377,7 +377,7 @@ with genome.open_textfile(infile) as fin,  open(outfile, 'w') as fout:
 
                 
                 if re.search(r'MedConf|LowConf|Unclassified', my_call.filters) and \
-                ( (tvaf <= 0.15 or bwaVDP<=21 or bowtieVDP<=21 or novoVDP<=21) and nPASSES >= 15 and nREJECTS <= 10):
+                ( (tvaf <= 0.15 or bwaVDP<=42 or bowtieVDP<=42 or novoVDP<=42) and nPASSES >= 15 and nREJECTS < 10):
 
                     if ( ('LowConf' in my_call.filters) or ('MedConf' in my_call.filters) ) and nREJECTS == 0 and \
                        ( nova_bwa_PASS + spp_bwa_PASS + nova_bowtie_PASS + spp_bowtie_PASS + nova_novo_PASS + spp_novo_PASS == 6 ) :
