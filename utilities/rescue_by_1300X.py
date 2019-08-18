@@ -195,6 +195,7 @@ n_unexplainedRejects = 0
 n_notSameVariant     = 0
 n_Low2Med            = 0
 n_Un2Low             = 0
+n_Un2Med             = 0
 
 superSetPositions = set()
 with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
@@ -242,13 +243,8 @@ with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
         
             deepCall_i = confidentlyCalled(variant_i, deepVariantDict)
             
-            # Unclassified calls can be more aggressively moved into LowConf, because well, LowConf
-            if (deepCall_i >= 0.5) and ('Unclassified' in vcf_i.filters) and sameVariant(variant_i, deepVariantDict, vcf_i):
-                line_i = relabel( line_i.rstrip(), 'LowConf', 'Unclassified_to_LowConf_1300X' ) + '\n'
-                n_Un2Low += 1
-                
             # For LowConf calls to be promoted to MedConf using this data set, we want to make sure the Rejects/Missings are due to low variant count, and NOT due to other genomics or sequencing issues
-            elif (deepCall_i == 1) and ('LowConf' in vcf_i.filters) and sameVariant(variant_i, deepVariantDict, vcf_i):
+            if (deepCall_i == 1) and sameVariant(variant_i, deepVariantDict, vcf_i):
         
                 # No mapping issues, i.e. on average minority of samples have MQ0 reads
                 noMappingIssue = (int(vcf_i.get_info_value('bwaMQ0')) <= 21) and (int(vcf_i.get_info_value('novoMQ0')) <= 21) and (int(vcf_i.get_info_value('bowtieMQ0')) <= 21)
@@ -313,19 +309,27 @@ with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
                     # Set threshold what is acceptable to promote: a certain fraction of Not Called and REJECTED samples are due to low signal:
                     # Originally both 0.8
                     # 1) Try 0.5
-                    if (nRejectedSampleNoSignal + nMissingSampleNoSignal) >= 0.67*( len(rejectedSamples) +  len(missingSamples) ):
+                    if (nRejectedSampleNoSignal + nMissingSampleNoSignal) >= 0.67*(len(rejectedSamples) +  len(missingSamples)) and ('LowConf' in vcf_i.filters):
                         line_i = relabel( line_i.rstrip(), 'MedConf', 'LowConf_to_MedConf_1300X' ) + '\n'
                         n_Low2Med += 1
-                        
+
+                    elif (nRejectedSampleNoSignal + nMissingSampleNoSignal) >= int(0.8*(len(rejectedSamples) +  len(missingSamples))) and ('Unclassified' in vcf_i.filters): 
+                        line_i = relabel( line_i.rstrip(), 'Unclassified', 'Unclassified_to_MedConf_1300X' ) + '\n'
+                        n_Un2Med += 1
+
                     else:
                         n_unexplainedRejects += 1
                         line_i = relabel( line_i.rstrip(), 'LowConf', '1300X_unexplainedRejects' ) + '\n'
 
+            # Unclassified calls can be more aggressively moved into LowConf, because well, LowConf
+            elif (deepCall_i >= 0.5) and ('Unclassified' in vcf_i.filters) and sameVariant(variant_i, deepVariantDict, vcf_i):
+                line_i = relabel( line_i.rstrip(), 'LowConf', 'Unclassified_to_LowConf_1300X' ) + '\n'
+                n_Un2Low += 1
+
             elif (deepCall_i == 1) and ('LowConf' in vcf_i.filters) and (not sameVariant(variant_i, deepVariantDict, vcf_i)):
                 
                 n_notSameVariant += 1
-                print(variant_i[0], variant_i[1], variant_i[2], variant_i[3], file=sys.stderr)
-
+                #print(variant_i[0], variant_i[1], variant_i[2], variant_i[3], file=sys.stderr)
 
             # Remove the items that was used
             del deepVariantDict[position_i][ntChange_i]
@@ -375,4 +379,5 @@ print('Too many MQ0 reads:',      n_tooManyMQ0,         file=sys.stderr)
 print('Unexplained Rejects:',     n_unexplainedRejects, file=sys.stderr)
 print('Possibly wrong variant:',  n_notSameVariant,     file=sys.stderr)
 print('LowConf to MedConf:',      n_Low2Med,            file=sys.stderr)
+print('Unclassified to MedConf:', n_Un2Med,            file=sys.stderr)
 print('Unclassified to LowConf:', n_Un2Low,             file=sys.stderr)
