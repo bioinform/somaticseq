@@ -52,7 +52,7 @@ def confidentlyCalled(variant_id, deepVariantDict):
 
     if score_1 * score_2 * score_3 >= .7*.9*.9:
         return 1
-    elif score_1*score_2>=0.81 or score_1*score_3>=0.81 or score_2*score_3>=0.81:
+    elif sum( score_1>=0.7, score_2>=0.7, score_3>=7 ) >= 2:
         return 0.5
     else:
         return 0
