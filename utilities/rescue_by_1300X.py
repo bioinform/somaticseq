@@ -282,7 +282,7 @@ with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
                         dp4_i   = vcf_i.get_sample_value('DP4', i).split(',')
                         varDP_i = int(dp4_i[2]) + int(dp4_i[3])
                         DP_i    = varDP_i + int(dp4_i[0]) + int(dp4_i[1])
-                        if varDP_i < 3:
+                        if varDP_i <= 3:
                             varDP_MissingNoSignal.append(varDP_i)
                             DP_MissingNoSignal.append(DP_i)
                             index_nMissingSampleNoSignal.append(i)
@@ -309,7 +309,7 @@ with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
                     # Set threshold what is acceptable to promote: a certain fraction of Not Called and REJECTED samples are due to low signal:
                     # Originally both 0.8
                     # 1) Try 0.5
-                    if (nRejectedSampleNoSignal + nMissingSampleNoSignal) >= 0.67*(len(rejectedSamples) +  len(missingSamples)) and ('LowConf' in vcf_i.filters):
+                    if (nRejectedSampleNoSignal + nMissingSampleNoSignal) >= int(0.67*(len(rejectedSamples) +  len(missingSamples))) and ('LowConf' in vcf_i.filters):
                         line_i = relabel( line_i.rstrip(), 'MedConf', 'LowConf_to_MedConf_1300X' ) + '\n'
                         n_Low2Med += 1
 
@@ -379,5 +379,5 @@ print('Too many MQ0 reads:',      n_tooManyMQ0,         file=sys.stderr)
 print('Unexplained Rejects:',     n_unexplainedRejects, file=sys.stderr)
 print('Possibly wrong variant:',  n_notSameVariant,     file=sys.stderr)
 print('LowConf to MedConf:',      n_Low2Med,            file=sys.stderr)
-print('Unclassified to MedConf:', n_Un2Med,            file=sys.stderr)
+print('Unclassified to MedConf:', n_Un2Med,             file=sys.stderr)
 print('Unclassified to LowConf:', n_Un2Low,             file=sys.stderr)
