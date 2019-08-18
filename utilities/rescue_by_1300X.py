@@ -50,7 +50,7 @@ def confidentlyCalled(variant_id, deepVariantDict):
     except KeyError:
         score_3 = 0
 
-    if score_1 * score_2 * score_3 >= 0.9**3:
+    if score_1 * score_2 * score_3 >= .7*.9*.9:
         return 1
     elif score_1*score_2>=0.81 or score_1*score_3>=0.81 or score_2*score_3>=0.81:
         return 0.5
@@ -112,11 +112,11 @@ def sameVariant(variant_id, deepVariantDict, vcf_i):
     neuBowtieDP    = deepVariantDict[(variant_id[0], variant_id[1])][ (variant_id[2], variant_id[3]) ][2]['DP']
     neuBowtieVAF   = neuBowtieVarDP / neuBowtieDP
 
-    bwaTest = p_of_2proportions(bwaVAF, neuBwaVAF, bwaDP, neuBwaDP) >= 0.05
-    novoTest = p_of_2proportions(novoVAF, neuNovoVAF, novoDP, neuNovoDP) >= 0.05
-    bowtieTest = p_of_2proportions(bowtieVAF, neuBowtieVAF, bowtieDP, neuBowtieDP) >= 0.05
+    bwaTest = p_of_2proportions(bwaVAF, neuBwaVAF, bwaDP, neuBwaDP) >= 0.01
+    novoTest = p_of_2proportions(novoVAF, neuNovoVAF, novoDP, neuNovoDP) >= 0.01
+    bowtieTest = p_of_2proportions(bowtieVAF, neuBowtieVAF, bowtieDP, neuBowtieDP) >= 0.01
 
-    if sum( (bwaTest, novoTest, bowtieTest) ) >= 2:
+    if sum( (bwaTest, novoTest, bowtieTest) ) >= 1:
         return True
     else:
         return False
@@ -178,10 +178,7 @@ for i_th_file, file_i in enumerate(deeps):
                 
                 deepVariantDict[variant_position][nt_change] = {}
                 deepVariantDict[variant_position][nt_change]['isCallable'] = callableLoci.inRegion(variant_id[0], variant_id[1])
-                
-            #for i in range(i_th_file):
-            #    if i not in deepVariantDict[variant_position][nt_change]:
-            #        deepVariantDict[variant_position][nt_change][i] = {'SCORE': math.nan, 'VarDP': math.nan, 'DP': math.nan, 'VAF': math.nan, 'Classification': 'MISSING' }
+
 
             deepVariantDict[variant_position][nt_change][i_th_file] = {'SCORE': score_i, 'VarDP': vardp_i, 'DP': dp_i, 'VAF': vaf_i, 'Classification': vcf_i.filters}
 
@@ -192,6 +189,12 @@ for position_i in deepVariantDict:
                 deepVariantDict[position_i][variant_i][i] = {'SCORE': math.nan, 'VarDP': math.nan, 'DP': math.nan, 'VAF': math.nan, 'Classification': 'MISSING' }
 
 
+n_tooManyMQ0         = 0
+n_germlineSignal     = 0
+n_unexplainedRejects = 0
+n_notSameVariant     = 0
+n_Low2Med            = 0
+n_Un2Low             = 0
 
 superSetPositions = set()
 with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
@@ -241,15 +244,18 @@ with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
             
             # Unclassified calls can be more aggressively moved into LowConf, because well, LowConf
             if (deepCall_i >= 0.5) and ('Unclassified' in vcf_i.filters) and sameVariant(variant_i, deepVariantDict, vcf_i):
-
                 line_i = relabel( line_i.rstrip(), 'LowConf', 'Unclassified_to_LowConf_1300X' ) + '\n'
+                n_Un2Low += 1
                 
             # For LowConf calls to be promoted to MedConf using this data set, we want to make sure the Rejects/Missings are due to low variant count, and NOT due to other genomics or sequencing issues
-            if (deepCall_i == 1) and ('LowConf' in vcf_i.filters) and sameVariant(variant_i, deepVariantDict, vcf_i):
+            elif (deepCall_i == 1) and ('LowConf' in vcf_i.filters) and sameVariant(variant_i, deepVariantDict, vcf_i):
         
-                # No mapping issues
-                noMappingIssue = (int(vcf_i.get_info_value('bwaMQ0')) <= 1) and (int(vcf_i.get_info_value('novoMQ0')) <= 1) and (int(vcf_i.get_info_value('bowtieMQ0')) <= 1)
+                # No mapping issues, i.e. on average minority of samples have MQ0 reads
+                noMappingIssue = (int(vcf_i.get_info_value('bwaMQ0')) <= 21) and (int(vcf_i.get_info_value('novoMQ0')) <= 21) and (int(vcf_i.get_info_value('bowtieMQ0')) <= 21)
                 
+                if not noMappingIssue:
+                    n_tooManyMQ0 += 1
+                    
                 # No germline reads
                 bwaNormalDP4    = vcf_i.get_sample_value('DP4', bwa_normal_index).split(',')
                 novoNormalDP4   = vcf_i.get_sample_value('DP4', novo_normal_index).split(',')
@@ -261,8 +267,9 @@ with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
                 
                 # No germline signal
                 noGermlineSignal  = (bwaNormalVarDP<10) and (novoNormalVarDP<10) and (bowtieNormalVarDP<10)
-                
-                
+                if not noGermlineSignal:
+                    n_germlineSignal += 1
+                    
                 if noMappingIssue and noGermlineSignal:
                     
                     # Promotion is for low VAF calls, so this is to check Missing/REJECT calls are consistent with distribution of low VAF variants
@@ -303,9 +310,23 @@ with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
                             nRejectedSampleNoSignal += 1
                             index_nRejectedSampleNoSignal.append(i)
 
-                    if nRejectedSampleNoSignal >= int( len(rejectedSamples) * 0.8 ) and nMissingSampleNoSignal >= int( len(missingSamples) * 0.8 ):
+                    # Set threshold what is acceptable to promote: a certain fraction of Not Called and REJECTED samples are due to low signal:
+                    # Originally both 0.8
+                    # 1) Try 0.5
+                    if (nRejectedSampleNoSignal + nMissingSampleNoSignal) >= 0.67*( len(rejectedSamples) +  len(missingSamples) ):
                         line_i = relabel( line_i.rstrip(), 'MedConf', 'LowConf_to_MedConf_1300X' ) + '\n'
+                        n_Low2Med += 1
                         
+                    else:
+                        n_unexplainedRejects += 1
+                        line_i = relabel( line_i.rstrip(), 'LowConf', '1300X_unexplainedRejects' ) + '\n'
+
+            elif (deepCall_i == 1) and ('LowConf' in vcf_i.filters) and (not sameVariant(variant_i, deepVariantDict, vcf_i)):
+                
+                n_notSameVariant += 1
+                print(variant_i[0], variant_i[1], variant_i[2], variant_i[3], file=sys.stderr)
+
+
             # Remove the items that was used
             del deepVariantDict[position_i][ntChange_i]
             
@@ -346,3 +367,12 @@ for position_i in deepVariantDict:
                 
                 print( line_out_i, info_string, 'GT:CD4:DP4:MQ0:MSDUKT:NUM_TOOLS:SCORE:VAF:altBQ:altMQ:altNM:fetCD:fetSB:refBQ:refMQ:refNM:zBQ:zMQ', dummy_sample_strings, sep='\t' )
                 i += 1
+
+
+
+print('Has germline signal:',     n_germlineSignal,     file=sys.stderr)
+print('Too many MQ0 reads:',      n_tooManyMQ0,         file=sys.stderr)
+print('Unexplained Rejects:',     n_unexplainedRejects, file=sys.stderr)
+print('Possibly wrong variant:',  n_notSameVariant,     file=sys.stderr)
+print('LowConf to MedConf:',      n_Low2Med,            file=sys.stderr)
+print('Unclassified to LowConf:', n_Un2Low,             file=sys.stderr)
