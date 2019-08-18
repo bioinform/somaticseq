@@ -50,9 +50,9 @@ def confidentlyCalled(variant_id, deepVariantDict):
     except KeyError:
         score_3 = 0
 
-    if score_1 * score_2 * score_3 >= .7*.9*.9:
+    if score_1>=0.7 and score_2>=0.7 and score_3>=0.7 and (score_1 * score_2 * score_3 >= .7*.9*.9):
         return 1
-    elif sum( score_1>=0.7, score_2>=0.7, score_3>=7 ) >= 2:
+    elif sum( (score_1>=0.7, score_2>=0.7, score_3>=0.7) ) >= 2:
         return 0.5
     else:
         return 0
