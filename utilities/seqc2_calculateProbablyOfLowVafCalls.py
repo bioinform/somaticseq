@@ -6,24 +6,26 @@ from functools import reduce
 import argparse
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-vaf',     '--vafs',     type=float, nargs='*', help='VAF', default=0.05)
-parser.add_argument('-dp',      '--dp',      type=int, help='WGS depth', default=50)
-parser.add_argument('-deep1',   '--deep-dp1', type=int, help='combined WGS depth', default=300)
-parser.add_argument('-deep2',   '--deep-dp2', type=int, help='combined WGS depth', default=380)
-parser.add_argument('-varWgs',  '--variant-read-WGS', type=int, help='min reads in WGS to get a call', default=3)
-parser.add_argument('-varDeep', '--variant-read-Deep', type=int, help='min reads in combined WGS to get a call', default=3)
+parser.add_argument('-vaf',      '--vafs',      type=float, nargs='*', help='VAF', default=0.05)
+parser.add_argument('-dp',       '--dp',        type=int, help='WGS depth', default=50)
+parser.add_argument('-deep1',    '--deep-dp1',  type=int, help='combined WGS depth', default=300)
+parser.add_argument('-deep2',    '--deep-dp2',  type=int, help='combined WGS depth', default=380)
+parser.add_argument('-veryDeep', '--very-deep', type=int, help='combined WGS depth', default=1000)
+parser.add_argument('-varWgs',   '--variant-read-WGS', type=int, help='min reads in WGS to get a call', default=3)
+parser.add_argument('-varDeep',  '--variant-read-Deep', type=int, help='min reads in combined WGS to get a call',  default=5)
+parser.add_argument('-var1300X', '--variant-read-1300X', type=int, help='min reads in combined WGS to get a call', default=18)
 
 
 
-args     = parser.parse_args()
-vafs     = args.vafs
-dp       = args.dp
-deepCov1 = args.deep_dp1
-deepCov2 = args.deep_dp2
-vReads   = args.variant_read_WGS
-vDeep    = args.variant_read_Deep
-
-
+args      = parser.parse_args()
+vafs      = args.vafs
+dp        = args.dp
+deepCov1  = args.deep_dp1
+deepCov2  = args.deep_dp2
+veryDeep  = args.very_deep
+vReads    = args.variant_read_WGS
+vDeep     = args.variant_read_Deep
+vVeryDeep = args.variant_read_1300X
 
 
 # Function for "n Choose r"
@@ -46,7 +48,7 @@ for i in range(dp+1):
     P += nCr(dp,i) * ( vafs[0]**i * (1-vafs[0])**(dp-i) )
 
 
-print('VAF\tP(≥1/21)\tP(HighConfRightAway)\tP(Rescued)')
+print('VAF\tP(≥1/21)\tP(HighConfRightAway)\tP(Rescued)\tP(1000X)')
 for vaf in vafs:
     
     # P_notCalled is the probability that a replicate will have either 0, 1, or just 2 variant reads, i.e., not enough to confidently call a somatic mutation in a particular replicate
@@ -101,9 +103,14 @@ for vaf in vafs:
     (1-P_atLeast5outta9) * nCr(4,4) * (P_atLeast2outta3**4 * (1-P_atLeast2outta3)**0) + \
     (1-P_atLeast5outta9) * nCr(4,3) * (P_atLeast2outta3**3 * (1-P_atLeast2outta3)**1)
     
-    
-    
     P_gotTruth = P_HighConfDirectly + (1-P_HighConfDirectly)*P_Rescued
+
+    P_notCalled1300X = 0
+    for i in range(vVeryDeep):
+        P_notCalled1300X += nCr(veryDeep,i) * ( vaf**i * (1-vaf)**(veryDeep-i) )
     
-    print(vaf, P, P_HighConfDirectly, P_gotTruth, sep='\t')
+    P_called1300X = 1 - P_notCalled1300X
+
+
+    print(vaf, P, P_HighConfDirectly, P_gotTruth, P_called1300X, sep='\t')
     
