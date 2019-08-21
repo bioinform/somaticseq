@@ -309,11 +309,11 @@ with genome.open_textfile(goldset) as gold, open(outfile, 'w') as out:
                     # Set threshold what is acceptable to promote: a certain fraction of Not Called and REJECTED samples are due to low signal:
                     # Originally both 0.8
                     # 1) Try 0.5
-                    if (nRejectedSampleNoSignal + nMissingSampleNoSignal) >= int(0.67*(len(rejectedSamples) + len(missingSamples))) and ('LowConf' in vcf_i.filters):
+                    if (nRejectedSampleNoSignal + nMissingSampleNoSignal) >= int(0.75*(len(rejectedSamples) + len(missingSamples))) and ('LowConf' in vcf_i.filters):
                         line_i = relabel( line_i.rstrip(), 'MedConf', 'LowConf_to_MedConf_1300X' ) + '\n'
                         n_Low2Med += 1
 
-                    elif (nRejectedSampleNoSignal + nMissingSampleNoSignal) >= int(0.67*(len(rejectedSamples) + len(missingSamples))) and ('Unclassified' in vcf_i.filters): 
+                    elif (nRejectedSampleNoSignal + nMissingSampleNoSignal) >= int(0.75*(len(rejectedSamples) + len(missingSamples))) and ('Unclassified' in vcf_i.filters): 
                         line_i = relabel( line_i.rstrip(), 'Unclassified', 'Unclassified_to_MedConf_1300X' ) + '\n'
                         n_Un2Med += 1
 
