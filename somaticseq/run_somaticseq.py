@@ -20,14 +20,20 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
 
-adaTrainer   = os.sep.join( (PRE_DIR, 'r_scripts', 'ada_model_builder_ntChange.R') )
-adaPredictor = os.sep.join( (PRE_DIR, 'r_scripts', 'ada_model_predictor.R') )
+def modelTrainer(algo):
+    return os.sep.join( (PRE_DIR, 'r_scripts', '{}_model_builder_ntChange.R'.format(algo)) )
+    
+def modelPredictor(algo):
+    return os.sep.join( (PRE_DIR, 'r_scripts', '{}_model_predictor.R'.format(algo)) )
 
 
-def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False):
+def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False):
 
     import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
+
+    modelTrainer   = os.sep.join( (PRE_DIR, 'r_scripts', '{}_model_builder_ntChange.R'.format(algo)) )
+    modelPredictor = os.sep.join( (PRE_DIR, 'r_scripts', '{}_model_predictor.R'.format(algo)) )
 
     files_to_delete = set()
 
@@ -77,7 +83,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         classifiedSnvTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.tsv' ))
         classifiedSnvVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.vcf' ))
 
-        subprocess.call( (adaPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
+        subprocess.call( (modelPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
 
         tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True)
 
@@ -85,7 +91,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
-            subprocess.call( (adaTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
+            subprocess.call( (modelTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
 
         consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
         tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
@@ -103,14 +109,14 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         classifiedIndelTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.tsv' ))
         classifiedIndelVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.vcf' ))
 
-        subprocess.call( (adaPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
+        subprocess.call( (modelPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
 
         tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True)
 
     else:
         # Train INDEL classifier:
         if somaticseq_train and truth_indel:
-            subprocess.call( (adaTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
+            subprocess.call( (modelTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
 
         consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))
         tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
@@ -127,10 +133,13 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
 
 
-def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False):
+def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False):
 
     import somaticseq.single_sample_vcf2tsv as single_sample_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
+
+    modelTrainer   = os.sep.join( (PRE_DIR, 'r_scripts', '{}_model_builder_ntChange.R'.format(algo)) )
+    modelPredictor = os.sep.join( (PRE_DIR, 'r_scripts', '{}_model_predictor.R'.format(algo)) )
 
     files_to_delete = set()
 
@@ -173,7 +182,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         classifiedSnvTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.tsv' ))
         classifiedSnvVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.vcf' ))
 
-        subprocess.call( (adaPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
+        subprocess.call( (modelPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
 
         tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True, phred_scaled=True)
 
@@ -181,7 +190,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
-            subprocess.call( (adaTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
+            subprocess.call( (modelTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
 
         consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
         tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
@@ -197,14 +206,14 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         classifiedIndelTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.tsv' ))
         classifiedIndelVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.vcf' ))
 
-        subprocess.call( (adaPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
+        subprocess.call( (modelPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
 
         tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True, phred_scaled=True)
 
     else:
         # Train INDEL classifier:
         if somaticseq_train and truth_indel:
-            subprocess.call( (adaTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
+            subprocess.call( (modelTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
 
         consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))
         tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
@@ -237,8 +246,10 @@ def run():
     parser.add_argument('--classifier-indel',  type=str, help='RData for INDEL')
     parser.add_argument('--pass-threshold',    type=float, help='SCORE for PASS', default=0.5)
     parser.add_argument('--lowqual-threshold', type=float, help='SCORE for LowQual', default=0.1)
-    parser.add_argument('-hom', '--homozygous-threshold', type=float, help='VAF for homozygous', default=0.85)
-    parser.add_argument('-het', '--heterozygous-threshold', type=float, help='VAF for heterozygous', default=0.01)
+
+    parser.add_argument('-algo', '--algorithm', type=str, help='ada or xgboost', default='ada')
+    parser.add_argument('-hom',  '--homozygous-threshold', type=float, help='VAF for homozygous', default=0.85)
+    parser.add_argument('-het',  '--heterozygous-threshold', type=float, help='VAF for heterozygous', default=0.01)
 
     parser.add_argument('-minMQ',     '--minimum-mapping-quality',type=float, help='Minimum mapping quality below which is considered poor', default=1)
     parser.add_argument('-minBQ',     '--minimum-base-quality',   type=float, help='Minimum base quality below which is considered poor', default=5)
@@ -357,6 +368,7 @@ if __name__ == '__main__':
                    strelka_indel      = runParameters['strelka_indel'], \
                    tnscope            = runParameters['tnscope_vcf'], \
                    platypus           = runParameters['platypus_vcf'], \
+                   algo               = runParameters['algorithm'], \
                    somaticseq_train   = runParameters['somaticseq_train'], \
                    keep_intermediates = runParameters['keep_intermediates'] )
 
@@ -388,5 +400,6 @@ if __name__ == '__main__':
                    lofreq             = runParameters['lofreq_vcf'], \
                    scalpel            = runParameters['scalpel_vcf'], \
                    strelka            = runParameters['strelka_vcf'], \
+                   algo               = runParameters['algorithm'], \
                    somaticseq_train   = runParameters['somaticseq_train'], \
                    keep_intermediates = runParameters['keep_intermediates'] )
