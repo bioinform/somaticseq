@@ -317,7 +317,7 @@ def run():
 
     logger.info( 'SomaticSeq Input Arguments: ' + ', '.join( [ '{}={}'.format(i, inputParameters[i])  for i in inputParameters ] ) )
 
-    inputParameters['algorithms'] in ('ada', 'xgboost')
+    inputParameters['algorithm'] in ('ada', 'xgboost')
 
     return inputParameters
 
