@@ -27,6 +27,8 @@ somaticseq_parallel.py \
 --genome-reference  GRCh38.fa \
 --inclusion-region  genome.bed \
 --exclusion-region  blacklist.bed \
+--algorithm         ada \
+--threads           24 \
 paired \
 --tumor-bam-file    tumor.bam \
 --normal-bam-file   matched_normal.bam \
@@ -45,12 +47,12 @@ paired \
 ```
 
 * `--inclusion-region` or `--exclusion-region` will require BEDTools in your path.
+* `--algorithm` will default to ada (adaptive boosting), but can also be xgboost (extreme gradient boosting). We have incorporated XGBoost recently. It can be orders of magnitude faster than AdaBoost, but we have not benchmarked it as comprehensively.
 * To split the job into multiple threads, place `--threads X` before the `paired` option to indicate X threads. It simply creates multiple BED file (each consisting of 1/X of total base pairs) for SomaticSeq to run on each of those sub-BED files in parallel. It then merges the results. This requires `bedtools` in your path.
 * For all input VCF files, either .vcf or .vcf.gz are acceptable.
 
 Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two additional files (classifiers) will be created, i.e., *Ensemble.sSNV.tsv.ntChange.Classifier.RData* and *Ensemble.sINDEL.tsv.ntChange.Classifier.RData*.
 * `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires the following inputs, R and ada package in R.
-* `--algorithm`:        Either ada (adaptive boosting) or xgboost (extreme gradient boosting). Default is ada. We have found XGBoost to be orders of magnitude faster than AdaBoost, but have not benchmarked it as comprehensively.
 * `--truth-snv`:        if you have ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL
 
