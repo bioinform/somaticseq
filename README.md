@@ -7,7 +7,7 @@
 
 ## Requirements
 * Python 3, plus pysam, numpy, and scipy libraries.
-* R, plus [ada](https://cran.r-project.org/package=ada) library: required in training or prediction mode
+* R, plus [ada](https://cran.r-project.org/package=ada) library or [xgboost](https://cran.r-project.org/package=xgboost): required in training or prediction mode. XGBoost also requires the [caret](https://cran.r-project.org/package=xgboost) package. 
 * [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing in invoked, and/or when any bed files are used as input files
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
 * At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus.
@@ -50,6 +50,7 @@ paired \
 
 Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two additional files (classifiers) will be created, i.e., *Ensemble.sSNV.tsv.ntChange.Classifier.RData* and *Ensemble.sINDEL.tsv.ntChange.Classifier.RData*.
 * `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires the following inputs, R and ada package in R.
+* `--algorithm`:        Either ada (adaptive boosting) or xgboost (extreme gradient boosting). Default is ada. We have found XGBoost to be orders of magnitude faster than AdaBoost, but have not benchmarked it as comprehensively.
 * `--truth-snv`:        if you have ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL
 

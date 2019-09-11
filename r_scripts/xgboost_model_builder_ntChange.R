@@ -5,7 +5,7 @@ library(Matrix)
 library(caret)
 library(data.table)
 
-sessionInfo()
+#sessionInfo()
 
 args <- commandArgs(TRUE)
 
@@ -62,28 +62,30 @@ train_label <- train_data[, "TrueVariant_or_False"]
 train_data  <- train_data[, names(train_data) != "TrueVariant_or_False"]
 
 train_label <- lapply(train_label, as.numeric)
+train_data  <- sapply(train_data, as.numeric)
 
-train_data <- sapply(train_data, as.numeric)
-
-print(dim(train_label))
-print(dim(train_data))
+#print(dim(train_label))
+#print(dim(train_data))
 
 train_data.matrix <- as.matrix(train_data)
-print(dim(train_data.matrix))
+#print(dim(train_data.matrix))
+
 
 # Set deterministic seed for reproducibility on variable removal test
-boosting_iters=500
-seed_value=25519
-set.seed(seed_value)
+boosting_iters = 500
+seed_value     = floor(runif(1, min=100, max=10000))
 
-bst <- xgboost(data = train_data.matrix, label = train_label, nround=boosting_iters, objective="binary:logistic")
+print( paste("Seed =", seed_value) )
+
+
+set.seed(seed_value)
+bst <- xgboost(data = train_data.matrix, label = train_label, nround=boosting_iters, objective="binary:logistic", verbose=0)
 class(bst)
 
 saveFilename = paste(training_data_filename, ".xgboost.Classifier.RData", sep="")
 xgb.save(bst, fname=saveFilename)
-xgb_bst <- xgb.load(paste(saveFilename))
 
-print("Most important features (look at column Gain):")
-imp_matrix<- xgb.importance(model=bst)
-
-print(head(imp_matrix))
+#xgb_bst <- xgb.load(paste(saveFilename))
+#print("Most important features (look at column Gain):")
+#imp_matrix<- xgb.importance(model=bst)
+#print(head(imp_matrix))
