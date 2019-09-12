@@ -72,6 +72,7 @@ def run():
     parser_paired.add_argument('--strelka-config-arguments',     type=str, help='extra parameters for Strelka2 config',           default='')
     parser_paired.add_argument('--strelka-run-arguments',        type=str, help='extra parameters for Strelka2 run',              default='')
     parser_paired.add_argument('--somaticseq-arguments',         type=str, help='extra parameters for SomaticSeq',                default='')
+    parser_paired.add_argument('--somaticseq-algorithm',         type=str, help='either ada or xgboost',                       default='ada')
     
     parser_paired.add_argument('--scalpel-two-pass',         action='store_true', help='Invokes two-pass setting in scalpel')
     parser_paired.add_argument('-exome', '--exome-setting',  action='store_true', help='Invokes exome setting in Strelka2 and MuSE')
@@ -122,6 +123,7 @@ def run():
     parser_single.add_argument('--strelka-config-arguments',     type=str, help='extra parameters for Strelka2 config',           default='')
     parser_single.add_argument('--strelka-run-arguments',        type=str, help='extra parameters for Strelka2 run',              default='')
     parser_single.add_argument('--somaticseq-arguments',         type=str, help='extra parameters for SomaticSeq',                default='')
+    parser_single.add_argument('--somaticseq-algorithm',         type=str, help='either ada or xgboost',                       default='ada')
     
     parser_single.add_argument('-exome', '--exome-setting',  action='store_true', help='Invokes exome setting in Strelka2 and MuSE')
 

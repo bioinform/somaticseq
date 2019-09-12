@@ -85,7 +85,7 @@ The manuscript, An ensemble approach to accurately detect somatic mutations usin
 The SomaticSeq project is located at \href{https://github.com/bioinform/somaticseq}{\textit{https://github.com/bioinform/somaticseq}}. 
 There have been some major improvements in SomaticSeq since that Genome Biology publication in 2015. 
 
-The script  somaticseq\_parallel.py can 1) train the call set into a classifier, 2) predict high-confidence somatic mutations from the call set based on a pre-defined classifier, or 3) default to consensus mode, i.e., extract sequencing features and output the TSV and VCF files, and then label the calls (i.e., PASS, LowQual, or REJECT) based on majority vote of the tools.
+The script somaticseq\_parallel.py can 1) train the call set into a classifier, 2) predict high-confidence somatic mutations from the call set based on a pre-defined classifier, or 3) default to consensus mode, i.e., extract sequencing features and output the TSV and VCF files, and then label the calls (i.e., PASS, LowQual, or REJECT) based on majority vote of the tools.
 
 
 
@@ -100,7 +100,7 @@ The script  somaticseq\_parallel.py can 1) train the call set into a classifier,
     SomaticSeq also uses \emph{BEDTools} \cite{bedtools} to manipulate bed file inputs, i.e., regions to include and/or exclude in the workflow. 
 
     \item
-    \emph{R} and \emph{ada} library were implemented as the machine learning algorithm. 
+    \emph{R}, as well as \emph{ada}, \emph{xgboost}, and \emph{caret} libraries. 
 
     \item
     At its core, SomaticSeq combines and then filters the results of multiple somatic mutation detection algorithms based on many sequencing features. Generally speaking, at least one compatible caller needs to be run to generate a list of mutation candidates for SomaticSeq to evaluate. It is compatible with the following callers: the original MuTect/Indelocator as well as GATK4's Mutect2 \cite{mutect}, VarScan2 \cite{varscan2}, JointSNVMix2 \cite{jointsnvmix2}, SomaticSniper \cite{somaticsniper}, VarDict \cite{vardict}, MuSE \cite{muse}, LoFreq \cite{lofreq}, Scalpel \cite{scalpel}, Strelka2 \cite{strelka2}, TNscope \cite{tnscope}, and Platypus \cite{platypus}.  
@@ -187,22 +187,23 @@ All the VCF files from individual callers are optional, but you need at least on
 
 \begin{lstlisting}
 somaticseq_parallel.py \
---output-directory  OUTPUT_DIR \
---genome-reference  GRCh38.fa \
---inclusion-region  genome.bed \
---exclusion-region  blacklist.bed \
---truth-snv         truePositives.snv.vcf \
---truth-indel       truePositives.indel.vcf \
---threads           28 \
---somaticseq-train  \
-paired              \
---tumor-bam-file    tumor.bam \
---normal-bam-file   matched_normal.bam \
---mutect2-vcf       MuTect2.vcf \
---vardict-vcf       VarDict.vcf \
---muse-vcf          MuSE.vcf \
---strelka-snv       Strelka/results/variants/somatic.snvs.vcf.gz \
---strelka-indel     Strelka/results/variants/somatic.indels.vcf.gz
+--output-directory     OUTPUT_DIR \
+--genome-reference     GRCh38.fa \
+--inclusion-region     genome.bed \
+--exclusion-region     blacklist.bed \
+--truth-snv            truePositives.snv.vcf \
+--truth-indel          truePositives.indel.vcf \
+--threads              28 \
+--somaticseq-algorithm ada \
+--somaticseq-train     \
+paired                 \
+--tumor-bam-file       tumor.bam \
+--normal-bam-file      matched_normal.bam \
+--mutect2-vcf          MuTect2.vcf \
+--vardict-vcf          VarDict.vcf \
+--muse-vcf             MuSE.vcf \
+--strelka-snv          Strelka/results/variants/somatic.snvs.vcf.gz \
+--strelka-indel        Strelka/results/variants/somatic.indels.vcf.gz
 \end{lstlisting}
 
 
@@ -222,21 +223,22 @@ Make sure the classifiers (.RData files) are supplied, Without either of them, o
 \begin{lstlisting}
 # The *.RData files are trained classifier from the training mode.
 somaticseq_parallel.py \
---classifier-snv    Ensemble.sSNV.tsv.ntChange.Classifier.RData \
---classifier-indel  Ensemble.sINDEL.tsv.ntChange.Classifier.RData \
---output-directory  OUTPUT_DIR \
---genome-reference  GRCh38.fa \
---inclusion-region  genome.bed \
---exclusion-region  blacklist.bed \
---threads           12 \
-paired              \
---tumor-bam-file    tumor.bam \
---normal-bam-file   matched_normal.bam \
---mutect2-vcf       MuTect2/variants.vcf \
---vardict-vcf       VarDict/variants.vcf \
---muse-vcf          MuSE/variants.snp.vcf \
---strelka-snv       Strelka/variants.snv.vcf \
---strelka-indel     Strelka/variants.indel.vcf
+--classifier-snv       Ensemble.sSNV.tsv.ntChange.Classifier.RData \
+--classifier-indel     Ensemble.sINDEL.tsv.ntChange.Classifier.RData \
+--output-directory     OUTPUT_DIR \
+--genome-reference     GRCh38.fa \
+--inclusion-region     genome.bed \
+--exclusion-region     blacklist.bed \
+--somaticseq-algorithm ada \
+--threads              12 \
+paired                 \
+--tumor-bam-file       tumor.bam \
+--normal-bam-file      matched_normal.bam \
+--mutect2-vcf          MuTect2/variants.vcf \
+--vardict-vcf          VarDict/variants.vcf \
+--muse-vcf             MuSE/variants.snp.vcf \
+--strelka-snv          Strelka/variants.snv.vcf \
+--strelka-indel        Strelka/variants.indel.vcf
 \end{lstlisting}
 
 
@@ -288,7 +290,7 @@ The core module for SomaticSeq is \emph{somaticseq/run\_somaticseq.py}. It conve
   # Module is located somaticseq/somaticseq/run_somaticseq.py
   import somaticseq.somaticseq.run_somaticseq as run_somaticseq
   
-  run_somaticseq.runPaired(outdir='/PATH/TO/SomaticSeq', ref='/PATH/TO/GRCh38.fa', tbam='/PATH/TO/tumor.bwa.bam', nbam='/PATH/TO/normal.bwa.bam', tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', cosmic='/PATH/TO/COSMIC.v85.vcf', inclusion='/PATH/TO/Exon_Capture.bed', exclusion='/PATH/TO/ignore.bed', mutect=None, indelocator=None, mutect2='/PATH/TO/MuTect2.vcf', varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict='/PATH/TO/VarDict.vcf', muse='/PATH/TO/MuSE.vcf', lofreq_snv='/PATH/TO/LoFreq.snv.vcf.gz', lofreq_indel='/PATH/TO/LoFreq.indel.vcf.gz', scalpel=None, strelka_snv='/PATH/TO/Strelka/results/variants/somatic_ssnv.vcf.gz', strelka_indel='/PATH/TO/Strelka/results/variants/somatic_sindel.vcf.gz', tnscope=None, platypus=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False)
+  run_somaticseq.runPaired(outdir='/PATH/TO/SomaticSeq', ref='/PATH/TO/GRCh38.fa', tbam='/PATH/TO/tumor.bwa.bam', nbam='/PATH/TO/normal.bwa.bam', tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', cosmic='/PATH/TO/COSMIC.v85.vcf', inclusion='/PATH/TO/Exon_Capture.bed', exclusion='/PATH/TO/ignore.bed', mutect=None, indelocator=None, mutect2='/PATH/TO/MuTect2.vcf', varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict='/PATH/TO/VarDict.vcf', muse='/PATH/TO/MuSE.vcf', lofreq_snv='/PATH/TO/LoFreq.snv.vcf.gz', lofreq_indel='/PATH/TO/LoFreq.indel.vcf.gz', scalpel=None, strelka_snv='/PATH/TO/Strelka/results/variants/somatic_ssnv.vcf.gz', strelka_indel='/PATH/TO/Strelka/results/variants/somatic_sindel.vcf.gz', tnscope=None, platypus=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False)
 \end{lstlisting}
 
 The parameters of \emph{ensembleOutPrefix}, \emph{consensusOutPrefix}, and \emph{classifiedOutPrefix} will dictate the output file names under outdir.
@@ -307,7 +309,7 @@ Likewise, the single sample mode to convert various individual VCF outputs would
 \begin{lstlisting}
   import somaticseq.somaticseq.run_somaticseq as run_somaticseq
   
-  run_somaticseq.runSingle(outdir='/PATH/TO/SomaticSeq', ref='/PATH/TO/GRCh38.fa', bam='/PATH/TO/tumor.bwa.bam', tumor_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', cosmic='/PATH/TO/COSMIC.v85.vcf', inclusion='/PATH/TO/Exon_Capture.bed', exclusion='/PATH/TO/ignore.bed', mutect=None, mutect2='/PATH/TO/MuTect2.vcf', varscan=None, vardict='/PATH/TO/VarDict.vcf', lofreq='/PATH/TO/LoFreq.vcf', scalpel=None, strelka='/PATH/TO/Strelka.vcf', min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', keep_intermediates=False)
+  run_somaticseq.runSingle(outdir='/PATH/TO/SomaticSeq', ref='/PATH/TO/GRCh38.fa', bam='/PATH/TO/tumor.bwa.bam', tumor_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp='/PATH/TO/dbSNP_138.hg38.vcf.vcf', cosmic='/PATH/TO/COSMIC.v85.vcf', inclusion='/PATH/TO/Exon_Capture.bed', exclusion='/PATH/TO/ignore.bed', mutect=None, mutect2='/PATH/TO/MuTect2.vcf', varscan=None, vardict='/PATH/TO/VarDict.vcf', lofreq='/PATH/TO/LoFreq.vcf', scalpel=None, strelka='/PATH/TO/Strelka.vcf', min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False)
 \end{lstlisting}
 
 
@@ -420,7 +422,7 @@ The training and prediction scripts are written in R.
 
 \subsubsection{Training with ada} \label{module:r_train}
 
-r\_scripts/ada\_model\_builder\_ntChange.R is the script that is called during SomaticSeq pipeline to make classifiers. You can also run them indepedently with labeled Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv files. The command is:
+r\_scripts/ada\_model\_builder\_ntChange.R or r\_scripts/xgboost\_model\_builder\_ntChange.R is the script that is called during SomaticSeq pipeline to make classifiers. You can also run them indepedently with labeled Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv files. The command is:
 
 \begin{lstlisting}
 # Training:
@@ -433,7 +435,7 @@ r_scripts/ada_model_builder_ntChange.R Ensemble.sINDEL.tsv Strelka_QSS Strelka_T
 
 \subsubsection{Prediction with trained ada model} \label{module:r_predict}
 
-r\_scripts/ada\_model\_predictor.R is the prediction script. To run it independently, the command is
+r\_scripts/ada\_model\_predictor.R or r\_scripts/xgboost\_model\_predictor.R.R is the prediction script. To run it independently, the command is
       
 \begin{lstlisting}
 # Mutation prediction:
@@ -633,6 +635,7 @@ single                        Invokes tumor-only modes. Placed immediately after
 --strelka-config-arguments    (Extra parameters to pass onto Strelka's config command)
 --strelka-run-arguments       (Extra parameters to pass onto Strekla's run command)
 --somaticseq-arguments        (Extra parameters to pass onto SomaticSeq.Wrapper.sh)
+--somaticseq-algorithm        Default is ada, but you may also use xgboost.
 \end{lstlisting}
 
 
@@ -1388,7 +1391,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
          
          \item
          Fixed setup.py, even though running \textit{./setup.py install} is optional. You can still (always) run scripts from where you downloaded SomaticSeq. 
-                  
+ 
         \end{itemize}
 
 
@@ -1401,10 +1404,12 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 		\end{itemize}
 
 
-	\item Version 3.2.2
+	\item Version 3.3.0
 	
 		\begin{itemize}
-		
+
+			\item Added support for xgboost (extreme gradient boosting) as an optional substitute for ada (adaptive boosting).
+					
 			\item Also fixed the TA2CG feature in ada\_model\_predictor.R
 			
 			\item Modified utilities/dockered\_pipelines/create\_tumor\_normal\_run\_scripts.py and utilities/dockered\_pipelines/create\_tumor\_only\_run\_scripts.py to pre-process bed file for VarDict (i.e., limit each line of bed file to 5000 bp) no matter what. Originally the process is triggered if average bp per line was greater than 50,000 bp. That assumption broke down in multi-threaded tasks, when the final sub bed file contained many decoy or non-human contigs that drove the average bp/line in a bed file below 50,000 bp, and the resulting job caused VarDict to run out of memory. This is to rectify that issue.

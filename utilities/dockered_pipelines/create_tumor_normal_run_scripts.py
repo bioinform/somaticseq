@@ -70,6 +70,7 @@ def run():
     parser.add_argument('--strelka-config-arguments',     type=str, help='extra parameters for Strelka2 config',           default='')
     parser.add_argument('--strelka-run-arguments',        type=str, help='extra parameters for Strelka2 run',              default='')
     parser.add_argument('--somaticseq-arguments',         type=str, help='extra parameters for SomaticSeq',                default='')
+    parser.add_argument('--somaticseq-algorithm',         type=str, help='either ada or xgboost',                       default='ada')
     
     parser.add_argument('--scalpel-two-pass',         action='store_true', help='Invokes two-pass setting in scalpel')
     parser.add_argument('-exome', '--exome-setting',  action='store_true', help='Invokes exome setting in Strelka2 and MuSE')
@@ -636,7 +637,7 @@ def run_SomaticSeq(input_parameters, mem=16):
         out.write( '/opt/somaticseq/somaticseq/run_somaticseq.py \\\n' )
 
         if input_parameters['train_somaticseq'] and input_parameters['threads'] == 1:
-            out.write( '--somaticseq-train \\\n' )
+            out.write( '--somaticseq-train --algorithm {}\\\n'.format(input_parameters['somaticseq_algorithm']) )
 
         out.write( '--output-directory /mnt/{OUTDIR} \\\n'.format(OUTDIR=outdir) )
         out.write( '--genome-reference /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
@@ -876,11 +877,11 @@ def merge_results(input_parameters, mem=2):
             # If asked to create classifier, do it here when TSV files are combined
             if input_parameters['train_somaticseq'] and input_parameters['truth_snv']:
                 out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-                out.write( '/opt/somaticseq/r_scripts/ada_model_builder_ntChange.R /mnt/{}/Ensemble.sSNV.tsv Consistent_Mates Inconsistent_Mates \n\n'.format(prjdir) )
+                out.write( '/opt/somaticseq/r_scripts/{}_model_builder_ntChange.R /mnt/{}/Ensemble.sSNV.tsv Consistent_Mates Inconsistent_Mates \n\n'.format(input_parameters['somaticseq_algorithm'], prjdir) )
 
             if input_parameters['train_somaticseq'] and input_parameters['truth_indel']:
                 out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-                out.write( '/opt/somaticseq/r_scripts/ada_model_builder_ntChange.R /mnt/{}/Ensemble.sINDEL.tsv Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates \n\n'.format(prjdir) )
+                out.write( '/opt/somaticseq/r_scripts/{}_model_builder_ntChange.R /mnt/{}/Ensemble.sINDEL.tsv Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates \n\n'.format( input_parameters['somaticseq_algorithm'], prjdir) )
 
 
             # If in prediction mode, combine SSeq.Classified.sSNV.vcf, else Consensus.sSNV.vcf
