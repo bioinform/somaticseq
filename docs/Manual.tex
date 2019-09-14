@@ -409,7 +409,7 @@ Parameters:
 The script can also be run independently. 
 
 \begin{lstlisting}
-somaticseq/SSeq_tsv2vcf -h
+somaticseq/SSeq_tsv2vcf.py -h
 \end{lstlisting}
 
 
@@ -420,22 +420,26 @@ somaticseq/SSeq_tsv2vcf -h
 
 The training and prediction scripts are written in R.
 
-\subsubsection{Training with ada} \label{module:r_train}
+\subsubsection{SomaticSeq Training} \label{module:r_train}
 
-r\_scripts/ada\_model\_builder\_ntChange.R or r\_scripts/xgboost\_model\_builder\_ntChange.R is the script that is called during SomaticSeq pipeline to make classifiers. You can also run them indepedently with labeled Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv files. The command is:
+r\_scripts/ada\_model\_builder\_ntChange.R or r\_scripts/xgboost\_model\_builder\_ntChange.R is the script that is called during SomaticSeq pipeline to make classifiers. You can also run them indepedently with labeled Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv files. The command for ada is:
 
 \begin{lstlisting}
 # Training:
 r_scripts/ada_model_builder_ntChange.R Ensemble.sSNV.tsv   Consistent_Mates Inconsistent_Mates
 r_scripts/ada_model_builder_ntChange.R Ensemble.sINDEL.tsv Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates
 \end{lstlisting}
-      
-\textit{Ensemble.sSNV.tsv.ntChange.Classifier.RData} and \textit{Ensemble.sINDEL.tsv.ntChange.Classifier.RData} will be created from model training. The arguments after \textit{Ensemble.sSNV.tsv} and \textit{Ensemble.sINDEL.tsv} tells the builder script to ignore those features in training. These features do not improve accuracy in our data sets (mostly WGS data, but they may help other data sets)
+
+Replace ada\_model\_builder\_ntChange.R with xgboost\_model\_builder\_ntChange.R for extreme gradient boosting (xgboost) algorithm. 
+
+\textit{Ensemble.sSNV.tsv.ntChange.Classifier.RData} and \textit{Ensemble.sINDEL.tsv.ntChange.Classifier.RData} will be created from ada model training. For xgboost, the suffix will be .xgboost.Classifier.RData. 
+
+The arguments after \textit{Ensemble.sSNV.tsv} and \textit{Ensemble.sINDEL.tsv} tells the builder script to ignore those features in training. These features do not improve accuracy in our data sets (mostly WGS data, but they may help other data sets)
 
 
-\subsubsection{Prediction with trained ada model} \label{module:r_predict}
+\subsubsection{Prediction with trained classifiers} \label{module:r_predict}
 
-r\_scripts/ada\_model\_predictor.R or r\_scripts/xgboost\_model\_predictor.R.R is the prediction script. To run it independently, the command is
+r\_scripts/ada\_model\_predictor.R or r\_scripts/xgboost\_model\_predictor.R.R is the prediction script. To run it independently, the command for ada is
       
 \begin{lstlisting}
 # Mutation prediction:
@@ -443,7 +447,7 @@ r_script/ada_model_predictor.R Ensemble.sSNV.tsv.Classifier.RData   Ensemble.sSN
 r_script/ada_model_predictor.R Ensemble.sINDEL.tsv.Classifier.RData Ensemble.sINDEL.tsv Predicted.sINDEL.tsv
 \end{lstlisting}
 
-
+Replace ada\_model\_predictor.R with xgboost\_model\_predictor.R if the classifier was based on xgboost. 
 
 
 
@@ -544,18 +548,20 @@ As things are currently set up, training mode is best run seperately \textbf{aft
 
 \begin{lstlisting}
 makeSomaticScripts.py paired \
---normal-bam       /ABSOLUTE/PATH/TO/normal_sample.bam \
---tumor-bam        /ABSOLUTE/PATH/TO/tumor_sample.bam \
---genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
---output-directory /ABSOLUTE/PATH/TO/RESULTS \
---dbsnp-vcf        /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
---truth-snv        /ABSOLUTE/PATH/TO/truth.snv.vcf \
---truth-indel      /ABSOLUTE/PATH/TO/truth.indel.vcf \
---action           echo \
---run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq --train-somaticseq
+--normal-bam           /ABSOLUTE/PATH/TO/normal_sample.bam \
+--tumor-bam            /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--genome-reference     /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-directory     /ABSOLUTE/PATH/TO/RESULTS \
+--dbsnp-vcf            /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--truth-snv            /ABSOLUTE/PATH/TO/truth.snv.vcf \
+--truth-indel          /ABSOLUTE/PATH/TO/truth.indel.vcf \
+--action               echo \
+--somaticseq-algorithm xgboost \
+--train-somaticseq     \
+--run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq
 \end{lstlisting}
 
-Notice the command includes \textit{--truth-snv} and \textit{--truth-indel}, and invokes somaticseq-train.
+Notice the command includes \textit{--truth-snv} and \textit{--truth-indel}, and invokes somaticseq-train. By default ada will be used for \textit{--somaticseq-algorithm}, but you may invoke xgboost as well.
 
 For multi-threaded job, you should not invoke somaticseq-train. Instead, you should combine all the \textit{Ensemble.sSNV.tsv} and \textit{Ensemble.sINDEL.tsv} files (separately), and then train on the combined files. 
 
@@ -566,19 +572,20 @@ For multi-threaded job, you should not invoke somaticseq-train. Instead, you sho
 
 \begin{lstlisting}
 makeSomaticScripts.py paired \
---normal-bam       /ABSOLUTE/PATH/TO/normal_sample.bam \
---tumor-bam        /ABSOLUTE/PATH/TO/tumor_sample.bam \
---genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
---output-directory /ABSOLUTE/PATH/TO/RESULTS \
---dbsnp-vcf        /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
---snv-classifier   /ABSOLUTE/PATH/TO/Snv_Classifier.RData \
---indel-classifier /ABSOLUTE/PATH/TO/Indel_Classifier.RData \
---action           echo \
---threads          12 \
+--normal-bam           /ABSOLUTE/PATH/TO/normal_sample.bam \
+--tumor-bam            /ABSOLUTE/PATH/TO/tumor_sample.bam \
+--genome-reference     /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-directory     /ABSOLUTE/PATH/TO/RESULTS \
+--dbsnp-vcf            /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--snv-classifier       /ABSOLUTE/PATH/TO/Snv_Classifier.RData \
+--indel-classifier     /ABSOLUTE/PATH/TO/Indel_Classifier.RData \
+--somaticseq-algorithm xgboost \
+--action               echo \
+--threads              12 \
 --run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq
 \end{lstlisting}
 
-Notice the command includes --classifier-snv and --classifier-indel.
+Notice the command includes --classifier-snv and --classifier-indel. Make sure the classifier and the \textit{--somaticseq-algorithm} argument matches. 
 
 
 
@@ -896,15 +903,17 @@ See our \href{https://github.com/bioinform/somaticseq/blob/master/utilities/dock
 
 \begin{lstlisting}
 makeSomaticScripts.py paired \
---normal-bam       /ABSOLUTE/PATH/TO/trainingSet/syntheticNormal.bam \
---tumor-bam        /ABSOLUTE/PATH/TO/trainingSet/syntheticTumor.bam \
---genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
---output-directory /ABSOLUTE/PATH/TO/trainingSet/somaticMutationPipeline \
---dbsnp-vcf        /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
---truth-snv        /ABSOLUTE/PATH/TO/trainingSet/synthetic_snvs.vcf \
---truth-indel      /ABSOLUTE/PATH/TO/trainingSet/synthetic_indels.leftAlign.vcf \
---threads          16 \
---run-mutect2 --run-vardict --run-muse --run-lofreq --run-strelka2 --run-somaticseq --train-somaticseq
+--normal-bam           /ABSOLUTE/PATH/TO/trainingSet/syntheticNormal.bam \
+--tumor-bam            /ABSOLUTE/PATH/TO/trainingSet/syntheticTumor.bam \
+--genome-reference     /ABSOLUTE/PATH/TO/GRCh38.fa \
+--output-directory     /ABSOLUTE/PATH/TO/trainingSet/somaticMutationPipeline \
+--dbsnp-vcf            /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
+--truth-snv            /ABSOLUTE/PATH/TO/trainingSet/synthetic_snvs.vcf \
+--truth-indel          /ABSOLUTE/PATH/TO/trainingSet/synthetic_indels.leftAlign.vcf \
+--threads              16 \
+--somaticseq-algorithm ada \
+--train-somaticseq     \
+--run-mutect2 --run-vardict --run-muse --run-lofreq --run-strelka2 --run-somaticseq
 \end{lstlisting}
 
 
