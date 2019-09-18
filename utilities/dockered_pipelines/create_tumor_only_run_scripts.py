@@ -431,7 +431,7 @@ def run_SomaticSeq(input_parameters, mem=16):
         out.write( '/opt/somaticseq/somaticseq/run_somaticseq.py \\\n' )
 
         if input_parameters['train_somaticseq'] and input_parameters['threads'] == 1:
-            out.write( '--somaticseq-train --algorithm {}\\\n'.format(input_parameters['somaticseq_algorithm']) )
+            out.write( '--somaticseq-train --algorithm {} \\\n'.format(input_parameters['somaticseq_algorithm']) )
 
         out.write( '--output-directory /mnt/{OUTDIR} \\\n'.format(OUTDIR=outdir) )
         out.write( '--genome-reference /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
@@ -449,7 +449,7 @@ def run_SomaticSeq(input_parameters, mem=16):
             out.write( '--dbsnp-vcf /mnt/{} \\\n'.format(input_parameters['dbsnp_vcf']) )
 
         if input_parameters['snv_classifier'] or input_parameters['indel_classifier']:
-            out.write( '--algorithm {}\\\n'.format(input_parameters['somaticseq_algorithm']) )
+            out.write( '--algorithm {} \\\n'.format(input_parameters['somaticseq_algorithm']) )
             
             if input_parameters['snv_classifier']:
                 out.write( '--classifier-snv /mnt/{} \\\n'.format(input_parameters['snv_classifier']) )
