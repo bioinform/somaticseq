@@ -448,11 +448,14 @@ def run_SomaticSeq(input_parameters, mem=16):
         if input_parameters['dbsnp_vcf']:
             out.write( '--dbsnp-vcf /mnt/{} \\\n'.format(input_parameters['dbsnp_vcf']) )
 
-        if input_parameters['snv_classifier']:
-            out.write( '--classifier-snv /mnt/{} \\\n'.format(input_parameters['snv_classifier']) )
+        if input_parameters['snv_classifier'] or input_parameters['indel_classifier']:
+            out.write( '--algorithm {}\\\n'.format(input_parameters['somaticseq_algorithm']) )
+            
+            if input_parameters['snv_classifier']:
+                out.write( '--classifier-snv /mnt/{} \\\n'.format(input_parameters['snv_classifier']) )
     
-        if input_parameters['indel_classifier']:
-            out.write( '--classifier-indel /mnt/{} \\\n'.format(input_parameters['indel_classifier']) )
+            if input_parameters['indel_classifier']:
+                out.write( '--classifier-indel /mnt/{} \\\n'.format(input_parameters['indel_classifier']) )
 
         if input_parameters['truth_snv']:
             out.write( '--truth-snv /mnt/{} \\\n'.format(input_parameters['truth_snv']) )
