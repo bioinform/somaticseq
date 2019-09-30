@@ -48,8 +48,14 @@ for (var_i in tail(args, -1) ) {
 model_formula <- as.formula(TrueVariant_or_False ~ .)
 
 print("Fitting model...")
-ada.model <- ada(model_formula, data = train_data, iter = 500)
 
-save(ada.model, file = paste(training_data_filename, ".ntChange.Classifier.RData", sep="") )
+boosting_iters = 500
 
-print(ada.model)
+seed_value = floor(runif(1, min=100, max=50000))
+print( paste("Seed =", seed_value) )
+set.seed(seed_value)
+
+ada.model.stumps <- ada(model_formula, data = train_data, iter = boosting_iters, control=rpart.control(cp=-1, maxdepth=16, minsplit=0, xval=0))
+save(ada.model.stumps, file = paste(training_data_filename, ".ntChange.Classifier.RData", sep="") )
+
+print(ada.model.stumps)

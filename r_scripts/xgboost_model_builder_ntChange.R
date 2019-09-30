@@ -73,7 +73,7 @@ train_data.matrix <- as.matrix(train_data)
 
 # Set deterministic seed for reproducibility on variable removal test
 boosting_iters = 500
-seed_value     = floor(runif(1, min=100, max=10000))
+seed_value     = floor(runif(1, min=100, max=50000))
 
 print( paste("Seed =", seed_value) )
 
