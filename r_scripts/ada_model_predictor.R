@@ -31,7 +31,7 @@ test_data$TA2CG[ (test_data$REF=='T' & test_data$ALT=='C') | (test_data$REF=='A'
 # Handle empty input data
 if ( nrow(test_data)>=1 ) {
     load( trained_model )
-    ada.pred <- predict(ada.model.stumps, newdata = test_data, type="both", n.iter=300)
+    ada.pred <- predict(ada.model, newdata = test_data, type="both", n.iter=300)
     test_data_output <- cbind(test_data_, SCORE = ada.pred$prob[,2])
 
 }   else {
