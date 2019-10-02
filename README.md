@@ -6,8 +6,9 @@
 * The [v2 branch](../../tree/v2) will continue to be supported in the foreseeable future for bug fixes, but new features will only be introduced in the current master branch. 
 
 ## Requirements
+This [dockerfile](utilities/Dockerfiles/somaticseq.base-1.2.dockerfile) reveals the dependencies
 * Python 3, plus pysam, numpy, and scipy libraries.
-* R, plus [ada](https://cran.r-project.org/package=ada) library or [xgboost](https://cran.r-project.org/package=xgboost): required in training or prediction mode. XGBoost also requires the [caret](https://cran.r-project.org/package=xgboost) package. 
+* R, plus [ada](https://cran.r-project.org/package=ada) and/or [xgboost](https://cran.r-project.org/package=xgboost) libraries: required in machine learning training or prediction mode. XGBoost also requires the [caret](https://cran.r-project.org/package=xgboost) package. 
 * [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing in invoked, and/or when any bed files are used as input files
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
 * At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus.
