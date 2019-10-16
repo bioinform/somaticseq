@@ -17,5 +17,9 @@ setup(
     install_requires=['pysam', 'numpy', 'scipy'],
     scripts=['somaticseq/run_somaticseq.py',
              'somaticseq_parallel.py',
-             'utilities/dockered_pipelines/makeSomaticScripts.py',],
+             'utilities/dockered_pipelines/makeSomaticScripts.py',
+             'utilities/lociCounterWithLabels.py',
+             'utilities/split_Bed_into_equal_regions.py',
+             'somaticseq/somatic_vcf2tsv.py',
+             'somaticseq/single_sample_vcf2tsv.py']
 )
