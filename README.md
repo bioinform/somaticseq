@@ -14,6 +14,10 @@ This [dockerfile](utilities/Dockerfiles/somaticseq.base-1.2.dockerfile) reveals 
 * At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus.
 * To install SomaticSeq scripts into your PATH, `cd somaticseq` and then run `./setup.py install`.
 
+## To install with bioconda
+SomaticSeq can also be found on [bioconda](https://anaconda.org/bioconda/somaticseq). To install with conda, which also automatically installs a bunch of 3rd-party somatic mutation callers:
+`conda install -c bioconda somaticseq`
+
 ## Example commands
 * At minimum, given the results of the individual mutation caller(s), SomaticSeq will extract sequencing features for the combined call set. Required inputs are `--output-directory`, `--genome-reference`, `paired|single`, `--tumor-bam-file`, and `--normal-bam-file`. Everything else is optional.
 * The following four files will be created into the output directory:
