@@ -1,0 +1,21 @@
+##fileformat=VCFv4.1
+##phasing=none
+##INDIVIDUAL=TRUTH
+##SAMPLE=<ID=TRUTH,Individual="TRUTH",Description="bamsurgeon spike-in">
+##INFO=<ID=CIPOS,Number=2,Type=Integer,Description="Confidence interval around POS for imprecise variants">
+##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description="Imprecise structural variation">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
+##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Somatic mutation in primary">
+##INFO=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">
+##INFO=<ID=DPR,Number=1,Type=Float,Description="Avg Depth in Region (+/- 1bp)">
+##INFO=<ID=MATEID,Number=1,Type=String,Description="Breakend mate">
+##ALT=<ID=INV,Description="Inversion">
+##ALT=<ID=DUP,Description="Duplication">
+##ALT=<ID=DEL,Description="Deletion">
+##ALT=<ID=INS,Description="Insertion">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SPIKEIN
+1	14062	rs000	T	A	100	PASS	SOMATIC;VAF=0.333333333333;DPR=5.0	GT	0/1
+1	24700	rs001	T	C	100	PASS	SOMATIC;VAF=0.333333333333;DPR=6.0	GT	0/1
+1	223356	rs002	T	C	100	PASS	SOMATIC;VAF=0.4;DPR=5.0	GT	0/1
