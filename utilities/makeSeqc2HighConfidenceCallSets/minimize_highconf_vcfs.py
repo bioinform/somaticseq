@@ -28,7 +28,7 @@ with open_textfile(vcf_in_fn) as infile, open(vcf_out_fn, 'w') as outfile:
 	
 	line_in = infile.readline()
 	while line_in.startswith('##'):
-		if not line_in.startswith('##FORMAT'):
+		if (not line_in.startswith('##FORMAT')) and (not re.match(r'##FILTER=<ID=(AllPASS|REJECT|Tier)', line_in)):
 			outfile.write( line_in )
 		line_in = infile.readline()
 
