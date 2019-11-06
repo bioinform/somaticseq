@@ -32,6 +32,7 @@ with open_textfile(vcf_in_fn) as infile, open(vcf_out_fn, 'w') as outfile:
 			outfile.write( line_in )
 		line_in = infile.readline()
 
+	outfile.write( '##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Denotes somatic mutation">\n' )
 	item     = line_in.rstrip().split('\t')
 	line_out = line_out = '\t'.join( item[0:8] )
 	outfile.write( line_out + '\n' )
@@ -44,6 +45,7 @@ with open_textfile(vcf_in_fn) as infile, open(vcf_out_fn, 'w') as outfile:
 			filter_item          = item[6].split(';')
 			filtered_filter_item = [item_i for item_i in filter_item if item_i in conf_labels_to_keep]
 			item[6]              = ';'.join( filtered_filter_item )
+			item[7]              = 'SOMATIC;' + item[7]
 			line_out             = '\t'.join( item[0:8] )
 		
 			outfile.write( line_out + '\n' )

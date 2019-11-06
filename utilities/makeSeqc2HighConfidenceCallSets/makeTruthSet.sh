@@ -133,5 +133,5 @@ vcf-concat NeuRescued.sINDEL.vcf.gz 1000X.indel.toAdd.vcf.gz sINDEL.MDKT.dedup_a
 
 
 # 14) Simplify release VCF
-${SEQC2}/somaticseq/utilities/makeSeqc2HighConfidenceCallSets/minimize_highconf_vcfs.py -infile sSNV.MSDUKT.superSet.v1.1.vcf.gz -outfile high-confidence-sSNV_in_HC-regions.vcf
-${SEQC2}/somaticseq/utilities/makeSeqc2HighConfidenceCallSets/minimize_highconf_vcfs.py -infile sINDEL.MDKT.superSet.v1.1.vcf.gz -outfile high-confidence-sINDEL_in_HC-regions.vcf
+${SEQC2}/somaticseq/utilities/makeSeqc2HighConfidenceCallSets/minimize_highconf_vcfs.py -infile sSNV.MSDUKT.superSet.v1.1.vcf.gz -outfile high-confidence-sSNV_in_HC-regions_v1.1.vcf
+${SEQC2}/somaticseq/utilities/makeSeqc2HighConfidenceCallSets/minimize_highconf_vcfs.py -infile sINDEL.MDKT.superSet.v1.1.vcf.gz -outfile high-confidence-sINDEL_in_HC-regions_v1.1.vcf
