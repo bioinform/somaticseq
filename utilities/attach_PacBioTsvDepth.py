@@ -99,7 +99,7 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
             N_REF_FOR = PacBio[variant_identifier]['N_REF_FOR']
             N_REF_REV = PacBio[variant_identifier]['N_REF_REV']
             N_ALT_FOR = PacBio[variant_identifier]['N_ALT_FOR']
-            N_ALT_FOR = PacBio[variant_identifier]['N_ALT_REV']
+            N_ALT_REV = PacBio[variant_identifier]['N_ALT_REV']
             N_DP      = PacBio[variant_identifier]['N_DP']
             NVAF      = PacBio[variant_identifier]['NVAF']
             T_VDP     = T_ALT_FOR + T_ALT_REV
