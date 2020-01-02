@@ -59,14 +59,14 @@ with genome.open_textfile(args.my_tsv_file) as tsv:
                                'N_ALT_FOR' :        int( item[idx_N_ALT_FOR] ), \
                                'N_ALT_REV' :        int( item[idx_N_ALT_REV] ), \
                                'nBAM_Other_Reads' : int( item[idx_nBAM_Other_Reads] ), \
-                               'NVAF':              (int(item[idx_N_ALT_FOR]) + int(item[idx_N_ALT_REV])) / int(item[idx_N_DP]) , \
+                               'NVAF':              nvaf , \
                                'T_DP' :             int( item[idx_T_DP] ), \
                                'T_REF_FOR' :        int( item[idx_T_REF_FOR] ), \
                                'T_REF_REV' :        int( item[idx_T_REF_REV] ), \
                                'T_ALT_FOR' :        int( item[idx_T_ALT_FOR] ), \
                                'T_ALT_REV' :        int( item[idx_T_ALT_REV] ), \
                                'tBAM_Other_Reads' : int( item[idx_tBAM_Other_Reads] ), \
-                               'TVAF' :             (int(item[idx_T_ALT_FOR]) + int(item[idx_T_ALT_REV])) / int(item[idx_T_DP]) }                               
+                               'TVAF' :             tvaf }                               
 
 
 
