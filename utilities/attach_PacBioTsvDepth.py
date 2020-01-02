@@ -68,6 +68,11 @@ with genome.open_textfile(args.my_tsv_file) as tsv:
 
 
 with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') as out:
+
+    vcf_header_file = MY_DIR + '/neusomatic/goldsetHeader.vcf'
+    with open(vcf_header_file) as vcfheader:
+        for line_i in vcfheader:
+            out.write(line_i)
     
     vcf_line = vcf.readline().rstrip()
 
@@ -79,3 +84,29 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
         vcf_i = genome.Vcf_line( vcf_line.rstrip() )
 
         variant_identifier = vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase
+
+        if variant_identifier in PacBio:
+            
+            T_REF_FOR = PacBio[variant_identifier]['T_REF_FOR']
+            T_REF_REV = PacBio[variant_identifier]['T_REF_REV']
+            T_ALT_FOR = PacBio[variant_identifier]['T_ALT_FOR']
+            T_ALT_REV = PacBio[variant_identifier]['T_ALT_REV']
+            T_DP      = PacBio[variant_identifier]['T_DP']
+            TVAF      = PacBio[variant_identifier]['TVAF']
+            N_REF_FOR = PacBio[variant_identifier]['N_REF_FOR']
+            N_REF_REV = PacBio[variant_identifier]['N_REF_REV']
+            N_ALT_FOR = PacBio[variant_identifier]['N_ALT_FOR']
+            N_ALT_REV = PacBio[variant_identifier]['N_ALT_REV']
+            N_DP      = PacBio[variant_identifier]['N_DP']
+            NVAF      = PacBio[variant_identifier]['NVAF']
+            
+            additional_string = 'PACB_T_DP4={},{},{},{};PACB_N_DP4={},{},{},{};PACB_T_DP={};PACB_N_DP={};PACB_TVAF={};PACB_NVAF={}'.format(T_REF_FOR, T_REF_REV, T_ALT_FOR, T_ALT_REV, N_REF_FOR, N_REF_REV, N_ALT_FOR, N_ALT_REV, T_DP, N_DP, TVAF, NVAF)
+
+            item = vcf_line.split('\t')
+            item[7] = item[7] + ';' + additional_string
+            line_out = '\t'.join( item )
+            
+        else:
+            line_out = vcf_line
+            
+        out.write( line_out )

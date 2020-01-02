@@ -86,6 +86,12 @@
 ##INFO=<ID=NeuE_NovoAlign,Number=1,Type=Integer,Description="Number of times out of 21 pairs of NovoAlign BAMs where NeuSomatic-E called it PASS">
 ##INFO=<ID=NeuE_Bowtie,Number=1,Type=Integer,Description="Number of times out of 21 pairs of Bowtie BAMs where NeuSomatic-E called it PASS">
 ##INFO=<ID=NeuE_SomaticCalls,Number=1,Type=Float,Description="Number of times out of 63 pairs of BAMs where NeuSomatic-E called it PASS">
+##INFO=<ID=PACB_T_DP4,Number=4,Type=Integer,Description="DP4 for the tumor on PacBio Sequel II">
+##INFO=<ID=PACB_N_DP4,Number=4,Type=Integer,Description="DP4 for the normal on PacBio Sequel II">
+##INFO=<ID=PACB_T_DP,Number=1,Type=Integer,Description="PacBio sequencing depth for the tumor">
+##INFO=<ID=PACB_N_DP,Number=1,Type=Integer,Description="PacBio sequencing depth for the normal">
+##INFO=<ID=PACB_TVAF,Number=1,Type=Float,Description="PacBio VAF for the tumor">
+##INFO=<ID=PACB_NVAF,Number=1,Type=Float,Description="PacBio VAF for the normal">
 ##contig=<ID=chr1,length=248956422>
 ##contig=<ID=chr2,length=242193529>
 ##contig=<ID=chr3,length=198295559>
