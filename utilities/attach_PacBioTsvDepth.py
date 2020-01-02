@@ -105,7 +105,7 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
             T_VDP     = T_ALT_FOR + T_ALT_REV
             N_VDP     = N_ALT_FOR + N_ALT_REV
             
-            additional_string = 'PACB_T_DP4={},{},{},{};PACB_N_DP4={},{},{},{};PACB_T_DP={},{};PACB_N_DP={},{};PACB_TVAF={};PACB_NVAF={}'.format(T_REF_FOR, T_REF_REV, T_ALT_FOR, T_ALT_REV, N_REF_FOR, N_REF_REV, N_ALT_FOR, N_ALT_REV, T_VDP, T_DP, NVDP, N_DP, '%.3g' % TVAF, '%.3g' % NVAF)
+            additional_string = 'PACB_T_DP4={},{},{},{};PACB_N_DP4={},{},{},{};PACB_T_DP={},{};PACB_N_DP={},{};PACB_TVAF={};PACB_NVAF={}'.format(T_REF_FOR, T_REF_REV, T_ALT_FOR, T_ALT_REV, N_REF_FOR, N_REF_REV, N_ALT_FOR, N_ALT_REV, T_VDP, T_DP, N_VDP, N_DP, '%.3g' % TVAF, '%.3g' % NVAF)
 
             item = vcf_line.split('\t')
             item[7] = item[7] + ';' + additional_string
