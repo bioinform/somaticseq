@@ -50,6 +50,9 @@ with genome.open_textfile(args.my_tsv_file) as tsv:
         
         identifier = (item[idx_CHROM], int(item[idx_POS]), item[idx_REF], item[idx_ALT],)
         
+        nvaf = (int(item[idx_N_ALT_FOR]) + int(item[idx_N_ALT_REV])) / int(item[idx_N_DP]) if int(item[idx_N_DP]) == 0 else 0
+        tvaf = (int(item[idx_T_ALT_FOR]) + int(item[idx_T_ALT_REV])) / int(item[idx_T_DP]) if int(item[idx_T_DP]) == 0 else 0
+        
         PacBio[identifier] = { 'N_DP' :             int( item[idx_N_DP] ), \
                                'N_REF_FOR' :        int( item[idx_N_REF_FOR] ), \
                                'N_REF_REV' :        int( item[idx_N_REF_REV] ), \
