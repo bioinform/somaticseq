@@ -48,7 +48,7 @@ with genome.open_textfile(args.my_tsv_file) as tsv:
     for line_i in tsv:
         item = line_i.rstrip().split('\t')
         
-        identifier = (item[idx_CHROM], int[item[idx_POS]], item[idx_REF], item[idx_ALT],)
+        identifier = (item[idx_CHROM], int(item[idx_POS]), item[idx_REF], item[idx_ALT],)
         
         PacBio[identifier] = { 'N_DP' :             int( item[idx_N_DP] ), \
                                'N_REF_FOR' :        int( item[idx_N_REF_FOR] ), \
