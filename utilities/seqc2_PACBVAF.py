@@ -174,3 +174,6 @@ with genome.open_textfile(args.my_vcf_file)        as my_vcf, \
                     indel_lengths.append( indel_length )
                     
         
+                # Pileups
+                got_tumor_pileup,  pileup_tumor_variants,  t_pileup_line = genome.find_vcf_at_coordinate(my_coordinate, t_pileup_line, Tpileup, chrom_seq)
+                got_normal_pileup, pileup_normal_variants, n_pileup_line = genome.find_vcf_at_coordinate(my_coordinate, n_pileup_line, Npileup, chrom_seq)
