@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# Supports Insertion/Deletion as well as SNVs
-# Last updated: 8/29/2015
+
+# samtools mpileup -B -q 1 -Q 0 -f GRCh38.d1.vd1.fa -l putative_reference_regions.bed HCC1395BL.SqII.bam
 
 import math, argparse, sys, os, gzip
 import regex as re
