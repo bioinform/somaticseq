@@ -20,7 +20,7 @@ parser.add_argument('-q',   '--min-mq',    type=int, help='minimum MQ', default=
 parser.add_argument('-Q',   '--min-bq',    type=int, help='minimum BQ', default=0)
 parser.add_argument('-l',   '--bed',       type=str, help='region bed file')
 parser.add_argument('-f',   '--reference', type=str, help='reference fasta')
-parser.add_argument('-bam', '--bam-file', nargs='+', type=str, help='bam or cram file')
+parser.add_argument('-bam', '--bam-file',  type=str, help='bam or cram file')
 
 args = parser.parse_args()
 
@@ -31,9 +31,9 @@ else:
     warnings.warn('No interval was supplied, so all variant calls are considered errors.')
 
 
-mpileup_command = 'samtools mpileup -B -d {MAX_DEPTH} -q {minMQ} -Q {minBQ} {REGION} -f {REF} {BAM}'.format(MAX_DEPTH=args.max_depth, minMQ=args.min_mq, minBQ=args.min_bq, REGION=interval, REF=args.reference, BAM=' '.join(args.bam_file) )
+mpileup_command = 'samtools mpileup -B -d {MAX_DEPTH} -q {minMQ} -Q {minBQ} {REGION} -f {REF} {BAM}'.format(MAX_DEPTH=args.max_depth, minMQ=args.min_mq, minBQ=args.min_bq, REGION=interval, REF=args.reference, BAM=args.bam_file )
 
-
+print('COMMAND: {}'.format(mpileup_command), file=sys.stderr)
 pileup_out = os.popen(mpileup_command)
 
 total_base_calls      = 0
