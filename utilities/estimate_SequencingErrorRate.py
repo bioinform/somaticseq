@@ -15,7 +15,7 @@ sys.path.append( PRE_DIR )
 import pileup_reader
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-d',   '--max-depth', type=int, help='maximum DP')
+parser.add_argument('-d',   '--max-depth', type=int, help='maximum DP', default=5000)
 parser.add_argument('-q',   '--min-mq',    type=int, help='minimum MQ', default=1)
 parser.add_argument('-Q',   '--min-bq',    type=int, help='minimum BQ', default=0)
 parser.add_argument('-l',   '--bed',       type=str, help='region bed file')
