@@ -38,6 +38,36 @@ def binom_interval(success, total, confidence=0.95):
 
 
 
+def relabel(vcf_line, newLabel=None, additional_flag=None):
+    
+    vcf_i = genome.Vcf_line( vcf_line )
+    item  = vcf_line.split('\t')
+    
+    if newLabel:
+        filterColumn = re.sub(r'HighConf|MedConf|LowConf|Unclassified', newLabel, vcf_i.filters)
+        item         = vcf_line.split('\t')
+        item[6]      = filterColumn
+    
+    if additional_flag:
+        if 'FLAGS' in vcf_i.info:
+            infoItems = vcf_i.info.split(';')
+            for i, item_i in enumerate(infoItems):
+                if item_i.startswith('FLAGS'):
+                    infoItems[i] = infoItems[i] + ',{}'.format(additional_flag)
+            newInfo = ';'.join(infoItems)
+        else:
+            newInfo = vcf_i.info + ';FLAGS={}'.format(additional_flag)
+        
+        item[7] = newInfo
+    
+    line_i  = '\t'.join(item)
+    
+    return line_i
+
+
+
+
+
 PacBio = {}
 with genome.open_textfile(args.my_tsv_file) as tsv:
     header = tsv.readline().rstrip().split('\t')
@@ -145,13 +175,15 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
                         print( vcf_i.chromosome, vcf_i.position, vcf_i.filters, vcf_i.refbase, vcf_i.altbase, sep='\t', end='\t' )
                         print( '{}/{}={}'.format(wgs_VDP, wgs_DP, '%.3g' % wgs_vaf), end='\t')
                         print( 'No PACB Supporting Read At All with DP={}'.format(T_DP) )
+                        
+                        line_out = relabel(vcf_line, newLabel=None, additional_flag='NoPACB2'):
 
                     elif non_variant_af ** T_DP < 0.05:
                         print( vcf_i.chromosome, vcf_i.position, vcf_i.filters, vcf_i.refbase, vcf_i.altbase, sep='\t', end='\t')
                         print( '{}/{}={}'.format(wgs_VDP, wgs_DP, '%.3g' % wgs_vaf), end='\t')
                         print( 'No PACB Supporting Read with DP={}'.format(T_DP) )
 
-
+                        line_out = relabel(vcf_line, newLabel=None, additional_flag='NoPACB1'):
 
         else:
             line_out = vcf_line
