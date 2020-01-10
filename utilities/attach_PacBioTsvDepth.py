@@ -4,6 +4,7 @@
 
 import math, argparse, sys, os, gzip
 import regex as re
+import scipy.stats as stats
 
 nan = float('nan')
 inf = float('inf')
@@ -17,9 +18,24 @@ import genomic_file_handlers as genome
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-myvcf',   '--my-vcf-file', type=str, help='VCF File')
 parser.add_argument('-mytsv',   '--my-tsv-file', type=str, help='TSV File')
-parser.add_argument('-outfile', '--output-file', type=str, help='Output File Name', required=True)
+parser.add_argument('-outfile', '--output-file', type=str, help='Output File Name')
 
 args = parser.parse_args()
+
+
+
+def binom_interval(success, total, confidence=0.95):
+    assert success <= total
+    quantile = (1 - confidence) / 2
+    lower = stats.beta.ppf(quantile, success, total - success + 1)
+    upper = stats.beta.ppf(1 - quantile, success + 1, total - success)
+    if math.isnan(lower):
+        lower = 0
+    if math.isnan(upper):
+        upper = 1
+    return lower, upper
+
+
 
 
 PacBio = {}
@@ -111,6 +127,32 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
             item[7] = item[7] + ';' + additional_string
             line_out = '\t'.join( item )
             
+            # Note discrepancies for reference calls
+            if ( not re.search(r'ArmLossInNormal|NonCallable', vcf_i.info) ) and ( re.search(r'\bPASS\b', vcf_i.filters) ):
+                
+                if TVAF == 0:
+                    
+                    wgs_VDP, wgs_DP = vcf_i.get_info_value('bwaDP').split(',')
+                    wgs_VDP, wgs_DP = int(wgs_VDP), int(wgs_DP)
+            
+                    wgs_vaf   = wgs_VDP / wgs_DP
+                    lower_vaf = binom_interval(wgs_VDP, wgs_DP, confidence=0.95)[0]
+                    
+                    non_variant_af       = 1 - wgs_vaf
+                    upper_non_variant_af = 1 - lower_vaf
+                    
+                    if upper_non_variant_af ** T_DP < 0.05:
+                        print( vcf_i.chromosome, vcf_i.position, vcf_i.filters, vcf_i.refbase, vcf_i.altbase, sep='\t', end='\t' )
+                        print( '{}/{}={}'.format(wgs_VDP, wgs_DP, '%.3g' % wgs_vaf), end='\t')
+                        print( 'No PACB Supporting Read At All with DP={}'.format(T_DP) )
+
+                    elif non_variant_af ** T_DP < 0.05:
+                        print( vcf_i.chromosome, vcf_i.position, vcf_i.filters, vcf_i.refbase, vcf_i.altbase, sep='\t', end='\t')
+                        print( '{}/{}={}'.format(wgs_VDP, wgs_DP, '%.3g' % wgs_vaf), end='\t')
+                        print( 'No PACB Supporting Read with DP={}'.format(T_DP) )
+
+
+
         else:
             line_out = vcf_line
             

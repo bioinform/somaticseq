@@ -1,6 +1,6 @@
 ##fileformat=VCFv4.1
 ##SomaticSeq=v2.8.1-SEQC2
-##truth_set=v1.1
+##truth_set=v1.1.1
 ##reference=file:/SEQC2_Resources/GRCh38.d1.vd1.fa
 ##FORMAT=<ID=CD4,Number=4,Type=Integer,Description="ref concordant, ref discordant, alt concordant, alt discordant">
 ##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="ref forward, ref reverse, alt forward, alt reverse">
@@ -89,7 +89,7 @@
 ##INFO=<ID=PACB_T_DP4,Number=4,Type=Integer,Description="DP4 for the tumor on PacBio Sequel II">
 ##INFO=<ID=PACB_N_DP4,Number=4,Type=Integer,Description="DP4 for the normal on PacBio Sequel II">
 ##INFO=<ID=PACB_T_DP,Number=2,Type=Integer,Description="PacBio variant and total sequencing depth for the tumor">
-##INFO=<ID=PACB_N_DP,Number=2,Type=Integer,Description="PacBio variant and total  sequencing depth for the normal">
+##INFO=<ID=PACB_N_DP,Number=2,Type=Integer,Description="PacBio variant and total sequencing depth for the normal">
 ##INFO=<ID=PACB_TVAF,Number=1,Type=Float,Description="PacBio VAF for the tumor">
 ##INFO=<ID=PACB_NVAF,Number=1,Type=Float,Description="PacBio VAF for the normal">
 ##contig=<ID=chr1,length=248956422>
