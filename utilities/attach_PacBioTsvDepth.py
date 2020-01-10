@@ -66,6 +66,18 @@ def relabel(vcf_line, newLabel=None, additional_flag=None):
 
 
 
+def p_of_2proportions(P1, P2, N1, N2):
+    """
+    Calculate the 1-tailed p-value of the null hypothesis that, two propertions are not statistically different given sample sizes.
+    """
+    P = (N1*P1 + N2*P2) / (N1+N2)
+    SE = numpy.sqrt( P * (1-P) * (1/N1 + 1/N2) )
+    z = (P1 - P2) / SE
+    p = 1 - scipystats.norm.cdf( z )
+
+    return p
+
+
 
 
 PacBio = {}
