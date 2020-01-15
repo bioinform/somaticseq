@@ -2,7 +2,7 @@
 # Supports Insertion/Deletion as well as SNVs
 # Last updated: 8/29/2015
 
-import math, argparse, sys, os, gzip
+import math, argparse, sys, os, gzip, numpy
 import regex as re
 import scipy.stats as stats
 
@@ -70,13 +70,16 @@ def p_of_2proportions(P1, P2, N1, N2):
     """
     Calculate the 1-tailed p-value of the null hypothesis that, two propertions are not statistically different given sample sizes.
     """
-    P = (N1*P1 + N2*P2) / (N1+N2)
-    SE = numpy.sqrt( P * (1-P) * (1/N1 + 1/N2) )
-    z = (P1 - P2) / SE
-    p = 1 - scipystats.norm.cdf( z )
+    if N1>0 and N2>0:
+        P = (N1*P1 + N2*P2) / (N1+N2)
+        SE = numpy.sqrt( P * (1-P) * (1/N1 + 1/N2) )
+        z = (P1 - P2) / SE
+        p = 1 - stats.norm.cdf( z )
 
-    return p
-
+        return p
+    
+    else:
+        return math.nan
 
 
 
@@ -170,32 +173,27 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
             line_out = '\t'.join( item )
             
             # Note discrepancies for reference calls
-            if ( not re.search(r'ArmLossInNormal|NonCallable', vcf_i.info) ) and ( re.search(r'\bPASS\b', vcf_i.filters) ):
+            if re.search(r'\bPASS\b', vcf_i.filters) and (TVAF == 0): # and (not re.search(r'ArmLossInNormal|NonCallable', vcf_i.info)):
+                                    
+                wgs_VDP, wgs_DP = vcf_i.get_info_value('bwaDP').split(',')
+                wgs_VDP, wgs_DP = int(wgs_VDP), int(wgs_DP)
+        
+                wgs_vaf   = wgs_VDP / wgs_DP
+                lower_vaf = binom_interval(wgs_VDP, wgs_DP, confidence=0.95)[0]
                 
-                if TVAF == 0:
-                    
-                    wgs_VDP, wgs_DP = vcf_i.get_info_value('bwaDP').split(',')
-                    wgs_VDP, wgs_DP = int(wgs_VDP), int(wgs_DP)
-            
-                    wgs_vaf   = wgs_VDP / wgs_DP
-                    lower_vaf = binom_interval(wgs_VDP, wgs_DP, confidence=0.95)[0]
-                    
-                    non_variant_af       = 1 - wgs_vaf
-                    upper_non_variant_af = 1 - lower_vaf
-                    
-                    if upper_non_variant_af ** T_DP < 0.05:
-                        print( vcf_i.chromosome, vcf_i.position, vcf_i.filters, vcf_i.refbase, vcf_i.altbase, sep='\t', end='\t' )
-                        print( '{}/{}={}'.format(wgs_VDP, wgs_DP, '%.3g' % wgs_vaf), end='\t')
-                        print( 'No PACB Supporting Read At All with DP={}'.format(T_DP) )
-                        
-                        line_out = relabel(vcf_line, newLabel=None, additional_flag='NoPACB2'):
+                non_variant_af       = 1 - wgs_vaf
+                upper_non_variant_af = 1 - lower_vaf
+                
+                #if upper_non_variant_af ** T_DP < 0.05:
+                if p_of_2proportions(wgs_vaf, TVAF, wgs_DP, T_DP) < 0.01:
+                    line_out = relabel(vcf_line, newLabel=None, additional_flag='2PropPacBio0.01')
 
-                    elif non_variant_af ** T_DP < 0.05:
-                        print( vcf_i.chromosome, vcf_i.position, vcf_i.filters, vcf_i.refbase, vcf_i.altbase, sep='\t', end='\t')
-                        print( '{}/{}={}'.format(wgs_VDP, wgs_DP, '%.3g' % wgs_vaf), end='\t')
-                        print( 'No PACB Supporting Read with DP={}'.format(T_DP) )
-
-                        line_out = relabel(vcf_line, newLabel=None, additional_flag='NoPACB1'):
+                #elif non_variant_af ** T_DP < 0.05:
+                elif p_of_2proportions(wgs_vaf, TVAF, wgs_DP, T_DP) < 0.05:
+                    line_out = relabel(vcf_line, newLabel=None, additional_flag='2PropPacBio0.05')
+                    
+            else:
+                line_out = vcf_line
 
         else:
             line_out = vcf_line
