@@ -217,11 +217,11 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
                 
                 #if upper_non_variant_af ** T_DP < 0.05:
                 if p_of_2proportions(wgs_vaf, TVAF, wgs_DP, T_DP) < 0.01:
-                    line_out = relabel(vcf_line, newLabel=None, additional_flag='2PropPacBio0.01')
+                    line_out = relabel(vcf_line, newLabel=None, additional_flag='2Prop_PACB_0.01')
 
                 #elif non_variant_af ** T_DP < 0.05:
                 elif p_of_2proportions(wgs_vaf, TVAF, wgs_DP, T_DP) < 0.05:
-                    line_out = relabel(vcf_line, newLabel=None, additional_flag='2PropPacBio0.05')
+                    line_out = relabel(vcf_line, newLabel=None, additional_flag='2Prop_PACB_0.05')
                     
             else:
                 line_out = '\t'.join( item )
