@@ -85,6 +85,7 @@ def p_of_2proportions(P1, P2, N1, N2):
 
 PacBio = {}
 with genome.open_textfile(args.my_tsv_file) as tsv:
+    
     header = tsv.readline().rstrip().split('\t')
     
     idx_CHROM            = header.index('CHROM')
@@ -148,7 +149,7 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
     
     vcf_line = vcf.readline().rstrip()
 
-    while vcf_line.startswith('#'):
+    while vcf_line.startswith('##'):
         vcf_line = vcf.readline().rstrip()
 
     for vcf_line in vcf:
