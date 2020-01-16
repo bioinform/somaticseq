@@ -97,6 +97,8 @@ with genome.open_textfile(args.my_tsv_file) as tsv:
     idx_N_REF_REV        = header.index('N_REF_REV')
     idx_N_ALT_FOR        = header.index('N_ALT_FOR')
     idx_N_ALT_REV        = header.index('N_ALT_REV')
+    idx_N_REF_MQ         = header.index('nBAM_REF_MQ')
+    idx_N_ALT_MQ         = header.index('nBAM_ALT_MQ')
     idx_nBAM_Other_Reads = header.index('nBAM_Other_Reads')
     
     idx_T_DP             = header.index('T_DP')
@@ -104,6 +106,8 @@ with genome.open_textfile(args.my_tsv_file) as tsv:
     idx_T_REF_REV        = header.index('T_REF_REV')
     idx_T_ALT_FOR        = header.index('T_ALT_FOR')
     idx_T_ALT_REV        = header.index('T_ALT_REV')
+    idx_T_REF_MQ         = header.index('tBAM_REF_MQ')
+    idx_T_ALT_MQ         = header.index('tBAM_ALT_MQ')
     idx_tBAM_Other_Reads = header.index('tBAM_Other_Reads')
 
     for line_i in tsv:
@@ -114,11 +118,13 @@ with genome.open_textfile(args.my_tsv_file) as tsv:
         nvaf = (int(item[idx_N_ALT_FOR]) + int(item[idx_N_ALT_REV])) / int(item[idx_N_DP]) if int(item[idx_N_DP]) != 0 else 0
         tvaf = (int(item[idx_T_ALT_FOR]) + int(item[idx_T_ALT_REV])) / int(item[idx_T_DP]) if int(item[idx_T_DP]) != 0 else 0
         
-        PacBio[identifier] = { 'N_DP' :             int( item[idx_N_DP] ), \
-                               'N_REF_FOR' :        int( item[idx_N_REF_FOR] ), \
-                               'N_REF_REV' :        int( item[idx_N_REF_REV] ), \
-                               'N_ALT_FOR' :        int( item[idx_N_ALT_FOR] ), \
-                               'N_ALT_REV' :        int( item[idx_N_ALT_REV] ), \
+        PacBio[identifier] = { 'N_DP' :             int(  item[idx_N_DP] ), \
+                               'N_REF_FOR' :        int(  item[idx_N_REF_FOR] ), \
+                               'N_REF_REV' :        int(  item[idx_N_REF_REV] ), \
+                               'N_ALT_FOR' :        int(  item[idx_N_ALT_FOR] ), \
+                               'N_ALT_REV' :        int(  item[idx_N_ALT_REV] ), \
+                               'N_REF_MQ'  :        float(item[idx_N_REF_MQ] ), \
+                               'N_ALT_MQ'  :        float(item[idx_N_ALT_MQ] ), \
                                'nBAM_Other_Reads' : int( item[idx_nBAM_Other_Reads] ), \
                                'NVAF':              nvaf , \
                                'T_DP' :             int( item[idx_T_DP] ), \
@@ -126,6 +132,8 @@ with genome.open_textfile(args.my_tsv_file) as tsv:
                                'T_REF_REV' :        int( item[idx_T_REF_REV] ), \
                                'T_ALT_FOR' :        int( item[idx_T_ALT_FOR] ), \
                                'T_ALT_REV' :        int( item[idx_T_ALT_REV] ), \
+                               'T_REF_MQ'  :        float(item[idx_T_REF_MQ] ), \
+                               'T_ALT_MQ'  :        float(item[idx_T_ALT_MQ] ), \
                                'tBAM_Other_Reads' : int( item[idx_tBAM_Other_Reads] ), \
                                'TVAF' :             tvaf }                               
 
@@ -157,16 +165,38 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
             T_ALT_REV = PacBio[variant_identifier]['T_ALT_REV']
             T_DP      = PacBio[variant_identifier]['T_DP']
             TVAF      = PacBio[variant_identifier]['TVAF']
+            
             N_REF_FOR = PacBio[variant_identifier]['N_REF_FOR']
             N_REF_REV = PacBio[variant_identifier]['N_REF_REV']
             N_ALT_FOR = PacBio[variant_identifier]['N_ALT_FOR']
             N_ALT_REV = PacBio[variant_identifier]['N_ALT_REV']
             N_DP      = PacBio[variant_identifier]['N_DP']
             NVAF      = PacBio[variant_identifier]['NVAF']
+            
             T_VDP     = T_ALT_FOR + T_ALT_REV
             N_VDP     = N_ALT_FOR + N_ALT_REV
-            
-            additional_string = 'PACB_T_DP4={},{},{},{};PACB_N_DP4={},{},{},{};PACB_T_DP={},{};PACB_N_DP={},{};PACB_TVAF={};PACB_NVAF={}'.format(T_REF_FOR, T_REF_REV, T_ALT_FOR, T_ALT_REV, N_REF_FOR, N_REF_REV, N_ALT_FOR, N_ALT_REV, T_VDP, T_DP, N_VDP, N_DP, '%.3g' % TVAF, '%.3g' % NVAF)
+
+            if math.isnan(PacBio[variant_identifier]['T_REF_MQ']):
+                T_REF_MQ = '.'
+            else:
+                T_REF_MQ = '%.1f' % PacBio[variant_identifier]['T_REF_MQ']
+
+            if math.isnan(PacBio[variant_identifier]['T_ALT_MQ']):
+                T_ALT_MQ = '.'
+            else:
+                T_ALT_MQ = '%.1f' % PacBio[variant_identifier]['T_ALT_MQ']
+
+            if math.isnan(PacBio[variant_identifier]['N_REF_MQ']):
+                N_REF_MQ = '.'
+            else:
+                N_REF_MQ = '%.1f' % PacBio[variant_identifier]['N_REF_MQ']
+
+            if math.isnan(PacBio[variant_identifier]['N_ALT_MQ']):
+                N_ALT_MQ = '.'
+            else:
+                N_ALT_MQ = '%.1f' % PacBio[variant_identifier]['N_ALT_MQ']
+
+            additional_string = 'PACB_T_DP4={},{},{},{};PACB_N_DP4={},{},{},{};PACB_T_DP={},{};PACB_N_DP={},{};PACB_TVAF={};PACB_NVAF={};PACB_N_MQ={},{};PACB_T_MQ={},{}'.format(T_REF_FOR, T_REF_REV, T_ALT_FOR, T_ALT_REV, N_REF_FOR, N_REF_REV, N_ALT_FOR, N_ALT_REV, T_VDP, T_DP, N_VDP, N_DP, '%.3g' % TVAF, '%.3g' % NVAF, N_REF_MQ, N_ALT_MQ, T_REF_MQ, T_ALT_MQ)
 
             item = vcf_line.split('\t')
             item[7] = item[7] + ';' + additional_string
@@ -193,9 +223,9 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
                     line_out = relabel(vcf_line, newLabel=None, additional_flag='2PropPacBio0.05')
                     
             else:
-                line_out = vcf_line
+                line_out = '\t'.join( item )
 
         else:
-            line_out = vcf_line
+            line_out = '\t'.join( item )
             
         out.write( line_out )

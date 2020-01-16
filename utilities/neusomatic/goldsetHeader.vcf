@@ -92,6 +92,8 @@
 ##INFO=<ID=PACB_N_DP,Number=2,Type=Integer,Description="PacBio variant and total sequencing depth for the normal">
 ##INFO=<ID=PACB_TVAF,Number=1,Type=Float,Description="PacBio VAF for the tumor">
 ##INFO=<ID=PACB_NVAF,Number=1,Type=Float,Description="PacBio VAF for the normal">
+##INFO=<ID=PACB_N_MQ,Number=2,Type=Float,Description="Reference and variant supporting mapping quality scores for PacBio normal data">
+##INFO=<ID=PACB_T_MQ,Number=2,Type=Float,Description="Reference and variant supporting mapping quality scores for PacBio cancer data">
 ##contig=<ID=chr1,length=248956422>
 ##contig=<ID=chr2,length=242193529>
 ##contig=<ID=chr3,length=198295559>
