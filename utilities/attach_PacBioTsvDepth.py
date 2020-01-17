@@ -38,7 +38,7 @@ def binom_interval(success, total, confidence=0.95):
 
 
 
-def relabel(vcf_line, newLabel=None, additional_flag=None):
+def relabel(vcf_line, newLabel=None, additional_flag=None, remove_PASS=False):
     
     vcf_i = genome.Vcf_line( vcf_line )
     item  = vcf_line.split('\t')
@@ -47,6 +47,11 @@ def relabel(vcf_line, newLabel=None, additional_flag=None):
         filterColumn = re.sub(r'HighConf|MedConf|LowConf|Unclassified', newLabel, vcf_i.filters)
         item         = vcf_line.split('\t')
         item[6]      = filterColumn
+    
+    if remove_PASS:
+        filter_items = item[6].split(';')
+        filter_items.remove('PASS')
+        item[6] = ';'.join(filter_items)
     
     if additional_flag:
         if 'FLAGS' in vcf_i.info:
@@ -111,6 +116,8 @@ with genome.open_textfile(args.my_tsv_file) as tsv:
     idx_T_ALT_MQ         = header.index('tBAM_ALT_MQ')
     idx_tBAM_Other_Reads = header.index('tBAM_Other_Reads')
 
+    idx_MQ0              = header.index('MQ0')
+
     for line_i in tsv:
         item = line_i.rstrip().split('\t')
         
@@ -119,24 +126,28 @@ with genome.open_textfile(args.my_tsv_file) as tsv:
         nvaf = (int(item[idx_N_ALT_FOR]) + int(item[idx_N_ALT_REV])) / int(item[idx_N_DP]) if int(item[idx_N_DP]) != 0 else 0
         tvaf = (int(item[idx_T_ALT_FOR]) + int(item[idx_T_ALT_REV])) / int(item[idx_T_DP]) if int(item[idx_T_DP]) != 0 else 0
         
-        PacBio[identifier] = { 'N_DP' :             int(  item[idx_N_DP] ), \
-                               'N_REF_FOR' :        int(  item[idx_N_REF_FOR] ), \
-                               'N_REF_REV' :        int(  item[idx_N_REF_REV] ), \
-                               'N_ALT_FOR' :        int(  item[idx_N_ALT_FOR] ), \
-                               'N_ALT_REV' :        int(  item[idx_N_ALT_REV] ), \
-                               'N_REF_MQ'  :        float(item[idx_N_REF_MQ] ), \
-                               'N_ALT_MQ'  :        float(item[idx_N_ALT_MQ] ), \
-                               'nBAM_Other_Reads' : int( item[idx_nBAM_Other_Reads] ), \
-                               'NVAF':              nvaf , \
-                               'T_DP' :             int( item[idx_T_DP] ), \
-                               'T_REF_FOR' :        int( item[idx_T_REF_FOR] ), \
-                               'T_REF_REV' :        int( item[idx_T_REF_REV] ), \
-                               'T_ALT_FOR' :        int( item[idx_T_ALT_FOR] ), \
-                               'T_ALT_REV' :        int( item[idx_T_ALT_REV] ), \
-                               'T_REF_MQ'  :        float(item[idx_T_REF_MQ] ), \
-                               'T_ALT_MQ'  :        float(item[idx_T_ALT_MQ] ), \
-                               'tBAM_Other_Reads' : int( item[idx_tBAM_Other_Reads] ), \
-                               'TVAF' :             tvaf }                               
+        PacBio[identifier] = { 'N_DP':             int(  item[idx_N_DP] ), \
+                               'N_REF_FOR':        int(  item[idx_N_REF_FOR] ), \
+                               'N_REF_REV':        int(  item[idx_N_REF_REV] ), \
+                               'N_ALT_FOR':        int(  item[idx_N_ALT_FOR] ), \
+                               'N_ALT_REV':        int(  item[idx_N_ALT_REV] ), \
+                               'N_REF_MQ':         float(item[idx_N_REF_MQ] ), \
+                               'N_ALT_MQ':         float(item[idx_N_ALT_MQ] ), \
+                               'nBAM_Other_Reads': int( item[idx_nBAM_Other_Reads] ), \
+                               'NVAF':             nvaf , \
+                               'T_DP':             int( item[idx_T_DP] ), \
+                               'T_REF_FOR':        int( item[idx_T_REF_FOR] ), \
+                               'T_REF_REV':        int( item[idx_T_REF_REV] ), \
+                               'T_ALT_FOR':        int( item[idx_T_ALT_FOR] ), \
+                               'T_ALT_REV':        int( item[idx_T_ALT_REV] ), \
+                               'T_REF_MQ':         float(item[idx_T_REF_MQ] ), \
+                               'T_ALT_MQ':         float(item[idx_T_ALT_MQ] ), \
+                               'tBAM_Other_Reads': int( item[idx_tBAM_Other_Reads] ), \
+                               'TVAF':             tvaf ,\
+                               'MQ0':              int( item[idx_MQ0] ), \
+                               }
+
+
 
 
 
@@ -197,11 +208,13 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
             else:
                 N_ALT_MQ = '%.1f' % PacBio[variant_identifier]['N_ALT_MQ']
 
+            MQ0 = PacBio[variant_identifier]['MQ0']
+
+
             additional_string = 'PACB_T_DP4={},{},{},{};PACB_N_DP4={},{},{},{};PACB_T_DP={},{};PACB_N_DP={},{};PACB_TVAF={};PACB_NVAF={};PACB_N_MQ={},{};PACB_T_MQ={},{}'.format(T_REF_FOR, T_REF_REV, T_ALT_FOR, T_ALT_REV, N_REF_FOR, N_REF_REV, N_ALT_FOR, N_ALT_REV, T_VDP, T_DP, N_VDP, N_DP, '%.3g' % TVAF, '%.3g' % NVAF, N_REF_MQ, N_ALT_MQ, T_REF_MQ, T_ALT_MQ)
 
             item = vcf_line.split('\t')
             item[7] = item[7] + ';' + additional_string
-            line_out = '\t'.join( item )
             
             # Note discrepancies for reference calls
             if re.search(r'\bPASS\b', vcf_i.filters) and (TVAF == 0): # and (not re.search(r'ArmLossInNormal|NonCallable', vcf_i.info)):
@@ -215,13 +228,14 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
                 non_variant_af       = 1 - wgs_vaf
                 upper_non_variant_af = 1 - lower_vaf
                 
+                p_value = p_of_2proportions(wgs_vaf, TVAF, wgs_DP, T_DP)
                 #if upper_non_variant_af ** T_DP < 0.05:
-                if p_of_2proportions(wgs_vaf, TVAF, wgs_DP, T_DP) < 0.01:
-                    line_out = relabel(vcf_line, newLabel=None, additional_flag='2Prop_PACB_0.01')
+                if p_value < 0.01:
+                    line_out = relabel(line_out, newLabel=None, additional_flag='2Prop_PACB_0.01_p%.3g' % p_value)
 
                 #elif non_variant_af ** T_DP < 0.05:
-                elif p_of_2proportions(wgs_vaf, TVAF, wgs_DP, T_DP) < 0.05:
-                    line_out = relabel(vcf_line, newLabel=None, additional_flag='2Prop_PACB_0.05')
+                elif p_value < 0.05:
+                    line_out = relabel(line_out, newLabel=None, additional_flag='2Prop_PACB_0.05_p%.3g' % p_value)
                     
             else:
                 line_out = '\t'.join( item )
