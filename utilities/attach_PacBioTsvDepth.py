@@ -116,7 +116,7 @@ with genome.open_textfile(args.my_tsv_file) as tsv:
     idx_T_ALT_MQ         = header.index('tBAM_ALT_MQ')
     idx_tBAM_Other_Reads = header.index('tBAM_Other_Reads')
 
-    idx_MQ0              = header.index('MQ0')
+    idx_MQ0              = header.index('tBAM_MQ0')
 
     for line_i in tsv:
         item = line_i.rstrip().split('\t')
@@ -163,12 +163,17 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
     while vcf_line.startswith('##'):
         vcf_line = vcf.readline().rstrip()
 
+    header = vcf_line.split('\t')
+
+
+    p001 = 0
+    p005 = 0
     for vcf_line in vcf:
         
         vcf_i = genome.Vcf_line( vcf_line.rstrip() )
 
         variant_identifier = vcf_i.chromosome, vcf_i.position, vcf_i.refbase, vcf_i.altbase
-
+        
         if variant_identifier in PacBio:
             
             T_REF_FOR = PacBio[variant_identifier]['T_REF_FOR']
@@ -208,8 +213,7 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
             else:
                 N_ALT_MQ = '%.1f' % PacBio[variant_identifier]['N_ALT_MQ']
 
-            MQ0 = PacBio[variant_identifier]['MQ0']
-
+            MQ0 = PacBio[variant_identifier]['MQ0']            
 
             additional_string = 'PACB_T_DP4={},{},{},{};PACB_N_DP4={},{},{},{};PACB_T_DP={},{};PACB_N_DP={},{};PACB_TVAF={};PACB_NVAF={};PACB_N_MQ={},{};PACB_T_MQ={},{}'.format(T_REF_FOR, T_REF_REV, T_ALT_FOR, T_ALT_REV, N_REF_FOR, N_REF_REV, N_ALT_FOR, N_ALT_REV, T_VDP, T_DP, N_VDP, N_DP, '%.3g' % TVAF, '%.3g' % NVAF, N_REF_MQ, N_ALT_MQ, T_REF_MQ, T_ALT_MQ)
 
@@ -232,11 +236,19 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
                 #if upper_non_variant_af ** T_DP < 0.05:
                 if p_value < 0.01:
                     line_out = relabel(line_out, newLabel=None, additional_flag='2Prop_PACB_0.01_p%.3g' % p_value)
+                    
+                    short_read_MQ0 = int( vcf_i.get_info_value('MQ0') )
+                    if ( PacBio[variant_identifier]['T_REF_MQ'] < 50 ) or short_read_MQ0>=10:
+                        p001 += 1
 
                 #elif non_variant_af ** T_DP < 0.05:
                 elif p_value < 0.05:
                     line_out = relabel(line_out, newLabel=None, additional_flag='2Prop_PACB_0.05_p%.3g' % p_value)
                     
+                    short_read_MQ0 = int( vcf_i.get_info_value('MQ0') )
+                    if ( PacBio[variant_identifier]['T_REF_MQ'] < 50 ) or short_read_MQ0>=10:
+                        p005 += 1
+
             else:
                 line_out = '\t'.join( item )
 
@@ -244,3 +256,5 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
             line_out = '\t'.join( item )
             
         out.write( line_out )
+
+print(p001, p005)
