@@ -136,8 +136,8 @@ vcf-concat NeuRescued.sINDEL.vcf.gz 1000X.indel.toAdd.vcf.gz sINDEL.MDKT.dedup_a
 ${SEQC2}/somaticseq/utilities/attach_PacBioTsvDepth.py -myvcf sSNV.MSDUKT.superSet.v1.1.vcf.gz -mytsv PacBio/sSNV.MSDUKT.superSet.v1.1.PACB_annotated.tsv.gz -outfile sSNV.MSDUKT.superSet.v1.2.vcf
 ${SEQC2}/somaticseq/utilities/attach_PacBioTsvDepth.py -myvcf sINDEL.MDKT.superSet.v1.1.vcf.gz -mytsv PacBio/sINDEL.MDKT.superSet.v1.1.PACB_annotated.tsv.gz -outfile sINDEL.MDKT.superSet.v1.2.vcf
 
-bgzip sSNV.MSDUKT.superSet.v1.2.vcf
-bgzip sINDEL.MDKT.superSet.v1.2.vcf
+bgzip -f sSNV.MSDUKT.superSet.v1.2.vcf
+bgzip -f sINDEL.MDKT.superSet.v1.2.vcf
 
 
 # 15) Simplify release VCF
