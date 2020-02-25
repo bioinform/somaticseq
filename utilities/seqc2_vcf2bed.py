@@ -11,13 +11,6 @@ sys.path.append( PRE_DIR )
 
 import genomic_file_handlers as genome
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-vcfs',   '--annotated-file', nargs='+', type=str, help='VCF File')
-parser.add_argument('-outfile', '--output-file', type=str, help='Output File Name')
-
-args = parser.parse_args()
-
-
 def vcfs2genes(vcfs):
     
     geneticRegions = {}
@@ -33,25 +26,63 @@ def vcfs2genes(vcfs):
                 
                 vcf_i = genome.Vcf_line( line_i )
                 
-                ann_values  = re.search(r'\bANN=([^;\t]+)', vcf_i.info )
-                annotations = ann_values.groups()[0].split(',')
+                contig_i   = vcf_i.chromosome
+                position_i = vcf_i.position
                 
-                for annotation_i in annotations:
-                    ann_item    = annotation_i.split('|')
+                ann_values  = re.search(r'\bANN=([^;\t]+)', vcf_i.info )
+                
+                if ann_values:
+                    annotations = ann_values.groups()[0].split(',')
                     
-                    gene_i     = ann_item[3]
-                    ntchange_i = ann_item[9]
-                    aaChange_i = ann_item[10]
-
-                    if gene_i and aaChange_i:
-                        # Only do non-syn variants
-                        aa = re.search(r'p\.([a-zA-Z]+)[0-9]+([a-zA-Z]+)', aaChange_i)
+                    for annotation_i in annotations:
+                        ann_item    = annotation_i.split('|')
                         
-                        if aa and (aa.groups()[0] != aa.groups()[1]):
-                            varAnns.add( '{}:{}'.format(gene_i, aaChange_i) )
-
-
+                        gene_i     = ann_item[3]
+                        ntchange_i = ann_item[9]
+                        aaChange_i = ann_item[10]
+    
+                        if gene_i and aaChange_i:
+                            # Only do non-syn variants
+                            aa = re.search(r'p\.([a-zA-Z]+)[0-9]+([a-zA-Z]+)', aaChange_i)
+                            
+                            if aa and (aa.groups()[0] != aa.groups()[1]):
+                                
+                                if gene_i not in geneticRegions:
+                                    geneticRegions[ gene_i ] = [ [], [] ]
+                                    
+                                geneticRegions[ gene_i ][0].append( contig_i )
+                                geneticRegions[ gene_i ][1].append( position_i )
+                                break
+                
                 line_i = vcf.readline().rstrip()
+                
+    return geneticRegions
+
+
+def print_bed( geneticRegions ):
+    
+    for gene_i in geneticRegions:
+        for contig_i, position_i in zip( geneticRegions[gene_i][0], geneticRegions[gene_i][1] ):
+            
+            line_i = '{}\t{}\t{}\t{}'.format( contig_i, position_i-1, position_i, gene_i )
+            print( line_i )
+            
+    return 0
 
 
 
+def run():
+
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-vcfs',   '--annotated-vcfs', nargs='+', type=str, help='VCF File')
+    args = parser.parse_args()
+
+    return args
+
+
+
+
+if __name__ == '__main__':
+    args = run()
+    geneticRegions = vcfs2genes(args.annotated_vcfs)
+    print_bed( geneticRegions )
