@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # Supports Insertion/Deletion as well as SNVs
-# Last updated: 8/29/2015
 
 import math, argparse, sys, os, gzip, numpy
 import regex as re
