@@ -70,7 +70,7 @@ while true; do
 		--out-script )
 			case "$2" in
 				"") shift 2 ;;
-				*)  min_length=$2 ; shift 2 ;;
+				*)  out_script_name=$2 ; shift 2 ;;
 			esac ;;
 
 		--action )
