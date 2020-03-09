@@ -16,9 +16,10 @@ with pysam.AlignmentFile(bam_file) as bam:
     
     reads = bam.fetch()
     
-    clipped_and_discordant = clipped_only = discordant_only = concordant_reads = mq0 = unmapped = total_reads = 0
-    frag_lengths = {}
-    MQs = {}
+    clipped_and_discordant = clipped_only = discordant_only = concordant_reads = mq0 = unmapped = duplicated_reads = total_reads = 0
+    frag_lengths          = {}
+    duplicates_per_length = {}
+    MQs                   = {}
     
     for read_i in reads:
         
@@ -29,9 +30,23 @@ with pysam.AlignmentFile(bam_file) as bam:
             
             if frag_length in frag_lengths:
                 frag_lengths[frag_length] += 1
+                
+                if read_i.is_duplicate:
+                    try:
+                        duplicates_per_length[frag_length] += 1
+                    except KeyError:
+                        duplicates_per_length[frag_length] = 1
+                
             else:
                 frag_lengths[frag_length] = 1
-        
+
+                if read_i.is_duplicate:
+                    duplicates_per_length[frag_length] = 1
+
+
+        if read_i.is_duplicate:
+            duplicated_reads += 1
+            
         
         mq = read_i.mapping_quality
         if mq in MQs:
@@ -90,8 +105,9 @@ with pysam.AlignmentFile(bam_file) as bam:
             sum_of_square_of_x_minus_mean += square_of_x_minus_mean * frag_lengths[frag_i]
             
     frag_length_std_dev = (sum_of_square_of_x_minus_mean / total_reads_processed) ** (1/2)
-    
-    
+
+
+    print('Duplicated reads: {}'.format(duplicated_reads) )
     print('soft-clipped and discordant reads: {}'.format(clipped_and_discordant) )
     print('soft-clipped and concordant reads: {}'.format(clipped_only) )
     print('discordant and not-clipped reads: {}'.format(discordant_only) )
@@ -108,4 +124,4 @@ with pysam.AlignmentFile(bam_file) as bam:
     
     print('###---\nFrag length distribution:')
     for frag_i in sorted(frag_lengths):
-        print('FragLength={}: {}'.format(frag_i, frag_lengths[frag_i]) )
+        print('FragLength={}: {} / {} = {}'.format(frag_i, duplicates_per_length[frag_i], frag_lengths[frag_i], '%g' % duplicates_per_length[frag_i]/frag_lengths[frag_i] ) )
