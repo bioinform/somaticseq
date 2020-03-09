@@ -42,6 +42,8 @@ with pysam.AlignmentFile(bam_file) as bam:
 
                 if read_i.is_duplicate:
                     duplicates_per_length[frag_length] = 1
+                else:
+                    duplicates_per_length[frag_length] = 0
 
 
         if read_i.is_duplicate:
