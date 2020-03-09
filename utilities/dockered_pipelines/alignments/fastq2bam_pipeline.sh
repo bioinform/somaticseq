@@ -19,6 +19,8 @@ normal_bam_header='@RG\tID:myPipeline\tLB:myLibrary\tPL:illumina\tSM:NORMAL'
 MEM=16
 threads=1
 action=echo
+t_outbam=tumor
+n_outbam=normal
 
 while true; do
     case "$1" in
@@ -159,7 +161,7 @@ mkdir -p ${logdir}
 
 if [[ ${out_script_name} ]]
 then
-    out_script="${logdir}/${out_script_name}"
+    out_script="${out_script_name}"
 else
     out_script="${logdir}/fastq2bam.${timestamp}.cmd"    
 fi
@@ -193,12 +195,12 @@ then
         --fq2              ${t_fq2} \
         --genome-reference ${GENOME_REFERENCE} \
         --output-dir       ${outdir} \
-        --out-bam          tumor.sorted.bam \
+        --out-bam          ${t_outbam}.sorted.bam \
         --bam-header       "${tumor_bam_header}" \
         --threads          ${threads} \
         --out-script       ${out_script}
 
-        latest_tumor_bam="${outdir}/tumor.sorted.bam"
+        latest_tumor_bam="${outdir}/${t_outbam}.sorted.bam"
     fi
 
     if [[ ${n_fq1} && ${n_fq2} ]]
@@ -208,12 +210,12 @@ then
         --fq2              ${n_fq2} \
         --genome-reference ${GENOME_REFERENCE} \
         --output-dir       ${outdir} \
-        --out-bam          normal.sorted.bam \
+        --out-bam          ${n_outbam}.sorted.bam \
         --bam-header       "${normal_bam_header}" \
         --threads          ${threads} \
         --out-script       ${out_script}
         
-        latest_normal_bam="${outdir}/normal.sorted.bam"
+        latest_normal_bam="${outdir}/${n_outbam}.sorted.bam"
     fi
 
 fi
@@ -227,10 +229,10 @@ then
         $MYDIR/markdup.sh \
         --output-dir ${outdir} \
         --in-bam     ${latest_tumor_bam} \
-        --out-bam    tumor.markdup.bam \
+        --out-bam    ${t_outbam}.markdup.bam \
         --out-script ${out_script}
     
-        latest_tumor_bam="${outdir}/tumor.markdup.bam"
+        latest_tumor_bam="${outdir}/${t_outbam}.markdup.bam"
     fi
     
   
@@ -240,10 +242,10 @@ then
         $MYDIR/markdup.sh \
         --output-dir ${outdir} \
         --in-bam     ${latest_normal_bam} \
-        --out-bam    normal.markdup.bam \
+        --out-bam    ${n_outbam}.markdup.bam \
         --out-script ${out_script}
     
-        latest_normal_bam="${outdir}/normal.markdup.bam"
+        latest_normal_bam="${outdir}/${n_outbam}.markdup.bam"
     fi
 fi
 
@@ -302,7 +304,7 @@ then
         $MYDIR/BQSR.sh \
         --output-dir       ${outdir} \
         --in-bam           ${latest_tumor_bam} \
-        --out-bam          ${t_outbam} \
+        --out-bam          ${t_outbam}.bam \
         --genome-reference ${GENOME_REFERENCE} \
         --dbsnp            ${dbsnp} \
         --out-script       ${out_script}
@@ -313,7 +315,7 @@ then
         $MYDIR/BQSR.sh \
         --output-dir       ${outdir} \
         --in-bam           ${latest_normal_bam} \
-        --out-bam          ${n_outbam} \
+        --out-bam          ${n_outbam}.bam \
         --genome-reference ${GENOME_REFERENCE} \
         --dbsnp            ${dbsnp} \
         --out-script       ${out_script}
