@@ -109,7 +109,7 @@ with pysam.AlignmentFile(bam_file) as bam:
     frag_length_std_dev = (sum_of_square_of_x_minus_mean / total_reads_processed) ** (1/2)
 
 
-    print('Duplicated reads and rates: {}, {}'.format(duplicated_reads, '%g' % duplicated_reads/total_reads ) )
+    print('Duplicated reads and rates: {}, {}'.format(duplicated_reads, duplicated_reads/total_reads ) )
     print('soft-clipped and discordant reads: {}'.format(clipped_and_discordant) )
     print('soft-clipped and concordant reads: {}'.format(clipped_only) )
     print('discordant and not-clipped reads: {}'.format(discordant_only) )
@@ -126,4 +126,4 @@ with pysam.AlignmentFile(bam_file) as bam:
     
     print('###---\nFrag length distribution:')
     for frag_i in sorted(frag_lengths):
-        print('FragLength={}: {} / {} = {}'.format(frag_i, duplicates_per_length[frag_i], frag_lengths[frag_i], '%g' % duplicates_per_length[frag_i]/frag_lengths[frag_i] ) )
+        print('FragLength={}: {} / {} = {}'.format(frag_i, duplicates_per_length[frag_i], frag_lengths[frag_i], duplicates_per_length[frag_i]/frag_lengths[frag_i] ) )
