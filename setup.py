@@ -22,6 +22,7 @@ setup(
              'utilities/lociCounterWithLabels.py',
              'utilities/split_Bed_into_equal_regions.py',
              'utilities/tally_variants_from_multiple_vcfs.py',
+             'utilities/variant_annotation.py',
              'utilities/dockered_pipelines/makeSomaticScripts.py',
              'somaticseq/single_sample_vcf2tsv.py',
              'somaticseq/somatic_vcf2tsv.py',
