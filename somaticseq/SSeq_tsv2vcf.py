@@ -2,9 +2,9 @@
 
 import sys, argparse, math, gzip, os
 
-#MY_DIR = os.path.dirname(os.path.realpath(__file__))
-#PRE_DIR = os.path.join(MY_DIR, os.pardir)
-#sys.path.append( PRE_DIR )
+MY_DIR = os.path.dirname(os.path.realpath(__file__))
+PRE_DIR = os.path.join(MY_DIR, os.pardir)
+sys.path.append( PRE_DIR )
 
 from genomicFileHandler.genomic_file_handlers import p2phred
 from somaticseq._version import vcf_header as version_line

@@ -2,9 +2,9 @@
 
 import sys, os, re
 
-#MY_DIR = os.path.dirname(os.path.realpath(__file__))
-#PRE_DIR = os.path.join(MY_DIR, os.pardir)
-#sys.path.append( PRE_DIR )
+MY_DIR = os.path.dirname(os.path.realpath(__file__))
+PRE_DIR = os.path.join(MY_DIR, os.pardir)
+sys.path.append( PRE_DIR )
 
 import scipy.stats as stats
 import genomicFileHandler.genomic_file_handlers as genome
