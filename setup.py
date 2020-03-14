@@ -15,11 +15,15 @@ setup(
     packages=find_packages(),
     package_data={'': ['*.R']},
     install_requires=['pysam', 'numpy', 'scipy'],
-    scripts=['somaticseq/run_somaticseq.py',
-             'somaticseq_parallel.py',
-             'utilities/dockered_pipelines/makeSomaticScripts.py',
+    scripts=['somaticseq_parallel.py',
+             'somaticseq/run_somaticseq.py',
+             'utilities/attach_pileupVAF.py',
+             'utilities/bamQC.py',
              'utilities/lociCounterWithLabels.py',
              'utilities/split_Bed_into_equal_regions.py',
+             'utilities/tally_variants_from_multiple_vcfs.py',
+             'utilities/dockered_pipelines/makeSomaticScripts.py',
+             'somaticseq/single_sample_vcf2tsv.py',
              'somaticseq/somatic_vcf2tsv.py',
-             'somaticseq/single_sample_vcf2tsv.py']
+             'somaticseq/SSeq_tsv2vcf.py',]
 )

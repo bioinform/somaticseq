@@ -6,7 +6,7 @@ import sys, os, argparse, shutil, math, re
 def run():
 
     # argparse Stuff
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Given an input bed file, this program will output a number of bed files, each will have same number of total base pairs. This routine is used to parallelize SomaticSeq tasks. One limitation, however, is that some regions of the genome have much higher coverage than others. This is the reason some regions run much slower than others.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
     # Variant Call Type, i.e., snp or indel
     parser.add_argument('-infile',    '--input-file',    type=str, help='Input merged BED file',    required=True,  default=None)

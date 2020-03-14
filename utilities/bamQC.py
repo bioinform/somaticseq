@@ -3,7 +3,7 @@
 import sys, argparse, pysam, gzip, time, re
 from os import sep
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(description='Count some metrics from BAM files such as fragment size, duplication rates, fraction of soft-clipped and discordant reads.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-bam',  '--bam-file-in', type=str,    help='Input BAM file',  required=True,  default=None)
 parser.add_argument('-maxl', '--max-length',  type=int,    help='max frag length to consider',  required=False,  default=1000)
 

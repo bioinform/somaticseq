@@ -4,7 +4,7 @@ import argparse, gzip, re, sys
 from os.path import basename
 from copy import copy
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(description='This is a program to tally and count the overlapping regions when given multiple input bed files. A CRITICAL REQUIREMENT is that each input bed file is sorted and non-overlapping, which could be achived with bedtools merge before they are used as input to this program.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-fai',    '--fai-file',   type=str,  help='.fa.fai file',  required=True,  default=None)
 parser.add_argument('-beds',   '--bed-files',  type=str,  help='BED files', nargs='*', required=True,  default=None)
 parser.add_argument('-out',    '--bed-out',    type=str,  help='BED file out', required=False,  default=None)
@@ -201,7 +201,7 @@ for i, bed_file_i in enumerate(bed_files):
 
 
 if args.bed_out:
-	bed_out = open(bed_out, 'w')
+    bed_out = open(bed_out, 'w')
 
 for contig_i in orderedContigs:
     
@@ -216,4 +216,4 @@ for contig_i in orderedContigs:
             bed_out.write(out_string + '\n')
 
 if args.bed_out:
-	bed_out.close()
+    bed_out.close()

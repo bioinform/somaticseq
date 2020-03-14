@@ -17,7 +17,7 @@ def run():
 
     inputParameters = {}
 
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='This is a program to make run scripts for all the individual dockerized somatic mutation callers that we have incorporated. This is NOT a core SomaticSeq algorithm, but simply a helper program to help some people run 3rd-party somatic mutation callers.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Modes:
     sample_parsers = parser.add_subparsers(title="sample_mode")

@@ -16,7 +16,7 @@ def run():
     
     inputParameters = {}
     
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='This is a SomaticSeq subroutine SomaticSeq TSV file into VCF file.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-tsv',   '--tsv-in',                    type=str,   help='TSV in', required=True)
     parser.add_argument('-vcf',   '--vcf-out',                   type=str,   help='VCF iut', required=True)
     parser.add_argument('-pass',  '--pass-threshold',            type=float, help='Above which is automatically PASS', required=False, default=0.5)

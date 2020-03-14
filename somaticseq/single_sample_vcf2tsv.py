@@ -93,7 +93,7 @@ out_header = \
 def run():
 
     inputParameters = {}
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='This is a SomaticSeq subroutine to convert a VCF file into a TSV file with all the SomaticSeq features for tumor-only modes. Any VCF file can be used as the main input. The output will have the same variants. Also required is the BAM files, with additional optional inputs.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     input_sites = parser.add_mutually_exclusive_group()
     input_sites.add_argument('-myvcf',  '--vcf-format',           type=str,   help='Input file is VCF formatted.', required=False, default=None)

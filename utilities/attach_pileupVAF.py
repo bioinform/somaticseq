@@ -16,7 +16,7 @@ import genomicFileHandler.genomic_file_handlers as genome
 import genomicFileHandler.pileup_reader as pileup
 
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(description='Given either a tumor-only or tumor-normal VCF file (requires SAMPLE NAME specified), and pileup file, it will attach VAF calculated from pileup file to the VCF file. The pileup file can also be streamed in.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-myvcf',     '--my-vcf-file', type=str, help='My VCF', required=True, default=None)
 
 parser.add_argument('-normal',  '--normal-sample-name', type=str, help='Normal Sample Name', required=False, default='NORMAL')
