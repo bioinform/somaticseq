@@ -9,7 +9,7 @@ import multiprocessing
 import gzip
 import subprocess
 import uuid
-
+import pysam
 
 EFF_DB = 'GRCh38.86'
 COSMIC_STRING = 'GENE,CDS,AA,CNT'
