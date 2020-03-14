@@ -4,17 +4,11 @@
 
 import math, argparse, sys, os, gzip
 import re
-
-nan = float('nan')
-inf = float('inf')
-
-MY_DIR = os.path.dirname(os.path.realpath(__file__))
-PRE_DIR = os.path.join(MY_DIR, os.pardir)
-sys.path.append( PRE_DIR )
-
 import genomicFileHandler.genomic_file_handlers as genome
 import genomicFileHandler.pileup_reader as pileup
 
+nan = float('nan')
+inf = float('inf')
 
 parser = argparse.ArgumentParser(description='Given either a tumor-only or tumor-normal VCF file (requires SAMPLE NAME specified), and pileup file, it will attach VAF calculated from pileup file to the VCF file. The pileup file can also be streamed in.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-myvcf',     '--my-vcf-file', type=str, help='My VCF', required=True, default=None)
