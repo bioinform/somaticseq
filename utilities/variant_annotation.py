@@ -55,7 +55,7 @@ def annotate_small_variants(snpsift_jar, snpeff_jar, input_vcf, dbsnp_vcf, cosmi
     
     dbsnp_annotated  = snpsift_snp(snpsift_jar, input_vcf, dbsnp_vcf, uuid.uuid4().hex+'.vcf', snp_string)
     cosmic_annotated = snpsift_cosmic(snpsift_jar, dbsnp_annotated, cosmic_vcf, uuid.uuid4().hex+'.vcf', cosmic_string)
-    output_vcf       = snpeff_annotate(snpeff_jar, cosmic_annotated, work_dir, eff_db)
+    output_vcf       = snpeff_annotate(snpeff_jar, cosmic_annotated, output_vcf, eff_db)
 
     os.remove(dbsnp_annotated)
     os.remove(cosmic_annotated)
