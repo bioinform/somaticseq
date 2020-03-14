@@ -8,7 +8,7 @@ import argparse
 import multiprocessing
 import gzip
 import subprocess
-
+import uuid
 
 
 EFF_DB = 'GRCh38.86'
