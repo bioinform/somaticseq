@@ -83,7 +83,8 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         classifiedSnvTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.tsv' ))
         classifiedSnvVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.vcf' ))
 
-        subprocess.call( (modelPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
+        returncode = subprocess.call( (modelPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
+        assert returncode == 0
 
         tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True)
 
@@ -91,7 +92,8 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
-            subprocess.call( (modelTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
+            returncode = subprocess.call( (modelTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
+            assert returncode == 0
 
         consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
         tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
@@ -109,14 +111,16 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         classifiedIndelTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.tsv' ))
         classifiedIndelVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.vcf' ))
 
-        subprocess.call( (modelPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
+        returncode = subprocess.call( (modelPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
+        assert returncode == 0
 
         tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True)
 
     else:
         # Train INDEL classifier:
         if somaticseq_train and truth_indel:
-            subprocess.call( (modelTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
+            returncode = subprocess.call( (modelTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
+            assert returncode == 0
 
         consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))
         tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
@@ -182,7 +186,8 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         classifiedSnvTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.tsv' ))
         classifiedSnvVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.vcf' ))
 
-        subprocess.call( (modelPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
+        returncode = subprocess.call( (modelPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
+        assert returncode == 0
 
         tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True, phred_scaled=True)
 
@@ -190,7 +195,8 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
-            subprocess.call( (modelTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
+            returncode = subprocess.call( (modelTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
+            assert returncode == 0
 
         consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
         tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
@@ -206,14 +212,16 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         classifiedIndelTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.tsv' ))
         classifiedIndelVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.vcf' ))
 
-        subprocess.call( (modelPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
+        returncode = subprocess.call( (modelPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
+        assert returncode == 0
 
         tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True, phred_scaled=True)
 
     else:
         # Train INDEL classifier:
         if somaticseq_train and truth_indel:
-            subprocess.call( (modelTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
+            returncode = subprocess.call( (modelTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
+            assert returncode == 0
 
         consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))
         tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
