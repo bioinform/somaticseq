@@ -20,6 +20,7 @@ setup(
              'utilities/attach_pileupVAF.py',
              'utilities/bamQC.py',
              'utilities/lociCounterWithLabels.py',
+             'utilities/remove_callers_from_somaticseq_tsv.py',
              'utilities/split_Bed_into_equal_regions.py',
              'utilities/tally_variants_from_multiple_vcfs.py',
              'utilities/variant_annotation.py',

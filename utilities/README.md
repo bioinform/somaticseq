@@ -11,6 +11,7 @@ Some of the scripts here are required by SomaticSeq. Others are simply useful fo
 * `multi-nucleotide_phaser.py`: if there are SNVs within N number of bp within each other, it will phase them by looking for reads in BAM files that are consistent with a particular phase. N is tuneable. 
 * `plot_TPvsFP.py`: takes input a training data, and will plot a histogram of true positives vs. false positives for each training feature. Requires matplotlib. 
 * `reformat_VCF2SEQC2.py`: moves some information from a SomaticSeq VCF file from INFO into sampe columns, such that multiple of them can be combined with GATK CombineVariants while retaining these information. 
+* `remove_callers_from_somaticseq_tsv.py`: to mimic a SomaticSeq TSV where only a subset of the callers were used.
 * `split_Bed_into_equal_regions.py`: split a BED file into N number of files, each with equal-sized regions. 
 * `split_mergedBed.py`: used prior to VarDict, by splitting a BED file into smaller regions, each with a fixed size in terms of bps. 
 * `tally_variants_from_multiple_vcfs.py`: have multiple vcf files as an input, and will output a table of variants and which samples have that variant (plus its VAF)
