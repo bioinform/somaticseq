@@ -11,7 +11,6 @@ import subprocess
 import uuid
 import pysam
 
-EFF_DB = 'GRCh38.86'
 COSMIC_STRING = 'GENE,CDS,AA,CNT'
 DBSNP_STRING = 'RSPOS,GENEINFO,dbSNPBuildID,SAO,SSR,VC,PM,MUT,KGPhase1,KGPhase3,OM,CDA,CAF,COMMON'
 
@@ -74,13 +73,14 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Annotate with snpSift and snpEff with dbSNP and COSMIC", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('-infile',  '--infile',   help="input vcf file")
-    parser.add_argument('-outfile', '--outfile',  help="output vcf file")
-    parser.add_argument('-dbsnp',   '--dbsnp',    help="dbsnp vcf file to feed into GATK4 HaplotypeCaller")
-    parser.add_argument('-cosmic',  '--cosmic',   help="cosmic vcf file to feed into GATK4 HaplotypeCaller")
-    parser.add_argument('-snpsift', '--snpsift',  help="SnpSift JAR")
-    parser.add_argument('-snpeff',  '--snpeff',   help="snpEff JAR")
+    parser.add_argument('-infile',  '--infile',    help="input vcf file")
+    parser.add_argument('-outfile', '--outfile',   help="output vcf file")
+    parser.add_argument('-dbsnp',   '--dbsnp',     help="dbsnp vcf file to feed into GATK4 HaplotypeCaller")
+    parser.add_argument('-cosmic',  '--cosmic',    help="cosmic vcf file to feed into GATK4 HaplotypeCaller")
+    parser.add_argument('-snpsift', '--snpsift',   help="SnpSift JAR")
+    parser.add_argument('-snpeff',  '--snpeff',    help="snpEff JAR")
+    parser.add_argument('-db',      '--snpeff-db', help="snpEff db", default='GRCh38.86')
 
     args = parser.parse_args()
 
-    annotate_small_variants(args.snpsift, args.snpeff, args.infile, args.dbsnp, args.cosmic, args.outfile, DBSNP_STRING, COSMIC_STRING, EFF_DB)
+    annotate_small_variants(args.snpsift, args.snpeff, args.infile, args.dbsnp, args.cosmic, args.outfile, DBSNP_STRING, COSMIC_STRING, args.snpeff_db)
