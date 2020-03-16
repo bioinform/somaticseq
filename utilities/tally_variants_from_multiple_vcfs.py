@@ -104,7 +104,7 @@ def vcfs2variants(vcf_files, sample_names, SampleColumnNumber, key='VAF'):
 
 
 
-def print_variantDict(variantDict, sample_names, filter_labels=['PASS',]):
+def print_variantDict(variantDict, sample_names, filter_labels=['PASS',], min_number=0):
     
     line_out = 'CHROM\tPOS\tREF\tALT\tID\tAAChange\tNUM\t' + '\t'.join(sample_names)
     print( line_out )
@@ -135,10 +135,12 @@ def print_variantDict(variantDict, sample_names, filter_labels=['PASS',]):
                 text_i = '%s/%g' % ( ','.join(variantDict[variant_i][sample_i]['FILTER']), variantDict[variant_i][sample_i]['VAF'] )
 
             data_text.append(text_i)
-            
-        line_out = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( variant_i[0], variant_i[1], variant_i[2], variant_i[3], id_column, aa_column, num_intersected_filters, '\t'.join(data_text) )
         
-        print( line_out )
+        if num_intersected_filters >= min_number:
+            
+            line_out = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( variant_i[0], variant_i[1], variant_i[2], variant_i[3], id_column, aa_column, num_intersected_filters, '\t'.join(data_text) )
+            
+            print( line_out )
 
     return 0
 
@@ -153,6 +155,7 @@ def run():
     parser.add_argument('-filters', '--filter-labels', nargs='+',  type=str,  help='Filter labels to count', default=['PASS',] )
     parser.add_argument('-key',     '--vaf-key',                   type=str,  help='What is the key for VAF', required=True)
     parser.add_argument('-column',  '--sample-column',             type=int,  help='Which sample column to get the VAF. If it is the first column, it is 0. If the 2nd column, it is 1.', required=True)
+    parser.add_argument('-min',     '--minimum-samples',           type=int,  help='Print out only if at least this number of vcf files have the variant.', default=0)
     
     args = parser.parse_args()
     
@@ -162,4 +165,4 @@ def run():
 if __name__ == '__main__':
     args = run()
     variant_dict = vcfs2variants(args.vcf_files, args.sample_names, args.sample_column, args.vaf_key)
-    print_variantDict(variant_dict, args.sample_names, args.filter_labels)
+    print_variantDict(variant_dict, args.sample_names, args.filter_labels, args.minimum_samples)
