@@ -22,6 +22,7 @@ setup(
              'somaticseq/SSeq_tsv2vcf.py',
              'utilities/attach_pileupVAF.py',
              'utilities/bamQC.py',
+             'utilities/linguistic_sequence_complexity.py',
              'utilities/lociCounterWithLabels.py',
              'utilities/remove_callers_from_somaticseq_tsv.py',
              'utilities/split_Bed_into_equal_regions.py',
