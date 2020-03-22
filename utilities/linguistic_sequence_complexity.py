@@ -6,6 +6,8 @@ import argparse
 
 eps = float_info.epsilon
 
+
+
 def all_possible_dna_sequences(seq_length):
 
     seqs = ['G', 'C', 'T', 'A']
@@ -35,8 +37,6 @@ def max_vocab(seq_length):
 
 
 
-
-
 def max_vocabularies(seq_length):
     # According to:
     # https://doi.org/10.1093/bioinformatics/18.5.679
@@ -56,7 +56,6 @@ def max_vocabularies(seq_length):
 
 
 
-
 def LC(sequence):
     # Calculate linguistic sequence complexity according to
     # https://doi.org/10.1093/bioinformatics/18.5.679
@@ -66,7 +65,10 @@ def LC(sequence):
 
     for i in range(1, seq_length+1):
         
+        max_vocab_1 = 4**i
+        max_vocab_2 = seq_length - i + 1
         set_of_seq_n = set()
+
         for n, nth_base in enumerate(sequence):
             
             if n+i <= len(sequence):
@@ -74,14 +76,13 @@ def LC(sequence):
                 set_of_seq_n.add( sub_seq )
 
                 # All possible unique subseqs obtained. Break away and go no further. 
-                if ( len(set_of_seq_n) == seq_length-i+1 ) and ( 4**i >= (seq_length - i + 1) ):
+                if ( len(set_of_seq_n) == max_vocab_2 ) and ( max_vocab_1 >= max_vocab_2 ):
                     break
 
         num_uniq_subseqs  = len(set_of_seq_n)
         number_of_subseqs = number_of_subseqs + num_uniq_subseqs
 
     return number_of_subseqs/max_number_of_subseqs
-
 
 
 
