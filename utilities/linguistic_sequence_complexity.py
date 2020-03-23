@@ -59,6 +59,7 @@ def max_vocabularies(seq_length):
 def LC(sequence):
     # Calculate linguistic sequence complexity according to
     # https://doi.org/10.1093/bioinformatics/18.5.679
+    sequence              = sequence.upper()
     number_of_subseqs     = 0
     seq_length            = len(sequence)
     max_number_of_subseqs = max_vocabularies(seq_length)
