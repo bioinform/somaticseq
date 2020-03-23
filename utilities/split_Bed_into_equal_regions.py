@@ -145,6 +145,57 @@ def split(infile, outfiles, num):
     return outfilesWritten
 
 
+
+
+
+def split_vcf_file(vcf_file, work_dir=os.curdir, num=1):
+    
+    num_lines = 0
+    with open_textfile(vcf_file) as vcf:
+        line_i = vcf.readline()
+        header = []
+        while line_i.startswith('#'):
+            header.append(line_i)
+            line_i = vcf.readline()
+        while line_i:
+            num_lines += 1
+            line_i = vcf.readline()
+
+    lines_per_file = math.ceil( float(num_lines)/num )
+
+    with open_textfile(vcf_file) as vcf:
+        
+        outnames   = [ os.curdir + os.sep + str(i) + '_' + re.sub(r'.vcf(.gz)?', '', os.path.basename(vcf_file)) + '.vcf' for i in range(num) ]
+        outhandles = [open(i, 'w') for i in outnames]
+        [write_header(header, i) for i in outhandles]
+        
+        line_i = vcf.readline()
+        
+        while line_i.startswith('#'):
+            line_i = vcf.readline()
+        
+        while line_i:
+
+            i = 0
+            n = 0
+            while line_i:
+                
+                outhandles[n].write( line_i )
+                i += 1
+                
+                if i == lines_per_file:
+                    i = 0
+                    n += 1
+                
+                line_i = vcf.readline()
+
+        [i.close() for i in outhandles]
+
+    return outnames
+
+
+
+
 if __name__ == '__main__':
     infile, outfiles, num = run()
     split(infile, outfiles, num)
