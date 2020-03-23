@@ -32,6 +32,7 @@ def vcf(infileList, outfile):
                 while line_i:
                     vcfout.write( line_i )
                     line_i = vcfin.readline()
+    return 0
 
 
 
@@ -60,8 +61,21 @@ def tsv(infileList, outfile):
                     tsvout.write( line_i )
                     line_i = tsvin.readline()
 
+    return 0
 
 
+
+def bed(infileList, outfile):
+
+    with open(outfile, 'w') as bedout:
+        
+        for file_i in infileList:
+            
+            with genome.open_textfile(file_i) as bedin:
+                
+                for line_i in bedin:
+                    bedout.write( line_i )
+    return 0
 
 
 
@@ -70,7 +84,7 @@ def run():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Variant Call Type, i.e., snp or indel
-    parser.add_argument('-infiles', '--input-files', type=str, nargs='*', help='Input files', required=True)
+    parser.add_argument('-infiles', '--input-files', type=str, nargs='+', help='Input files', required=True)
     parser.add_argument('-outfile', '--output-file', type=str,            help='Output file', required=True)
 
     # Parse the arguments:
@@ -79,10 +93,12 @@ def run():
     infiles  = args.input_files
     outfile  = args.output_file
 
-    if infiles[0].lower().endswith('.vcf') or infiles[0].lower().endswith('.vcf.gz'):
+    if   infiles[0].lower().endswith('.vcf') or infiles[0].lower().endswith('.vcf.gz'):
         filetype = 'vcf'
-    elif infiles[0].lower().endswith('.tsv'):
+    elif infiles[0].lower().endswith('.tsv') or infiles[0].lower().endswith('.tsv.gz'):
         filetype = 'tsv'
+    elif infiles[0].lower().endswith('.bed') or infiles[0].lower().endswith('.bed.gz'):
+        filetype = 'bed'
 
     return infiles, outfile, filetype
 
@@ -96,3 +112,6 @@ if __name__ == '__main__':
 
     elif ftype == 'tsv':
         tsv(infiles, outfile)
+
+    elif ftype == 'bed':
+        bed(infiles, outfile)
