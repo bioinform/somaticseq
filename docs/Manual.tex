@@ -1429,6 +1429,15 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 		
 		\end{itemize}
 
+		
+		
+	\item Version 3.4.0
+	
+		\begin{itemize}
+            \item Added linguistic sequence complexity described by \href{https://doi.org/10.1093/bioinformatics/18.5.679}{Troyanskaya OG \textit{et. al. Bioinformatics (2002)}} as an additional genomic feature. Thus, models trained on this version are not compatible with tsv files created previously becuase it will include a feature not found in previous versions. However, models created from previous version can still be used here. 
+		
+		
+		\end{itemize}
 
 \end{enumerate}
 
