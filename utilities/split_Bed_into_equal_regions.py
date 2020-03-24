@@ -42,13 +42,11 @@ def split(infile, outfiles, num):
     
     outfilesWritten = []
     
-    out_basename = outfiles.split( os.sep )[-1]
+    out_basename  = os.path.basename(outfiles)
+    out_directory = os.path.dirname(outfiles)
     
-    if os.sep in outfiles:
-        out_directory = os.sep.join( outfiles.split( os.sep )[:-1] )
-    else:
+    if not out_directory:
         out_directory = os.curdir
-    
     
     with open(infile) as bedin:
         

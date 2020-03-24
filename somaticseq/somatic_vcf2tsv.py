@@ -96,6 +96,7 @@ out_header = \
 {SHIFT3}\t\
 {MaxHomopolymer_Length}\t\
 {SiteHomopolymer_Length}\t\
+{Linguistic_Complexity}\t\
 {T_DP}\t\
 {tBAM_REF_MQ}\t\
 {tBAM_ALT_MQ}\t\
@@ -556,6 +557,10 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                         # Homopolymer eval:
                         homopolymer_length, site_homopolymer_length = sequencing_features.from_genome_reference(ref_fa, my_coordinate, ref_base, first_alt)
 
+                        # Linguistic sequence complexity in a +/-20bp window:
+                        seq_40bp_window = ref_fa.fetch(my_coordinate[0], max(0, my_coordinate[1]-21), my_coordinate[1]+20)
+                        linguistic_complexity = sequencing_features.LC(seq_40bp_window)
+
                         # Fill the ID field of the TSV/VCF
                         my_identifiers = ';'.join(my_identifiers) if my_identifiers else '.'
 
@@ -633,6 +638,7 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                         SHIFT3                  = shift3,                                                              \
                         MaxHomopolymer_Length   = homopolymer_length,                                                  \
                         SiteHomopolymer_Length  = site_homopolymer_length,                                             \
+                        Linguistic_Complexity   = linguistic_complexity,                                               \
                         T_DP                    = tBamFeatures['dp'],                                                  \
                         tBAM_REF_MQ             = '%g' % tBamFeatures['ref_mq'],                                       \
                         tBAM_ALT_MQ             = '%g' % tBamFeatures['alt_mq'],                                       \

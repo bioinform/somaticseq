@@ -58,118 +58,119 @@ def mergeSubdirVcf(dirList, filename, outdir=os.curdir):
 
 if __name__ == '__main__':
 
-    runParameters = run_somaticseq.run()
+    args = run_somaticseq.run()
 
-    os.makedirs(runParameters['output_directory'], exist_ok=True)
+    os.makedirs(args.output_directory, exist_ok=True)
 
-    bed_splitted = splitRegions(runParameters['threads'], runParameters['output_directory']+os.sep+'th.input.bed', runParameters['inclusion_region'], runParameters['genome_reference']+'.fai')
+    bed_splitted = splitRegions(args.threads, args.output_directory+os.sep+'th.input.bed', args.inclusion_region, args.genome_reference+'.fai')
 
-    pool = Pool(processes = runParameters['threads'])
+    pool = Pool(processes = args.threads)
 
-    if runParameters['which'] == 'paired':
+    if args.which == 'paired':
 
         runPaired_by_region_i = partial(runPaired_by_region, \
-                   outdir             = runParameters['output_directory'], \
-                   ref                = runParameters['genome_reference'], \
-                   tbam               = runParameters['tumor_bam_file'], \
-                   nbam               = runParameters['normal_bam_file'], \
-                   tumor_name         = runParameters['tumor_sample'], \
-                   normal_name        = runParameters['normal_sample'], \
-                   truth_snv          = runParameters['truth_snv'], \
-                   truth_indel        = runParameters['truth_indel'], \
-                   classifier_snv     = runParameters['classifier_snv'], \
-                   classifier_indel   = runParameters['classifier_indel'], \
-                   pass_threshold     = runParameters['pass_threshold'], \
-                   lowqual_threshold  = runParameters['lowqual_threshold'], \
-                   hom_threshold      = runParameters['homozygous_threshold'], \
-                   het_threshold      = runParameters['heterozygous_threshold'], \
-                   min_mq             = runParameters['minimum_mapping_quality'], \
-                   min_bq             = runParameters['minimum_base_quality'], \
-                   min_caller         = runParameters['minimum_num_callers'], \
-                   dbsnp              = runParameters['dbsnp_vcf'], \
-                   cosmic             = runParameters['cosmic_vcf'], \
-                   exclusion          = runParameters['exclusion_region'], \
-                   mutect             = runParameters['mutect_vcf'], \
-                   indelocator        = runParameters['indelocator_vcf'], \
-                   mutect2            = runParameters['mutect2_vcf'], \
-                   varscan_snv        = runParameters['varscan_snv'], \
-                   varscan_indel      = runParameters['varscan_indel'], \
-                   jsm                = runParameters['jsm_vcf'], \
-                   sniper             = runParameters['somaticsniper_vcf'], \
-                   vardict            = runParameters['vardict_vcf'], \
-                   muse               = runParameters['muse_vcf'], \
-                   lofreq_snv         = runParameters['lofreq_snv'], \
-                   lofreq_indel       = runParameters['lofreq_indel'], \
-                   scalpel            = runParameters['scalpel_vcf'], \
-                   strelka_snv        = runParameters['strelka_snv'], \
-                   strelka_indel      = runParameters['strelka_indel'], \
-                   tnscope            = runParameters['tnscope_vcf'], \
-                   platypus           = runParameters['platypus_vcf'], \
-                   algo               = runParameters['algorithm'], \
+                   outdir             = args.output_directory, \
+                   ref                = args.genome_reference, \
+                   tbam               = args.tumor_bam_file, \
+                   nbam               = args.normal_bam_file, \
+                   tumor_name         = args.tumor_sample, \
+                   normal_name        = args.normal_sample, \
+                   truth_snv          = args.truth_snv, \
+                   truth_indel        = args.truth_indel, \
+                   classifier_snv     = args.classifier_snv, \
+                   classifier_indel   = args.classifier_indel, \
+                   pass_threshold     = args.pass_threshold, \
+                   lowqual_threshold  = args.lowqual_threshold, \
+                   hom_threshold      = args.homozygous_threshold, \
+                   het_threshold      = args.heterozygous_threshold, \
+                   min_mq             = args.minimum_mapping_quality, \
+                   min_bq             = args.minimum_base_quality, \
+                   min_caller         = args.minimum_num_callers, \
+                   dbsnp              = args.dbsnp_vcf, \
+                   cosmic             = args.cosmic_vcf, \
+                   exclusion          = args.exclusion_region, \
+                   mutect             = args.mutect_vcf, \
+                   indelocator        = args.indelocator_vcf, \
+                   mutect2            = args.mutect2_vcf, \
+                   varscan_snv        = args.varscan_snv, \
+                   varscan_indel      = args.varscan_indel, \
+                   jsm                = args.jsm_vcf, \
+                   sniper             = args.somaticsniper_vcf, \
+                   vardict            = args.vardict_vcf, \
+                   muse               = args.muse_vcf, \
+                   lofreq_snv         = args.lofreq_snv, \
+                   lofreq_indel       = args.lofreq_indel, \
+                   scalpel            = args.scalpel_vcf, \
+                   strelka_snv        = args.strelka_snv, \
+                   strelka_indel      = args.strelka_indel, \
+                   tnscope            = args.tnscope_vcf, \
+                   platypus           = args.platypus_vcf, \
+                   algo               = args.algorithm, \
                    somaticseq_train   = False, \
-                   keep_intermediates = runParameters['keep_intermediates'] )
+                   keep_intermediates = args.keep_intermediates )
 
         subdirs = pool.map(runPaired_by_region_i, bed_splitted)
 
-    elif runParameters['which'] == 'single':
+    elif args.which == 'single':
 
         runSingle_by_region_i = partial(runSingle_by_region, \
-                   outdir             = runParameters['output_directory'], \
-                   ref                = runParameters['genome_reference'], \
-                   bam                = runParameters['bam_file'], \
-                   sample_name        = runParameters['sample_name'], \
-                   truth_snv          = runParameters['truth_snv'], \
-                   truth_indel        = runParameters['truth_indel'], \
-                   classifier_snv     = runParameters['classifier_snv'], \
-                   classifier_indel   = runParameters['classifier_indel'], \
-                   pass_threshold     = runParameters['pass_threshold'], \
-                   lowqual_threshold  = runParameters['lowqual_threshold'], \
-                   hom_threshold      = runParameters['homozygous_threshold'], \
-                   het_threshold      = runParameters['heterozygous_threshold'], \
-                   min_mq             = runParameters['minimum_mapping_quality'], \
-                   min_bq             = runParameters['minimum_base_quality'], \
-                   min_caller         = runParameters['minimum_num_callers'], \
-                   dbsnp              = runParameters['dbsnp_vcf'], \
-                   cosmic             = runParameters['cosmic_vcf'], \
-                   exclusion          = runParameters['exclusion_region'], \
-                   mutect             = runParameters['mutect_vcf'], \
-                   mutect2            = runParameters['mutect2_vcf'], \
-                   varscan            = runParameters['varscan_vcf'], \
-                   vardict            = runParameters['vardict_vcf'], \
-                   lofreq             = runParameters['lofreq_vcf'], \
-                   scalpel            = runParameters['scalpel_vcf'], \
-                   strelka            = runParameters['strelka_vcf'], \
-                   algo               = runParameters['algorithm'], \
+                   outdir             = args.output_directory, \
+                   ref                = args.genome_reference, \
+                   bam                = args.bam_file, \
+                   sample_name        = args.sample_name, \
+                   truth_snv          = args.truth_snv, \
+                   truth_indel        = args.truth_indel, \
+                   classifier_snv     = args.classifier_snv, \
+                   classifier_indel   = args.classifier_indel, \
+                   pass_threshold     = args.pass_threshold, \
+                   lowqual_threshold  = args.lowqual_threshold, \
+                   hom_threshold      = args.homozygous_threshold, \
+                   het_threshold      = args.heterozygous_threshold, \
+                   min_mq             = args.minimum_mapping_quality, \
+                   min_bq             = args.minimum_base_quality, \
+                   min_caller         = args.minimum_num_callers, \
+                   dbsnp              = args.dbsnp_vcf, \
+                   cosmic             = args.cosmic_vcf, \
+                   exclusion          = args.exclusion_region, \
+                   mutect             = args.mutect_vcf, \
+                   mutect2            = args.mutect2_vcf, \
+                   varscan            = args.varscan_vcf, \
+                   vardict            = args.vardict_vcf, \
+                   lofreq             = args.lofreq_vcf, \
+                   scalpel            = args.scalpel_vcf, \
+                   strelka            = args.strelka_vcf, \
+                   algo               = args.algorithm, \
                    somaticseq_train   = False, \
-                   keep_intermediates = runParameters['keep_intermediates'] )
+                   keep_intermediates = args.keep_intermediates )
 
         subdirs = pool.map(runSingle_by_region_i, bed_splitted)
+
 
     run_somaticseq.logger.info('Sub-directories created: {}'.format(', '.join(subdirs)) )
 
     # Merge sub-results
-    mergeSubdirTsv(subdirs, 'Ensemble.sSNV.tsv', runParameters['output_directory'])
-    mergeSubdirTsv(subdirs, 'Ensemble.sINDEL.tsv', runParameters['output_directory'])
+    mergeSubdirTsv(subdirs, 'Ensemble.sSNV.tsv', args.output_directory)
+    mergeSubdirTsv(subdirs, 'Ensemble.sINDEL.tsv', args.output_directory)
 
-    if runParameters['classifier_snv']:
-        mergeSubdirTsv(subdirs, 'SSeq.Classified.sSNV.tsv', runParameters['output_directory'])
-        mergeSubdirVcf(subdirs, 'SSeq.Classified.sSNV.vcf', runParameters['output_directory'])
+    if args.classifier_snv:
+        mergeSubdirTsv(subdirs, 'SSeq.Classified.sSNV.tsv', args.output_directory)
+        mergeSubdirVcf(subdirs, 'SSeq.Classified.sSNV.vcf', args.output_directory)
     else:
-        mergeSubdirVcf(subdirs, 'Consensus.sSNV.vcf', runParameters['output_directory'])
+        mergeSubdirVcf(subdirs, 'Consensus.sSNV.vcf', args.output_directory)
 
-    if runParameters['classifier_indel']:
-        mergeSubdirTsv(subdirs, 'SSeq.Classified.sINDEL.tsv', runParameters['output_directory'])
-        mergeSubdirVcf(subdirs, 'SSeq.Classified.sINDEL.vcf', runParameters['output_directory'])
+    if args.classifier_indel:
+        mergeSubdirTsv(subdirs, 'SSeq.Classified.sINDEL.tsv', args.output_directory)
+        mergeSubdirVcf(subdirs, 'SSeq.Classified.sINDEL.vcf', args.output_directory)
     else:
-        mergeSubdirVcf(subdirs, 'Consensus.sINDEL.vcf', runParameters['output_directory'])
+        mergeSubdirVcf(subdirs, 'Consensus.sINDEL.vcf', args.output_directory)
 
-    if runParameters['somaticseq_train']:
+    if args.somaticseq_train:
 
-        subprocess.call( (run_somaticseq.modelTrainer(runParameters['algorithm']), runParameters['output_directory'] + os.sep + 'Ensemble.sSNV.tsv', 'Consistent_Mates', 'Inconsistent_Mates') )
-        subprocess.call( (run_somaticseq.modelTrainer(runParameters['algorithm']), runParameters['output_directory'] + os.sep + 'Ensemble.sINDEL.tsv', 'Strelka_QSS', 'Strelka_TQSS','Consistent_Mates', 'Inconsistent_Mates') )
+        subprocess.call( (run_somaticseq.modelTrainer(args.algorithm), args.output_directory + os.sep + 'Ensemble.sSNV.tsv', 'Consistent_Mates', 'Inconsistent_Mates') )
+        subprocess.call( (run_somaticseq.modelTrainer(args.algorithm), args.output_directory + os.sep + 'Ensemble.sINDEL.tsv', 'Strelka_QSS', 'Strelka_TQSS','Consistent_Mates', 'Inconsistent_Mates') )
 
     # Clean up after yourself
-    if not runParameters['keep_intermediates']:
+    if not args.keep_intermediates:
         for bed_i in bed_splitted:
             os.remove( bed_i )
             run_somaticseq.logger.info('Removed: {}'.format( bed_i ) )

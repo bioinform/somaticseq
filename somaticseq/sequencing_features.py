@@ -272,12 +272,10 @@ def somaticOddRatio(n_ref, n_alt, t_ref, t_alt, max_value=100):
 
 
 
-
-
-
 def max_vocabularies(seq_length):
     # According to:
     # https://doi.org/10.1093/bioinformatics/18.5.679
+    # Assume 4 different nucleotides
     counts = 0
     k = 1
     while k <= seq_length:
@@ -297,28 +295,37 @@ def max_vocabularies(seq_length):
 def LC(sequence):
     # Calculate linguistic sequence complexity according to
     # https://doi.org/10.1093/bioinformatics/18.5.679
-    sequence              = sequence.upper()
-    number_of_subseqs     = 0
-    seq_length            = len(sequence)
-    max_number_of_subseqs = max_vocabularies(seq_length)
-
-    for i in range(1, seq_length+1):
+    # Assume 4 different nucleotides
+    sequence = sequence.upper()
+    
+    if not 'N' in sequence:
         
-        max_vocab_1 = 4**i
-        max_vocab_2 = seq_length - i + 1
-        set_of_seq_n = set()
-
-        for n, nth_base in enumerate(sequence):
+        number_of_subseqs     = 0
+        seq_length            = len(sequence)
+        max_number_of_subseqs = max_vocabularies(seq_length)
+    
+        for i in range(1, seq_length+1):
             
-            if n+i <= len(sequence):
-                sub_seq = sequence[n:n+i]
-                set_of_seq_n.add( sub_seq )
+            max_vocab_1 = 4**i
+            max_vocab_2 = seq_length - i + 1
+            set_of_seq_n = set()
+    
+            for n, nth_base in enumerate(sequence):
+                
+                if n+i <= len(sequence):
+                    sub_seq = sequence[n:n+i]
+                    set_of_seq_n.add( sub_seq )
+    
+                    # All possible unique subseqs obtained. Break away and go no further. 
+                    if ( len(set_of_seq_n) == max_vocab_2 ) and ( max_vocab_1 >= max_vocab_2 ):
+                        break
+    
+            num_uniq_subseqs  = len(set_of_seq_n)
+            number_of_subseqs = number_of_subseqs + num_uniq_subseqs
+    
+        lc = number_of_subseqs/max_number_of_subseqs
+    
+    else:
+        lc = float('nan')
 
-                # All possible unique subseqs obtained. Break away and go no further. 
-                if ( len(set_of_seq_n) == max_vocab_2 ) and ( max_vocab_1 >= max_vocab_2 ):
-                    break
-
-        num_uniq_subseqs  = len(set_of_seq_n)
-        number_of_subseqs = number_of_subseqs + num_uniq_subseqs
-
-    return number_of_subseqs/max_number_of_subseqs
+    return lc
