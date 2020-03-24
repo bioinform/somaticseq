@@ -57,7 +57,7 @@ def plot_2hist(false_values, true_values, hist_bins=None, labels=None, hist_titl
         label0 = labels[0]
         label1 = labels[1]
     
-    pyplot.hist([ false_values, true_values ], bins, color=('red', 'blue'), label=(label0,label1), normed=True )
+    pyplot.hist([ false_values, true_values ], bins, color=('red', 'blue'), label=(label0,label1), density=True )
     
     pyplot.legend(loc='upper right', fontsize=18)
     pyplot.title( hist_title,  fontsize=18)
