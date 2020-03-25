@@ -44,6 +44,8 @@ out_header = \
 {COSMIC_CNT}\t\
 {Consistent_Mates}\t\
 {Inconsistent_Mates}\t\
+{Seq_Complexity_Span}\t\
+{Seq_Complexity_Adj}\t\
 {M2_TLOD}\t\
 {M2_ECNT}\t\
 {MSI}\t\
@@ -51,7 +53,6 @@ out_header = \
 {SHIFT3}\t\
 {MaxHomopolymer_Length}\t\
 {SiteHomopolymer_Length}\t\
-{Linguistic_Complexity}\t\
 {T_DP}\t\
 {tBAM_REF_MQ}\t\
 {tBAM_ALT_MQ}\t\
@@ -433,8 +434,15 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
                         homopolymer_length, site_homopolymer_length = sequencing_features.from_genome_reference(ref_fa, my_coordinate, ref_base, first_alt)
 
                         # Linguistic sequence complexity in a +/-20bp window:
-                        seq_40bp_window = ref_fa.fetch(my_coordinate[0], max(0, my_coordinate[1]-21), my_coordinate[1]+20)
-                        linguistic_complexity = sequencing_features.LC(seq_40bp_window)
+                        seq_span_80bp  = ref_fa.fetch(my_coordinate[0], max(0, my_coordinate[1]-41), my_coordinate[1]+40)
+                        seq_left_80bp  = ref_fa.fetch(my_coordinate[0], max(0, my_coordinate[1]-81), my_coordinate[1])
+                        seq_right_80bp = ref_fa.fetch(my_coordinate[0], my_coordinate[1], my_coordinate[1]+81)
+
+                        LC_spanning = sequencing_features.LC(seq_span_80bp)
+                        LC_adjacent  = min(sequencing_features.LC(seq_left_80bp), sequencing_features.LC(seq_right_80bp))
+
+                        LC_spanning_phred = genome.p2phred(1-LC_spanning, 40)
+                        LC_adjacent_phred = genome.p2phred(1-LC_adjacent, 40)
 
 
                         # Fill the ID field of the TSV/VCF
@@ -460,6 +468,8 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
                         COSMIC_CNT              = num_cases,                                                           \
                         Consistent_Mates        = tBamFeatures['consistent_mates'],                                    \
                         Inconsistent_Mates      = tBamFeatures['inconsistent_mates'],                                  \
+                        Seq_Complexity_Span     = LC_spanning_phred,                                                   \
+                        Seq_Complexity_Adj      = LC_adjacent_phred,                                                   \
                         M2_TLOD                 = tlod,                                                                \
                         M2_ECNT                 = ecnt,                                                                \
                         MSI                     = msi,                                                                 \
@@ -467,7 +477,6 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
                         SHIFT3                  = shift3,                                                              \
                         MaxHomopolymer_Length   = homopolymer_length,                                                  \
                         SiteHomopolymer_Length  = site_homopolymer_length,                                             \
-                        Linguistic_Complexity   = linguistic_complexity,                                               \
                         T_DP                    = tBamFeatures['dp'],                                                  \
                         tBAM_REF_MQ             = '%g' % tBamFeatures['ref_mq'],                                       \
                         tBAM_ALT_MQ             = '%g' % tBamFeatures['alt_mq'],                                       \

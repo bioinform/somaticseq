@@ -306,8 +306,8 @@ def LC(sequence):
     
         for i in range(1, seq_length+1):
             
-            max_vocab_1 = 4**i
-            max_vocab_2 = seq_length - i + 1
+            #max_vocab_1 = 4**i
+            #max_vocab_2 = seq_length - i + 1
             set_of_seq_n = set()
     
             for n, nth_base in enumerate(sequence):
@@ -317,8 +317,8 @@ def LC(sequence):
                     set_of_seq_n.add( sub_seq )
     
                     # All possible unique subseqs obtained. Break away and go no further. 
-                    if ( len(set_of_seq_n) == max_vocab_2 ) and ( max_vocab_1 >= max_vocab_2 ):
-                        break
+                    #if ( max_vocab_1 >= max_vocab_2 ) and ( len(set_of_seq_n) == max_vocab_2 ):
+                    #    break
     
             num_uniq_subseqs  = len(set_of_seq_n)
             number_of_subseqs = number_of_subseqs + num_uniq_subseqs
