@@ -38,35 +38,25 @@ test_data$TA2AT[ (test_data$REF=='T' & test_data$ALT=='A') | (test_data$REF=='A'
 test_data$TA2GC[ (test_data$REF=='T' & test_data$ALT=='G') | (test_data$REF=='A' & test_data$ALT=='C') ] = 1
 test_data$TA2CG[ (test_data$REF=='T' & test_data$ALT=='C') | (test_data$REF=='A' & test_data$ALT=='G') ] = 1
 
-test_data[is.na(test_data)] <- 0
-
-test_label <- test_data[, "TrueVariant_or_False"]
-test_data <- test_data[, names(test_data) != "TrueVariant_or_False"]
-
-test_label <- lapply(test_label, as.numeric)
-
-test_data$Strelka_QSS <- NULL
+test_data$Strelka_QSS  <- NULL
 test_data$Strelka_TQSS <- NULL
 
 # Convert data into a matrix
-test_data <- sapply(test_data, as.numeric)
+test_data[is.na(test_data)] <- 0
 test_data[is.nan(test_data)] <- 0
+test_data <- sapply(test_data, as.numeric)
 
 test_data.matrix <- as.matrix(test_data)
-
-dtest <- xgb.DMatrix(data = test_data.matrix, label=test_label)
 
 
 # Handle empty input data
 if ( nrow(test_data)>=1 ) {
-    xgb_bst <- xgb.load( trained_model )
-    xgb_pred <- predict(xgb_bst, test_data, outputmargin=TRUE)
-#    print(head(xgb_pred))
-    binary_pred <- as.numeric(xgb_pred > 0.5)
-    test_data_output <- cbind(test_data_, SCORE=binary_pred)
-#    test_data_output <- cbind(test_data_, SCORE = xgb_pred$prob[,2])
-}   else {
-        test_data_output <- test_data_
+    xgb_bst          <- xgb.load( trained_model )
+    xgb_pred         <- predict(xgb_bst, newdata=test_data)
+    test_data_output <- cbind(test_data_, SCORE=xgb_pred)
+}   
+else {
+    test_data_output <- test_data_
 }
 
 write.table(test_data_output, row.names = FALSE, sep="\t", na = "nan", file = output_filename, quote=FALSE)

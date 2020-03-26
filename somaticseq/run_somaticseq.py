@@ -92,7 +92,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
-            returncode = subprocess.call( (modelTrainer, ensembleSnv, 'Consistent_Mates', 'Inconsistent_Mates') )
+            returncode = subprocess.call( (modelTrainer, ensembleSnv,) )
             assert returncode == 0
 
         consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
@@ -119,7 +119,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     else:
         # Train INDEL classifier:
         if somaticseq_train and truth_indel:
-            returncode = subprocess.call( (modelTrainer, ensembleIndel, 'Strelka_QSS', 'Strelka_TQSS', 'Consistent_Mates', 'Inconsistent_Mates') )
+            returncode = subprocess.call( (modelTrainer, ensembleIndel) )
             assert returncode == 0
 
         consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))

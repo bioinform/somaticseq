@@ -47,7 +47,7 @@ train_data$COSMIC_CNT <- NULL
 train_data$T_VAF_REV  <- NULL
 train_data$T_VAF_FOR  <- NULL
 
-train_data$Strelka_QSS <- NULL
+train_data$Strelka_QSS  <- NULL
 train_data$Strelka_TQSS <- NULL
 
 for (var_i in tail(args, -1) ) {
@@ -64,12 +64,7 @@ train_data  <- train_data[, names(train_data) != "TrueVariant_or_False"]
 train_label <- lapply(train_label, as.numeric)
 train_data  <- sapply(train_data, as.numeric)
 
-#print(dim(train_label))
-#print(dim(train_data))
-
 train_data.matrix <- as.matrix(train_data)
-#print(dim(train_data.matrix))
-
 
 # Set deterministic seed for reproducibility on variable removal test
 boosting_iters = 500
