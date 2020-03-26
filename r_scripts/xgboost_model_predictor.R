@@ -43,8 +43,8 @@ test_data$Strelka_TQSS <- NULL
 
 # Convert data into a matrix
 test_data[is.na(test_data)] <- 0
-test_data[is.nan(test_data)] <- 0
 test_data <- sapply(test_data, as.numeric)
+test_data[is.nan(test_data)] <- 0
 
 test_data.matrix <- as.matrix(test_data)
 
@@ -54,8 +54,7 @@ if ( nrow(test_data)>=1 ) {
     xgb_bst          <- xgb.load( trained_model )
     xgb_pred         <- predict(xgb_bst, newdata=test_data)
     test_data_output <- cbind(test_data_, SCORE=xgb_pred)
-}   
-else {
+} else {
     test_data_output <- test_data_
 }
 
