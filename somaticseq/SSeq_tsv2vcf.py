@@ -167,7 +167,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
         tBAM_Z_Ranksums_MQ   = tsv_header.index('tBAM_Z_Ranksums_MQ')
         T_REF_FOR            = tsv_header.index('T_REF_FOR')
         T_REF_REV            = tsv_header.index('T_REF_REV')
-        
+        LC                   = tsv_header.index('Seq_Complexity_Span')
         
         if not single_mode:
             N_ALT_FOR            = tsv_header.index('N_ALT_FOR')
@@ -204,6 +204,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
         vcf.write('##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Somatic mutation in primary">\n')
         vcf.write('##INFO=<ID={COMBO},Number={NUM},Type=Integer,Description="Calling decision of the {NUM} algorithms: {TOOL_STRING}">\n'.format(COMBO=mvjsdu, NUM=total_num_tools, TOOL_STRING=tool_string) )
         vcf.write('##INFO=<ID=NUM_TOOLS,Number=1,Type=Float,Description="Number of tools called it Somatic">\n')
+        vcf.write('##INFO=<ID=LC,Number=1,Type=Float,Description="Linguistic sequence complexity in Phred scale between 0 to 40. Higher value means higher complexity.">\n')
         
         if single_mode:
             vcf.write('##INFO=<ID=AF,Number=1,Type=Float,Description="Variant Allele Fraction">\n')
@@ -279,8 +280,9 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                 num_tools = num_tools + int(if_Tool)
                 
             MVJS = ','.join(MVJS)
-                
-            info_string = '{COMBO}={MVJSD};NUM_TOOLS={NUM_TOOLS}'.format( COMBO=mvjsdu, MVJSD=MVJS, NUM_TOOLS=num_tools )
+
+            seq_complexity = '%.1f' % float(tsv_item[LC])
+            info_string = '{COMBO}={MVJSD};NUM_TOOLS={NUM_TOOLS};LC={LC}'.format( COMBO=mvjsdu, MVJSD=MVJS, NUM_TOOLS=num_tools, LC=seq_complexity )
     
             # NORMAL
             if not single_mode:
@@ -337,7 +339,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
             t_cd      = tsv_item[tBAM_Concordance_FET] if tsv_item[tBAM_Concordance_FET] != 'nan' else '.'        
             t_bqb     = tsv_item[tBAM_Z_Ranksums_BQ]   if tsv_item[tBAM_Z_Ranksums_BQ]   != 'nan' else '.'
             t_mqb     = tsv_item[tBAM_Z_Ranksums_MQ]   if tsv_item[tBAM_Z_Ranksums_MQ]   != 'nan' else '.'
-            
+
             t_ref_for = tsv_item[T_REF_FOR] if tsv_item[T_REF_FOR] != 'nan' else '0'
             t_ref_rev = tsv_item[T_REF_REV] if tsv_item[T_REF_REV] != 'nan' else '0'
             t_alt_for = tsv_item[T_ALT_FOR] if tsv_item[T_ALT_FOR] != 'nan' else '0'
