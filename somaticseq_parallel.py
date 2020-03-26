@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os, argparse, shutil, math, re, subprocess
+import sys, os, argparse, shutil, math, re, subprocess, logging
 from multiprocessing import Pool
 from functools import partial
 from shutil import rmtree
@@ -24,6 +24,8 @@ def splitRegions(nthreads, outfiles, bed=None, fai=None):
 
 def runPaired_by_region(inclusion, outdir=None, ref=None, tbam=None, nbam=None, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False):
 
+    logger = logging.getLogger(runPaired_by_region.__name__)
+
     basename   = inclusion.split(os.sep)[-1].split('.')[0]
     outdir_i   = outdir + os.sep + basename
     os.makedirs(outdir_i, exist_ok=True)
@@ -36,6 +38,8 @@ def runPaired_by_region(inclusion, outdir=None, ref=None, tbam=None, nbam=None, 
 
 def runSingle_by_region(inclusion, outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False):
 
+    logger = logging.getLogger(runSingle_by_region.__name__)
+    
     basename   = inclusion.split(os.sep)[-1].split('.')[0]
     outdir_i   = outdir + os.sep + basename
     os.makedirs(outdir_i, exist_ok=True)
@@ -166,8 +170,14 @@ if __name__ == '__main__':
 
     if args.somaticseq_train:
 
-        subprocess.call( (run_somaticseq.modelTrainer(args.algorithm), args.output_directory + os.sep + 'Ensemble.sSNV.tsv', 'Consistent_Mates', 'Inconsistent_Mates') )
-        subprocess.call( (run_somaticseq.modelTrainer(args.algorithm), args.output_directory + os.sep + 'Ensemble.sINDEL.tsv', 'Strelka_QSS', 'Strelka_TQSS','Consistent_Mates', 'Inconsistent_Mates') )
+        commond_item_i = (run_somaticseq.modelTrainer(args.algorithm), args.output_directory + os.sep + 'Ensemble.sSNV.tsv',)
+        run_somaticseq.logger.info(' '.join(commond_item_i))
+        subprocess.call( commond_item_i )
+        
+        commond_item_i = (run_somaticseq.modelTrainer(args.algorithm), args.output_directory + os.sep + 'Ensemble.sINDEL.tsv',)
+        run_somaticseq.logger.info(' '.join(commond_item_i))
+        subprocess.call( commond_item_i )
+
 
     # Clean up after yourself
     if not args.keep_intermediates:

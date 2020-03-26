@@ -29,6 +29,8 @@ def modelPredictor(algo):
 
 def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False):
 
+    logger = logging.getLogger(runPaired.__name__)
+
     import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
 
@@ -83,7 +85,9 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         classifiedSnvTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.tsv' ))
         classifiedSnvVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.vcf' ))
 
-        returncode = subprocess.call( (modelPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv) )
+        command_item_i = (modelPredictor, classifier_snv, ensembleSnv, classifiedSnvTsv)
+        logger.info(' '.join(command_item_i))
+        returncode = subprocess.call( command_item_i )
         assert returncode == 0
 
         tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True)
@@ -92,7 +96,10 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
-            returncode = subprocess.call( (modelTrainer, ensembleSnv,) )
+            
+            command_item_i = (modelTrainer, ensembleSnv,)
+            logger.info(' '.join(command_item_i))
+            returncode = subprocess.call( command_item_i )
             assert returncode == 0
 
         consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
@@ -111,7 +118,9 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         classifiedIndelTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.tsv' ))
         classifiedIndelVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.vcf' ))
 
-        returncode = subprocess.call( (modelPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv) )
+        command_item_i = (modelPredictor, classifier_indel, ensembleIndel, classifiedIndelTsv)
+        logger.info(' '.join(command_item_i))
+        returncode = subprocess.call( command_item_i )
         assert returncode == 0
 
         tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True)
@@ -119,7 +128,10 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     else:
         # Train INDEL classifier:
         if somaticseq_train and truth_indel:
-            returncode = subprocess.call( (modelTrainer, ensembleIndel) )
+            
+            command_item_i = (modelTrainer, ensembleIndel)
+            logger.info(' '.join(command_item_i))
+            returncode = subprocess.call( command_item_i )
             assert returncode == 0
 
         consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))
@@ -138,6 +150,8 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
 
 def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False):
+
+    logger = logging.getLogger(runSingle.__name__)
 
     import somaticseq.single_sample_vcf2tsv as single_sample_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
@@ -333,6 +347,7 @@ def run():
 ################################################################################################
 # Execute:
 if __name__ == '__main__':
+    
     args = run()
 
     os.makedirs(args.output_directory, exist_ok=True)
