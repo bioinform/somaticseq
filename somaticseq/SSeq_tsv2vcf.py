@@ -167,7 +167,10 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
         tBAM_Z_Ranksums_MQ   = tsv_header.index('tBAM_Z_Ranksums_MQ')
         T_REF_FOR            = tsv_header.index('T_REF_FOR')
         T_REF_REV            = tsv_header.index('T_REF_REV')
-        LC                   = tsv_header.index('Seq_Complexity_Span')
+        
+        # Make backward compatible for tsv files without LC
+        if 'Seq_Complexity_Span' in tsv_header:
+            LC = tsv_header.index('Seq_Complexity_Span')
         
         if not single_mode:
             N_ALT_FOR            = tsv_header.index('N_ALT_FOR')
@@ -281,8 +284,14 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                 
             MVJS = ','.join(MVJS)
 
-            seq_complexity = '%.1f' % float(tsv_item[LC])
-            info_string = '{COMBO}={MVJSD};NUM_TOOLS={NUM_TOOLS};LC={LC}'.format( COMBO=mvjsdu, MVJSD=MVJS, NUM_TOOLS=num_tools, LC=seq_complexity )
+            info_string = '{COMBO}={MVJSD};NUM_TOOLS={NUM_TOOLS}'.format( COMBO=mvjsdu, MVJSD=MVJS, NUM_TOOLS=num_tools )
+            
+            # Make backward compatible for tsv files without LC
+            try:
+                seq_complexity = '%.1f' % float(tsv_item[LC])
+                info_string    = info_string + ';LC={}'.format( seq_complexity )
+            except NameError:
+                pass
     
             # NORMAL
             if not single_mode:
@@ -382,7 +391,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
             # PASS
             if score >= pass_score or (score is nan and num_tools > 0.5*total_num_tools):
                 
-                vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'PASS', 'SOMATIC;'+info_string, field_string)
+                vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.1f' % scaled_score, 'PASS', 'SOMATIC;'+info_string, field_string)
                 
                 if single_mode:
                     vcf_line = vcf_line + '\t' + tumor_sample_string
@@ -394,7 +403,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
             # Low Qual
             elif score >= lowqual_score or (score is nan and num_tools >= 1 and num_tools >= 0.33*total_num_tools):
                                             
-                vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'LowQual', info_string, field_string)
+                vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.1f' % scaled_score, 'LowQual', info_string, field_string)
                 
                 if single_mode:
                     vcf_line = vcf_line + '\t' + tumor_sample_string
@@ -406,7 +415,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
             # REJECT
             elif print_reject:
                 
-                vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.4f' % scaled_score, 'REJECT', info_string, field_string)
+                vcf_line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format( tsv_item[CHROM], tsv_item[POS], tsv_item[ID], tsv_item[REF], tsv_item[ALT], '%.1f' % scaled_score, 'REJECT', info_string, field_string)
     
                 if single_mode:
                     vcf_line = vcf_line + '\t' + tumor_sample_string
