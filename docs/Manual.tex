@@ -153,11 +153,10 @@ git clone https://github.com/bioinform/somaticseq.git
 \end{lstlisting}
 
 
-Installation is not required to run SomaticSeq, but we recommend it. The core scripts somaticseq\_parallel.py and run\_somaticseq.py will be in your path. 
+To install SomaticSeq, then the core script \textit{somaticseq\_parallel.py} will be in your path. 
 \begin{lstlisting}
 ./setup.py install
 \end{lstlisting}
-
 
 
 \section{How to run SomaticSeq} \label{Wrapper_script}
@@ -223,8 +222,8 @@ Make sure the classifiers (.RData files) are supplied, Without either of them, o
 \begin{lstlisting}
 # The *.RData files are trained classifier from the training mode.
 somaticseq_parallel.py \
---classifier-snv       Ensemble.sSNV.tsv.ntChange.Classifier.RData \
---classifier-indel     Ensemble.sINDEL.tsv.ntChange.Classifier.RData \
+--classifier-snv       Ensemble.sSNV.tsv.ada.Classifier.RData \
+--classifier-indel     Ensemble.sINDEL.tsv.ada.Classifier.RData \
 --output-directory     OUTPUT_DIR \
 --genome-reference     GRCh38.fa \
 --inclusion-region     genome.bed \
@@ -432,7 +431,7 @@ r_scripts/ada_model_builder_ntChange.R Ensemble.sINDEL.tsv Strelka_QSS Strelka_T
 
 Replace ada\_model\_builder\_ntChange.R with xgboost\_model\_builder\_ntChange.R for extreme gradient boosting (xgboost) algorithm. 
 
-\textit{Ensemble.sSNV.tsv.ntChange.Classifier.RData} and \textit{Ensemble.sINDEL.tsv.ntChange.Classifier.RData} will be created from ada model training. For xgboost, the suffix will be .xgboost.Classifier.RData. 
+\textit{Ensemble.sSNV.tsv.ada.Classifier.RData} and \textit{Ensemble.sINDEL.tsv.ada.Classifier.RData} will be created from ada model training. For xgboost, the suffix will be .xgboost.Classifier.RData. 
 
 The arguments after \textit{Ensemble.sSNV.tsv} and \textit{Ensemble.sINDEL.tsv} tells the builder script to ignore those features in training. These features do not improve accuracy in our data sets (mostly WGS data, but they may help other data sets)
 
@@ -1437,6 +1436,8 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
             \item Added linguistic sequence complexity (LC) described by \href{https://doi.org/10.1093/bioinformatics/18.5.679}{Troyanskaya OG \textit{et. al. Bioinformatics (2002)}} as an additional genomic feature. Thus, models trained on this version are not compatible with tsv files created previously becuase it will include a feature not found in previous versions. However, models created from previous version can still be used here. LC is calculated over a 80-bp window spanning the variant site. In addition, LC is also calculated for 80-bp windows on the left and on the right of the variant position, and we record the lower number. The value is converted to Phred in the output. 
             
             \item Fixed a bug in xgboost mode where training and testing used different feature sets. 
+            
+            \item Change ada classifier's file name from *.ntChange.Classifier.RData to *.ada.Classifier.RData to better distinguish them from xgboost. 
 		
 		
 		\end{itemize}
