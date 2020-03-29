@@ -56,6 +56,6 @@ print( paste("Seed =", seed_value) )
 set.seed(seed_value)
 
 ada.model <- ada(model_formula, data = train_data, iter = boosting_iters, control=rpart.control(cp=-1, maxdepth=16, minsplit=0, xval=0))
-save(ada.model, file = paste(training_data_filename, ".ntChange.Classifier.RData", sep="") )
+save(ada.model, file = paste(training_data_filename, ".ada.Classifier.RData", sep="") )
 
 print(ada.model)
