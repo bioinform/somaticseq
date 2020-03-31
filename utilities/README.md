@@ -15,6 +15,6 @@ Some of the scripts here are required by SomaticSeq. Others are simply useful fo
 * `remove_callers_from_somaticseq_tsv.py`: to mimic a SomaticSeq TSV where only a subset of the callers were used.
 * `split_Bed_into_equal_regions.py`: split a BED file into N number of files, each with equal-sized regions. 
 * `split_mergedBed.py`: used prior to VarDict, by splitting a BED file into smaller regions, each with a fixed size in terms of bps. 
-* `tally_variants_from_multiple_vcfs.py`: have multiple vcf files as an input, and will output a table of variants and which samples have that variant (plus its VAF)
+* `tally_variants_from_multiple_vcfs.py`: have multiple vcf and bam files as an input plus their names, and will output a table of variants and which samples have that variant (plus its VAF)
 * `trimSoftClippedReads.py`: trim soft-clipped bases off each read from a BAM file
 * `variant_annotation.py`: use snpSift and snpEff to annotate vcf files

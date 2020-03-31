@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
-import argparse, gzip, re, sys, os, math
+import argparse, gzip, re, sys, os, math, pysam
 import genomicFileHandler.genomic_file_handlers as genome
+import genomicFileHandler.read_info_extractor as read_info_extractor
+
 
 def extract_snpEff(vcf_line):
     
@@ -51,15 +53,58 @@ def extract_dbsnp_cosmic(vcf_line):
 
 
 
-def vcfs2variants(vcf_files, sample_names, SampleColumnNumber, key='VAF'):
+def vaf_from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, ):
+
+    '''
+    bam is the opened file handle of bam file
+    my_coordiate is a list or tuple of 0-based (contig, position)
+    Returns: number of variant calls, reference calls, other calls, and total calls
+    '''
     
-    assert len(vcf_files) == len(sample_names)
+    indel_length = len(first_alt) - len(ref_base)
+    reads = bam.fetch( my_coordinate[0], my_coordinate[1]-1, my_coordinate[1] )
+
+    dp          = 0
+    var_calls   = 0
+    ref_calls   = 0
+    other_calls = 0
+    for read_i in reads:
+        if (not read_i.is_unmapped) and read_info_extractor.dedup_test(read_i) and read_i.mapping_quality >= min_mq:
+            
+            dp += 1
+            
+            code_i, ith_base, base_call_i, indel_length_i, flanking_indel_i = read_info_extractor.position_of_aligned_read(read_i, my_coordinate[1]-1 )
+
+            # Reference calls:
+            if code_i == 1 and base_call_i == ref_base[0]:
+                ref_calls += 1
+            
+            # Alternate calls:
+            # SNV, or Deletion, or Insertion where I do not check for matching indel length
+            elif (indel_length == 0 and code_i == 1 and base_call_i == first_alt) or \
+                 (indel_length < 0  and code_i == 2 and indel_length == indel_length_i) or \
+                 (indel_length > 0  and code_i == 3):
+
+                var_calls += 1
+            
+            # Inconsistent read or 2nd alternate calls:
+            else:
+                other_calls += 1
+    
+    return var_calls, ref_calls, other_calls, dp
+    
+
+
+def vcfs2variants(vcf_files, bam_files, sample_names):
+    
+    assert len(vcf_files) == len(sample_names) == len(bam_files)
     
     variantDict = {}
-    
-    for vcf_file_i, sample_name_i in zip(vcf_files, sample_names):
+    i = 0
+    for vcf_file_i, bam_file_i, sample_name_i in zip(vcf_files, bam_files, sample_names):
         
-        with genome.open_textfile(vcf_file_i) as vcf:
+        with genome.open_textfile(vcf_file_i) as vcf, pysam.AlignmentFile(bam_file_i) as bam:
+                        
             line_i = vcf.readline().rstrip()
             while line_i.startswith('#'):
                 line_i = vcf.readline().rstrip()
@@ -80,14 +125,12 @@ def vcfs2variants(vcf_files, sample_names, SampleColumnNumber, key='VAF'):
                 dbsnp_cosmic_ids = extract_dbsnp_cosmic(line_i)
                 
                 variant_id = (contig_i, pos_i, refbase, altbase,)
-                vaf_i      = vcf_obj.get_sample_value(key, SampleColumnNumber)
+                
+                vdp, rdp, odp, totaldp = vaf_from_bam(bam, (contig_i, pos_i), refbase, altbase, 1)
 
-                if vaf_i:
-                    try:
-                        vaf_i = float(vaf_i)
-                    except ValueError:
-                        vaf_i = math.nan
-                else:
+                try:
+                    vaf_i = vdp / totaldp
+                except ZeroDivisionError:
                     vaf_i = math.nan
 
                 if variant_id not in variantDict:
@@ -97,14 +140,48 @@ def vcfs2variants(vcf_files, sample_names, SampleColumnNumber, key='VAF'):
                     variantDict[ variant_id ]['TRANSCRIPT'] = txn_ids
                     variantDict[ variant_id ]['DATABASE']   = dbsnp_cosmic_ids
 
-                variantDict[ variant_id ][ sample_name_i ] = {'FILTER': filter_i, 'VAF': vaf_i,}
+                variantDict[ variant_id ][ sample_name_i ] = {'FILTER': filter_i, 'VAF': vaf_i, 'VDP': vdp, 'DP': totaldp}
+                
                 line_i = vcf.readline().rstrip()
+
+        i += 1
 
     return variantDict
 
 
 
-def print_variantDict(variantDict, sample_names, filter_labels=['PASS',], min_number=0):
+
+def fills_missing_vafs(variantDict, bam_files, sample_names):
+    
+    assert len(sample_names) == len(bam_files)
+
+    bamDict = {}
+    for bam_i, sample_i in zip(bam_files, sample_names):
+        bamDict[ sample_i ] = pysam.AlignmentFile(bam_i)
+
+    for variant_i in variantDict:
+        
+        for sample_i in sample_names:
+            
+            if sample_i not in variantDict[ variant_i ]:
+                
+                vdp, rdp, odp, totaldp = vaf_from_bam(bamDict[sample_i], (variant_i[0], variant_i[1]), variant_i[2], variant_i[3], 1)
+                
+                try:
+                    vaf_i = vdp / totaldp
+                except ZeroDivisionError:
+                    vaf_i = math.nan
+
+                variantDict[ variant_i ][ sample_i ] = {'FILTER': ['NONE',], 'VAF': vaf_i, 'VDP': vdp, 'DP': totaldp}
+
+    for sample_i in bamDict:
+        bamDict[sample_i].close()
+
+    return variantDict
+
+
+
+def print_variantDict(variantDict, sample_names, filter_labels=['PASS',], min_number=1):
     
     line_out = 'CHROM\tPOS\tREF\tALT\tID\tAAChange\tNUM\t' + '\t'.join(sample_names)
     print( line_out )
@@ -125,15 +202,11 @@ def print_variantDict(variantDict, sample_names, filter_labels=['PASS',], min_nu
         data_text = []
         for sample_i in sample_names:
                                     
-            if sample_i not in variantDict[variant_i]:
-                text_i = 'NONE'
+            if set(variantDict[variant_i][sample_i]['FILTER']) & set(filter_labels):
                 
-            else:
-                if set(variantDict[variant_i][sample_i]['FILTER']) & set(filter_labels):
-                    num_intersected_filters += 1
+                num_intersected_filters += 1
 
-                text_i = '%s/%g' % ( ','.join(variantDict[variant_i][sample_i]['FILTER']), variantDict[variant_i][sample_i]['VAF'] )
-
+            text_i = '%s:%i/%i=%g' % ( ','.join(variantDict[variant_i][sample_i]['FILTER']), variantDict[variant_i][sample_i]['VDP'], variantDict[variant_i][sample_i]['DP'], variantDict[variant_i][sample_i]['VAF'] )
             data_text.append(text_i)
         
         if num_intersected_filters >= min_number:
@@ -150,12 +223,11 @@ def print_variantDict(variantDict, sample_names, filter_labels=['PASS',], min_nu
 def run():
     parser = argparse.ArgumentParser(description='Tally common variants in multiple VCF files, and also print out their FILTER label and VAF', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
-    parser.add_argument('-vcfs',    '--vcf-files',     nargs='+',  type=str,  help='multiple vcf files',      required=True)
-    parser.add_argument('-names',   '--sample-names',  nargs='+',  type=str,  help='names for the vcf files', required=True)
-    parser.add_argument('-filters', '--filter-labels', nargs='+',  type=str,  help='Filter labels to count', default=['PASS',] )
-    parser.add_argument('-key',     '--vaf-key',                   type=str,  help='What is the key for VAF', required=True)
-    parser.add_argument('-column',  '--sample-column',             type=int,  help='Which sample column to get the VAF. If it is the first column, it is 0. If the 2nd column, it is 1.', required=True)
-    parser.add_argument('-min',     '--minimum-samples',           type=int,  help='Print out only if at least this number of vcf files have the variant.', default=0)
+    parser.add_argument('-vcfs',    '--vcf-files',     nargs='+', type=str,  help='multiple vcf files',      required=True)
+    parser.add_argument('-bams',    '--bam-files',     nargs='+', type=str,  help='multiple bam files',      required=True)
+    parser.add_argument('-names',   '--sample-names',  nargs='+', type=str,  help='names for the vcf files', required=True)
+    parser.add_argument('-filters', '--filter-labels', nargs='+', type=str,  help='Filter labels to count', default=['PASS',] )
+    parser.add_argument('-min',     '--minimum-samples',          type=int,  help='Print out only if at least this number of vcf files have the variant.', default=1)
     
     args = parser.parse_args()
     
@@ -164,5 +236,6 @@ def run():
 
 if __name__ == '__main__':
     args = run()
-    variant_dict = vcfs2variants(args.vcf_files, args.sample_names, args.sample_column, args.vaf_key)
+    variant_dict_00 = vcfs2variants(args.vcf_files, args.bam_files, args.sample_names)
+    variant_dict    = fills_missing_vafs(variant_dict_00, args.bam_files, args.sample_names)
     print_variantDict(variant_dict, args.sample_names, args.filter_labels, args.minimum_samples)
