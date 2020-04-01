@@ -1,8 +1,25 @@
 #!/usr/bin/env python3
 
-import argparse, gzip, re, sys, os, math, pysam
+import argparse, gzip, re, sys, os, math, pysam, uuid
+import multiprocessing
 import genomicFileHandler.genomic_file_handlers as genome
 import genomicFileHandler.read_info_extractor as read_info_extractor
+import genomicFileHandler.concat as concat
+import utilities.split_Bed_into_equal_regions as split_regions
+import vcfModifier.vcfIntersector as vcfIntersector
+
+
+def intersect_multiple_vcf_files(inVcfList_and_BedFile):
+    
+    vcf_files, bed_file = inVcfList_and_BedFile
+    
+    out_files = []
+    for vcf_i in vcf_files:
+        outfile_i = uuid.uuid4().hex+'.vcf'
+        vcfIntersector.bed_intersector(vcf_i, outfile_i, bed_file)
+        out_files.append( outfile_i )
+
+    return out_files
 
 
 def extract_snpEff(vcf_line):
@@ -150,7 +167,6 @@ def vcfs2variants(vcf_files, bam_files, sample_names):
 
 
 
-
 def fills_missing_vafs(variantDict, bam_files, sample_names):
     
     assert len(sample_names) == len(bam_files)
@@ -181,10 +197,47 @@ def fills_missing_vafs(variantDict, bam_files, sample_names):
 
 
 
-def print_variantDict(variantDict, sample_names, filter_labels=['PASS',], min_number=1):
+def make_variant_dict(inputListofLists):
+    vcf_files, bam_files, sample_names = inputListofLists
+    varDictWithMissings = vcfs2variants(vcf_files, bam_files, sample_names)
+    completeVariantDict = fills_missing_vafs(varDictWithMissings, bam_files, sample_names)
     
-    line_out = 'CHROM\tPOS\tREF\tALT\tID\tAAChange\tNUM\t' + '\t'.join(sample_names)
-    print( line_out )
+    return completeVariantDict
+
+
+
+def make_variant_dict_parallel(vcf_files, bam_files, sample_names, bed_region, nthreads):
+
+    dirname         = os.curdir
+    partial_regions = split_regions.split(bed_region, os.path.join(dirname, uuid.uuid4().hex+'.bed'), nthreads)
+
+    pool = multiprocessing.Pool(nthreads)
+    
+    map_args              = map( lambda bed_i: (vcf_files, bed_i), partial_regions )
+    partitioned_vcf_files = pool.map_async(intersect_multiple_vcf_files, map_args).get()
+    
+    map_args             = map( lambda partial_vcf_files: (partial_vcf_files, bam_files, sample_names), partitioned_vcf_files )
+    variant_dictionaries = pool.map_async(make_variant_dict, map_args).get()
+
+    pool.close()
+
+
+    # partitioned_vcf_files is a list of a list of vcf files
+    vcfs_to_be_deleted = []
+    for list_of_vcfs in partitioned_vcf_files:
+        vcfs_to_be_deleted = vcfs_to_be_deleted + list_of_vcfs
+
+    for file_i in partial_regions + vcfs_to_be_deleted:
+        os.remove( file_i )
+
+    return variant_dictionaries
+
+
+def print_variantDict(variantDict, sample_names, filter_labels=['PASS',], min_number=1, print_header=True):
+    
+    if print_header:
+        line_out = 'CHROM\tPOS\tREF\tALT\tID\tAAChange\tNUM\t' + '\t'.join(sample_names)
+        print( line_out )
     
     for variant_i in variantDict:
         
@@ -227,6 +280,8 @@ def run():
     parser.add_argument('-bams',    '--bam-files',     nargs='+', type=str,  help='multiple bam files',      required=True)
     parser.add_argument('-names',   '--sample-names',  nargs='+', type=str,  help='names for the vcf files', required=True)
     parser.add_argument('-filters', '--filter-labels', nargs='+', type=str,  help='Filter labels to count', default=['PASS',] )
+    parser.add_argument('-bed',     '--bed-inclusion',            type=str,  help='Bed file to include.')
+    parser.add_argument('-nt',      '--num-threads',              type=int,  help="threads", default=1)
     parser.add_argument('-min',     '--minimum-samples',          type=int,  help='Print out only if at least this number of vcf files have the variant.', default=1)
     
     args = parser.parse_args()
@@ -234,8 +289,24 @@ def run():
     return args
 
 
+
+
 if __name__ == '__main__':
+    
     args = run()
-    variant_dict_00 = vcfs2variants(args.vcf_files, args.bam_files, args.sample_names)
-    variant_dict    = fills_missing_vafs(variant_dict_00, args.bam_files, args.sample_names)
-    print_variantDict(variant_dict, args.sample_names, args.filter_labels, args.minimum_samples)
+    
+    if args.num_threads > 1 and args.bed_inclusion:
+        
+        partitioned_variant_dicts = make_variant_dict_parallel(args.vcf_files, args.bam_files, args.sample_names, args.bed_inclusion, args.num_threads)
+        
+        for n, dict_i in enumerate(partitioned_variant_dicts):
+            if n == 0:
+                printHeader = True
+            else:
+                printHeader = False
+                
+            print_variantDict(dict_i, args.sample_names, args.filter_labels, args.minimum_samples, printHeader)
+        
+    else:
+        variant_dict = make_variant_dict( (args.vcf_files, args.bam_files, args.sample_names) )
+        print_variantDict(variant_dict, args.sample_names, args.filter_labels, args.minimum_samples)
