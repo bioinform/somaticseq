@@ -12,10 +12,11 @@ import tempfile
 def intersect_multiple_vcf_files(inVcfList_and_BedFile):
     
     vcf_files, bed_file = inVcfList_and_BedFile
+    dirname = tempfile.gettempdir()
     
     out_files = []
     for vcf_i in vcf_files:
-        outfile_i = uuid.uuid4().hex+'.vcf'
+        outfile_i = os.path.join(dirname, uuid.uuid4().hex+'.vcf')
         vcfIntersector.bed_intersector(vcf_i, outfile_i, bed_file)
         out_files.append( outfile_i )
 
@@ -208,7 +209,7 @@ def make_variant_dict(inputListofLists):
 
 def make_variant_dict_parallel(vcf_files, bam_files, sample_names, bed_region, nthreads):
 
-    dirname         = tempfile.gettempdirb() #os.curdir
+    dirname         = tempfile.gettempdir() #os.curdir
     partial_regions = split_regions.split(bed_region, os.path.join(dirname, uuid.uuid4().hex+'.bed'), nthreads)
 
     pool = multiprocessing.Pool(nthreads)
