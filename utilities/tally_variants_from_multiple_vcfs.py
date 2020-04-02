@@ -7,7 +7,7 @@ import genomicFileHandler.read_info_extractor as read_info_extractor
 import genomicFileHandler.concat as concat
 import utilities.split_Bed_into_equal_regions as split_regions
 import vcfModifier.vcfIntersector as vcfIntersector
-
+import tempfile
 
 def intersect_multiple_vcf_files(inVcfList_and_BedFile):
     
@@ -208,7 +208,7 @@ def make_variant_dict(inputListofLists):
 
 def make_variant_dict_parallel(vcf_files, bam_files, sample_names, bed_region, nthreads):
 
-    dirname         = os.curdir
+    dirname         = tempfile.gettempdirb() #os.curdir
     partial_regions = split_regions.split(bed_region, os.path.join(dirname, uuid.uuid4().hex+'.bed'), nthreads)
 
     pool = multiprocessing.Pool(nthreads)
