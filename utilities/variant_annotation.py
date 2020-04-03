@@ -10,6 +10,7 @@ import gzip
 import subprocess
 import uuid
 import pysam
+import tempfile
 
 COSMIC_STRING = 'GENE,CDS,AA,CNT'
 DBSNP_STRING = 'RSPOS,GENEINFO,dbSNPBuildID,SAO,SSR,VC,PM,MUT,KGPhase1,KGPhase3,OM,CDA,CAF,COMMON'
@@ -52,8 +53,10 @@ def snpeff_annotate(snpeff_jar, input_vcf, output_vcf, db):
 
 def annotate_small_variants(snpsift_jar, snpeff_jar, input_vcf, dbsnp_vcf, cosmic_vcf, output_vcf, snp_string, cosmic_string, eff_db):
     
-    dbsnp_annotated  = snpsift_snp(snpsift_jar, input_vcf, dbsnp_vcf, uuid.uuid4().hex+'.vcf', snp_string)
-    cosmic_annotated = snpsift_cosmic(snpsift_jar, dbsnp_annotated, cosmic_vcf, uuid.uuid4().hex+'.vcf', cosmic_string)
+    dirname = tempfile.gettempdir()
+    
+    dbsnp_annotated  = snpsift_snp(snpsift_jar, input_vcf, dbsnp_vcf, os.path.join(dirname, uuid.uuid4().hex+'.vcf'), snp_string)
+    cosmic_annotated = snpsift_cosmic(snpsift_jar, dbsnp_annotated, cosmic_vcf, os.path.join(dirname, uuid.uuid4().hex+'.vcf'), cosmic_string)
     output_vcf       = snpeff_annotate(snpeff_jar, cosmic_annotated, output_vcf, eff_db)
 
     os.remove(dbsnp_annotated)
