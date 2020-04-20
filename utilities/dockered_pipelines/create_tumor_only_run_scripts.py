@@ -236,8 +236,8 @@ def run_VarDict(input_parameters, mem=14, minVAF=0.05, process_bed=True, outvcf=
 
             bed_file = '{OUTDIR}/split_regions.bed'.format( OUTDIR=input_parameters['output_directory'] )
 
-        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/vardictjava:1.5.2 bash -c \\\n'.format(MEM=mem) )
-        out.write( '"/opt/VarDict-1.5.2/bin/VarDict \\\n' )
+        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/vardictjava:1.7.0 bash -c \\\n'.format(MEM=mem) )
+        out.write( '"/opt/VarDict-1.7.0/bin/VarDict \\\n' )
         
         if input_parameters['vardict_arguments']:
             out.write( '{EXTRA_ARG} \\\n'.format(EXTRA_ARG=input_parameters['vardict_arguments']) )
@@ -248,7 +248,7 @@ def run_VarDict(input_parameters, mem=14, minVAF=0.05, process_bed=True, outvcf=
         out.write( '-Q 1 -c 1 -S 2 -E 3 -g 4 /mnt/{INTPUT_BED} \\\n'.format(INTPUT_BED=bed_file) )
         out.write( '> /mnt/{OUTDIR}/vardict.var"\n\n'.format(OUTDIR=input_parameters['output_directory']) )
         
-        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/vardictjava:1.5.2 \\\n'.format(MEM=mem) )
+        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/vardictjava:1.7.0 \\\n'.format(MEM=mem) )
         out.write( 'bash -c "cat /mnt/{OUTDIR}/vardict.var | awk \'NR!=1\' | /opt/VarDict/teststrandbias.R | /opt/VarDict/var2vcf_valid.pl -N \'TUMOR\' -f {VAF} \\\n'.format(OUTDIR=input_parameters['output_directory'], VAF=minVAF ) )
         out.write( '> /mnt/{OUTDIR}/{OUTVCF}"\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
 
