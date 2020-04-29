@@ -176,10 +176,10 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
     
     ref_indel_1bp = ref_flanking_indel.count(1)
     ref_indel_2bp = ref_flanking_indel.count(2) + ref_indel_1bp
-    ref_indel_3bp = ref_flanking_indel.count(3) + ref_indel_2bp + ref_indel_1bp
+    ref_indel_3bp = ref_flanking_indel.count(3) + ref_indel_2bp
     alt_indel_1bp = alt_flanking_indel.count(1)
     alt_indel_2bp = alt_flanking_indel.count(2) + alt_indel_1bp
-    alt_indel_3bp = alt_flanking_indel.count(3) + alt_indel_2bp + alt_indel_1bp
+    alt_indel_3bp = alt_flanking_indel.count(3) + alt_indel_2bp
     
     consistent_mates = inconsistent_mates = 0
     for pairs_i in qname_collector:
