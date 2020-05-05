@@ -341,7 +341,7 @@ def max_sub_vocabularies(seq_length, max_subseq_length):
     
     counts = 0
     k = 1
-    while (k <= seq_length) and (k <= max_subseq_length):
+    while k <= max_subseq_length:
         
         if 4**k < (seq_length - k + 1):
             counts = counts + 4**k
