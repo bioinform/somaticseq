@@ -316,9 +316,69 @@ def LC(sequence):
                     sub_seq = sequence[n:n+i]
                     set_of_seq_n.add( sub_seq )
     
-                    # All possible unique subseqs obtained. Break away and go no further. 
-                    #if ( max_vocab_1 >= max_vocab_2 ) and ( len(set_of_seq_n) == max_vocab_2 ):
-                    #    break
+            num_uniq_subseqs  = len(set_of_seq_n)
+            number_of_subseqs = number_of_subseqs + num_uniq_subseqs
+    
+        lc = number_of_subseqs/max_number_of_subseqs
+    
+    else:
+        lc = float('nan')
+
+    return lc
+
+
+
+
+
+
+
+
+def max_sub_vocabularies(seq_length, max_subseq_length):
+    # According to:
+    # https://doi.org/10.1093/bioinformatics/18.5.679
+    # capping the length of sub_string as an input parameter
+    assert max_subseq_length <= seq_length
+    
+    counts = 0
+    k = 1
+    while (k <= seq_length) and (k <= max_subseq_length):
+        
+        if 4**k < (seq_length - k + 1):
+            counts = counts + 4**k
+        else:
+            counts = counts + (2*seq_length - k - max_subseq_length + 2) * (max_subseq_length - k + 1)/2
+            break
+        
+        k += 1
+                
+    return counts
+
+
+
+
+def subLC(sequence, max_substring_length=20):
+    # Calculate linguistic sequence complexity according to
+    # https://doi.org/10.1093/bioinformatics/18.5.679
+    # Cut off substring at a fixed length
+    sequence = sequence.upper()
+    
+    if not 'N' in sequence:
+        
+        number_of_subseqs     = 0
+        seq_length            = len(sequence)
+        max_number_of_subseqs = max_sub_vocabularies(seq_length, max_substring_length)
+    
+        for i in range(1, min(max_substring_length+1, seq_length+1) ):
+            
+            #max_vocab_1 = 4**i
+            #max_vocab_2 = seq_length - i + 1
+            set_of_seq_n = set()
+    
+            for n, nth_base in enumerate(sequence):
+                
+                if n+i <= len(sequence):
+                    sub_seq = sequence[n:n+i]
+                    set_of_seq_n.add( sub_seq )
     
             num_uniq_subseqs  = len(set_of_seq_n)
             number_of_subseqs = number_of_subseqs + num_uniq_subseqs
