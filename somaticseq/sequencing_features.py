@@ -367,22 +367,12 @@ def subLC(sequence, max_substring_length=20):
         number_of_subseqs     = 0
         seq_length            = len(sequence)
         max_number_of_subseqs = max_sub_vocabularies(seq_length, max_substring_length)
-    
+        
+        set_of_seq_n = set()
         for i in range(1, min(max_substring_length+1, seq_length+1) ):
-            
-            #max_vocab_1 = 4**i
-            #max_vocab_2 = seq_length - i + 1
-            set_of_seq_n = set()
-    
-            for n, nth_base in enumerate(sequence):
-                
-                if n+i <= len(sequence):
-                    sub_seq = sequence[n:n+i]
-                    set_of_seq_n.add( sub_seq )
-    
-            num_uniq_subseqs  = len(set_of_seq_n)
-            number_of_subseqs = number_of_subseqs + num_uniq_subseqs
-    
+            set_of_seq_n.update((sequence[n: n+i] for n in range(len(sequence) - i + 1)))
+        
+        number_of_subseqs  = len(set_of_seq_n)
         lc = number_of_subseqs/max_number_of_subseqs
     
     else:
