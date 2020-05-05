@@ -433,13 +433,13 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
                         # Homopolymer eval:
                         homopolymer_length, site_homopolymer_length = sequencing_features.from_genome_reference(ref_fa, my_coordinate, ref_base, first_alt)
 
-                        # Linguistic sequence complexity in a +/-20bp window:
+                        # Linguistic sequence complexity in a +/-80bp window, but substring calculation stops at 20-bp substring.
                         seq_span_80bp  = ref_fa.fetch(my_coordinate[0], max(0, my_coordinate[1]-41), my_coordinate[1]+40)
                         seq_left_80bp  = ref_fa.fetch(my_coordinate[0], max(0, my_coordinate[1]-81), my_coordinate[1])
                         seq_right_80bp = ref_fa.fetch(my_coordinate[0], my_coordinate[1], my_coordinate[1]+81)
 
-                        LC_spanning = sequencing_features.LC(seq_span_80bp)
-                        LC_adjacent  = min(sequencing_features.LC(seq_left_80bp), sequencing_features.LC(seq_right_80bp))
+                        LC_spanning = sequencing_features.subLC(seq_span_80bp, 20)
+                        LC_adjacent  = min(sequencing_features.subLC(seq_left_80bp, 20), sequencing_features.subLC(seq_right_80bp, 20))
 
                         LC_spanning_phred = genome.p2phred(1-LC_spanning, 40)
                         LC_adjacent_phred = genome.p2phred(1-LC_adjacent, 40)
