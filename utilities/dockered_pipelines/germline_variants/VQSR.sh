@@ -210,7 +210,7 @@ echo "" >> $out_script
 
 # Combine SNP and INDEL VCF files:
 echo "docker run --rm -v /:/mnt -u $UID lethalfang/vcftools:0.1.15 bash -c \\" >> $out_script
-echo "\"vcf-concat /mnt/${outdir}/snp.vqsr.${timestamp}.vcf /mnt/${outdir}/indel.vqsr.${timestamp}.vcf | egrep '^#|VQSLOD' | /opt/vcfsorter.pl /mnt/${HUMAN_REFERENCE%\.fa*}.dict - > /mnt/${outdir}/${outVcfName}\"" >> $out_script
+echo "\"vcf-concat /mnt/${outdir}/snp.vqsr.${timestamp}.vcf /mnt/${outdir}/indel.vqsr.${timestamp}.vcf | egrep '^#|VQSLOD' | perl /opt/vcfsorter.pl /mnt/${HUMAN_REFERENCE%\.fa*}.dict - > /mnt/${outdir}/${outVcfName}\"" >> $out_script
 
 
 echo '' >> $out_script
