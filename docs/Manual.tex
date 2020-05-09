@@ -1451,8 +1451,10 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 		
 
 	\item Version 3.4.2
-	
-		\begin{itemize}
+
+        \begin{itemize}
+            \item Modified the linguistic sequence complexity calculation to limit the substring to 20-bp. It increases runtime with no sacrifice of accuracy.
+
             \item Fixed a bug where the indels nearest to a position was not calculated correctly when there are soft-clipped bases in a read.
 
 		\end{itemize}
