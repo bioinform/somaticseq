@@ -1434,14 +1434,30 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	
 		\begin{itemize}
             \item Added linguistic sequence complexity (LC) described by Troyanskaya OG \textit{et. al.} as an additional genomic feature \cite{sequence_complexity}. Thus, models trained on this version are not compatible with tsv files created previously becuase it will include a feature not found in previous versions. However, models created from previous version can still be used here. LC is calculated over a 80-bp window spanning the variant site. In addition, LC is also calculated for 80-bp windows on the left and on the right of the variant position, and we record the lower number. The value is converted to Phred in the output. 
-            
+
             \item Fixed a bug in xgboost mode where training and testing used different feature sets. 
-            
+
             \item Change ada classifier's file name from *.ntChange.Classifier.RData to *.ada.Classifier.RData to better distinguish them from xgboost. 
-		
 		
 		\end{itemize}
 
+		
+	\item Version 3.4.1
+	
+		\begin{itemize}
+            \item Fixed a bug where indels within 3 bps of a position double-counted indels within 1 bp of the position.
+		
+		\end{itemize}
+		
+
+	\item Version 3.4.2
+	
+		\begin{itemize}
+            \item Fixed a bug where the indels nearest to a position was not calculated correctly when there are soft-clipped bases in a read.
+
+		\end{itemize}
+		
+		
 \end{enumerate}
 
 
