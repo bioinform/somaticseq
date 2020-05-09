@@ -104,15 +104,17 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
                         
             #(i, None) = Insertion, i.e., means the i_th base in the query is not aligned to a reference (can also be soft-clipped)
             #(None, coordinate) = Deletion, i.e., there is no base in it that aligns to this coordinate.
-            for step_right_i in range( min(win_size, len(aligned_pairs)-ith_query-2 ) ):
+            for step_right_i in range( win_size ):
                 j = right_side_start + step_right_i
-                if aligned_pairs[j+1][1] == None or aligned_pairs[j+1][0] == None:
+
+                if (j+1 < len(aligned_pairs)) and (aligned_pairs[j+1][1] == None or aligned_pairs[j+1][0] == None):
                     right_indel_flanks = step_right_i + 1
                     break
             
-            for step_left_i in range( min(win_size, ith_query) ):
+            for step_left_i in range( win_size ):
                 j = left_side_start - step_left_i
-                if aligned_pairs[j][1] == None or aligned_pairs[j][0] == None:
+
+                if (j>=0) and (aligned_pairs[j][1] == None or aligned_pairs[j][0] == None):
                     left_indel_flanks = step_left_i + 1
                     break
             
