@@ -102,20 +102,19 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
             left_side_start    = idx_aligned_pair - 1
             right_side_start   = idx_aligned_pair + abs(indel_length) + 1
                         
-            #(i, None) = Insertion, i.e., means the i_th base in the query is not aligned to a reference (can also be soft-clipped)
+            #(i, None) = Insertion (or Soft-clips), i.e., means the i_th base in the query is not aligned to a reference
             #(None, coordinate) = Deletion, i.e., there is no base in it that aligns to this coordinate.
-            # In both cases, if the aligned pair AFTER a
+            # If those two scenarios occur right after an aligned base, that base position is counted as an indel.
             for step_right_i in range( min(win_size, len(aligned_pairs)-right_side_start-1 ) ):
                 j = right_side_start + step_right_i
-                                
+                
                 if (aligned_pairs[j+1][1] == None or aligned_pairs[j+1][0] == None):
                     right_indel_flanks = step_right_i + 1
                     break
             
             for step_left_i in range( min(win_size, left_side_start) ):
-                
                 j = left_side_start - step_left_i
-                                
+                
                 if (aligned_pairs[j][1] == None or aligned_pairs[j][0] == None):
                     left_indel_flanks = step_left_i + 1
                     break
