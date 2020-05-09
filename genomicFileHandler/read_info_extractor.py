@@ -42,7 +42,7 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
         # If find a match:
         if align_i[1] == target_position:
             seq_i = align_i[0]
-            ith_query = i
+            idx_aligned_pair = i
             break
 
     # If the target position is aligned:
@@ -99,22 +99,24 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
         if isinstance(indel_length, int):
             right_indel_flanks = inf
             left_indel_flanks  = inf
-            left_side_start    = ith_query - 1
-            right_side_start   = ith_query + abs(indel_length) + 1
+            left_side_start    = idx_aligned_pair - 1
+            right_side_start   = idx_aligned_pair + abs(indel_length) + 1
                         
             #(i, None) = Insertion, i.e., means the i_th base in the query is not aligned to a reference (can also be soft-clipped)
             #(None, coordinate) = Deletion, i.e., there is no base in it that aligns to this coordinate.
-            for step_right_i in range( win_size ):
+            # In both cases, if the aligned pair AFTER a
+            for step_right_i in range( min(win_size, len(aligned_pairs)-right_side_start-1 ) ):
                 j = right_side_start + step_right_i
-
-                if (j+1 < len(aligned_pairs)) and (aligned_pairs[j+1][1] == None or aligned_pairs[j+1][0] == None):
+                                
+                if (aligned_pairs[j+1][1] == None or aligned_pairs[j+1][0] == None):
                     right_indel_flanks = step_right_i + 1
                     break
             
-            for step_left_i in range( win_size ):
+            for step_left_i in range( min(win_size, left_side_start) ):
+                
                 j = left_side_start - step_left_i
-
-                if (j>=0) and (aligned_pairs[j][1] == None or aligned_pairs[j][0] == None):
+                                
+                if (aligned_pairs[j][1] == None or aligned_pairs[j][0] == None):
                     left_indel_flanks = step_left_i + 1
                     break
             
