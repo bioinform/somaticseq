@@ -218,10 +218,14 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
 
             item = vcf_line.split('\t')
             item[7] = item[7] + ';' + additional_string
+
+            line_out = '\t'.join( item )
             
-            # Note discrepancies for reference calls
+            # Note discrepancies for reference calls, and make change to the labels accordingly
             if re.search(r'\bPASS\b', vcf_i.filters) and (TVAF == 0): # and (not re.search(r'ArmLossInNormal|NonCallable', vcf_i.info)):
-                                    
+                
+                LC = float( vcf_i.get_info_value('LC') )
+                
                 wgs_VDP, wgs_DP = vcf_i.get_info_value('bwaDP').split(',')
                 wgs_VDP, wgs_DP = int(wgs_VDP), int(wgs_DP)
         
@@ -232,28 +236,35 @@ with genome.open_textfile(args.my_vcf_file) as vcf, open(args.output_file, 'w') 
                 upper_non_variant_af = 1 - lower_vaf
                 
                 p_value = p_of_2proportions(wgs_vaf, TVAF, wgs_DP, T_DP)
+                
                 #if upper_non_variant_af ** T_DP < 0.05:
                 if p_value < 0.01:
-                    line_out = relabel(line_out, newLabel=None, additional_flag='2Prop_PACB_0.01_p%.3g' % p_value)
                     
                     short_read_MQ0 = int( vcf_i.get_info_value('MQ0') )
-                    if ( PacBio[variant_identifier]['T_REF_MQ'] < 50 ) or short_read_MQ0>=10:
+                    if ( PacBio[variant_identifier]['T_REF_MQ'] < 50 ) or short_read_MQ0>=10 or LC<15:
+                        
+                        line_out = relabel(line_out, newLabel='LowConf', additional_flag='2Prop_PACB_0.01_p%.3g' % p_value, remove_PASS=True)
                         p001 += 1
+                        
+                    else:
+                        line_out = relabel(line_out, newLabel=None, additional_flag='2Prop_PACB_0.01_p%.3g' % p_value, remove_PASS=False)
 
                 #elif non_variant_af ** T_DP < 0.05:
                 elif p_value < 0.05:
-                    line_out = relabel(line_out, newLabel=None, additional_flag='2Prop_PACB_0.05_p%.3g' % p_value)
                     
                     short_read_MQ0 = int( vcf_i.get_info_value('MQ0') )
-                    if ( PacBio[variant_identifier]['T_REF_MQ'] < 50 ) or short_read_MQ0>=10:
+                    if ( PacBio[variant_identifier]['T_REF_MQ'] < 50 ) or short_read_MQ0>=10 or LC<12:
+                        line_out = relabel(line_out, newLabel='LowConf', additional_flag='2Prop_PACB_0.05_p%.3g' % p_value, remove_PASS=True)
                         p005 += 1
+                    
+                    else:
+                        line_out = relabel(line_out, newLabel=None, additional_flag='2Prop_PACB_0.05_p%.3g' % p_value, remove_PASS=False)
 
-            else:
-                line_out = '\t'.join( item )
 
         else:
-            line_out = '\t'.join( item )
+            line_out = vcf_line
             
         out.write( line_out )
+
 
 print(p001, p005)

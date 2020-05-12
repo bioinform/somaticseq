@@ -131,15 +131,21 @@ cat 1000X.indel.toAdd.vcf | egrep '^#|;NVAF=0.00' | bgzip > 1000X.indel.toAdd.vc
 vcf-concat NeuRescued.sSNV.vcf.gz   1000X.snv.toAdd.vcf.gz   sSNV.MSDUKT.dedup_all.SPP.2ndPass.lowVafRescued.Neu.reLabeled.1300x.vcf.gz              | ${SEQC2}/somaticseq/utilities/vcfsorter.pl ${HG38}/GRCh38.d1.vd1.dict - | awk -F "\t" '{ if ( $7 ~ /HighConf|MedConf/ && $8 !~ /ArmLossInNormal|NonCallable/ ) $7="PASS;"$7 }'1 OFS='\t' | awk -F "\t" -vOFS='\t' '{ gsub("REJECT", "Tier4C", $7) ; print }' | bgzip > sSNV.MSDUKT.superSet.v1.1.vcf.gz
 vcf-concat NeuRescued.sINDEL.vcf.gz 1000X.indel.toAdd.vcf.gz sINDEL.MDKT.dedup_all.SPP.2ndPass.lowVafRescued.properIndels.Neu.reLabeled.1300x.vcf.gz | ${SEQC2}/somaticseq/utilities/vcfsorter.pl ${HG38}/GRCh38.d1.vd1.dict - | awk -F "\t" '{ if ( $7 ~ /HighConf|MedConf/ && $8 !~ /ArmLossInNormal|NonCallable/ ) $7="PASS;"$7 }'1 OFS='\t' | awk -F "\t" -vOFS='\t' '{ gsub("REJECT", "Tier4C", $7) ; print }' | bgzip > sINDEL.MDKT.superSet.v1.1.vcf.gz
 
+# 14) Add linguistic sequence complexity
+${SEQC2}/somaticseq/utilities/add_linguistic_sequence_complexity_to_vcf.py -infile sSNV.MSDUKT.superSet.v1.1.vcf.gz -outfile sSNV.MSDUKT.superSet.v1.1a.vcf -reference ${HG38}/GRCh38.d1.vd1.fa
+${SEQC2}/somaticseq/utilities/add_linguistic_sequence_complexity_to_vcf.py -infile sINDEL.MDKT.superSet.v1.1.vcf.gz -outfile sINDEL.MDKT.superSet.v1.1a.vcf -reference ${HG38}/GRCh38.d1.vd1.fa
+
+bgzip -f sSNV.MSDUKT.superSet.v1.1a.vcf
+bgzip -f sINDEL.MDKT.superSet.v1.1a.vcf
 
 # 14) Annotate with PacBio sequencing information
-${SEQC2}/somaticseq/utilities/attach_PacBioTsvDepth.py -myvcf sSNV.MSDUKT.superSet.v1.1.vcf.gz -mytsv PacBio/sSNV.MSDUKT.superSet.v1.1.PACB_annotated.tsv.gz -outfile sSNV.MSDUKT.superSet.v1.2.vcf
-${SEQC2}/somaticseq/utilities/attach_PacBioTsvDepth.py -myvcf sINDEL.MDKT.superSet.v1.1.vcf.gz -mytsv PacBio/sINDEL.MDKT.superSet.v1.1.PACB_annotated.tsv.gz -outfile sINDEL.MDKT.superSet.v1.2.vcf
+# 39/33 for SNVs and 15/2 for indels
+${SEQC2}/somaticseq/utilities/attach_PacBioTsvDepth.py -myvcf sSNV.MSDUKT.superSet.v1.1a.vcf.gz -mytsv PacBio/sSNV.MSDUKT.superSet.v1.1.PACB_annotated.tsv.gz -outfile sSNV.MSDUKT.superSet.v1.2.vcf
+${SEQC2}/somaticseq/utilities/attach_PacBioTsvDepth.py -myvcf sINDEL.MDKT.superSet.v1.1a.vcf.gz -mytsv PacBio/sINDEL.MDKT.superSet.v1.1.PACB_annotated.tsv.gz -outfile sINDEL.MDKT.superSet.v1.2.vcf
 
 bgzip -f sSNV.MSDUKT.superSet.v1.2.vcf
 bgzip -f sINDEL.MDKT.superSet.v1.2.vcf
 
-
 # 15) Simplify release VCF
-${SEQC2}/somaticseq/utilities/makeSeqc2HighConfidenceCallSets/minimize_highconf_vcfs.py -infile sSNV.MSDUKT.superSet.v1.2.vcf.gz -outfile high-confidence-sSNV_in_HC-regions_v1.2.vcf
-${SEQC2}/somaticseq/utilities/makeSeqc2HighConfidenceCallSets/minimize_highconf_vcfs.py -infile sINDEL.MDKT.superSet.v1.2.vcf.gz -outfile high-confidence-sINDEL_in_HC-regions_v1.2.vcf
+${SEQC2}/somaticseq/utilities/makeSeqc2HighConfidenceCallSets/minimize_highconf_vcfs.py -infile sSNV.MSDUKT.superSet.v1.2.vcf.gz -outfile high-confidence_sSNV_in_HC_regions_v1.2.vcf
+${SEQC2}/somaticseq/utilities/makeSeqc2HighConfidenceCallSets/minimize_highconf_vcfs.py -infile sINDEL.MDKT.superSet.v1.2.vcf.gz -outfile high-confidence_sINDEL_in_HC_regions_v1.2.vcf

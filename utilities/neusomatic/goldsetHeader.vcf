@@ -1,6 +1,6 @@
 ##fileformat=VCFv4.1
 ##SomaticSeq=v2.8.1-SEQC2
-##truth_set=v1.1.1
+##truth_set=v1.2
 ##reference=file:/SEQC2_Resources/GRCh38.d1.vd1.fa
 ##FORMAT=<ID=CD4,Number=4,Type=Integer,Description="ref concordant, ref discordant, alt concordant, alt discordant">
 ##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="ref forward, ref reverse, alt forward, alt reverse">
@@ -94,6 +94,7 @@
 ##INFO=<ID=PACB_NVAF,Number=1,Type=Float,Description="PacBio VAF for the normal">
 ##INFO=<ID=PACB_N_MQ,Number=2,Type=Float,Description="Reference and variant supporting mapping quality scores for PacBio normal data">
 ##INFO=<ID=PACB_T_MQ,Number=2,Type=Float,Description="Reference and variant supporting mapping quality scores for PacBio cancer data">
+##INFO=<ID=LC,Number=1,Type=Float,Description="Linguistic sequence complexity in Phred scale between 0 to 40. Higher value means higher complexity.">
 ##contig=<ID=chr1,length=248956422>
 ##contig=<ID=chr2,length=242193529>
 ##contig=<ID=chr3,length=198295559>
