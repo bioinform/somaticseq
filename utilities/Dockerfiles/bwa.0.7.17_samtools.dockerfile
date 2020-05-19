@@ -1,5 +1,5 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 MAINTAINER Li Tai Fang <li_tai.fang@roche.com>
 
-RUN apt-get update && apt-get install -y bwa samtools && apt-get clean
+RUN export DEBIAN_FRONTEND=noninteractive && apt update && apt -y install bwa samtools && apt-get clean
