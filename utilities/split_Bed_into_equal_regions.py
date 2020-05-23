@@ -101,7 +101,10 @@ def split(infile, outfiles, num):
             with open( '{}{}{}.{}'.format(out_directory, os.sep, ith_split, out_basename), 'w' ) as ith_out:
                 for line_i in current_region:
                     ith_out.write( line_i )
-                ith_out.write( '{}\t{}\t{}\n'.format( chr_i, start_i, breakpoint_i ) )
+                    
+                # Make sure it doesn't write a 0-bp region:
+                if breakpoint_i > start_i:
+                    ith_out.write( '{}\t{}\t{}\n'.format( chr_i, start_i, breakpoint_i ) )
             ith_split += 1
             current_region = []
             
@@ -124,7 +127,9 @@ def split(infile, outfiles, num):
                     
                     outfilesWritten.append( '{}{}{}.{}'.format(out_directory, os.sep, ith_split, out_basename) )
                     with open( '{}{}{}.{}'.format(out_directory, os.sep, ith_split, out_basename), 'w' ) as ith_out:
-                        ith_out.write( '{}\t{}\t{}\n'.format( chr_i, breakpoint_i, end_j ) )
+                        
+                        if end_j > breakpoint_i:
+                            ith_out.write( '{}\t{}\t{}\n'.format( chr_i, breakpoint_i, end_j ) )
                     ith_split += 1
     
                     breakpoint_i = end_j
