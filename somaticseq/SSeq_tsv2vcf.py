@@ -288,7 +288,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
             
             # Make backward compatible for tsv files without LC
             try:
-                seq_complexity = '%.1f' % float(tsv_item[LC])
+                seq_complexity = '%.1f' % float(tsv_item[LC]) if tsv_item[LC] != 'nan' else '.'
                 info_string    = info_string + ';LC={}'.format( seq_complexity )
             except NameError:
                 pass
