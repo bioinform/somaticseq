@@ -155,24 +155,46 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
                 noise_read_count += 1
     
     # Done extracting info from tumor BAM. Now tally them:
-    ref_mq        = mean(ref_read_mq)
-    alt_mq        = mean(alt_read_mq)
-    z_ranksums_mq = stats.ranksums(alt_read_mq, ref_read_mq)[0]
+    ref_mq            = mean(ref_read_mq)
+    alt_mq            = mean(alt_read_mq)
     
-    ref_bq        = mean(ref_read_bq)
-    alt_bq        = mean(alt_read_bq)
-    z_ranksums_bq = stats.ranksums(alt_read_bq, ref_read_bq)[0]
+    try:
+        p_mannwhitneyu_mq = stats.mannwhitneyu(alt_read_mq, ref_read_mq, use_continuity=True, alternative='less')[1]
     
-    ref_NM        = mean(ref_edit_distance)
-    alt_NM        = mean(alt_edit_distance)
-    z_ranksums_NM = stats.ranksums(alt_edit_distance, ref_edit_distance)[0]
-    NM_Diff       = alt_NM - ref_NM - abs(indel_length)
+    except ValueError:
+        if len(alt_read_mq) > 0 and len(ref_read_mq) > 0:
+            p_mannwhitneyu_mq = 0.5
+        else:
+            p_mannwhitneyu_mq = nan
+    
+    ref_bq            = mean(ref_read_bq)
+    alt_bq            = mean(alt_read_bq)
+    
+    try:
+        p_mannwhitneyu_bq = stats.mannwhitneyu(alt_read_bq, ref_read_bq, use_continuity=True, alternative='less')[1]
+    
+    except ValueError:
+        if len(alt_read_bq) > 0 and len(ref_read_bq) > 0:
+            p_mannwhitneyu_bq = 0.5
+        else:
+            p_mannwhitneyu_bq = nan
+    
+    ref_NM            = mean(ref_edit_distance)
+    alt_NM            = mean(alt_edit_distance)
+    NM_Diff           = alt_NM - ref_NM - abs(indel_length)
     
     concordance_fet = stats.fisher_exact(( (ref_concordant_reads, alt_concordant_reads), (ref_discordant_reads, alt_discordant_reads) ))[1]
     strandbias_fet  = stats.fisher_exact(( (ref_for, alt_for), (ref_rev, alt_rev) ))[1]
     clipping_fet    = stats.fisher_exact(( (ref_notSC_reads, alt_notSC_reads), (ref_SC_reads, alt_SC_reads) ))[1]
     
-    z_ranksums_endpos = stats.ranksums(alt_pos_from_end, ref_pos_from_end)[0]
+    try:
+        p_mannwhitneyu_endpos = stats.mannwhitneyu(alt_pos_from_end, ref_pos_from_end, use_continuity=True, alternative='less')[1]
+    
+    except ValueError:
+        if len(alt_pos_from_end) > 0 and len(ref_pos_from_end) > 0:
+            p_mannwhitneyu_endpos = 0.5
+        else:
+            p_mannwhitneyu_endpos = nan
     
     ref_indel_1bp = ref_flanking_indel.count(1)
     ref_indel_2bp = ref_flanking_indel.count(2) + ref_indel_1bp
