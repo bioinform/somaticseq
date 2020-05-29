@@ -143,54 +143,54 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                 toolcode2index['Y'] = n
 
 
-        ALT                  = tsv_header.index('ALT')
-        CHROM                = tsv_header.index('CHROM')
-        ID                   = tsv_header.index('ID')
-        POS                  = tsv_header.index('POS')
-        REF                  = tsv_header.index('REF')
-        T_ALT_FOR            = tsv_header.index('T_ALT_FOR')
-        T_ALT_REV            = tsv_header.index('T_ALT_REV')
-        tBAM_ALT_BQ          = tsv_header.index('tBAM_ALT_BQ')
-        tBAM_ALT_Concordant  = tsv_header.index('tBAM_ALT_Concordant')
-        tBAM_ALT_Discordant  = tsv_header.index('tBAM_ALT_Discordant')
-        tBAM_ALT_MQ          = tsv_header.index('tBAM_ALT_MQ')
-        tBAM_ALT_NM          = tsv_header.index('tBAM_ALT_NM')
-        tBAM_Concordance_FET = tsv_header.index('tBAM_Concordance_FET')
-        tBAM_MQ0             = tsv_header.index('tBAM_MQ0')
-        tBAM_REF_BQ          = tsv_header.index('tBAM_REF_BQ')
-        tBAM_REF_Concordant  = tsv_header.index('tBAM_REF_Concordant')
-        tBAM_REF_Discordant  = tsv_header.index('tBAM_REF_Discordant')
-        tBAM_REF_MQ          = tsv_header.index('tBAM_REF_MQ')
-        tBAM_REF_NM          = tsv_header.index('tBAM_REF_NM')
-        tBAM_StrandBias_FET  = tsv_header.index('tBAM_StrandBias_FET')
-        tBAM_Z_Ranksums_BQ   = tsv_header.index('tBAM_Z_Ranksums_BQ')
-        tBAM_Z_Ranksums_MQ   = tsv_header.index('tBAM_Z_Ranksums_MQ')
-        T_REF_FOR            = tsv_header.index('T_REF_FOR')
-        T_REF_REV            = tsv_header.index('T_REF_REV')
+        ALT                    = tsv_header.index('ALT')
+        CHROM                  = tsv_header.index('CHROM')
+        ID                     = tsv_header.index('ID')
+        POS                    = tsv_header.index('POS')
+        REF                    = tsv_header.index('REF')
+        T_ALT_FOR              = tsv_header.index('T_ALT_FOR')
+        T_ALT_REV              = tsv_header.index('T_ALT_REV')
+        tBAM_ALT_BQ            = tsv_header.index('tBAM_ALT_BQ')
+        tBAM_ALT_Concordant    = tsv_header.index('tBAM_ALT_Concordant')
+        tBAM_ALT_Discordant    = tsv_header.index('tBAM_ALT_Discordant')
+        tBAM_ALT_MQ            = tsv_header.index('tBAM_ALT_MQ')
+        tBAM_ALT_NM            = tsv_header.index('tBAM_ALT_NM')
+        tBAM_Concordance_FET   = tsv_header.index('tBAM_Concordance_FET')
+        tBAM_MQ0               = tsv_header.index('tBAM_MQ0')
+        tBAM_REF_BQ            = tsv_header.index('tBAM_REF_BQ')
+        tBAM_REF_Concordant    = tsv_header.index('tBAM_REF_Concordant')
+        tBAM_REF_Discordant    = tsv_header.index('tBAM_REF_Discordant')
+        tBAM_REF_MQ            = tsv_header.index('tBAM_REF_MQ')
+        tBAM_REF_NM            = tsv_header.index('tBAM_REF_NM')
+        tBAM_StrandBias_FET    = tsv_header.index('tBAM_StrandBias_FET')
+        tBAM_p_MannWhitneyU_BQ = tsv_header.index('tBAM_p_MannWhitneyU_BQ')
+        tBAM_p_MannWhitneyU_MQ = tsv_header.index('tBAM_p_MannWhitneyU_MQ')
+        T_REF_FOR              = tsv_header.index('T_REF_FOR')
+        T_REF_REV              = tsv_header.index('T_REF_REV')
         
         # Make backward compatible for tsv files without LC
         if 'Seq_Complexity_Span' in tsv_header:
             LC = tsv_header.index('Seq_Complexity_Span')
         
         if not single_mode:
-            N_ALT_FOR            = tsv_header.index('N_ALT_FOR')
-            N_ALT_REV            = tsv_header.index('N_ALT_REV')
-            nBAM_ALT_BQ          = tsv_header.index('nBAM_ALT_BQ')
-            nBAM_ALT_Concordant  = tsv_header.index('nBAM_ALT_Concordant')
-            nBAM_ALT_MQ          = tsv_header.index('nBAM_ALT_MQ')
-            nBAM_ALT_NM          = tsv_header.index('nBAM_ALT_NM')
-            nBAM_Concordance_FET = tsv_header.index('nBAM_Concordance_FET')
-            nBAM_MQ0             = tsv_header.index('nBAM_MQ0')
-            nBAM_REF_BQ          = tsv_header.index('nBAM_REF_BQ')
-            nBAM_REF_Concordant  = tsv_header.index('nBAM_REF_Concordant')
-            nBAM_REF_Discordant  = tsv_header.index('nBAM_REF_Discordant')
-            nBAM_REF_MQ          = tsv_header.index('nBAM_REF_MQ')
-            nBAM_REF_NM          = tsv_header.index('nBAM_REF_NM')
-            nBAM_StrandBias_FET  = tsv_header.index('nBAM_StrandBias_FET')
-            nBAM_Z_Ranksums_BQ   = tsv_header.index('nBAM_Z_Ranksums_BQ')
-            nBAM_Z_Ranksums_MQ   = tsv_header.index('nBAM_Z_Ranksums_MQ')
-            N_REF_FOR            = tsv_header.index('N_REF_FOR')
-            N_REF_REV            = tsv_header.index('N_REF_REV')
+            N_ALT_FOR              = tsv_header.index('N_ALT_FOR')
+            N_ALT_REV              = tsv_header.index('N_ALT_REV')
+            nBAM_ALT_BQ            = tsv_header.index('nBAM_ALT_BQ')
+            nBAM_ALT_Concordant    = tsv_header.index('nBAM_ALT_Concordant')
+            nBAM_ALT_MQ            = tsv_header.index('nBAM_ALT_MQ')
+            nBAM_ALT_NM            = tsv_header.index('nBAM_ALT_NM')
+            nBAM_Concordance_FET   = tsv_header.index('nBAM_Concordance_FET')
+            nBAM_MQ0               = tsv_header.index('nBAM_MQ0')
+            nBAM_REF_BQ            = tsv_header.index('nBAM_REF_BQ')
+            nBAM_REF_Concordant    = tsv_header.index('nBAM_REF_Concordant')
+            nBAM_REF_Discordant    = tsv_header.index('nBAM_REF_Discordant')
+            nBAM_REF_MQ            = tsv_header.index('nBAM_REF_MQ')
+            nBAM_REF_NM            = tsv_header.index('nBAM_REF_NM')
+            nBAM_StrandBias_FET    = tsv_header.index('nBAM_StrandBias_FET')
+            nBAM_p_MannWhitneyU_BQ = tsv_header.index('nBAM_p_MannWhitneyU_BQ')
+            nBAM_p_MannWhitneyU_MQ = tsv_header.index('nBAM_p_MannWhitneyU_MQ')
+            N_REF_FOR              = tsv_header.index('N_REF_FOR')
+            N_REF_REV              = tsv_header.index('N_REF_REV')
 
         try:
             SCORE = tsv_header.index('SCORE')
@@ -225,8 +225,8 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
     
         vcf.write('##FORMAT=<ID=fetSB,Number=1,Type=Float,Description="Strand bias FET">\n')
         vcf.write('##FORMAT=<ID=fetCD,Number=1,Type=Float,Description="Concordance FET">\n')
-        vcf.write('##FORMAT=<ID=zMQ,Number=1,Type=Float,Description="z-score rank sum of mapping quality">\n')
-        vcf.write('##FORMAT=<ID=zBQ,Number=1,Type=Float,Description="z-score rank sum of base quality">\n')
+        vcf.write('##FORMAT=<ID=uMQ,Number=1,Type=Float,Description="p of MannWhitneyU test of mapping quality: p close to 0 means ALT MQs are significantly less than reference MQs, and p close to 1 means ALT MQs are significantly greater than reference MQs.">\n')
+        vcf.write('##FORMAT=<ID=uBQ,Number=1,Type=Float,Description="p of MannWhitneyU test of base quality: p close to 0 means ALT BQs are significantly less than reference BQs, and p close to 1 means ALT BQs are significantly greater than reference BQs.">\n')
         vcf.write('##FORMAT=<ID=MQ0,Number=1,Type=Integer,Description="Number of reads with mapping quality of 0">\n')
         vcf.write('##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">\n')
     
@@ -288,7 +288,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
             
             # Make backward compatible for tsv files without LC
             try:
-                seq_complexity = '%.1f' % float(tsv_item[LC])
+                seq_complexity = '%.1f' % float(tsv_item[LC]) if tsv_item[LC] != 'nan' else '.'
                 info_string    = info_string + ';LC={}'.format( seq_complexity )
             except NameError:
                 pass
@@ -303,10 +303,10 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                 n_alt_nm  = tsv_item[nBAM_ALT_NM]          if tsv_item[nBAM_ALT_NM]          != 'nan' else '.'
                 n_MQ0     = tsv_item[nBAM_MQ0]             if tsv_item[nBAM_MQ0]             != 'nan' else '.'
                 
-                n_sb      = tsv_item[nBAM_StrandBias_FET]  if tsv_item[nBAM_StrandBias_FET]  != 'nan' else '.'
-                n_cd      = tsv_item[nBAM_Concordance_FET] if tsv_item[nBAM_Concordance_FET] != 'nan' else '.'
-                n_bqb     = tsv_item[nBAM_Z_Ranksums_BQ]   if tsv_item[nBAM_Z_Ranksums_BQ]   != 'nan' else '.'
-                n_mqb     = tsv_item[nBAM_Z_Ranksums_MQ]   if tsv_item[nBAM_Z_Ranksums_MQ]   != 'nan' else '.'
+                n_sb      = tsv_item[nBAM_StrandBias_FET]    if tsv_item[nBAM_StrandBias_FET]    != 'nan' else '.'
+                n_cd      = tsv_item[nBAM_Concordance_FET]   if tsv_item[nBAM_Concordance_FET]   != 'nan' else '.'
+                n_bqb     = tsv_item[nBAM_p_MannWhitneyU_BQ] if tsv_item[nBAM_p_MannWhitneyU_BQ] != 'nan' else '.'
+                n_mqb     = tsv_item[nBAM_p_MannWhitneyU_MQ] if tsv_item[nBAM_p_MannWhitneyU_MQ] != 'nan' else '.'
                 
                 n_ref_for = tsv_item[N_REF_FOR] if tsv_item[N_REF_FOR] != 'nan' else '0'
                 n_ref_rev = tsv_item[N_REF_REV] if tsv_item[N_REF_REV] != 'nan' else '0'
@@ -332,7 +332,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                     vaf = 0
                 vaf = '%.3g' % vaf
                 
-                normal_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{MQ0}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=n_ref_mq, altMQ=n_alt_mq, refBQ=n_ref_bq, altBQ=n_alt_bq, refNM=n_ref_nm, altNM=n_alt_nm, fetSB=n_sb, fetCD=n_cd, zMQ=n_mqb, zBQ=n_bqb, MQ0=n_MQ0, VAF=vaf)
+                normal_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{uMQ}:{uBQ}:{MQ0}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=n_ref_mq, altMQ=n_alt_mq, refBQ=n_ref_bq, altBQ=n_alt_bq, refNM=n_ref_nm, altNM=n_alt_nm, fetSB=n_sb, fetCD=n_cd, uMQ=n_mqb, uBQ=n_bqb, MQ0=n_MQ0, VAF=vaf)
     
     
             ### TUMOR ###
@@ -344,10 +344,10 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
             t_alt_nm  = tsv_item[tBAM_ALT_NM]          if tsv_item[tBAM_ALT_NM]          != 'nan' else '.'        
             t_MQ0     = tsv_item[tBAM_MQ0]             if tsv_item[tBAM_MQ0]             != 'nan' else '.'
             
-            t_sb      = tsv_item[tBAM_StrandBias_FET]  if tsv_item[tBAM_StrandBias_FET]  != 'nan' else '.'
-            t_cd      = tsv_item[tBAM_Concordance_FET] if tsv_item[tBAM_Concordance_FET] != 'nan' else '.'        
-            t_bqb     = tsv_item[tBAM_Z_Ranksums_BQ]   if tsv_item[tBAM_Z_Ranksums_BQ]   != 'nan' else '.'
-            t_mqb     = tsv_item[tBAM_Z_Ranksums_MQ]   if tsv_item[tBAM_Z_Ranksums_MQ]   != 'nan' else '.'
+            t_sb      = tsv_item[tBAM_StrandBias_FET]    if tsv_item[tBAM_StrandBias_FET]    != 'nan' else '.'
+            t_cd      = tsv_item[tBAM_Concordance_FET]   if tsv_item[tBAM_Concordance_FET]   != 'nan' else '.'        
+            t_bqb     = tsv_item[tBAM_p_MannWhitneyU_BQ] if tsv_item[tBAM_p_MannWhitneyU_BQ] != 'nan' else '.'
+            t_mqb     = tsv_item[tBAM_p_MannWhitneyU_MQ] if tsv_item[tBAM_p_MannWhitneyU_MQ] != 'nan' else '.'
 
             t_ref_for = tsv_item[T_REF_FOR] if tsv_item[T_REF_FOR] != 'nan' else '0'
             t_ref_rev = tsv_item[T_REF_REV] if tsv_item[T_REF_REV] != 'nan' else '0'
@@ -380,9 +380,9 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                 info_string = info_string + ';AF={}'.format(vaf)
                 
     
-            tumor_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{MQ0}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=t_ref_mq, altMQ=t_alt_mq, refBQ=t_ref_bq, altBQ=t_alt_bq, refNM=t_ref_nm, altNM=t_alt_nm, fetSB=t_sb, fetCD=t_cd, zMQ=t_mqb, zBQ=t_bqb, MQ0=t_MQ0, VAF=vaf)
+            tumor_sample_string = '{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{uMQ}:{uBQ}:{MQ0}:{VAF}'.format(GT=gt, DP4=dp4_string, CD4=cd4_string, refMQ=t_ref_mq, altMQ=t_alt_mq, refBQ=t_ref_bq, altBQ=t_alt_bq, refNM=t_ref_nm, altNM=t_alt_nm, fetSB=t_sb, fetCD=t_cd, uMQ=t_mqb, uBQ=t_bqb, MQ0=t_MQ0, VAF=vaf)
     
-            field_string = 'GT:DP4:CD4:refMQ:altMQ:refBQ:altBQ:refNM:altNM:fetSB:fetCD:zMQ:zBQ:MQ0:VAF'
+            field_string = 'GT:DP4:CD4:refMQ:altMQ:refBQ:altBQ:refNM:altNM:fetSB:fetCD:uMQ:uBQ:MQ0:VAF'
             
             if score is nan:
                 scaled_score = 0
