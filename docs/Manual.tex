@@ -1462,7 +1462,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	\item Version 3.5.0
 
         \begin{itemize}
-            \item Replaced z-scores from scipy's ranksums with p-values from scipy's mannwhitneyu.
+            \item Replaced z-scores from scipy's ranksums with p-values from scipy's mannwhitneyu, mostly because the mannwhitneyu corrects for discrete values. Thus, models built prior to this version is no longer compatible with it due to different features. 
 
 		\end{itemize}
 
