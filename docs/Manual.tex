@@ -1458,11 +1458,19 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
             \item Fixed a bug where the indels nearest to a position was not calculated correctly when there are soft-clipped bases in a read.
 
 		\end{itemize}
+
 		
 	\item Version 3.5.0
 
         \begin{itemize}
             \item Replaced z-scores from scipy's ranksums with p-values from scipy's mannwhitneyu, mostly because the mannwhitneyu corrects for discrete values. Thus, models built prior to this version is no longer compatible with it due to different features. 
+		\end{itemize}
+
+		
+	\item Version 3.5.1
+
+        \begin{itemize}
+            \item Fixed a minor bug when num\_caller was not reset when there are multiple variant calls in the same genomic position.
 
 		\end{itemize}
 
