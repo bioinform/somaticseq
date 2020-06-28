@@ -1470,7 +1470,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	\item Version 3.5.1
 
         \begin{itemize}
-            \item Fixed a minor bug when num\_caller was not reset when there are multiple variant calls in the same genomic position. So, some variant calls that should not be output into the .tsv because num\_caller did not meet the threshold will be output into the .tsv file. However, the features are still reported correctly, so the classifications will still be correct. 
+            \item Fixed a minor bug when num\_caller in somaticseq/somatic\_vcf2tsv.py and somaticseq/single\_sample\_vcf2tsv.py was not reset when there are multiple variant calls in the same genomic position. So, some variant calls that should not be output into the .tsv because num\_caller did not meet the threshold will be output into the .tsv file. However, the features are still reported correctly, so the classifications will still be correct. 
 
 		\end{itemize}
 
