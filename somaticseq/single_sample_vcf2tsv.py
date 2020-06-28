@@ -324,9 +324,6 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
                     # Could be re-written if dbSNP/COSMIC are supplied. If not, they will remain NaN.
                     if_dbsnp = if_cosmic = if_common = num_cases = nan
 
-                # Keep track of NumCallers:
-                num_callers = 0
-
                 #################################### Find the same coordinate in those VCF files ####################################
                 if mutect:   got_mutect,  mutect_variants,  mutect_line  = genome.find_vcf_at_coordinate(my_coordinate, mutect_line,  mutect,  chrom_seq)
                 if varscan:  got_varscan, varscan_variants, varscan_line = genome.find_vcf_at_coordinate(my_coordinate, varscan_line, varscan, chrom_seq)
@@ -353,6 +350,9 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosm
                     else:
                         variant_id = ( (my_coordinate[0], my_coordinate[1]), ref_base, first_alt )
 
+
+                    # Reset num_caller to 0 for each variant in the same coordinate
+                    num_callers = 0
 
                     #################### Collect Caller Vcf ####################:
                     if mutect:
