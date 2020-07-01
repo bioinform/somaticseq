@@ -6,13 +6,13 @@ from functools import reduce
 import argparse
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-vaf',      '--vafs',      type=float, nargs='*', help='VAF', default=0.05)
-parser.add_argument('-dp',       '--dp',        type=int, help='WGS depth', default=50)
-parser.add_argument('-deep1',    '--deep-dp1',  type=int, help='combined WGS depth', default=300)
-parser.add_argument('-deep2',    '--deep-dp2',  type=int, help='combined WGS depth', default=380)
-parser.add_argument('-veryDeep', '--very-deep', type=int, help='combined WGS depth', default=1000)
-parser.add_argument('-varWgs',   '--variant-read-WGS', type=int, help='min reads in WGS to get a call', default=3)
-parser.add_argument('-varDeep',  '--variant-read-Deep', type=int, help='min reads in combined WGS to get a call',  default=5)
+parser.add_argument('-vaf',      '--vafs',             type=float, nargs='*', help='VAF', default=0.05)
+parser.add_argument('-dp',       '--dp',                 type=int, help='WGS depth', default=50)
+parser.add_argument('-deep1',    '--deep-dp1',           type=int, help='combined WGS depth', default=300)
+parser.add_argument('-deep2',    '--deep-dp2',           type=int, help='combined WGS depth', default=380)
+parser.add_argument('-veryDeep', '--very-deep',          type=int, help='combined WGS depth', default=1000)
+parser.add_argument('-varWgs',   '--variant-read-WGS',   type=int, help='min reads in WGS to get a call', default=3)
+parser.add_argument('-varDeep',  '--variant-read-Deep',  type=int, help='min reads in combined WGS to get a call',  default=3)
 parser.add_argument('-var1300X', '--variant-read-1300X', type=int, help='min reads in combined WGS to get a call', default=18)
 
 
