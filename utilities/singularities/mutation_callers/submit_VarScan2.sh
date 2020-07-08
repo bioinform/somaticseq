@@ -144,7 +144,7 @@ echo "> /mnt/${outdir}/tumor.pileup\"" >> $out_script
 
 echo "" >> $out_script
 
-echo "singularity exec   docker:///:/mnt --memory ${MEM}G djordjeklisic/sbg-varscan2:v1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://djordjeklisic/sbg-varscan2:v1 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar /VarScan2.3.7.jar somatic \\" >> $out_script
 echo "/mnt/${outdir}/normal.pileup \\" >> $out_script
 echo "/mnt/${outdir}/tumor.pileup \\" >> $out_script
@@ -152,13 +152,13 @@ echo "/mnt/${outdir}/${outvcf%.vcf} ${extra_arguments} --output-vcf 1 --min-var-
 
 echo "" >> $out_script
 
-echo "singularity exec   docker:///:/mnt --memory ${MEM}G djordjeklisic/sbg-varscan2:v1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://djordjeklisic/sbg-varscan2:v1 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar /VarScan2.3.7.jar processSomatic \\" >> $out_script
 echo "/mnt/${outdir}/${outvcf%.vcf}.snp.vcf" >> $out_script
 
 echo "" >> $out_script
 
-echo "singularity exec   docker:///:/mnt --memory ${MEM}G djordjeklisic/sbg-varscan2:v1 \\" >> $out_script
+echo "singularity exec --bind /:/mnt docker://djordjeklisic/sbg-varscan2:v1 \\" >> $out_script
 echo "java -Xmx${MEM}g -jar /VarScan2.3.7.jar somaticFilter \\" >> $out_script
 echo "/mnt/${outdir}/${outvcf%.vcf}.snp.Somatic.hc.vcf \\" >> $out_script
 echo "-indel-file /mnt/${outdir}/${outvcf%.vcf}.indel.vcf \\" >> $out_script
