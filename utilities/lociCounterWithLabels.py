@@ -4,26 +4,7 @@ import argparse, gzip, re, sys
 from os.path import basename
 from copy import copy
 
-parser = argparse.ArgumentParser(description='This is a program to tally and count the overlapping regions when given multiple input bed files. A CRITICAL REQUIREMENT is that each input bed file is sorted and non-overlapping, which could be achived with bedtools merge before they are used as input to this program.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-fai',    '--fai-file',   type=str,  help='.fa.fai file',  required=True,  default=None)
-parser.add_argument('-beds',   '--bed-files',  type=str,  help='BED files', nargs='*', required=True,  default=None)
-parser.add_argument('-out',    '--bed-out',    type=str,  help='BED file out', required=False,  default=None)
-parser.add_argument('-labels', '--bed-labels', type=str,  help='Use these labels instead of bed file names', nargs='*', required=False,  default=None)
 
-
-args = parser.parse_args()
-
-fai_file   = args.fai_file
-bed_files  = args.bed_files
-bed_out    = args.bed_out
-bed_labels = args.bed_labels
-
-bed_out = args.bed_out if args.bed_out else sys.stdout
-
-if bed_labels:
-    assert len(bed_labels) == len(bed_files)
-else:
-    bed_labels = [basename(bed_file_i) for bed_file_i in bed_files]
 
 def fai2bed(file_name):
         
@@ -186,34 +167,62 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
 
 
 
-# Start routine:
-contigBoundries, contigCounters, contigLabels, orderedContigs = fai2bed(fai_file)
-
-# Look at BED files
-for i, bed_file_i in enumerate(bed_files):
+## Print out results:
+def run(fai_file, bed_files, bed_labels, bed_out):
     
-    bedRegions = bed2regions(bed_file_i)
-    label_i    = bed_labels[i]
+    # Start routine:
+    contigBoundries, contigCounters, contigLabels, orderedContigs = fai2bed(fai_file)
     
-    for chrom in bedRegions:
-        contigBoundries[chrom], contigCounters[chrom], contigLabels[chrom] \
-        = countIntersectedRegions(contigBoundries[chrom], contigCounters[chrom], bedRegions[chrom], contigLabels[chrom], label_i)
-
-
-if args.bed_out:
-    bed_out = open(bed_out, 'w')
-
-for contig_i in orderedContigs:
-    
-    if contigCounters[ contig_i ] != [0]:
+    # Look at BED files
+    for i, bed_file_i in enumerate(bed_files):
         
-        for i, count_i in enumerate( contigCounters[contig_i] ):
+        bedRegions = bed2regions(bed_file_i)
+        label_i    = bed_labels[i]
+        
+        for chrom in bedRegions:
+            contigBoundries[chrom], contigCounters[chrom], contigLabels[chrom] \
+            = countIntersectedRegions(contigBoundries[chrom], contigCounters[chrom], bedRegions[chrom], contigLabels[chrom], label_i)
+    
+    
+    with open(bed_out, 'w') as bed_out:
+    
+        for contig_i in orderedContigs:
             
-            label_string = ','.join( contigLabels[contig_i][i] ) if contigLabels[contig_i][i] else '.'
-            
-            out_string = '{}\t{}\t{}\t{}\t{}'.format(contig_i, contigBoundries[contig_i][i], contigBoundries[contig_i][i+1], count_i, label_string)
-            
-            bed_out.write(out_string + '\n')
+            if contigCounters[ contig_i ] != [0]:
+                
+                for i, count_i in enumerate( contigCounters[contig_i] ):
+                    
+                    label_string = ','.join( contigLabels[contig_i][i] ) if contigLabels[contig_i][i] else '.'
+                    
+                    out_string = '{}\t{}\t{}\t{}\t{}'.format(contig_i, contigBoundries[contig_i][i], contigBoundries[contig_i][i+1], count_i, label_string)
+                    
+                    bed_out.write(out_string + '\n')
+    
+    return 0
 
-if args.bed_out:
-    bed_out.close()
+
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='This is a program to tally and count the overlapping regions when given multiple input bed files. A CRITICAL REQUIREMENT is that each input bed file is sorted and non-overlapping, which could be achived with bedtools merge before they are used as input to this program.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    
+    parser.add_argument('-fai',    '--fai-file',   type=str, help='.fa.fai file',                                          required=True,  default=None)
+    parser.add_argument('-beds',   '--bed-files',  type=str, help='BED files',                                  nargs='+', required=True,  default=None)
+    parser.add_argument('-out',    '--bed-out',    type=str, help='BED file out',                                          required=True,  default=None)
+    parser.add_argument('-labels', '--bed-labels', type=str, help='Use these labels instead of bed file names', nargs='*', required=False, default=None)
+    
+    args = parser.parse_args()
+    
+    fai_file   = args.fai_file
+    bed_files  = args.bed_files
+    bed_out    = args.bed_out
+    bed_labels = args.bed_labels
+    
+    if bed_labels:
+        assert len(bed_labels) == len(bed_files)
+    else:
+        bed_labels = [basename(bed_file_i) for bed_file_i in bed_files]
+    
+    ## Run the program:
+    run(fai_file, bed_files, bed_labels, bed_out)
