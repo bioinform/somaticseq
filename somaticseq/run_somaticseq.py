@@ -9,7 +9,7 @@ sys.path.append( PRE_DIR )
 import genomicFileHandler.genomic_file_handlers as genome
 import vcfModifier.copy_TextFile as copy_TextFile
 import somaticseq.combine_callers as combineCallers
-
+from somaticseq._version import  __version__
 
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
@@ -257,7 +257,7 @@ def run():
 
     #inputParameters = {}
 
-    parser = argparse.ArgumentParser(description='Somaticseq: a method to combine results from multiple somatic mutation callers, extract genomic and sequencing features for each variant call from the BAM files, and then use machine learning to score the variants.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Somaticseq v{}: a method to combine results from multiple somatic mutation callers, extract genomic and sequencing features for each variant call from the BAM files, and then use machine learning to score the variants.'.format(__version__), formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('-outdir',      '--output-directory',   type=str, help='output directory', default='.')
     parser.add_argument('-ref',         '--genome-reference',   type=str, help='.fasta.fai file to get the contigs', required=True)
