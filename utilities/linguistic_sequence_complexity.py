@@ -27,59 +27,79 @@ def all_possible_dna_sequences(seq_length):
 
 
 
-def max_vocab(seq_length):
+def max_vocabularies(seq_length):
     # According to:
     # https://doi.org/10.1093/bioinformatics/18.5.679
+    # Assume 4 different nucleotides
     counts = 0
-    for k in range(1, seq_length+1):
-        counts = counts + min(4**k, seq_length - k + 1)
-    
+    k = 1
+    while k <= seq_length:
+        
+        if 4**k < (seq_length - k + 1):
+            counts = counts + 4**k
+        else:
+            counts = counts + (seq_length-k+1 + 1) * (seq_length-k+1 - 1 + 1)/2
+            break
+        
+        k += 1
+                
     return counts
 
 
 
-
-'''
-def LSC(sequence, up_to_n=50, at_least_to_n=10):
-    #Calculate the number of unique N-string within a sequence divided by min(4^i or N-i+1) as U(i).
-    #Then, take the product of all the U(i)'s.
+def LC(sequence):
+    # Calculate linguistic sequence complexity according to
+    # https://doi.org/10.1093/bioinformatics/18.5.679
+    # Assume 4 different nucleotides
+    sequence = sequence.upper()
     
-    seq_length    = len(sequence)
-    up_to_n       = min(up_to_n, seq_length)
-    at_least_to_n = min(at_least_to_n, seq_length)
-    
-    LSC = 1
-    
-    for i in range(1, seq_length+1):
+    if not 'N' in sequence:
         
-        set_of_seq_n = set()
-        tree_level = min(4**i, seq_length - i + 1)
-        
-        for n, nth_base in enumerate(sequence):
+        number_of_subseqs     = 0
+        seq_length            = len(sequence)
+        max_number_of_subseqs = max_vocabularies(seq_length)
+    
+        for i in range(1, seq_length+1):
             
-            if n+i <= len(sequence):
-                sub_seq = sequence[n:n+i]
-                set_of_seq_n.add( sub_seq )
+            #max_vocab_1 = 4**i
+            #max_vocab_2 = seq_length - i + 1
+            set_of_seq_n = set()
+    
+            for n, nth_base in enumerate(sequence):
+                
+                if n+i <= len(sequence):
+                    sub_seq = sequence[n:n+i]
+                    set_of_seq_n.add( sub_seq )
+    
+            num_uniq_subseqs  = len(set_of_seq_n)
+            number_of_subseqs = number_of_subseqs + num_uniq_subseqs
+    
+        lc = number_of_subseqs/max_number_of_subseqs
+    
+    else:
+        lc = float('nan')
 
-        num_uniq_subseqs = len(set_of_seq_n)
-        U_i = num_uniq_subseqs / tree_level
-        
-        if i > up_to_n:
-            break
-        elif (i >= at_least_to_n) and (1.0 - U_i <= eps):
-            break
-        else:
-            LSC = LSC * U_i
+    return lc
 
-    return LSC
-'''
+
+
 
 
 if __name__ == "__main__":
     
-    parser = argparse.ArgumentParser(description="Annotate with snpSift and snpEff with dbSNP and COSMIC", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description="Calculate linguistic sequence complexity according to DOI:10.1093/bioinformatics/18.5.679", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('-seq',  '--sequence', type=str,  help="input vcf file")
+    parser.add_argument('-seq',  '--sequence',         type=str, help="GCTA sequences")
+    parser.add_argument('-len',  '--substring-length', type=int, help="sub-lenght up to...")
+
     args = parser.parse_args()
 
-    print( seq_features.LC(args.sequence) )
+    if args.substring_length:
+        length = args.substring_length
+        assert length <= len(args.sequence)
+    
+    else:
+        length = len(args.sequence)
+
+    # This one adds up sub-strings up to a length
+    print( seq_features.subLC(args.sequence, length) )
