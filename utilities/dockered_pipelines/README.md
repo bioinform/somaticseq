@@ -21,7 +21,7 @@ If you do `--action qsub` instead, then those mutation caller scripts will be qs
 You'll still need to mantually run/submit the SomaticSeq script after all the caller jobs are done.
 
 ```
-$PATH/TO/somaticseq/utilities/dockered_pipelines/makeSomaticScripts.py paired \
+makeSomaticScripts.py paired \
 --normal-bam       /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam        /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
@@ -47,7 +47,7 @@ Our tumor-only workflows are not as well validated as the tumor-normal workflows
 Only call for callers that support single-sample modes, i.e., `--run-mutect2`, `--run-varscan2`, `--run-vardict`, `--run-lofreq`, `--run-scalpel`, and/or `--run-strelka2`.
 
 ```
-$PATH/TO/somaticseq/utilities/dockered_pipelines/makeSomaticScripts.py single \
+makeSomaticScripts.py single \
 --bam              /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
 --output-directory /ABSOLUTE/PATH/TO/RESULTS \

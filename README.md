@@ -15,7 +15,7 @@ This [dockerfile](utilities/Dockerfiles/somaticseq.base-1.2.dockerfile) reveals 
 * To install SomaticSeq, `cd somaticseq` and then run `./setup.py install`. You'll need to install R and its libraries separately.
 
 ## To install with bioconda
-SomaticSeq can also be found on [bioconda](https://anaconda.org/bioconda/somaticseq). To install with conda, which also automatically installs a bunch of 3rd-party somatic mutation callers:
+SomaticSeq can also be found on [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/version.svg)](https://anaconda.org/bioconda/somaticseq). To [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda), which also automatically installs a bunch of 3rd-party somatic mutation callers:
 `conda install -c bioconda somaticseq`
 
 ## Example commands
