@@ -16,8 +16,9 @@ def bed_include(infile, inclusion_region, outfile):
     
     if inclusion_region:
     
-        exit_code = os.system( 'intersectBed -header -a {} -b {} | uniq > {}'.format(infile, inclusion_region, outfile) )
-        assert exit_code == 0
+        cmd_line = 'intersectBed -header -a {} -b {} | uniq > {}'.format(infile, inclusion_region, outfile)
+        subprocess.check_call(cmd_line, shell=True)
+        
     else:
         outfile = None
     
@@ -30,9 +31,9 @@ def bed_exclude(infile, exclusion_region, outfile):
     assert infile != outfile
     
     if exclusion_region:
-    
-        exit_code = os.system( 'intersectBed -header -a {} -b {} -v | uniq > {}'.format(infile, exclusion_region, outfile) )
-        assert exit_code == 0
+        cmd_line = 'intersectBed -header -a {} -b {} -v | uniq > {}'.format(infile, exclusion_region, outfile) 
+        subprocess.check_call(cmd_line, shell=True)
+        
     else:
         outfile = None
         
@@ -55,27 +56,28 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
     if inclusion_region:
         
         included_temp_file = infile_noext + uuid.uuid4().hex + file_ext
-        
-        exit_code = os.system( 'intersectBed -header -a {} -b {} | uniq > {}'.format(infile, inclusion_region, included_temp_file) )
-        assert exit_code == 0
-        
+
+        cmd_line = 'intersectBed -header -a {} -b {} | uniq > {}'.format(infile, inclusion_region, included_temp_file)
+        subprocess.check_call(cmd_line, shell=True)
+
         infile  = included_temp_file
         temp_files.append( included_temp_file )
     
     
     if exclusion_region:
         
-        exit_code = os.system( 'intersectBed -header -a {} -b {} -v | uniq > {}'.format(infile, exclusion_region, outfile) )
-        assert exit_code == 0
-    
+        cmd_line = 'intersectBed -header -a {} -b {} -v | uniq > {}'.format(infile, exclusion_region, outfile)
+        subprocess.check_call(cmd_line, shell=True)
     
     if inclusion_region and not exclusion_region:
         copyfile(included_temp_file, outfile)
     
     elif not (inclusion_region or exclusion_region):
         if infile.endswith('.gz'):
-            exit_code = os.system( 'gunzip -c {} > {}'.format(infile, outfile) )
-            assert exit_code == 0
+        
+            cmd_line = 'gunzip -c {} > {}'.format(infile, outfile)
+            subprocess.check_call(cmd_line, shell=True)
+        
         else:
             copyfile(infile, outfile)
     
@@ -87,11 +89,13 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
 
 
 
+
 # Use utilities/vcfsorter.pl fa.dict unsorted.vcf > sorted.vcf
 def vcfsorter(ref, vcfin, vcfout):
     
     #vcfsort = '{}/utilities/vcfsorter.pl'.format(PRE_DIR)
     #os.system( '{} {} {} > {}'.format(vcfsort, hg_dict, vcfin, vcfout ) )
     fai = ref + '.fai'
-    exit_code = os.system('bedtools sort -faidx {} -header -i {} > {}'.format(fai, vcfin, vcfout))
-    assert exit_code == 0
+    
+    cmd_line = 'bedtools sort -faidx {} -header -i {} > {}'.format(fai, vcfin, vcfout)
+    subprocess.check_call(cmd_line, shell=True)
