@@ -52,7 +52,7 @@ paired \
 ```
 
 * `--inclusion-region` or `--exclusion-region` will require BEDTools in your path.
-* `--algorithm` will default to `ada` (adaptive boosting), but can also be `xgboost` (extreme gradient boosting). We have incorporated XGBoost recently. It can be orders of magnitude faster than AdaBoost, but we have not benchmarked it as comprehensively.
+* `--algorithm` will default to `ada` (adaptive boosting), but can also be `xgboost` (extreme gradient boosting). We have incorporated XGBoost (v0.90.0.2 in R) recently. It can be orders of magnitude faster than AdaBoost, but we have not benchmarked it as comprehensively. Also, xgboost version 1.0+ broke the compatibility, which we intend to fix in the near future.
 * To split the job into multiple threads, place `--threads X` before the `paired` option to indicate X threads. It simply creates multiple BED file (each consisting of 1/X of total base pairs) for SomaticSeq to run on each of those sub-BED files in parallel. It then merges the results. This requires `bedtools` in your path.
 * For all input VCF files, either .vcf or .vcf.gz are acceptable.
 
