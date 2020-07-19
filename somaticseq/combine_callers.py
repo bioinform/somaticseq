@@ -84,7 +84,15 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
     if vardict:
         import vcfModifier.modify_VarDict as mod_vardict
         
-        vardict_in = bed_intersector(vardict, os.sep.join(( outdir, 'intersect.vardict.vcf' )), inclusion, exclusion)
+        # If the VarDict VCF file has line that clash with bedtools
+        cleaned_vardict = os.sep.join(( outdir, 'cleaned.vardict.vcf' ))
+        cleaned_vardict = remove_vcf_illegal_lines(vardict, cleaned_vardict)
+        if cleaned_vardict:
+            intermediate_files.add( cleaned_vardict )
+        else:
+            cleaned_vardict = vardict
+        
+        vardict_in = bed_intersector(cleaned_vardict, os.sep.join(( outdir, 'intersect.vardict.vcf' )), inclusion, exclusion)
         intermediate_files.add(vardict_in)
 
         snv_vardict_out   = os.sep.join(( outdir, 'snv.vardict.vcf' ))
@@ -295,7 +303,15 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
     if vardict:
         import vcfModifier.modify_VarDict as mod_vardict
 
-        vardict_in = bed_intersector(vardict, os.sep.join(( outdir, 'intersect.vardict.vcf' )), inclusion, exclusion)
+        # If the VarDict VCF file has line that clash with bedtools
+        cleaned_vardict = os.sep.join(( outdir, 'cleaned.vardict.vcf' ))
+        cleaned_vardict = remove_vcf_illegal_lines(vardict, cleaned_vardict)
+        if cleaned_vardict:
+            intermediate_files.add( cleaned_vardict )
+        else:
+            cleaned_vardict = vardict
+
+        vardict_in = bed_intersector(cleaned_vardict, os.sep.join(( outdir, 'intersect.vardict.vcf' )), inclusion, exclusion)
         intermediate_files.add(vardict_in)
         
         snv_vardict_out   = os.sep.join(( outdir, 'snv.vardict.vcf' ))

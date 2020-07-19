@@ -10,6 +10,53 @@ import genomicFileHandler.genomic_file_handlers as genome
 
 
 
+def remove_vcf_illegal_lines(invcf, outvcf):
+    '''
+    In VarDict v1.7, there are lines with <XXX> in ALT without END in info, which will cause bedtools to fail. 
+    This program will check if these things exist, and if they do, remove them.
+    If the input VCF has illegal lines, it will return the modified output VCF file excluding those lines.
+    If the input VCF file does not have such illegal lines, it will return False.
+    '''
+    
+    hasIllegalLine = False
+    with genome.open_textfile(invcf) as vcf:
+        line_i = vcf.readline().rstrip()
+        while line_i.startswith('#'):
+            line_i = vcf.readline().rstrip()
+            
+        while line_i:
+            
+            vcf_i = genome.Vcf_line( line_i )
+            
+            if re.match(r'<\w+>', vcf_i.altbase) and ( not vcf_i.get_info_value('END') ):
+                hasIllegalLine = True
+                break
+            
+            line_i = vcf.readline().rstrip()
+    
+    if hasIllegalLine:
+        with genome.open_textfile(invcf) as vcf, open(outvcf, 'w') as out:
+            
+            line_i = vcf.readline().rstrip()
+            while line_i.startswith('#'):
+                out.write( line_i + '\n')
+                line_i = vcf.readline().rstrip()
+            
+            while line_i:
+                
+                vcf_i = genome.Vcf_line( line_i )
+                
+                if not ( re.match(r'<\w+>', vcf_i.altbase) and (not vcf_i.get_info_value('END')) ):
+                    out.write( line_i + '\n')
+
+                line_i = vcf.readline().rstrip()
+        
+        return outvcf
+        
+    else:
+        return hasIllegalLine
+
+
 def bed_include(infile, inclusion_region, outfile):
     
     assert infile != outfile
