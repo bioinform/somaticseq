@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 import logging
+import somaticseq.ntchange_type as ntchange
 from copy import copy
 from somaticseq._version import  __version__
 
@@ -22,10 +23,10 @@ def builder(input_tsv, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds=
     if not model:
         model = input_tsv + '.xgb.v{}.model'.format( __version__ )
     
-    data        = pd.read_csv(input_tsv, sep='\t')
-    
-    train_data  = data.drop(non_feature, axis=1)
-    train_label = data['TrueVariant_or_False']
+    input_data    = pd.read_csv(input_tsv, sep='\t', low_memory=False)
+    data_ntchange = ntchange.ntchange(input_data)
+    train_data    = data_ntchange.drop(non_feature, axis=1)
+    train_label   = input_data['TrueVariant_or_False']
     
     dtrain      = xgb.DMatrix(train_data, label=train_label)
     bst         = xgb.train(param, dtrain, num_boost_round=num_rounds)
@@ -40,9 +41,10 @@ def builder(input_tsv, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds=
 
 def predictor(model, input_tsv, output_tsv, non_feature=NON_FEATURE):
     
-    input_data = pd.read_csv(input_tsv, sep='\t')
-    test_data  = input_data.drop(non_feature, axis=1)
-    dtest      = xgb.DMatrix(test_data)
+    input_data    = pd.read_csv(input_tsv, sep='\t', low_memory=False)
+    data_ntchange = ntchange.ntchange(input_data)
+    test_data     = data_ntchange.drop(non_feature, axis=1)
+    dtest         = xgb.DMatrix(test_data)
     
     xgb_model = xgb.Booster()
     xgb_model.load_model(model)
@@ -111,7 +113,7 @@ if __name__ == '__main__':
         if args.seed:
             PARAM['seed'] = args.seed
         
-        builder(args.tsv_in, param=PARAM, non_feature=NON_FEATURE, num_rounds=args.num_boost_rounds, model=args.model_out):
+        builder(args.tsv_in, param=PARAM, non_feature=NON_FEATURE, num_rounds=args.num_boost_rounds, model=args.model_out)
 
 
 
