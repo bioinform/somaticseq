@@ -40,20 +40,26 @@ def builder(input_tsv, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds=
 
 
 def predictor(model, input_tsv, output_tsv, non_feature=NON_FEATURE):
-    
-    input_data    = pd.read_csv(input_tsv, sep='\t', low_memory=False)
-    data_ntchange = ntchange.ntchange(input_data)
-    test_data     = data_ntchange.drop(non_feature, axis=1)
-    dtest         = xgb.DMatrix(test_data)
-    
+
     xgb_model = xgb.Booster()
     xgb_model.load_model(model)
+
+    chunksize = 10000
+    writeMode, writeHeader = 'w', True
     
-    scores = model.predict(dtest)
-    input_data.assign(SCORE = scores)
+    for input_data in pd.read_csv(input_tsv, sep='\t', chunksize=chunksize, low_memory=False):
     
-    input_data.to_csv(output_tsv, sep='\t')
+        data_ntchange = ntchange.ntchange(input_data)
+        test_data     = data_ntchange.drop(non_feature, axis=1)
+        dtest         = xgb.DMatrix(test_data)
     
+        scores    = xgb_model.predict(dtest)
+        predicted = input_data.assign(SCORE = scores)
+    
+        predicted.to_csv(output_tsv, sep='\t', index=False, mode=writeMode, header=writeHeader)
+        
+        writeMode, writeHeader = 'a', False
+
     return output_tsv
 
 
