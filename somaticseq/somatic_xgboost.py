@@ -23,7 +23,8 @@ def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds
     logger.info('TRAINING {} for XGBOOST'.format( ','.join(input_tsvs)) )
     logger.info('Columns removed before training: {}'.format( ', '.join(non_feature)) )
     logger.info('Number of boosting rounds = {}'.format(num_rounds) )
-    logger.info(param)
+    logger.info( 'PARAMETER: ' + ', '.join( [ '{}: {}'.format(i, param[i]) for i in param ] ) )
+
 
     if not model:
         model = input_tsvs[0] + '.xgb.v{}.classifier'.format( __version__ )
