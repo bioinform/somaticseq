@@ -9,6 +9,8 @@ import somaticseq.run_somaticseq as run_somaticseq
 import utilities.split_Bed_into_equal_regions as split_bed
 import genomicFileHandler.concat as concat
 
+
+
 def splitRegions(nthreads, outfiles, bed=None, fai=None):
 
     assert bed or fai
@@ -168,15 +170,15 @@ if __name__ == '__main__':
     else:
         mergeSubdirVcf(subdirs, 'Consensus.sINDEL.vcf', args.output_directory)
 
+    # If there is training, it should be done after merging the results
     if args.somaticseq_train:
 
-        commond_item_i = (run_somaticseq.modelTrainer(args.algorithm), args.output_directory + os.sep + 'Ensemble.sSNV.tsv',)
-        run_somaticseq.logger.info(' '.join(commond_item_i))
-        subprocess.call( commond_item_i )
+        snv_training_file   = args.output_directory + os.sep + 'Ensemble.sSNV.tsv'
+        indel_training_file = args.output_directory + os.sep + 'Ensemble.sINDEL.tsv'
         
-        commond_item_i = (run_somaticseq.modelTrainer(args.algorithm), args.output_directory + os.sep + 'Ensemble.sINDEL.tsv',)
-        run_somaticseq.logger.info(' '.join(commond_item_i))
-        subprocess.call( commond_item_i )
+        run_somaticseq.modelTrainer(snv_training_file,   args.algorithm, threads=args.threads)
+        run_somaticseq.modelTrainer(indel_training_file, args.algorithm, threads=args.threads)
+        
 
 
     # Clean up after yourself
@@ -188,3 +190,6 @@ if __name__ == '__main__':
         for dir_i in subdirs:
             rmtree( dir_i )
             run_somaticseq.logger.info('Removed sub-directory: {}'.format( dir_i ) )
+
+
+    run_somaticseq.logger.info("Done.")

@@ -100,7 +100,7 @@ The script somaticseq\_parallel.py can 1) train the call set into a classifier, 
     SomaticSeq also uses \emph{BEDTools} \cite{bedtools} to manipulate bed file inputs, i.e., regions to include and/or exclude in the workflow. 
 
     \item
-    \emph{R}, as well as \emph{ada}, \emph{xgboost}, and \emph{caret} libraries. 
+    \emph{R}, as well as \emph{ada} library (if you intend to use this).
 
     \item
     At its core, SomaticSeq combines and then filters the results of multiple somatic mutation detection algorithms based on many sequencing features. Generally speaking, at least one compatible caller needs to be run to generate a list of mutation candidates for SomaticSeq to evaluate. It is compatible with the following callers: the original MuTect/Indelocator as well as GATK4's Mutect2 \cite{mutect}, VarScan2 \cite{varscan2}, JointSNVMix2 \cite{jointsnvmix2}, SomaticSniper \cite{somaticsniper}, VarDict \cite{vardict}, MuSE \cite{muse}, LoFreq \cite{lofreq}, Scalpel \cite{scalpel}, Strelka2 \cite{strelka2}, TNscope \cite{tnscope}, and Platypus \cite{platypus}.  
@@ -193,7 +193,7 @@ somaticseq_parallel.py \
 --truth-snv            truePositives.snv.vcf \
 --truth-indel          truePositives.indel.vcf \
 --threads              28 \
---somaticseq-algorithm ada \
+--somaticseq-algorithm xgboost \
 --somaticseq-train     \
 paired                 \
 --tumor-bam-file       tumor.bam \
@@ -222,13 +222,13 @@ Make sure the classifiers (.RData files) are supplied, Without either of them, o
 \begin{lstlisting}
 # The *.RData files are trained classifier from the training mode.
 somaticseq_parallel.py \
---classifier-snv       Ensemble.sSNV.tsv.ada.Classifier.RData \
---classifier-indel     Ensemble.sINDEL.tsv.ada.Classifier.RData \
+--classifier-snv       Ensemble.sSNV.tsv.xgb.v3.x.x.classifier \
+--classifier-indel     Ensemble.sINDEL.tsv.xgb.v3.x.x.classifier \
 --output-directory     OUTPUT_DIR \
 --genome-reference     GRCh38.fa \
 --inclusion-region     genome.bed \
 --exclusion-region     blacklist.bed \
---somaticseq-algorithm ada \
+--somaticseq-algorithm xgboost \
 --threads              12 \
 paired                 \
 --tumor-bam-file       tumor.bam \
@@ -421,32 +421,39 @@ The training and prediction scripts are written in R.
 
 \subsubsection{SomaticSeq Training} \label{module:r_train}
 
-r\_scripts/ada\_model\_builder\_ntChange.R or r\_scripts/xgboost\_model\_builder\_ntChange.R is the script that is called during SomaticSeq pipeline to make classifiers. You can also run them indepedently with labeled Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv files. The command for ada is:
+ada\_model\_builder\_ntChange.R or somatic\_xgboost.py is the script that is called during SomaticSeq pipeline to make classifiers. You can also run them indepedently with labeled Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv files. The command for ada is:
 
 \begin{lstlisting}
 # Training:
-r_scripts/ada_model_builder_ntChange.R Ensemble.sSNV.tsv   Consistent_Mates Inconsistent_Mates
-r_scripts/ada_model_builder_ntChange.R Ensemble.sINDEL.tsv Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates
+r_scripts/ada_model_builder_ntChange.R Ensemble.sSNV.tsv
 \end{lstlisting}
 
-Replace ada\_model\_builder\_ntChange.R with xgboost\_model\_builder\_ntChange.R for extreme gradient boosting (xgboost) algorithm. 
 
-\textit{Ensemble.sSNV.tsv.ada.Classifier.RData} and \textit{Ensemble.sINDEL.tsv.ada.Classifier.RData} will be created from ada model training. For xgboost, the suffix will be .xgboost.Classifier.RData. 
+For extreme gradient boosting (xgboost) algorithm, the program can be run multi-threaded:
 
-The arguments after \textit{Ensemble.sSNV.tsv} and \textit{Ensemble.sINDEL.tsv} tells the builder script to ignore those features in training. These features do not improve accuracy in our data sets (mostly WGS data, but they may help other data sets)
+\begin{lstlisting}
+# Training:
+somatic_xgboost.py train -tsv Ensemble.sSNV.tsv -threads 4
+\end{lstlisting}
+
 
 
 \subsubsection{Prediction with trained classifiers} \label{module:r_predict}
 
-r\_scripts/ada\_model\_predictor.R or r\_scripts/xgboost\_model\_predictor.R.R is the prediction script. To run it independently, the command for ada is
+ada\_model\_predictor.R or somatic\_xgboost.py is the prediction script. To run it independently, the command for ada is
       
 \begin{lstlisting}
 # Mutation prediction:
-r_script/ada_model_predictor.R Ensemble.sSNV.tsv.Classifier.RData   Ensemble.sSNV.tsv   Predicted.sSNV.tsv
-r_script/ada_model_predictor.R Ensemble.sINDEL.tsv.Classifier.RData Ensemble.sINDEL.tsv Predicted.sINDEL.tsv
+
+ada_model_predictor.R Ensemble.sSNV.tsv.Classifier.RData   Ensemble.sSNV.tsv   Predicted.sSNV.tsv
 \end{lstlisting}
 
-Replace ada\_model\_predictor.R with xgboost\_model\_predictor.R if the classifier was based on xgboost. 
+If classifier was based on xgboost:
+\begin{lstlisting}
+# Mutation prediction:
+xgboost.py predict -model Ensemble.sSNV.tsv.gz.xgb.v3.x.x.model -tsv Ensemble.sSNV.tsv.gz -out SSeq.Predicted.sSNV.tsv
+\end{lstlisting}
+
 
 
 
@@ -910,7 +917,7 @@ makeSomaticScripts.py paired \
 --truth-snv            /ABSOLUTE/PATH/TO/trainingSet/synthetic_snvs.vcf \
 --truth-indel          /ABSOLUTE/PATH/TO/trainingSet/synthetic_indels.leftAlign.vcf \
 --threads              16 \
---somaticseq-algorithm ada \
+--somaticseq-algorithm xgboost \
 --train-somaticseq     \
 --run-mutect2 --run-vardict --run-muse --run-lofreq --run-strelka2 --run-somaticseq
 \end{lstlisting}
@@ -1407,7 +1414,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	
 		\begin{itemize}
 		
-			\item Fixed the TA2CG feature in ada\_model\_builder\_ntChange.R
+			\item Fixed the TA2CG feature in ada\_model\_builder\_ntChange.R.
 		
 		\end{itemize}
 
@@ -1479,8 +1486,19 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 
         \begin{itemize}
             \item Got around VarDict's latest output VCF file that are incompatible with bedtools by removing the offending lines. Extra steps (may remove later if it becomes unnecessary) were added to somaticseq/combine\_callers.py.
+            
+            \item Noticed that the xgboost script in R is not compatible with version 1.0+ xgboost library in R.
+            
 		\end{itemize}
 		
+    
+	\item Version 3.6.0
+
+        \begin{itemize}
+            \item Re-wrote the xgboost routine to use the xgboost library in python (somaticseq/somatic\_xgboost.py). Added dependencies for python's pandas and xgboost libraries. On the other hand, if you do not intend to use the adaBoost package in R (it is becoming outdated, as it does not support multi-threaded learning and requires large amount of memory), R is not required. As a script, somatic\_xgboost.py can be run on its own, with the ability to take in multiple SomaticSeq TSV files. It will combine them before training. Some parametes are also tunable.
+            
+		\end{itemize}
+    
 		
 \end{enumerate}
 

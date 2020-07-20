@@ -32,6 +32,6 @@ setup(
              'utilities/dockered_pipelines/makeSomaticScripts.py',
              'r_scripts/ada_model_builder_ntChange.R',
              'r_scripts/ada_model_predictor.R',
-             'somaticseq/xgboost.py',
+             'somaticseq/somatic_xgboost.py',
              ]
 )

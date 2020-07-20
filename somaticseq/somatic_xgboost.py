@@ -3,7 +3,6 @@
 import argparse
 import xgboost as xgb
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 import re
 import logging
@@ -18,12 +17,18 @@ NON_FEATURE   = ['CHROM', 'POS', 'ID', 'REF', 'ALT', 'Strelka_QSS', 'Strelka_TQS
 
 
 
-def builder(input_tsv, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds=200, model=None):
+def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds=200, model=None):
+
+    logger = logging.getLogger( 'XGBOOST_' + builder.__name__)
+    logger.info('TRAINING {} for XGBOOST'.format( ','.join(input_tsvs)) )
+    logger.info('Columns removed before training: {}'.format( ', '.join(non_feature)) )
+    logger.info('Number of boosting rounds = {}'.format(num_rounds) )
+    logger.info(param)
 
     if not model:
-        model = input_tsv + '.xgb.v{}.model'.format( __version__ )
+        model = input_tsvs[0] + '.xgb.v{}.classifier'.format( __version__ )
     
-    input_data    = pd.read_csv(input_tsv, sep='\t', low_memory=False)
+    input_data    = pd.concat( [pd.read_csv(input_tsv_i, sep='\t', low_memory=False) for input_tsv_i in input_tsvs] )
     data_ntchange = ntchange.ntchange(input_data)
     train_data    = data_ntchange.drop(non_feature, axis=1)
     train_label   = input_data['TrueVariant_or_False']
@@ -41,9 +46,13 @@ def builder(input_tsv, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds=
 
 def predictor(model, input_tsv, output_tsv, non_feature=NON_FEATURE):
 
+    logger = logging.getLogger( 'XGBOOST_' + predictor.__name__)
+    logger.info('Columns removed for prediction: {}'.format( ','.join(non_feature)) )
+
     xgb_model = xgb.Booster()
     xgb_model.load_model(model)
 
+    # Read in chunks, start with write/Header, and append/NoHeader afterwards.
     chunksize = 10000
     writeMode, writeHeader = 'w', True
     
@@ -56,7 +65,7 @@ def predictor(model, input_tsv, output_tsv, non_feature=NON_FEATURE):
         scores    = xgb_model.predict(dtest)
         predicted = input_data.assign(SCORE = scores)
     
-        predicted.to_csv(output_tsv, sep='\t', index=False, mode=writeMode, header=writeHeader)
+        predicted.to_csv(output_tsv, sep='\t', index=False, mode=writeMode, header=writeHeader, na_rep='nan')
         
         writeMode, writeHeader = 'a', False
 
@@ -75,7 +84,7 @@ if __name__ == '__main__':
     ch.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     ch.setFormatter(formatter)
-    logger = logging.getLogger('pyXGBOOST')
+    logger = logging.getLogger('SomaticSeq_XGBOOST')
     logger.setLevel(logging.DEBUG)
     logger.addHandler(ch)
 
@@ -86,7 +95,7 @@ if __name__ == '__main__':
 
     # TRAINING mode
     parser_paired = sample_parsers.add_parser('train')
-    parser_paired.add_argument('-tsv',     '--tsv-in',           type=str, help='labeled tsv file',  required=True)
+    parser_paired.add_argument('-tsvs',    '--tsvs-in',          type=str, nargs='+', help='labeled tsv file(s)',  required=True)
     parser_paired.add_argument('-out',     '--model-out',        type=str, help='output model file name')
     parser_paired.add_argument('-iter',    '--num-boost-rounds', type=int, default=200)
     parser_paired.add_argument('-threads', '--num-threads',      type=int, help='num threads')
@@ -119,7 +128,7 @@ if __name__ == '__main__':
         if args.seed:
             PARAM['seed'] = args.seed
         
-        builder(args.tsv_in, param=PARAM, non_feature=NON_FEATURE, num_rounds=args.num_boost_rounds, model=args.model_out)
+        builder(args.tsvs_in, param=PARAM, non_feature=NON_FEATURE, num_rounds=args.num_boost_rounds, model=args.model_out)
 
 
 
