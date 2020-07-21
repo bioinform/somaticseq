@@ -17,7 +17,7 @@ This [dockerfile](utilities/Dockerfiles/somaticseq.base-1.3.dockerfile) reveals 
 ## To install from github source with conda
 ```
 git clone git@github.com:bioinform/somaticseq.git
-conda create --name somaticseq python=3.8 r
+conda create --name somaticseq python r
 conda activate somaticseq
 R -e "install.packages('ada', repos = 'http://cran.rstudio.com/')"
 cd somaticseq
