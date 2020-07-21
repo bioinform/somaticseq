@@ -2,11 +2,6 @@
 
 import sys, os, re, pysam
 import scipy.stats as stats
-
-MY_DIR = os.path.dirname(os.path.realpath(__file__))
-PRE_DIR = os.path.join(MY_DIR, os.pardir)
-#sys.path.append( PRE_DIR )
-
 import genomicFileHandler.genomic_file_handlers as genome
 from genomicFileHandler.read_info_extractor import * 
 

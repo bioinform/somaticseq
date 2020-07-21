@@ -176,10 +176,10 @@ if __name__ == '__main__':
         snv_training_file   = args.output_directory + os.sep + 'Ensemble.sSNV.tsv'
         indel_training_file = args.output_directory + os.sep + 'Ensemble.sINDEL.tsv'
         
-        run_somaticseq.modelTrainer(snv_training_file,   args.algorithm, threads=args.threads)
-        run_somaticseq.modelTrainer(indel_training_file, args.algorithm, threads=args.threads)
+        run_somaticseq.modelTrainer(snv_training_file,   args.algorithm, threads=args.threads, seed=args.seed, max_depth=args.tree_depth, iterations=args.iterations, features_to_exclude=args.features_excluded)
         
-
+        run_somaticseq.modelTrainer(indel_training_file, args.algorithm, threads=args.threads, seed=args.seed, max_depth=args.tree_depth, iterations=args.iterations, features_to_exclude=args.features_excluded)
+        
 
     # Clean up after yourself
     if not args.keep_intermediates:

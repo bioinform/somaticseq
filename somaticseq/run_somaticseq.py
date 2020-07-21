@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 
 import sys, argparse, gzip, os, re, subprocess, logging
-
-MY_DIR = os.path.dirname(os.path.realpath(__file__))
-PRE_DIR = os.path.join(MY_DIR, os.pardir)
-sys.path.append( PRE_DIR )
-
 import genomicFileHandler.genomic_file_handlers as genome
 import vcfModifier.copy_TextFile as copy_TextFile
 import somaticseq.combine_callers as combineCallers
@@ -26,7 +21,7 @@ logging.basicConfig(level=logging.INFO, format=FORMAT)
 
 
 
-def modelTrainer(input_file, algo, threads=1):
+def modelTrainer(input_file, algo, threads=1, seed=0, max_depth=12, iterations=200, features_to_exclude=[]):
     
     logger = logging.getLogger(modelTrainer.__name__)
     
@@ -41,12 +36,19 @@ def modelTrainer(input_file, algo, threads=1):
     if algo == 'xgboost':
         
         import somaticseq.somatic_xgboost as somatic_xgboost
+        
         xgb_param = somatic_xgboost.DEFAULT_PARAM
-        xgb_param['nthread'] = threads
+        xgb_param['nthread']   = threads
+        xgb_param['max_depth'] = max_depth
+        xgb_param['seed']      = seed
         
-        logger.info( xgb_param )
+        non_features = somatic_xgboost.NON_FEATURE
+        for feature_i in features_to_exclude:
+            non_features.append( feature_i )
         
-        xgb_model = somatic_xgboost.builder( [input_file,], param=xgb_param )
+        logger.info( 'PARAMETER: ' + ', '.join( [ '{}: {}'.format(i, xgb_param[i]) for i in xgb_param ] ) )
+        
+        xgb_model = somatic_xgboost.builder( [input_file,], param=xgb_param, non_feature=non_features, num_rounds=iterations )
         
         return xgb_model
 
@@ -63,7 +65,7 @@ def modelPredictor(input_file, output_file, algo, classifier):
         assert exit_code == 0
 
         return output_file
-        
+    
     if algo == 'xgboost':
         import somaticseq.somatic_xgboost as somatic_xgboost
         somatic_xgboost.predictor(classifier, input_file, output_file)
@@ -73,7 +75,7 @@ def modelPredictor(input_file, output_file, algo, classifier):
 
 
 
-def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False):
+def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False, train_seed=0, tree_depth=12, iterations=200, features_excluded=[]):
 
     logger = logging.getLogger(runPaired.__name__)
 
@@ -138,9 +140,8 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
-            modelTrainer(ensembleSnv, algo, threads=1)
-
-
+            modelTrainer(ensembleSnv, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded)
+        
         consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
         tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
 
@@ -166,7 +167,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     else:
         # Train INDEL classifier:
         if somaticseq_train and truth_indel:
-            modelTrainer(ensembleIndel, algo, threads=1)
+            modelTrainer(ensembleIndel, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded)
 
         consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))
         tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
@@ -183,7 +184,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
 
 
-def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False):
+def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False, train_seed=0, tree_depth=12, iterations=200, features_excluded=[]):
 
     logger = logging.getLogger(runSingle.__name__)
 
@@ -241,7 +242,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
-            modelTrainer(ensembleSnv, algo, threads=1)
+            modelTrainer(ensembleSnv, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded)
 
         consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
         tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
@@ -266,7 +267,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
     else:
         # Train INDEL classifier:
         if somaticseq_train and truth_indel:
-            modelTrainer(ensembleIndel, algo, threads=1)
+            modelTrainer(ensembleIndel, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded)
 
         consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))
         tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
@@ -315,8 +316,12 @@ def run():
     parser.add_argument('-nt', '--threads',  type=int, help='number of threads', default=1)
 
     parser.add_argument('--keep-intermediates',         action='store_true', help='Keep intermediate files', default=False)
-    parser.add_argument('-train', '--somaticseq-train', action='store_true', help='Invoke training mode with ground truths', default=False)
 
+    parser.add_argument('-train',  '--somaticseq-train', action='store_true', help='Invoke training mode with ground truths', default=False)
+    parser.add_argument('-seed',   '--seed',        type=int, help='seed for xgboost training', default=0)
+    parser.add_argument('-tdepth', '--tree-depth',  type=int, help='max tree depth for xgboost training', default=12)
+    parser.add_argument('-iters',  '--iterations',  type=int, help='num boosting rounds for xgboost training', default=200)
+    parser.add_argument('--features-excluded',    type=int, nargs='*', help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
 
     # Modes:
     sample_parsers = parser.add_subparsers(title="sample_mode")
@@ -422,7 +427,12 @@ if __name__ == '__main__':
                    platypus           = args.platypus_vcf, \
                    algo               = args.algorithm, \
                    somaticseq_train   = args.somaticseq_train, \
-                   keep_intermediates = args.keep_intermediates )
+                   keep_intermediates = args.keep_intermediates, \
+                   train_seed         = args.seed, \
+                   tree_depth         = args.tree_depth, \
+                   iterations         = args.iterations, \
+                   features_excluded  = args.features_excluded, \
+                   )
 
     elif args.which == 'single':
 
@@ -454,4 +464,9 @@ if __name__ == '__main__':
                    strelka            = args.strelka_vcf, \
                    algo               = args.algorithm, \
                    somaticseq_train   = args.somaticseq_train, \
-                   keep_intermediates = args.keep_intermediates )
+                   keep_intermediates = args.keep_intermediates, \
+                   train_seed         = args.seed, \
+                   tree_depth         = args.tree_depth, \
+                   iterations         = args.iterations, \
+                   features_excluded  = args.features_excluded, \
+                   )

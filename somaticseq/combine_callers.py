@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 
 import sys, os, argparse, gzip, re, subprocess
-
-
 import genomicFileHandler.genomic_file_handlers as genome
 import vcfModifier.copy_TextFile as copy_TextFile
 import vcfModifier.splitVcf as splitVcf
 import vcfModifier.getUniqueVcfPositions as getUniqueVcfPositions
 from vcfModifier.vcfIntersector import *
-
 
 
 
