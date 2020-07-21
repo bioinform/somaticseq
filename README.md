@@ -6,13 +6,23 @@
 * The [v2 branch](../../tree/v2) will continue to be supported in the foreseeable future for bug fixes, but new features will only be introduced in the current master branch. 
 
 ## Requirements
-This [dockerfile](utilities/Dockerfiles/somaticseq.base-1.2.dockerfile) reveals the dependencies
-* Python 3, plus pysam, numpy, and scipy libraries.
-* R, plus [ada](https://cran.r-project.org/package=ada) and/or [xgboost](https://cran.r-project.org/package=xgboost) libraries: required in machine learning training or prediction mode. XGBoost also requires the [caret](https://cran.r-project.org/package=caret) package. 
+This [dockerfile](utilities/Dockerfiles/somaticseq.base-1.3.dockerfile) reveals the dependencies
+* Python 3, plus pysam, numpy, scipy, pandas, and xgboost libraries.
+* R, plus [ada](https://cran.r-project.org/package=ada): required for AdaBoost. XGBoost is implemented in python. 
 * [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing in invoked, and/or when any bed files are used as input files
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
 * At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus.
 * To install SomaticSeq, `cd somaticseq` and then run `./setup.py install`. You'll need to install R and its libraries separately.
+
+## To install from github source with conda
+```
+git clone git@github.com:bioinform/somaticseq.git
+conda create --name somaticseq python=3.8 r
+conda activate somaticseq
+R -e "install.packages('ada', repos = 'http://cran.rstudio.com/')"
+cd somaticseq
+./setup.py install
+```
 
 ## To install with bioconda
 SomaticSeq can also be found on [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/version.svg)](https://anaconda.org/bioconda/somaticseq). To [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/installer/conda.svg)](https://anaconda.org/bioconda/somaticseq), which also automatically installs a bunch of 3rd-party somatic mutation callers:
@@ -32,7 +42,7 @@ somaticseq_parallel.py \
 --genome-reference  GRCh38.fa \
 --inclusion-region  genome.bed \
 --exclusion-region  blacklist.bed \
---algorithm         ada \
+--algorithm         xgboost \
 --threads           24 \
 paired \
 --tumor-bam-file    tumor.bam \
@@ -52,7 +62,7 @@ paired \
 ```
 
 * `--inclusion-region` or `--exclusion-region` will require BEDTools in your path.
-* `--algorithm` will default to `ada` (adaptive boosting), but can also be `xgboost` (extreme gradient boosting). We have incorporated XGBoost (v0.90.0.2 in R) recently. It can be orders of magnitude faster than AdaBoost, but we have not benchmarked it as comprehensively. Also, xgboost version 1.0+ broke the compatibility, which we intend to fix in the near future.
+* `--algorithm` will default to `ada` (adaptive boosting in R), but can also be `xgboost` (extreme gradient boosting). XGBoost is more modern, supports multi-threading, can be orders of magnitude faster than AdaBoost, and seems to be about the same in terms of accuracy, but we have not evaluated its accuracy as comprehensively.
 * To split the job into multiple threads, place `--threads X` before the `paired` option to indicate X threads. It simply creates multiple BED file (each consisting of 1/X of total base pairs) for SomaticSeq to run on each of those sub-BED files in parallel. It then merges the results. This requires `bedtools` in your path.
 * For all input VCF files, either .vcf or .vcf.gz are acceptable.
 
