@@ -8,8 +8,8 @@
 ## Requirements
 This [dockerfile](utilities/Dockerfiles/somaticseq.base-1.3.dockerfile) reveals the dependencies
 * Python 3, plus pysam, numpy, scipy, pandas, and xgboost libraries.
-* R, plus [ada](https://cran.r-project.org/package=ada): required for AdaBoost. XGBoost is implemented in python. 
-* [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing in invoked, and/or when any bed files are used as input files
+* R, plus [ada](https://cran.r-project.org/package=ada): required for AdaBoost. (XGBoost is implemented in python).
+* [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing is invoked, and/or when any bed files are used as input files.
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
 * At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus.
 * To install SomaticSeq, `cd somaticseq` and then run `./setup.py install`. You'll need to install R and its libraries separately.
@@ -24,7 +24,7 @@ cd somaticseq
 ./setup.py install
 ```
 
-## To install with bioconda
+## To install the bioconda version
 SomaticSeq can also be found on [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/version.svg)](https://anaconda.org/bioconda/somaticseq). To [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/installer/conda.svg)](https://anaconda.org/bioconda/somaticseq), which also automatically installs a bunch of 3rd-party somatic mutation callers:
 `conda install -c bioconda somaticseq`
 
@@ -67,8 +67,8 @@ paired \
 * For all input VCF files, either .vcf or .vcf.gz are acceptable.
 
 Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two additional files (classifiers) will be created, i.e., *Ensemble.sSNV.tsv.ntChange.Classifier.RData* and *Ensemble.sINDEL.tsv.ntChange.Classifier.RData*.
-* `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires the following inputs, R and ada package in R.
-* `--truth-snv`:        if you have ground truth VCF file for SNV
+* `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires ground truth VCF files as follows:
+* `--truth-snv`:        if you have a ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL
 
 Additional input files to be specified **before** `paired` option invoke prediction mode (to use classifiers to score variants). Four additional files will be created, i.e., *SSeq.Classified.sSNV.vcf*, *SSeq.Classified.sSNV.tsv*,  *SSeq.Classified.sINDEL.vcf*, and *SSeq.Classified.sINDEL.tsv*.
@@ -100,7 +100,7 @@ The limited pipeline to generate BAM files based on GATK's best practices is at 
 
 ### Additional workflows
 * A [Snakemake](https://snakemake.readthedocs.io/en/latest/) workflow to run the somatic mutation callers and SomaticSeq, created by [Afif Elghraoui](https://github.com/0xaf1f), is at [**utilities/snakemake**](utilities/snakemake).
-* All the docker scripts have their corresponding singularity versions at utilities/singularities. They're created automatically with this [script](utilities/singularities/docker2singularity.py). They are not as extensively tested or optimized as the dockered ones. Read the pages at the dockered pipelines for descriptions and how-to's. Please let us know at Issues if any of them does not work.
+* All the docker scripts have their corresponding singularity versions at utilities/singularities. They were created automatically with this [script](utilities/singularities/docker2singularity.py). They are not extensively tested or optimized. Read the pages at the dockered pipelines for descriptions and how-to's. Please let us know at Issues if any of them does not work.
 
 
 ## Video tutorial

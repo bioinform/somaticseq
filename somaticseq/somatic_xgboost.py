@@ -11,10 +11,8 @@ from copy import copy
 from somaticseq._version import  __version__
 
 
-DEFAULT_PARAM = {'max_depth': 12, 'nthread': 1, 'seed': 0, 'objective': 'binary:logistic'}
+DEFAULT_PARAM = {'max_depth': 12, 'nthread': 21, 'objective': 'binary:logistic', 'seed': 0, 'tree_method': 'hist', 'grow_policy': 'lossguide'}
 NON_FEATURE   = ['CHROM', 'POS', 'ID', 'REF', 'ALT', 'Strelka_QSS', 'Strelka_TQSS', 'if_COSMIC', 'COSMIC_CNT', 'TrueVariant_or_False']
-
-
 
 
 def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds=200, model=None):
@@ -105,9 +103,11 @@ if __name__ == '__main__':
     parser_paired.add_argument('-tsvs',    '--tsvs-in',          type=str, nargs='+', help='labeled tsv file(s)',  required=True)
     parser_paired.add_argument('-out',     '--model-out',        type=str, help='output model file name')
     parser_paired.add_argument('-iter',    '--num-boost-rounds', type=int, default=200)
-    parser_paired.add_argument('-threads', '--num-threads',      type=int, help='num threads')
-    parser_paired.add_argument('-depth',   '--max-depth',        type=int, help='tree max depth')
-    parser_paired.add_argument('-seed',    '--seed',             type=int, help='random seed')
+    parser_paired.add_argument('-threads', '--num-threads',      type=int, help='num threads.')
+    parser_paired.add_argument('-depth',   '--max-depth',        type=int, help='tree max depth. default=12')
+    parser_paired.add_argument('-seed',    '--seed',             type=int, help='random seed. default=0')
+    parser_paired.add_argument('-method',  '--tree-method',      type=str, help='tree method. default=hist')
+    parser_paired.add_argument('--extra-params',      nargs='*', type=str, help='extra xgboost training parameters in format of PARAM_1:VALUE_1 PARAM_2:VALUE_2. Will overwrite defaults and other options.')
     parser_paired.add_argument('--features-excluded',            type=str, nargs='*', help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
     parser_paired.set_defaults(which='train')
 
@@ -133,9 +133,23 @@ if __name__ == '__main__':
         if args.max_depth:
             PARAM['max_depth'] = args.max_depth
             
-        if args.seed:
+        if args.tree_method:
             PARAM['seed'] = args.seed
-            
+
+        if args.tree_method:
+            PARAM['tree_method'] = args.tree_method
+
+
+        if args.extra_params:
+            for param_string in args.extra_params:
+                param_i, value_i = param_string.split(':')
+                try:
+                    value_i = eval(value_i)
+                except NameError:
+                    pass
+                
+                PARAM[ param_i ] = value_i
+
         for feature_i in args.features_excluded:
             NON_FEATURE.append( feature_i )
         
