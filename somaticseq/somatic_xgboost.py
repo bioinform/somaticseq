@@ -42,6 +42,9 @@ def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds
     bst.save_model(model)
     bst.dump_model(model+'.txt')
 
+    feature_names = pd.DataFrame(bst.feature_names)
+    feature_names.to_csv(model+'.names', index=False, header=False)
+
     return model
 
 
