@@ -321,7 +321,7 @@ def run():
     parser.add_argument('-seed',   '--seed',        type=int, help='seed for xgboost training', default=0)
     parser.add_argument('-tdepth', '--tree-depth',  type=int, help='max tree depth for xgboost training', default=12)
     parser.add_argument('-iters',  '--iterations',  type=int, help='num boosting rounds for xgboost training', default=200)
-    parser.add_argument('--features-excluded',    type=int, nargs='*', help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
+    parser.add_argument('--features-excluded',    type=str, nargs='*', help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
 
     # Modes:
     sample_parsers = parser.add_subparsers(title="sample_mode")

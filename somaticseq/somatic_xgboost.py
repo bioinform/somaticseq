@@ -29,9 +29,13 @@ def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds
     if not model:
         model = input_tsvs[0] + '.xgb.v{}.classifier'.format( __version__ )
     
-    input_data    = pd.concat( [pd.read_csv(input_tsv_i, sep='\t', low_memory=False) for input_tsv_i in input_tsvs] )
-    data_ntchange = ntchange.ntchange(input_data)
-    train_data    = data_ntchange.drop(non_feature, axis=1)
+    input_data = pd.concat( [pd.read_csv(input_tsv_i, sep='\t', low_memory=False) for input_tsv_i in input_tsvs] )
+    
+    train_data = ntchange.ntchange(input_data)
+    for non_feature_i in non_feature:
+        if non_feature_i in train_data:
+            train_data.drop([non_feature_i,], axis=1, inplace=True)
+    
     train_label   = input_data['TrueVariant_or_False']
     
     dtrain      = xgb.DMatrix(train_data, label=train_label)
@@ -59,10 +63,12 @@ def predictor(model, input_tsv, output_tsv, non_feature=NON_FEATURE):
     
     for input_data in pd.read_csv(input_tsv, sep='\t', chunksize=chunksize, low_memory=False):
     
-        data_ntchange = ntchange.ntchange(input_data)
-        test_data     = data_ntchange.drop(non_feature, axis=1)
-        dtest         = xgb.DMatrix(test_data)
+        test_data = ntchange.ntchange(input_data)
+        for non_feature_i in non_feature:
+            if non_feature_i in test_data:
+                test_data.drop(non_feature_i, axis=1, inplace=True)
     
+        dtest     = xgb.DMatrix(test_data)
         scores    = xgb_model.predict(dtest)
         predicted = input_data.assign(SCORE = scores)
     
@@ -102,6 +108,7 @@ if __name__ == '__main__':
     parser_paired.add_argument('-threads', '--num-threads',      type=int, help='num threads')
     parser_paired.add_argument('-depth',   '--max-depth',        type=int, help='tree max depth')
     parser_paired.add_argument('-seed',    '--seed',             type=int, help='random seed')
+    parser_paired.add_argument('--features-excluded',            type=str, nargs='*', help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
     parser_paired.set_defaults(which='train')
 
 
@@ -128,6 +135,9 @@ if __name__ == '__main__':
             
         if args.seed:
             PARAM['seed'] = args.seed
+            
+        for feature_i in args.features_excluded:
+            NON_FEATURE.append( feature_i )
         
         builder(args.tsvs_in, param=PARAM, non_feature=NON_FEATURE, num_rounds=args.num_boost_rounds, model=args.model_out)
 

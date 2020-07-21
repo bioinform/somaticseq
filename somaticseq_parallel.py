@@ -192,4 +192,4 @@ if __name__ == '__main__':
             run_somaticseq.logger.info('Removed sub-directory: {}'.format( dir_i ) )
 
 
-    run_somaticseq.logger.info("Done.")
+    run_somaticseq.logger.info('Done.')
