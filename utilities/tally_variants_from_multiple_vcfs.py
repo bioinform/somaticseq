@@ -64,7 +64,7 @@ def extract_dbsnp_cosmic(vcf_line):
     for item_i in re.split(r'[,;]', id_items):
         if re.match(r'rs[0-9]+', item_i):
             ids.append( item_i )
-        elif re.match(r'COSM[0-9]+', item_i):
+        elif re.match(r'(COSM|COSV)[0-9]+', item_i):
             ids.append( item_i )
             
     return ids
