@@ -74,7 +74,7 @@ def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds
 
 
 
-def predictor(model, input_tsv, output_tsv, non_feature=NON_FEATURE):
+def predictor(model, input_tsv, output_tsv, non_feature=NON_FEATURE, iterations=100):
 
     logger = logging.getLogger( 'XGBOOST_' + predictor.__name__)
     logger.info('Columns removed for prediction: {}'.format( ','.join(non_feature)) )
@@ -94,7 +94,7 @@ def predictor(model, input_tsv, output_tsv, non_feature=NON_FEATURE):
                 test_data.drop(non_feature_i, axis=1, inplace=True)
     
         dtest     = xgb.DMatrix(test_data)
-        scores    = xgb_model.predict(dtest)
+        scores    = xgb_model.predict(dtest, ntree_limit=iterations)
         predicted = input_data.assign(SCORE = scores)
     
         predicted.to_csv(output_tsv, sep='\t', index=False, mode=writeMode, header=writeHeader, na_rep='nan')
@@ -141,9 +141,10 @@ if __name__ == '__main__':
 
     # PREDICTION mode
     parser_single = sample_parsers.add_parser('predict')
-    parser_single.add_argument('-model', '--model',         type=str, help='xgboost model',  required=True)
-    parser_single.add_argument('-tsv',   '--tsv-in',        type=str, help='tsv file in',    required=True)
-    parser_single.add_argument('-out',   '--predicted-tsv', type=str, help='tsv file out',   required=True)
+    parser_single.add_argument('-model', '--model',            type=str, help='xgboost model',  required=True)
+    parser_single.add_argument('-tsv',   '--tsv-in',           type=str, help='tsv file in',    required=True)
+    parser_single.add_argument('-out',   '--predicted-tsv',    type=str, help='tsv file out',   required=True)
+    parser_paired.add_argument('-iter',  '--num-boost-rounds', type=int, default=100)
     parser_single.set_defaults(which='predict')
 
     args = parser.parse_args()
