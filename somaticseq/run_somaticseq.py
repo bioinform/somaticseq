@@ -54,7 +54,7 @@ def modelTrainer(input_file, algo, threads=1, seed=0, max_depth=12, iterations=2
 
 
     
-def modelPredictor(input_file, output_file, algo, classifier):
+def modelPredictor(input_file, output_file, algo, classifier, iterations=100, features_to_exclude=[]):
     
     logger = logging.getLogger(modelPredictor.__name__)
     
@@ -65,13 +65,18 @@ def modelPredictor(input_file, output_file, algo, classifier):
         assert exit_code == 0
 
         return output_file
-    
+
+
     if algo == 'xgboost':
         import somaticseq.somatic_xgboost as somatic_xgboost
-        somatic_xgboost.predictor(classifier, input_file, output_file)
+        
+        non_features = somatic_xgboost.NON_FEATURE
+        for feature_i in features_to_exclude:
+            non_features.append( feature_i )
+
+        somatic_xgboost.predictor(classifier, input_file, output_file, non_features, iterations)
         
         return output_file
-
 
 
 

@@ -129,13 +129,13 @@ if __name__ == '__main__':
     parser_paired = sample_parsers.add_parser('train')
     parser_paired.add_argument('-tsvs',    '--tsvs-in',          type=str, nargs='+', help='labeled tsv file(s)',  required=True)
     parser_paired.add_argument('-out',     '--model-out',        type=str, help='output model file name')
-    parser_paired.add_argument('-iter',    '--num-boost-rounds', type=int, default=200)
     parser_paired.add_argument('-threads', '--num-threads',      type=int, help='num threads.')
     parser_paired.add_argument('-depth',   '--max-depth',        type=int, help='tree max depth. default=12')
     parser_paired.add_argument('-seed',    '--seed',             type=int, help='random seed. default=0')
     parser_paired.add_argument('-method',  '--tree-method',      type=str, help='tree method. default=hist')
+    parser_paired.add_argument('-iter',    '--num-boost-rounds', type=int, help='num boosting rounds, i.e., number of trees', default=200)
     parser_paired.add_argument('--extra-params',      nargs='*', type=str, help='extra xgboost training parameters in format of PARAM_1:VALUE_1 PARAM_2:VALUE_2. Will overwrite defaults and other options.')
-    parser_paired.add_argument('--features-excluded',            type=str, nargs='*', help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
+    parser_paired.add_argument('--features-excluded', nargs='*', type=str, help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
     parser_paired.set_defaults(which='train')
 
 
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     parser_single.add_argument('-model', '--model',            type=str, help='xgboost model',  required=True)
     parser_single.add_argument('-tsv',   '--tsv-in',           type=str, help='tsv file in',    required=True)
     parser_single.add_argument('-out',   '--predicted-tsv',    type=str, help='tsv file out',   required=True)
-    parser_paired.add_argument('-iter',  '--num-boost-rounds', type=int, default=100)
+    parser_paired.add_argument('-iter',  '--num-boost-rounds', type=int, help='only use this many trees to classify', default=100)
     parser_single.set_defaults(which='predict')
 
     args = parser.parse_args()
@@ -167,7 +167,6 @@ if __name__ == '__main__':
         if args.tree_method:
             PARAM['tree_method'] = args.tree_method
 
-
         if args.extra_params:
             for param_string in args.extra_params:
                 param_i, value_i = param_string.split(':')
@@ -186,4 +185,4 @@ if __name__ == '__main__':
 
 
     elif args.which == 'predict':
-        predictor(args.model, args.tsv_in, args.predicted_tsv, non_feature=NON_FEATURE)
+        predictor(args.model, args.tsv_in, args.predicted_tsv, non_feature=NON_FEATURE, iterations=args.num_boost_rounds)
