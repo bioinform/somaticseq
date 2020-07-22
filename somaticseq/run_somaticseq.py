@@ -135,7 +135,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         classifiedSnvTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.tsv' ))
         classifiedSnvVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.vcf' ))
 
-        modelPredictor(ensembleSnv, classifiedSnvTsv, algo, classifier_snv)
+        modelPredictor(ensembleSnv, classifiedSnvTsv, algo, classifier_snv, iterations=iterations, features_to_exclude=features_excluded)
 
         extra_header = ['##SomaticSeqClassifier={}'.format(classifier_snv), ]
 
@@ -163,7 +163,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         classifiedIndelTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.tsv' ))
         classifiedIndelVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.vcf' ))
 
-        modelPredictor(ensembleIndel, classifiedIndelTsv, algo, classifier_indel)
+        modelPredictor(ensembleIndel, classifiedIndelTsv, algo, classifier_indel, iterations=iterations, features_to_exclude=features_excluded)
         
         extra_header = ['##SomaticSeqClassifier={}'.format(classifier_indel), ]
         
@@ -237,7 +237,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         classifiedSnvTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.tsv' ))
         classifiedSnvVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sSNV.vcf' ))
 
-        modelPredictor(ensembleSnv, classifiedSnvTsv, algo, classifier_snv)
+        modelPredictor(ensembleSnv, classifiedSnvTsv, algo, classifier_snv, iterations=iterations, features_to_exclude=features_excluded)
         
         extra_header = ['##SomaticSeqClassifier={}'.format(classifier_snv), ]
         
@@ -263,7 +263,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         classifiedIndelTsv = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.tsv' ))
         classifiedIndelVcf = os.sep.join(( outdir, classifiedOutPrefix + 'sINDEL.vcf' ))
 
-        modelPredictor(ensembleIndel, classifiedIndelTsv, algo, classifier_indel)
+        modelPredictor(ensembleIndel, classifiedIndelTsv, algo, classifier_indel, iterations=iterations, features_to_exclude=features_excluded)
         
         extra_header = ['##SomaticSeqClassifier={}'.format(classifier_indel), ]
         
@@ -320,13 +320,13 @@ def run():
 
     parser.add_argument('-nt', '--threads',  type=int, help='number of threads', default=1)
 
-    parser.add_argument('--keep-intermediates',         action='store_true', help='Keep intermediate files', default=False)
-
     parser.add_argument('-train',  '--somaticseq-train', action='store_true', help='Invoke training mode with ground truths', default=False)
     parser.add_argument('-seed',   '--seed',        type=int, help='seed for xgboost training', default=0)
     parser.add_argument('-tdepth', '--tree-depth',  type=int, help='max tree depth for xgboost training', default=12)
-    parser.add_argument('-iters',  '--iterations',  type=int, help='num boosting rounds for xgboost training', default=200)
-    parser.add_argument('--features-excluded',    type=str, nargs='*', help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
+    parser.add_argument('-iters',  '--iterations',  type=int, help='num boosting rounds for xgboost', default=200)
+    parser.add_argument('--features-excluded',      type=str, nargs='*', help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
+
+    parser.add_argument('--keep-intermediates', action='store_true', help='Keep intermediate files', default=False)
 
     # Modes:
     sample_parsers = parser.add_subparsers(title="sample_mode")
@@ -432,11 +432,11 @@ if __name__ == '__main__':
                    platypus           = args.platypus_vcf, \
                    algo               = args.algorithm, \
                    somaticseq_train   = args.somaticseq_train, \
-                   keep_intermediates = args.keep_intermediates, \
                    train_seed         = args.seed, \
                    tree_depth         = args.tree_depth, \
                    iterations         = args.iterations, \
                    features_excluded  = args.features_excluded, \
+                   keep_intermediates = args.keep_intermediates, \
                    )
 
     elif args.which == 'single':
@@ -469,9 +469,9 @@ if __name__ == '__main__':
                    strelka            = args.strelka_vcf, \
                    algo               = args.algorithm, \
                    somaticseq_train   = args.somaticseq_train, \
-                   keep_intermediates = args.keep_intermediates, \
                    train_seed         = args.seed, \
                    tree_depth         = args.tree_depth, \
                    iterations         = args.iterations, \
                    features_excluded  = args.features_excluded, \
+                   keep_intermediates = args.keep_intermediates, \
                    )
