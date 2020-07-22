@@ -1495,7 +1495,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	\item Version 3.6.0
 
         \begin{itemize}
-            \item Re-wrote the xgboost routine to use the xgboost library in python (somaticseq/somatic\_xgboost.py). Added dependencies for python's pandas and xgboost libraries. On the other hand, if you do not intend to use the adaBoost package in R (it is becoming outdated, as it does not support multi-threaded learning and requires large amount of memory), R is not required. As a script, somatic\_xgboost.py can be run on its own, with the ability to take in multiple SomaticSeq TSV files. It will combine them before training. Some parametes are also tunable.
+            \item Re-wrote the xgboost routine to use the xgboost library in python (somaticseq/somatic\_xgboost.py). Added dependencies for python's pandas and xgboost libraries. On the other hand, if you do not intend to use the adaBoost package in R (it is becoming outdated, as it does not support multi-threaded learning and requires large amount of memory), R is not required. As a script, somatic\_xgboost.py can be run on its own, with the ability to take in multiple SomaticSeq TSV files. It will combine them before training. Some parametes are also tunable. Run \textit{somatic\_xgboost.py train -h} or \textit{somatic\_xgboost.py predict -h} to see full options. 
             
 		\end{itemize}
     
