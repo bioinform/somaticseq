@@ -85,6 +85,11 @@ Do not worry if Python throws the following warning. This occurs when SciPy atte
   z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
 ```
 
+
+## Run SomaticSeq modules seperately
+Most SomaticSeq modules can be run on their own. Some may be useful in debugging context. See [this page](MODULES.md) for your options.
+
+
 ## Dockerized workflows and pipelines
 
 ### To run somatic mutation callers and then SomaticSeq
