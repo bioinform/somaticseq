@@ -11,8 +11,34 @@ from copy import copy
 from somaticseq._version import  __version__
 
 
-DEFAULT_PARAM = {'max_depth': 12, 'nthread': 21, 'objective': 'binary:logistic', 'seed': 0, 'tree_method': 'hist', 'grow_policy': 'lossguide'}
+DEFAULT_PARAM = {'max_depth': 12, 'nthread': 1, 'objective': 'binary:logistic', 'seed': 0, 'tree_method': 'hist', 'grow_policy': 'lossguide'}
 NON_FEATURE   = ['CHROM', 'POS', 'ID', 'REF', 'ALT', 'Strelka_QSS', 'Strelka_TQSS', 'if_COSMIC', 'COSMIC_CNT', 'TrueVariant_or_False']
+
+
+
+
+
+def save_feature_importance_to_file(xgb_model, filename):
+    
+    feature_gain        = xgb_model.get_score(importance_type='gain')
+    feature_weight      = xgb_model.get_score(importance_type='weight')
+    feature_cover       = xgb_model.get_score(importance_type='cover')
+    feature_total_gain  = xgb_model.get_score(importance_type='total_gain')
+    feature_total_cover = xgb_model.get_score(importance_type='total_cover')
+
+    line_i = '{}\t{}\t{}\t{}\t{}\t{}\n'.format('FEATURE', 'GAIN', 'WEIGHT', 'COVER', 'TOTAL_GAIN', 'TOTAL_COVER')
+    
+    with open(filename, 'w') as fout:
+    
+        fout.write( line_i )
+    
+        for feature_i in sorted(feature_gain):
+        
+            line_i = '{}\t{}\t{}\t{}\t{}\t{}\n'.format(feature_i, feature_gain[feature_i], feature_weight[feature_i], feature_cover[feature_i], feature_total_gain[feature_i], feature_total_cover[feature_i] )
+            fout.write( line_i )
+
+    return True
+
 
 
 def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds=200, model=None):
@@ -41,9 +67,7 @@ def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds
     
     bst.save_model(model)
     bst.dump_model(model+'.txt')
-
-    feature_names = pd.DataFrame(bst.feature_names)
-    feature_names.to_csv(model+'.names', index=False, header=False)
+    save_feature_importance_to_file(bst, model+'.feature_importance.txt')
 
     return model
 
