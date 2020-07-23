@@ -319,7 +319,7 @@ def run():
     parser.add_argument('--pass-threshold',    type=float, help='SCORE for PASS', default=0.5)
     parser.add_argument('--lowqual-threshold', type=float, help='SCORE for LowQual', default=0.1)
 
-    parser.add_argument('-algo', '--algorithm', type=str, help='ada or xgboost', default='ada', choices=('ada', 'xgboost', 'ada.R'))
+    parser.add_argument('-algo', '--algorithm', type=str, help='ada or xgboost', default='xgboost', choices=('ada', 'xgboost', 'ada.R'))
     parser.add_argument('-hom',  '--homozygous-threshold', type=float, help='VAF for homozygous', default=0.85)
     parser.add_argument('-het',  '--heterozygous-threshold', type=float, help='VAF for heterozygous', default=0.01)
 
