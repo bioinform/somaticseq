@@ -1354,9 +1354,9 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 		  
 			\begin{itemize}
 		
-		     	\item The wrapper scripts written in bash script (i.e., SomaticSeq.Wrapper.sh and ssSomaticSeq.Wrapper.sh) are replaced by somaticseq/run\_somaticseq.py, though they're still kept for backward-compatibility. 
+		     	\item The wrapper scripts written in bash script (i.e., \textit{SomaticSeq.Wrapper.sh} and \textit{ssSomaticSeq.Wrapper.sh}) are replaced by \textit{somaticseq/run\_somaticseq.py}, though they're still kept for backward-compatibility. 
 		     
-		    	    \item Allow parallel processing using somaticseq\_parallel.py
+		    	    \item Allow parallel processing using \textit{somaticseq\_parallel.py}
 		
 		    \end{itemize}
 	
@@ -1365,7 +1365,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 		\begin{itemize}
 		
 		  \item
-		  Fixed a bug that didn't handle Strelka/LoFreq indel calls correctly in somaticseq/combine\_callers.py module.
+		  Fixed a bug that didn't handle Strelka/LoFreq indel calls correctly in \textit{somaticseq/combine\_callers.py} module.
 		  
 		\end{itemize}
 	
@@ -1393,7 +1393,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
          Fixed some bash scripts involved with single-sample multi-thread callers.
          
          \item
-         vcfModifier/splitVcf.py to handle multi-allelic calls better for indels. 
+         \textit{vcfModifier/splitVcf.py} to handle multi-allelic calls better for indels. 
          
         \end{itemize}
 
@@ -1402,10 +1402,10 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
         \begin{itemize}
          
          \item 
-         Re-wrote in Python some somatic caller run script generators that were once written in bash, at utilities/dockered\_pipelines/makeSomaticScripts.py. See Section \ref{dockerized_callers} for details. 
+         Re-wrote in Python some somatic caller run script generators that were once written in bash, at \textit{utilities/dockered\_pipelines/makeSomaticScripts.py}. See Section \ref{dockerized_callers} for details. 
          
          \item
-         Fixed setup.py, even though running \textit{./setup.py install} is optional. You can still (always) run scripts from where you downloaded SomaticSeq. 
+         Fixed \textit{setup.py}, even though running \textit{./setup.py install} is optional. You can still run scripts from where you downloaded SomaticSeq. 
  
         \end{itemize}
 
@@ -1414,7 +1414,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	
 		\begin{itemize}
 		
-			\item Fixed the TA2CG feature in ada\_model\_builder\_ntChange.R.
+			\item Fixed the TA2CG feature in \textit{ada\_model\_builder\_ntChange.R}.
 		
 		\end{itemize}
 
@@ -1425,13 +1425,13 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 
 			\item Added support for xgboost (extreme gradient boosting) as an optional substitute for ada (adaptive boosting).
 					
-			\item Also fixed the TA2CG feature in ada\_model\_predictor.R
+			\item Also fixed the TA2CG feature in \textit{ada\_model\_predictor.R}
 			
 			\item Changed tree depth to 16 in ada model training because internal benchmarking found this to be optimal.
 			
-			\item Modified utilities/dockered\_pipelines/create\_tumor\_normal\_run\_scripts.py and utilities/dockered\_pipelines/create\_tumor\_only\_run\_scripts.py to pre-process bed file for VarDict (i.e., limit each line of bed file to 5000 bp) no matter what. Originally the process is triggered if average bp per line was greater than 50,000 bp. That assumption broke down in multi-threaded tasks, when the final sub bed file contained many decoy or non-human contigs that drove the average bp/line in a bed file below 50,000 bp, and the resulting job caused VarDict to run out of memory. This is to rectify that issue.
+			\item Modified \textit{utilities/dockered\_pipelines/create\_tumor\_normal\_run\_scripts.py} and \textit{utilities/dockered\_pipelines/create\_tumor\_only\_run\_scripts.py} to pre-process bed file for VarDict (i.e., limit each line of bed file to 5000 bp) no matter what. Originally the process is triggered if average bp per line was greater than 50,000 bp. That assumption broke down in multi-threaded tasks, when the final sub bed file contained many decoy or non-human contigs that drove the average bp/line in a bed file below 50,000 bp, and the resulting job caused VarDict to run out of memory. This is to rectify that issue.
 
-            \item Occasionally in bamSurgeon workflow, the synthetic\_indels.vcf file will contain non-GCTAN characters in the REF column, causing subsequent GATK LeftAlign to fail. Created the utilities/dockered\_pipelines/bamSimulator/bamSurgeon/convert\_nonStandardBasesInVcfs.py script to take care of that. 
+            \item Occasionally in bamSurgeon workflow, the synthetic\_indels.vcf file will contain non-GCTAN characters in the REF column, causing subsequent GATK LeftAlign to fail. Created the \textit{utilities/dockered\_pipelines/bamSimulator/bamSurgeon/convert\_nonStandardBasesInVcfs.py} script to take care of that. 
 		
 		\end{itemize}
 
@@ -1477,7 +1477,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	\item Version 3.5.1
 
         \begin{itemize}
-            \item Fixed a minor bug when num\_caller in somaticseq/somatic\_vcf2tsv.py and somaticseq/single\_sample\_vcf2tsv.py was not reset when there are multiple variant calls in the same genomic position. So, some variant calls that should not be output into the .tsv because num\_caller did not meet the threshold will be output into the .tsv file. However, the features are still reported correctly, so the classifications will still be correct. 
+            \item Fixed a minor bug when num\_caller in \textit{somaticseq/somatic\_vcf2tsv.py} and \textit{somaticseq/single\_sample\_vcf2tsv.py} was not reset when there are multiple variant calls in the same genomic position. So, some variant calls that should not be output into the .tsv because num\_caller did not meet the threshold will be output into the .tsv file. However, the features are still reported correctly, so the classifications will still be correct. 
 
 		\end{itemize}
 
@@ -1496,6 +1496,8 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 
         \begin{itemize}
             \item Re-wrote the xgboost routine to use the xgboost library in python (somaticseq/somatic\_xgboost.py). Added dependencies for python's pandas and xgboost libraries. On the other hand, if you do not intend to use the adaBoost package in R (it is becoming outdated, as it does not support multi-threaded learning and requires large amount of memory), R is not required. As a script, somatic\_xgboost.py can be run on its own, with the ability to take in multiple SomaticSeq TSV files. It will combine them before training. Some parametes are also tunable. Run \textit{somatic\_xgboost.py train -h} or \textit{somatic\_xgboost.py predict -h} to see full options. 
+            
+            \item Remove obsolete \textit{SomaticSeq.Wrapper.sh} and \textit{ssSomaticSeq.Wrapper.sh} scripts. They were obsolete since v3.0.0. 
             
 		\end{itemize}
     
