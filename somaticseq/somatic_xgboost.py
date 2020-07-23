@@ -147,6 +147,7 @@ if __name__ == '__main__':
     parser_predict.add_argument('-tsv',    '--tsv-in',           type=str, help='tsv file in',    required=True)
     parser_predict.add_argument('-out',    '--predicted-tsv',    type=str, help='tsv file out',   required=True)
     parser_predict.add_argument('-ntrees', '--num-trees', type=int, help='only use this many trees to classify', default=100)
+    parser_predict.add_argument('--features-excluded', nargs='*', type=str, help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
     parser_predict.set_defaults(which='predict')
 
     args = parser.parse_args()
@@ -187,4 +188,8 @@ if __name__ == '__main__':
 
 
     elif args.which == 'predict':
+        
+        for feature_i in args.features_excluded:
+            NON_FEATURE.append( feature_i )
+
         predictor(args.model, args.tsv_in, args.predicted_tsv, non_feature=NON_FEATURE, iterations=args.num_trees)
