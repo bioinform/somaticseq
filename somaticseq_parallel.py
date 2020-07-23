@@ -121,6 +121,7 @@ if __name__ == '__main__':
                    )
 
         subdirs = pool.map(runPaired_by_region_i, bed_splitted)
+        pool.close()
 
     elif args.which == 'single':
 
@@ -160,6 +161,7 @@ if __name__ == '__main__':
                    )
 
         subdirs = pool.map(runSingle_by_region_i, bed_splitted)
+        pool.close()
 
 
     run_somaticseq.logger.info('Sub-directories created: {}'.format(', '.join(subdirs)) )
