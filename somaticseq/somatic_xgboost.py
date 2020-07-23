@@ -14,7 +14,8 @@ from somaticseq._version import  __version__
 DEFAULT_PARAM = {'max_depth': 12, 'nthread': 1, 'objective': 'binary:logistic', 'seed': 0, 'tree_method': 'hist', 'grow_policy': 'lossguide'}
 NON_FEATURE   = ['CHROM', 'POS', 'ID', 'REF', 'ALT', 'Strelka_QSS', 'Strelka_TQSS', 'if_COSMIC', 'COSMIC_CNT', 'TrueVariant_or_False']
 
-
+DEFAULT_XGB_BOOST_ROUNDS  = 500
+DEFAULT_NUM_TREES_PREDICT = 100
 
 
 
@@ -41,7 +42,7 @@ def save_feature_importance_to_file(xgb_model, filename):
 
 
 
-def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds=200, model=None):
+def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds=DEFAULT_XGB_BOOST_ROUNDS, model=None):
 
     logger = logging.getLogger( 'XGBOOST_' + builder.__name__)
     logger.info('TRAINING {} for XGBOOST'.format( ','.join(input_tsvs)) )
@@ -74,10 +75,11 @@ def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds
 
 
 
-def predictor(model, input_tsv, output_tsv, non_feature=NON_FEATURE, iterations=100):
+def predictor(model, input_tsv, output_tsv, non_feature=NON_FEATURE, iterations=DEFAULT_NUM_TREES_PREDICT):
 
     logger = logging.getLogger( 'XGBOOST_' + predictor.__name__)
     logger.info('Columns removed for prediction: {}'.format( ','.join(non_feature)) )
+    logger.info('Number of trees to use = {}'.format(iterations) )
 
     xgb_model = xgb.Booster()
     xgb_model.load_model(model)
@@ -133,7 +135,7 @@ if __name__ == '__main__':
     parser_train.add_argument('-depth',   '--max-depth',        type=int, help='tree max depth. default=12')
     parser_train.add_argument('-seed',    '--seed',             type=int, help='random seed. default=0')
     parser_train.add_argument('-method',  '--tree-method',      type=str, help='tree method. default=hist')
-    parser_train.add_argument('-iter',    '--num-boost-rounds', type=int, help='num boosting rounds, i.e., number of trees', default=200)
+    parser_train.add_argument('-iter',    '--num-boost-rounds', type=int, help='num boosting rounds, i.e., number of trees', default=1000)
     parser_train.add_argument('--extra-params',      nargs='*', type=str, help='extra xgboost training parameters in format of PARAM_1:VALUE_1 PARAM_2:VALUE_2. Will overwrite defaults and other options.')
     parser_train.add_argument('--features-excluded', nargs='*', type=str, help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
     parser_train.set_defaults(which='train')
