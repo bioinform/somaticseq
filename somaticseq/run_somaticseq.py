@@ -338,7 +338,7 @@ def run():
     parser.add_argument('-train',  '--somaticseq-train', action='store_true', help='Invoke training mode with ground truths', default=False)
     parser.add_argument('-seed',   '--seed',        type=int, help='seed for xgboost training', default=0)
     parser.add_argument('-tdepth', '--tree-depth',  type=int, help='max tree depth for xgboost training', default=12)
-    parser.add_argument('-iters',  '--iterations',  type=int, help='num boosting rounds for xgboost')
+    parser.add_argument('-iters',  '--iterations',  type=int, help='num boosting rounds for xgboost: default is 500 for training and 100 for predicting, i.e., by default, 500 trees are built for classifier, but only the first 100 trees are used.')
     parser.add_argument('--features-excluded',      type=str, nargs='*', help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
 
     parser.add_argument('--keep-intermediates', action='store_true', help='Keep intermediate files', default=False)
