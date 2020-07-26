@@ -26,7 +26,7 @@ cd somaticseq
 
 ## To install the bioconda version
 SomaticSeq can also be found on [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/version.svg)](https://anaconda.org/bioconda/somaticseq). To [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/installer/conda.svg)](https://anaconda.org/bioconda/somaticseq), which also automatically installs a bunch of 3rd-party somatic mutation callers:
-`conda install -c bioconda somaticseq`
+`conda install -c bioconda somaticseq`. To create a conda environment (say, name it `somaticseqConda`) and install, the command would be: `conda create --name somaticSeqConda somaticseq`.
 
 ## Example commands
 * At minimum, given the results of the individual mutation caller(s), SomaticSeq will extract sequencing features for the combined call set. Required inputs are `--output-directory`, `--genome-reference`, `paired|single`, `--tumor-bam-file`, and `--normal-bam-file`. Everything else is optional.
@@ -66,7 +66,7 @@ paired \
 * To split the job into multiple threads, place `--threads X` before the `paired` option to indicate X threads. It simply creates multiple BED file (each consisting of 1/X of total base pairs) for SomaticSeq to run on each of those sub-BED files in parallel. It then merges the results. This requires `bedtools` in your path.
 * For all input VCF files, either .vcf or .vcf.gz are acceptable.
 
-Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two additional files (classifiers) will be created, i.e., *Ensemble.sSNV.tsv.ntChange.Classifier.RData* and *Ensemble.sINDEL.tsv.ntChange.Classifier.RData*.
+Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two classifiers (SNV and indel) will be created..
 * `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires ground truth VCF files as follows:
 * `--truth-snv`:        if you have a ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL

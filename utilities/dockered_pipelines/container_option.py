@@ -1,7 +1,7 @@
 import sys, argparse, os, re
 import uuid
 import utilities.split_Bed_into_equal_regions as split_bed
-import somaticseq._version.__version__ as VERSION
+from somaticseq._version import __version__ as VERSION
 from pathlib import Path
 
 
