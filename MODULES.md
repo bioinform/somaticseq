@@ -1,17 +1,18 @@
 # SomaticSeq Modules
-`somaticseq_parallel.py` is the overarching command that takes VCF outputs from individual callers all the way to the end. For ,ore customized or debugging purposes, a number of modules can be run independently. 
+`somaticseq_parallel.py` is the overarching command that takes VCF outputs from individual callers all the way to the end. For customized or debugging purposes, a number of modules can be run independently.
 
-`run_somaticseq.py` can be used for the same purposes, except runs everything in a single thread, i.e., `somaticseq_parallel.py` simply runs `run_somaticseq.py` on different regions in parallel. 
+`run_somaticseq.py` can be used for the same purposes as `somaticseq_parallel.py`, except that it runs everything in a single thread, i.e., `somaticseq_parallel.py` simply runs `run_somaticseq.py` on different regions in parallel. 
 
 
-### Extract tumor and normal features from BAM files
-After all the VCF files are combined, `somatic_vcf2tsv.py` or `single_sample_vcf2tsv.py` were invoked to extract genomic and sequencing features from BAM and VCF files. These modules can be used to extract BAM features with *any* sorted VCF files, e.g., 
+
+### Extract features from tumor and normal BAM files for any VCF file
+After all the VCF files are combined, `somatic_vcf2tsv.py` or `single_sample_vcf2tsv.py` were invoked to extract genomic and sequencing features from BAM and VCF files. These modules can be used independently to extract BAM features with *any* sorted VCF files, e.g., 
 
 ```
-somatic_vcf2tsv.py -myvcf interested_variants.vcf -nbam normal.bam -tbam tumor.bam -ref human.fasta -mincaller 0 -outfile variants_with_features.vcf
+somatic_vcf2tsv.py -myvcf Variants_Of_Interest.vcf -nbam normal.bam -tbam tumor.bam -ref human.fasta -mincaller 0 -outfile Variants_with_BAM_Features.vcf
 ```
 
-Notice the `-mincaller 0` option, which tells the module to only extract features if at least 0 callers have called the variant as somatic. In other words, it tells the module to extract feature for every input candidate.
+Notice the `-mincaller 0` option above, which tells the module to extract features if at least 0 callers have called the variant as somatic. In other words, `-mincaller 0` tells the module to extract feature for every input candidate. Default in SomaticSeq is `-mincaller 0.5` which means it will keep variants that are LowQual in some callers, but REJECT calls can be excluded.
 
 Run `somatic_vcf2tsv.py -h` or `single_sample_vcf2tsv.py -h` to see command line options.
 
@@ -23,6 +24,7 @@ Run `SSeq_tsv2vcf.py -h` to see all the command line options. The VCF file (`-vc
 ```
 SSeq_tsv2vcf.py --tsv-in predicted_snvs.tsv --vcf-out predicted_snvs.vcf --pass-threshold 0.7 --lowqual-threshold 0.1 --individual-mutation-tools MuTect2 VarDict Strelka --emit-all --phred-scale --paired-samples
 ```
+It can only work on SomaticSeq generated TSV files.
 
 
 
@@ -31,7 +33,7 @@ Run `somatic_xgboost.py train -h` to see all the options.
 
 You can combine multiple TSV files to create one single model, and try different parameters, e.g., 
 ```
-somatic_xgboost.py train -tsvs sample1_snvs1.tsv sample2_snvs.tsv .... sampleN_snvs.tsv -out combined_snv.xgboost.model -threads 8 -depth 12 -seed 1234 -method hist -iter 100 --extra-params grow_policy:lossguide max_leaves:24
+somatic_xgboost.py train -tsvs SAMPLE-01_SNVs.tsv SAMPLE-02_SNVs.tsv .... SAMPLE-NN_SNVs.tsv -out SNV.xgboost.classifier -threads 8 -depth 12 -seed 1234 -method hist -iter 250 --extra-params grow_policy:lossguide max_leaves:24
 ```
 
 
@@ -47,7 +49,7 @@ ada_model_builder_ntChange.R Ensemble.sSNVs.tsv
 ### Predict using a XGBoost model
 Run `somatic_xgboost.py predict -h` to see all the options. Be absolutely sure the training and prediction data match.
 ```
-somatic_xgboost.py predict -model xgb.classifier.model -tsv variant_set.tsv -out predicted_variant_set.tsv -ntrees 50
+somatic_xgboost.py predict -model SNV.xgboost.classifier -tsv variant_candidates.tsv -out predicted_variant_set.tsv -ntrees 50
 ```
 
 
