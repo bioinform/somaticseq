@@ -1,28 +1,25 @@
 import sys, argparse, os, re
 import subprocess
 from datetime import datetime
-
-import utilities.split_Bed_into_equal_regions as split_bed
-from somaticseq._version import __version__ as VERSION
 import utilities.dockered_pipelines.container_option as container
 
 ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 
 
-DEFAULT_PARAMS = {'mutect2_image'           : 'broadinstitute/gatk:4.0.5.2', \
-                  'MEM'                     : '8G', \
-                  'threads'                 : 1, \
-                  'normal_bam'              : None, \
-                  'tumor_bam'               : None, \
-                  'genome_reference'        : None, \
-                  'inclusion_region'        : None, \
-                  'output_directory'        : os.curdir, \
-                  'outfile'                 : 'MuTect2.vcf', \
-                  'action'                  : 'echo', \
-                  'mutect2_arguments'       : None, \
-                  'mutect2_filter_arguments': None, \
-                  'extra_docker_options'    : '', \
-                  'script'                  : 'mutect2.{}.cmd'.format(ts), 
+DEFAULT_PARAMS = {'mutect2_image'           : 'broadinstitute/gatk:4.0.5.2',
+                  'MEM'                     : '8G',
+                  'threads'                 : 1,
+                  'normal_bam'              : None,
+                  'tumor_bam'               : None,
+                  'genome_reference'        : None,
+                  'inclusion_region'        : None,
+                  'output_directory'        : os.curdir,
+                  'outfile'                 : 'MuTect2.vcf',
+                  'action'                  : 'echo',
+                  'mutect2_arguments'       : None,
+                  'mutect2_filter_arguments': None,
+                  'extra_docker_options'    : '',
+                  'script'                  : 'mutect2.{}.cmd'.format(ts),
                   }
 
 
@@ -32,7 +29,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
     assert input_parameters['normal_bam']
     assert input_parameters['tumor_bam']
     assert input_parameters['genome_reference']
-    
     
     logdir  = os.path.join( input_parameters['output_directory'], 'logs' )
     outfile = os.path.join( logdir, input_parameters['script'] )
@@ -80,6 +76,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
         normal_sample_name_extraction = f'normal_name=`{normal_name_line} samtools view -H {normal_mount_dir}/{normal_bam_name} | egrep -w \'^@RG\' | grep -Po \'SM:[^\\t$]+\' | sed \'s/SM://\' | uniq | sed -e \'s/[[:space:]]*$//\'`\n'
         out.write( normal_sample_name_extraction )
 
+        out.write( '\n' )
         
         out.write(f'{container_line} \\\n' )
         out.write( 'java -Xmx{} -jar /gatk/gatk.jar Mutect2 \\\n'.format( input_parameters['MEM'] ) )

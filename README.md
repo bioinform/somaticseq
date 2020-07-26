@@ -25,7 +25,7 @@ cd somaticseq
 ```
 
 ## To install the bioconda version
-SomaticSeq can also be found on [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/version.svg)](https://anaconda.org/bioconda/somaticseq). To [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/installer/conda.svg)](https://anaconda.org/bioconda/somaticseq), which also automatically installs a bunch of 3rd-party somatic mutation callers:
+SomaticSeq can also be found on [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/version.svg)](https://anaconda.org/bioconda/somaticseq). To [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/somaticseq/README.html), which also automatically installs a bunch of 3rd-party somatic mutation callers:
 `conda install -c bioconda somaticseq`. To create a conda environment (say, name it `somaticseqConda`) and install, the command would be: `conda create --name somaticSeqConda somaticseq`.
 
 ## Example commands
