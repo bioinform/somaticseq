@@ -13,12 +13,12 @@ def container_params( container_image, tech='docker', files=[], extra_args='' ):
     file_names    = [ i.name for i in file_Paths ]
     file_dirs     = [ i.parent for i in file_Paths ]
     file_abs_dirs = [ i.absolute().parent for i in file_Paths ]
-    random_dirs   = [ uuid.uuid4().hex for i in files ]
+    random_dirs   = [ '/'+uuid.uuid4().hex for i in files ]
 
     fileDict = {}
     
     for file_i, path_i, filename_i, dir_i, abs_dir_i, random_dir_i in zip(files, file_Paths, file_names, file_dirs, file_abs_dirs, random_dirs):
-        fileDict[ file_i ] = {'filepath': path_i, 'filename': filename_i, 'dir': dir_i, 'abs_dir': abs_dir_i, 'mount_dir': '/'+random_dir_i, }
+        fileDict[ file_i ] = {'filepath': path_i, 'filename': filename_i, 'dir': dir_i, 'abs_dir': abs_dir_i, 'mount_dir': random_dir_i, 'mount_path': os.path.join(random_dir_i, filename_i) }
     
     
     if tech == 'docker':

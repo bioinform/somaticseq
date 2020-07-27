@@ -31,9 +31,9 @@ DEFAULT_PARAMS = {'vardict_image'           : 'lethalfang/vardictjava:1.7.0',
 def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
     
     # The following are required:
-    assert input_parameters['normal_bam']
-    assert input_parameters['tumor_bam']
-    assert input_parameters['genome_reference']
+    assert os.path.exists( input_parameters['normal_bam'] )
+    assert os.path.exists( input_parameters['tumor_bam'] )
+    assert os.path.exists( input_parameters['genome_reference'] )
     
     logdir  = os.path.join( input_parameters['output_directory'], 'logs' )
     outfile = os.path.join( logdir, input_parameters['script'] )
@@ -86,11 +86,11 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
 
 
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = os.path.join( fileDict[input_parameters['genome_reference']]['mount_dir'], fileDict[input_parameters['genome_reference']]['filename'] )
-    mounted_tumor_bam        = os.path.join( fileDict[input_parameters['tumor_bam']]['mount_dir'],        fileDict[input_parameters['tumor_bam']]['filename'] )
-    mounted_normal_bam       = os.path.join( fileDict[input_parameters['normal_bam']]['mount_dir'],       fileDict[input_parameters['normal_bam']]['filename'] )
-    mounted_outdir           = os.path.join( fileDict[input_parameters['output_directory']]['mount_dir'], fileDict[input_parameters['output_directory']]['filename'] )
-    mounted_bed              = os.path.join( bedDict[bed_file]['mount_dir'],                              bedDict[bed_file]['filename'] )
+    mounted_genome_reference = fileDict[ input_parameters['genome_reference'] ]['mount_path']
+    mounted_tumor_bam        = fileDict[ input_parameters['tumor_bam'] ]['mount_path']
+    mounted_normal_bam       = fileDict[ input_parameters['normal_bam'] ]['mount_path']
+    mounted_outdir           = fileDict[ input_parameters['output_directory'] ]['mount_path']
+    mounted_bed              = bedDict[ bed_file ]['mount_path']
 
 
 
@@ -110,7 +110,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
         if input_parameters['process_bed'] or total_bases/num_lines > 50000:
             out.write(f'{bed_split_line} \\\n' )
             out.write( '/opt/somaticseq/utilities/split_mergedBed.py \\\n' )
-            out.write( '-infile {} -outfile {}/{}/split_regions.bed\n\n'.format(mounted_bed, bedDict[input_parameters['output_directory']]['mount_dir'], bedDict[input_parameters['output_directory']]['filename']) )
+            out.write( '-infile {} -outfile {}/split_regions.bed\n\n'.format(mounted_bed, bedDict[input_parameters['output_directory']]['mount_path']) )
 
             bed_file = '{}/split_regions.bed'.format( mounted_outdir )
 

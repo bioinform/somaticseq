@@ -26,9 +26,9 @@ DEFAULT_PARAMS = {'mutect2_image'           : 'broadinstitute/gatk:4.0.5.2',
 def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
     
     # The following are required:
-    assert input_parameters['normal_bam']
-    assert input_parameters['tumor_bam']
-    assert input_parameters['genome_reference']
+    assert os.path.exists( input_parameters['normal_bam'] )
+    assert os.path.exists( input_parameters['tumor_bam'] )
+    assert os.path.exists( input_parameters['genome_reference'] )
     
     logdir  = os.path.join( input_parameters['output_directory'], 'logs' )
     outfile = os.path.join( logdir, input_parameters['script'] )
@@ -45,13 +45,13 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
 
 
     # Resolve mounted paths
-    mounted_genome_reference = os.path.join( fileDict[input_parameters['genome_reference']]['mount_dir'], fileDict[input_parameters['genome_reference']]['filename'] )
-    mounted_tumor_bam        = os.path.join( fileDict[input_parameters['tumor_bam']]['mount_dir'],        fileDict[input_parameters['tumor_bam']]['filename'] )
-    mounted_normal_bam       = os.path.join( fileDict[input_parameters['normal_bam']]['mount_dir'],       fileDict[input_parameters['normal_bam']]['filename'] )
-    mounted_outdir           = os.path.join( fileDict[input_parameters['output_directory']]['mount_dir'], fileDict[input_parameters['output_directory']]['filename'] )
+    mounted_genome_reference = fileDict[ input_parameters['genome_reference'] ]['mount_path']
+    mounted_tumor_bam        = fileDict[ input_parameters['tumor_bam'] ]['mount_path']
+    mounted_normal_bam       = fileDict[ input_parameters['normal_bam'] ]['mount_path']
+    mounted_outdir           = fileDict[ input_parameters['output_directory'] ]['mount_path']
     
     if input_parameters['inclusion_region']:
-        mounted_inclusion    = os.path.join( fileDict[input_parameters['inclusion_region']]['mount_dir'], fileDict[input_parameters['inclusion_region']]['filename'] )
+        mounted_inclusion    = fileDict[ input_parameters['inclusion_region'] ]['mount_path']
 
     with open(outfile, 'w') as out:
 
@@ -66,14 +66,12 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
 
-        tumor_bam_name  = tumor_bam[ input_parameters['tumor_bam'] ]['filename']
-        tumor_mount_dir = tumor_bam[ input_parameters['tumor_bam'] ]['mount_dir']
-        tumor_sample_name_extraction = f'tumor_name=`{tumor_name_line} samtools view -H {tumor_mount_dir}/{tumor_bam_name} | egrep -w \'^@RG\' | grep -Po \'SM:[^\\t$]+\' | sed \'s/SM://\' | uniq | sed -e \'s/[[:space:]]*$//\'`\n'
+        tumor_bam_path  = tumor_bam[ input_parameters['tumor_bam'] ]['mount_path']
+        tumor_sample_name_extraction = f'tumor_name=`{tumor_name_line} samtools view -H {tumor_bam_path} | egrep -w \'^@RG\' | grep -Po \'SM:[^\\t$]+\' | sed \'s/SM://\' | uniq | sed -e \'s/[[:space:]]*$//\'`\n'
         out.write( tumor_sample_name_extraction )
         
-        normal_bam_name  = normal_bam[ input_parameters['normal_bam'] ]['filename']
-        normal_mount_dir = normal_bam[ input_parameters['normal_bam'] ]['mount_dir']
-        normal_sample_name_extraction = f'normal_name=`{normal_name_line} samtools view -H {normal_mount_dir}/{normal_bam_name} | egrep -w \'^@RG\' | grep -Po \'SM:[^\\t$]+\' | sed \'s/SM://\' | uniq | sed -e \'s/[[:space:]]*$//\'`\n'
+        normal_bam_path  = normal_bam[ input_parameters['normal_bam'] ]['mount_path']
+        normal_sample_name_extraction = f'normal_name=`{normal_name_line} samtools view -H {normal_bam_path} | egrep -w \'^@RG\' | grep -Po \'SM:[^\\t$]+\' | sed \'s/SM://\' | uniq | sed -e \'s/[[:space:]]*$//\'`\n'
         out.write( normal_sample_name_extraction )
 
         out.write( '\n' )
