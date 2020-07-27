@@ -32,7 +32,7 @@ def container_params( container_image, tech='docker', files=[], extra_args='' ):
         container_string = f'docker run {MOUNT_STRING} -u $UID --rm {container_image}'
     
     
-    elif tech == 'singularities':
+    elif tech == 'singularity':
         
         MOUNT_STRING = ''
         for file_i in fileDict:

@@ -10,9 +10,7 @@ RepoROOT = os.path.join(MY_DIR, os.pardir, os.pardir)
 sys.path.append( RepoROOT )
 
 import utilities.split_Bed_into_equal_regions as split_bed
-import somaticseq._version
-
-VERSION = somaticseq._version.__version__
+from somaticseq._version import __version__ as VERSION
 
 ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 
@@ -70,7 +68,7 @@ def run():
     parser.add_argument('--strelka-config-arguments',     type=str, help='extra parameters for Strelka2 config',           default='')
     parser.add_argument('--strelka-run-arguments',        type=str, help='extra parameters for Strelka2 run',              default='')
     parser.add_argument('--somaticseq-arguments',         type=str, help='extra parameters for SomaticSeq',                default='')
-    parser.add_argument('--somaticseq-algorithm',         type=str, help='either ada or xgboost',                       default='ada')
+    parser.add_argument('--somaticseq-algorithm',         type=str, help='either ada or xgboost',                   default='xgboost')
     
     parser.add_argument('--scalpel-two-pass',         action='store_true', help='Invokes two-pass setting in scalpel')
     parser.add_argument('-exome', '--exome-setting',  action='store_true', help='Invokes exome setting in Strelka2 and MuSE')
