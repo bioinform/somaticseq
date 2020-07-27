@@ -17,9 +17,9 @@ DEFAULT_PARAMS = {'varscan2_image'          : 'djordjeklisic/sbg-varscan2:v1',
                   'output_directory'        : os.curdir,
                   'outfile'                 : 'VarScan2.vcf',
                   'action'                  : 'echo',
-                  'mpileup_arguments'       : None,
-                  'varscan2_arguments'      : None,
-                  'varscan2_filter_argument': None,
+                  'mpileup_arguments'       : '',
+                  'varscan2_arguments'      : '',
+                  'varscan2_filter_argument': '',
                   'extra_docker_options'    : '',
                   'script'                  : 'varscan2.{}.cmd'.format(ts),
                   'min_MQ'                  : 1,
@@ -45,16 +45,24 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
             all_paths.append( path_i )
 
     container_line, fileDict = container.container_params( input_parameters['varscan2_image'], tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
-
+    mpileine_line,  plDict   = container.container_params( 'lethalfang/samtools:1.7',          tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
+    
+    
     # Mounted paths for all the input files and output directory:
     mounted_genome_reference = fileDict[ input_parameters['genome_reference'] ]['mount_path']
     mounted_tumor_bam        = fileDict[ input_parameters['tumor_bam'] ]['mount_path']
     mounted_normal_bam       = fileDict[ input_parameters['normal_bam'] ]['mount_path']
     mounted_outdir           = fileDict[ input_parameters['output_directory'] ]['mount_path']
-    mounted_inclusion_bed    = fileDict[ input_parameters['inclusion_region'] ]['mount_path']
+    
+    # Mounted paths for mpileup dockers
+    pl_genome_reference = plDict[ input_parameters['genome_reference'] ]['mount_path']
+    pl_tumor_bam        = plDict[ input_parameters['tumor_bam'] ]['mount_path']
+    pl_normal_bam       = plDict[ input_parameters['normal_bam'] ]['mount_path']
+    pl_outdir           = plDict[ input_parameters['output_directory'] ]['mount_path']
+
 
     if input_parameters['inclusion_region']:
-        selector_text = '-l {}'.format(mounted_inclusion_bed)
+        selector_text = '-l {}'.format( plDict[ input_parameters['inclusion_region'] ]['mount_path'] )
     else:
         selector_text = ''
 
@@ -62,6 +70,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
     if input_parameters['minimum_VAF']:
         minVAF = input_parameters['minimum_VAF']
 
+    outname = re.sub(r'\.[a-zA-Z]+$', '', input_parameters['outfile'] )
 
     with open(outfile, 'w') as out:
         
@@ -76,44 +85,45 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
 
-        out.write( 'docker run --rm -u $UID -v /:/mnt --memory {MEM}G lethalfang/samtools:1.7 bash -c \\\n'.format(MEM=mem) )
+        out.write(f'{mpileine_line} bash -c \\\n' )
         out.write( '"samtools mpileup \\\n' )
-        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=minMQ, minBQ=minBQ, extra_pileup_arguments=input_parameters['varscan_pileup_arguments'], selector_text=selector_text) )
-        out.write( '/mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '/mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
-        out.write( '> /mnt/{OUTDIR}/normal.pileup"\n\n'.format(OUTDIR=input_parameters['output_directory']) )
+        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=input_parameters['min_MQ'], minBQ=input_parameters['min_BQ'], extra_pileup_arguments=input_parameters['mpileup_arguments'], selector_text=selector_text) )
+        out.write( '{} \\\n'.format( pl_genome_reference ) )
+        out.write( '{} \\\n'.format(pl_normal_bam) )
+        out.write( '> {}/normal.pileup"\n\n'.format(pl_outdir))
 
-        out.write( 'docker run --rm -u $UID -v /:/mnt --memory {MEM}G lethalfang/samtools:1.7 bash -c \\\n'.format(MEM=mem) )
+        out.write(f'{mpileine_line} bash -c \\\n' )
         out.write( '"samtools mpileup \\\n' )
-        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=minMQ, minBQ=minBQ, extra_pileup_arguments=input_parameters['varscan_pileup_arguments'], selector_text=selector_text) )
-        out.write( '/mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '/mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
-        out.write( '> /mnt/{OUTDIR}/tumor.pileup"\n\n'.format(OUTDIR=input_parameters['output_directory']) )
+        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=input_parameters['min_MQ'], minBQ=input_parameters['min_BQ'], extra_pileup_arguments=input_parameters['mpileup_arguments'], selector_text=selector_text) )
+        out.write( '{} \\\n'.format( pl_genome_reference ) )
+        out.write( '{} \\\n'.format(pl_tumor_bam) )
+        out.write( '> {}/tumor.pileup"\n\n'.format(pl_outdir) )
 
         
-        out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
-        out.write( 'java -Xmx{MEM}g -jar /VarScan2.3.7.jar somatic \\\n'.format(MEM=mem) )
-        out.write( '/mnt/{OUTDIR}/normal.pileup \\\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( '/mnt/{OUTDIR}/tumor.pileup \\\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( '/mnt/{OUTDIR}/{OUTNAME} {EXTRA_ARGS} --output-vcf 1 --min-var-freq {VAF}\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname, VAF=minVAF, EXTRA_ARGS=input_parameters['varscan_arguments'] ) )
+        out.write(f'{container_line} \\\n' )
+        out.write( 'java -Xmx{} -jar /VarScan2.3.7.jar somatic \\\n'.format( input_parameters['MEM'] ) )
+        out.write( '{}/normal.pileup \\\n'.format( mounted_outdir ) )
+        out.write( '{}/tumor.pileup \\\n'.format( mounted_outdir ) )
+        out.write( '{}/{} {} --output-vcf 1 --min-var-freq {}\n\n'.format(mounted_outdir, outname, input_parameters['varscan2_arguments'], input_parameters['minimum_VAF'] ) )
                 
-        out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
-        out.write( 'java -Xmx{MEM}g -jar /VarScan2.3.7.jar processSomatic \\\n'.format(MEM=mem) )
-        out.write( '/mnt/{OUTDIR}/{OUTNAME}.snp.vcf\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
+        out.write(f'{container_line} \\\n' )
+        out.write( 'java -Xmx{} -jar /VarScan2.3.7.jar processSomatic \\\n'.format(input_parameters['MEM']) )
+        out.write( '{}/{}.snp.vcf\n\n'.format(mounted_outdir, outname) )
                 
-        out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
-        out.write( 'java -Xmx{MEM}g -jar /VarScan2.3.7.jar somaticFilter \\\n'.format(MEM=mem) )
-        out.write( '/mnt/{OUTDIR}/{OUTNAME}.snp.Somatic.hc.vcf \\\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
-        out.write( '-indel-file /mnt/{OUTDIR}/{OUTNAME}.indel.vcf \\\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
-        out.write( '-output-file /mnt/{OUTDIR}/{OUTNAME}.snp.Somatic.hc.filter.vcf\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
+        out.write(f'{container_line} \\\n' )
+        out.write( 'java -Xmx{} -jar /VarScan2.3.7.jar somaticFilter \\\n'.format(input_parameters['MEM']) )
+        out.write( '{}/{}.snp.Somatic.hc.vcf \\\n'.format(mounted_outdir, outname) )
+        out.write( '-indel-file {}/{}.indel.vcf \\\n'.format(mounted_outdir, outname) )
+        out.write( '-output-file {}/{}.snp.Somatic.hc.filter.vcf\n\n'.format(mounted_outdir, outname) )
                 
-        out.write( 'rm {OUTDIR}/normal.pileup\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( 'rm {OUTDIR}/tumor.pileup\n'.format(OUTDIR=input_parameters['output_directory']) )        
+        out.write( 'rm {}/normal.pileup\n'.format( input_parameters['output_directory']) )
+        out.write( 'rm {}/tumor.pileup\n'.format( input_parameters['output_directory']) )
         
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
     
         
-    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
+    # "Run" the script that was generated
+    command_item = (input_parameters['action'], outfile)
+    returnCode   = subprocess.call( command_item )
 
-    return returnCode
-
+    return outfile
