@@ -17,9 +17,8 @@ DEFAULT_PARAMS = {'varscan2_image'          : 'djordjeklisic/sbg-varscan2:v1',
                   'output_directory'        : os.curdir,
                   'outfile'                 : 'VarScan2.vcf',
                   'action'                  : 'echo',
-                  'mpileup_arguments'       : '',
-                  'varscan2_arguments'      : '',
-                  'varscan2_filter_argument': '',
+                  'varscan_arguments'       : '',
+                  'varscan_pileup_arguments': '',
                   'extra_docker_options'    : '',
                   'script'                  : 'varscan2.{}.cmd'.format(ts),
                   'min_MQ'                  : 1,
@@ -30,7 +29,11 @@ DEFAULT_PARAMS = {'varscan2_image'          : 'djordjeklisic/sbg-varscan2:v1',
 
 
 def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
-    
+
+    for param_i in DEFAULT_PARAMS:
+        if param_i not in input_parameters:
+            input_parameters[param_i] = DEFAULT_PARAMS[param_i]
+
     # The following are required:
     assert os.path.exists( input_parameters['normal_bam'] )
     assert os.path.exists( input_parameters['tumor_bam'] )
@@ -87,14 +90,14 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
 
         out.write(f'{mpileine_line} bash -c \\\n' )
         out.write( '"samtools mpileup \\\n' )
-        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=input_parameters['min_MQ'], minBQ=input_parameters['min_BQ'], extra_pileup_arguments=input_parameters['mpileup_arguments'], selector_text=selector_text) )
+        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=input_parameters['min_MQ'], minBQ=input_parameters['min_BQ'], extra_pileup_arguments=input_parameters['varscan_pileup_arguments'], selector_text=selector_text) )
         out.write( '{} \\\n'.format( pl_genome_reference ) )
         out.write( '{} \\\n'.format(pl_normal_bam) )
         out.write( '> {}/normal.pileup"\n\n'.format(pl_outdir))
 
         out.write(f'{mpileine_line} bash -c \\\n' )
         out.write( '"samtools mpileup \\\n' )
-        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=input_parameters['min_MQ'], minBQ=input_parameters['min_BQ'], extra_pileup_arguments=input_parameters['mpileup_arguments'], selector_text=selector_text) )
+        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=input_parameters['min_MQ'], minBQ=input_parameters['min_BQ'], extra_pileup_arguments=input_parameters['varscan_pileup_arguments'], selector_text=selector_text) )
         out.write( '{} \\\n'.format( pl_genome_reference ) )
         out.write( '{} \\\n'.format(pl_tumor_bam) )
         out.write( '> {}/tumor.pileup"\n\n'.format(pl_outdir) )
@@ -104,7 +107,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
         out.write( 'java -Xmx{} -jar /VarScan2.3.7.jar somatic \\\n'.format( input_parameters['MEM'] ) )
         out.write( '{}/normal.pileup \\\n'.format( mounted_outdir ) )
         out.write( '{}/tumor.pileup \\\n'.format( mounted_outdir ) )
-        out.write( '{}/{} {} --output-vcf 1 --min-var-freq {}\n\n'.format(mounted_outdir, outname, input_parameters['varscan2_arguments'], input_parameters['minimum_VAF'] ) )
+        out.write( '{}/{} {} --output-vcf 1 --min-var-freq {}\n\n'.format(mounted_outdir, outname, input_parameters['varscan_arguments'], input_parameters['minimum_VAF'] ) )
                 
         out.write(f'{container_line} \\\n' )
         out.write( 'java -Xmx{} -jar /VarScan2.3.7.jar processSomatic \\\n'.format(input_parameters['MEM']) )

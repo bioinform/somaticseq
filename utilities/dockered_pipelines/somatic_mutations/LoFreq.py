@@ -7,21 +7,22 @@ from somaticseq._version import __version__ as VERSION
 ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 
 
-DEFAULT_PARAMS = {'muse_image'              : 'marghoob/muse:1.0rc_c',
-                  'MEM'                     : '4G',
+DEFAULT_PARAMS = {'lofreq_image'            : 'lethalfang/lofreq:2.1.3.1-1',
+                  'MEM'                     : '12G',
+                  'threads'                 : 1,
                   'normal_bam'              : None,
                   'tumor_bam'               : None,
                   'genome_reference'        : None,
                   'inclusion_region'        : None,
                   'output_directory'        : os.curdir,
-                  'outfile'                 : 'MuSE.vcf',
+                  'out_prefix'              : 'LoFreq.',
                   'action'                  : 'echo',
-                  'muse_arguments'          : '',
+                  'lofreq_arguments'        : '',
                   'extra_docker_options'    : '',
-                  'exome'                   : False,
-                  'script'                  : 'muse.{}.cmd'.format(ts),
+                  'script'                  : 'lofreq.{}.cmd'.format(ts),
                   'dbsnp_gz'                : None,
                   }
+
 
 
 
@@ -35,7 +36,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
     assert os.path.exists( input_parameters['normal_bam'] )
     assert os.path.exists( input_parameters['tumor_bam'] )
     assert os.path.exists( input_parameters['genome_reference'] )
-    assert os.path.exists( input_parameters['dbnp_gz'] )
+    assert os.path.exists( input_parameters['dbsnp_gz'] )
     assert os.path.exists( input_parameters['dbsnp_gz']+'.tbi' )
     
     
@@ -48,14 +49,15 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
         if path_i:
             all_paths.append( path_i )
 
-    container_line, fileDict = container.container_params( input_parameters['muse_image'], tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
+    container_line, fileDict = container.container_params( input_parameters['lofreq_image'], tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
 
     # Mounted paths for all the input files and output directory:
     mounted_genome_reference = fileDict[ input_parameters['genome_reference'] ]['mount_path']
     mounted_tumor_bam        = fileDict[ input_parameters['tumor_bam'] ]['mount_path']
     mounted_normal_bam       = fileDict[ input_parameters['normal_bam'] ]['mount_path']
     mounted_outdir           = fileDict[ input_parameters['output_directory'] ]['mount_path']
-    mounted_dbsnp_gz         = fileDict[ input_parameters['dbnp_gz'] ]['mount_path']
+    mounted_inclusion        = fileDict[ input_parameters['inclusion_region'] ]['mount_path']
+    mounted_dbsnp_gz         = fileDict[ input_parameters['dbsnp_gz'] ]['mount_path']
 
     with open(outfile, 'w') as out:
 
@@ -69,36 +71,24 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
         
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
-        out.write( 'cat {} | awk -F "\\t" \'{{print $1 "\\t" $2 "\\t" $3}}\' > {}/bed_3columns.bed\n\n'.format( input_parameters['inclusion_region'], input_parameters['output_directory'] ) )
-        
         out.write(f'{container_line} \\\n' )
-        out.write( 'MuSEv1.0rc_submission_c039ffa call \\\n' )
-        out.write( '-O {}/MuSE \\\n'.format(mounted_outdir) )
-        out.write( '-l {}/bed_3columns.bed \\\n'.format(mounted_outdir) )
+        out.write( 'lofreq somatic \\\n' )
+        out.write( '-t {} \\\n'.format(mounted_tumor_bam) )
+        out.write( '-n {} \\\n'.format(mounted_normal_bam) )
+        out.write( '--call-indels \\\n' )
+        out.write( '-l {} \\\n'.format(mounted_inclusion) )
         out.write( '-f {} \\\n'.format(mounted_genome_reference) )
-        out.write( '{} \\\n'.format(mounted_tumor_bam) )
-        out.write( '{}\n\n'.format(mounted_normal_bam) )
+        out.write( '-o {}/{} \\\n'.format(mounted_outdir, input_parameters['out_prefix']) )
         
-        out.write(f'{container_line} \\\n' )
-        out.write( 'MuSEv1.0rc_submission_c039ffa sump \\\n' )
-        out.write( '-I {}/MuSE.MuSE.txt \\\n'.format(mounted_outdir) )
+        if input_parameters['lofreq_arguments']:
+            out.write( '{} \\\n'.format(input_parameters['lofreq_arguments']) )
         
-        if input_parameters['exome']:
-            out.write( '-E \\\n' )
-        else:
-            out.write( '-G \\\n' )
-        
-        if input_parameters['muse_arguments']:
-            out.write( '{} \\\n'.format( EXTRA_ARGS=input_parameters['muse_arguments'] ) )
-            
-        out.write( '-O {}/{} \\\n'.format(mounted_outdir, input_parameters['outfile']) )
-        out.write( '-D {}\n'.format(mounted_dbsnp_gz) )
-    
+        out.write( '-d {}\n'.format(mounted_dbsnp_gz) )
+
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
-        
+
     # "Run" the script that was generated
     command_item = (input_parameters['action'], outfile)
     returnCode   = subprocess.call( command_item )
 
     return outfile
-

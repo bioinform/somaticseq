@@ -25,6 +25,10 @@ DEFAULT_PARAMS = {'mutect2_image'           : 'broadinstitute/gatk:4.0.5.2',
 
 def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
     
+    for param_i in DEFAULT_PARAMS:
+        if param_i not in input_parameters:
+            input_parameters[param_i] = DEFAULT_PARAMS[param_i]
+
     # The following are required:
     assert os.path.exists( input_parameters['normal_bam'] )
     assert os.path.exists( input_parameters['tumor_bam'] )

@@ -18,7 +18,6 @@ DEFAULT_PARAMS = {'vardict_image'           : 'lethalfang/vardictjava:1.7.0',
                   'outfile'                 : 'VarDict.vcf',
                   'action'                  : 'echo',
                   'vardict_arguments'       : '',
-                  'vardict_filter_arguments': '',
                   'extra_docker_options'    : '',
                   'script'                  : 'vardict.{}.cmd'.format(ts),
                   'min_MQ'                  : 1,
@@ -29,7 +28,11 @@ DEFAULT_PARAMS = {'vardict_image'           : 'lethalfang/vardictjava:1.7.0',
 
 
 def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
-    
+
+    for param_i in DEFAULT_PARAMS:
+        if param_i not in input_parameters:
+            input_parameters[param_i] = DEFAULT_PARAMS[param_i]
+
     # The following are required:
     assert os.path.exists( input_parameters['normal_bam'] )
     assert os.path.exists( input_parameters['tumor_bam'] )

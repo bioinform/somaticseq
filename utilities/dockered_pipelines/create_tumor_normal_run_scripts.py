@@ -4,13 +4,14 @@ import sys, argparse, os, re
 from copy import copy
 from datetime import datetime
 from shutil import move
+import utilities.split_Bed_into_equal_regions as split_bed
+import utilities.dockered_pipelines.container_option as container
+from somaticseq._version import __version__ as VERSION
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 RepoROOT = os.path.join(MY_DIR, os.pardir, os.pardir)
 sys.path.append( RepoROOT )
 
-import utilities.split_Bed_into_equal_regions as split_bed
-from somaticseq._version import __version__ as VERSION
 
 ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 
@@ -20,7 +21,7 @@ def run():
 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    # Variant Call Type, i.e., snp or indel
+    # INPUT FILES and Global Options
     parser.add_argument('-outdir',     '--output-directory',     type=str,   help='Absolute path for output directory', default=os.getcwd())
     parser.add_argument('-somaticDir', '--somaticseq-directory', type=str,   help='SomaticSeq directory output name',   default='SomaticSeq')
     parser.add_argument('-tbam',       '--tumor-bam',            type=str,   help='tumor bam file',       required=True)
@@ -35,7 +36,10 @@ def run():
     parser.add_argument('-minVAF',     '--minimum-VAF',          type=float, help='minimum VAF to look for',)
     parser.add_argument('-action',     '--action',               type=str,   help='action for each mutation caller\' run script', default='echo')
     parser.add_argument('-somaticAct', '--somaticseq-action',    type=str,   help='action for each somaticseq.cmd',               default='echo')
-
+    parser.add_argument('-tech',       '--container-tech',       type=str,   help='docker or singularity',                        default='docker')
+    parser.add_argument('-dockerargs', '--extra-docker-options', type=str,   help='extra arguments to pass onto docker run',      default='')
+    
+    # RUN TOOLS
     parser.add_argument('-mutect2',    '--run-mutect2',       action='store_true', help='Run MuTect2')
     parser.add_argument('-varscan2',   '--run-varscan2',      action='store_true', help='Run VarScan2')
     parser.add_argument('-jsm',        '--run-jointsnvmix2',  action='store_true', help='Run JointSNVMix2')
@@ -46,32 +50,44 @@ def run():
     parser.add_argument('-scalpel',    '--run-scalpel',       action='store_true', help='Run Scalpel')
     parser.add_argument('-strelka2',   '--run-strelka2',      action='store_true', help='Run Strelka2')
     parser.add_argument('-somaticseq', '--run-somaticseq',    action='store_true', help='Run SomaticSeq')
+    
+    ## SomaticSeq Train or Classify
     parser.add_argument('-train',      '--train-somaticseq',  action='store_true', help='SomaticSeq training mode for classifiers')
-
-    parser.add_argument('-snvClassifier',   '--snv-classifier',    type=str, help='action for each .cmd')
-    parser.add_argument('-indelClassifier', '--indel-classifier',  type=str, help='action for each somaticseq.cmd')
     parser.add_argument('-trueSnv',         '--truth-snv',         type=str, help='VCF of true hits')
     parser.add_argument('-trueIndel',       '--truth-indel',       type=str, help='VCF of true hits')
+    parser.add_argument('-snvClassifier',   '--snv-classifier',    type=str, help='action for each .cmd')
+    parser.add_argument('-indelClassifier', '--indel-classifier',  type=str, help='action for each somaticseq.cmd')
 
+    # EXTRA ARGUMENTS TO PASS ONTO TOOLS
+    parser.add_argument('-exome', '--exome-setting',  action='store_true', help='Invokes exome setting in Strelka2 and MuSE')
+    
     parser.add_argument('--mutect2-arguments',            type=str, help='extra parameters for Mutect2',                   default='')
     parser.add_argument('--mutect2-filter-arguments',     type=str, help='extra parameters for FilterMutectCalls step',    default='')
+    
     parser.add_argument('--varscan-arguments',            type=str, help='extra parameters for VarScan2',                  default='')
     parser.add_argument('--varscan-pileup-arguments',     type=str, help='extra parameters for mpileup used for VarScan2', default='')
+    
     parser.add_argument('--jsm-train-arguments',          type=str, help='extra parameters for JointSNVMix2 train',        default='')
     parser.add_argument('--jsm-classify-arguments',       type=str, help='extra parameters for JointSNVMix2 classify',     default='')
+    
     parser.add_argument('--somaticsniper-arguments',      type=str, help='extra parameters for SomaticSniper',             default='')
+    
     parser.add_argument('--vardict-arguments',            type=str, help='extra parameters for VarDict',                   default='')
+    
     parser.add_argument('--muse-arguments',               type=str, help='extra parameters',                               default='')
+    
     parser.add_argument('--lofreq-arguments',             type=str, help='extra parameters for LoFreq',                    default='')
+    
     parser.add_argument('--scalpel-discovery-arguments',  type=str, help='extra parameters for Scalpel discovery',         default='')
     parser.add_argument('--scalpel-export-arguments',     type=str, help='extra parameters for Scalpel export',            default='')
+    parser.add_argument('--scalpel-two-pass',  action='store_true', help='Invokes two-pass setting in scalpel'                       )
+
     parser.add_argument('--strelka-config-arguments',     type=str, help='extra parameters for Strelka2 config',           default='')
     parser.add_argument('--strelka-run-arguments',        type=str, help='extra parameters for Strelka2 run',              default='')
+    
     parser.add_argument('--somaticseq-arguments',         type=str, help='extra parameters for SomaticSeq',                default='')
     parser.add_argument('--somaticseq-algorithm',         type=str, help='either ada or xgboost',                   default='xgboost')
     
-    parser.add_argument('--scalpel-two-pass',         action='store_true', help='Invokes two-pass setting in scalpel')
-    parser.add_argument('-exome', '--exome-setting',  action='store_true', help='Invokes exome setting in Strelka2 and MuSE')
 
     parser.add_argument('-nt',        '--threads',        type=int, help='Split the input regions into this many threads', default=1)
 
@@ -81,765 +97,298 @@ def run():
 
     workflowArguments['reference_dict'] = re.sub(r'\.[a-zA-Z]+$', '', workflowArguments['genome_reference'] ) + '.dict'
 
-    return workflowArguments
+    return args, workflowArguments
 
 
 
-def run_MuTect2(input_parameters, mem=8, nt=4, outvcf='MuTect2.vcf'):
+
+
+def run_SomaticSeq(input_parameters, tech='docker'):
+
+    DEFAULT_PARAMS = {'MEM': '4G', 'normal_bam': None, 'tumor_bam': None, 'genome_reference': None, 'inclusion_region': None, 'exclusion_region': None, 'output_directory' : os.curdir, 'somaticseq_directory': 'SomaticSeq', 'action': 'echo','script': 'somaticseq.{}.cmd'.format(ts), 'dbsnp' : None, 'cosmic': None, 'snv_classifier': None, 'indel_classifier': None, 'truth_snv': None, 'truth_indel': None, 'somaticseq_arguments': '', 'train_somaticseq': False, 'somaticseq_algorithm': 'xgboost'}
     
-    logdir  = input_parameters['output_directory'] + os.sep + 'logs'
-    outfile = logdir + os.sep + 'mutect2.{}.cmd'.format(ts)
-
-    with open(outfile, 'w') as out:
-
-        out.write( "#!/bin/bash\n\n" )
-        
-        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
-        out.write( 'set -e\n\n' )
-        
-        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
-
-        out.write( 'tumor_name=`docker run --rm -v /:/mnt -u $UID --memory 1g lethalfang/samtools:1.7 samtools view -H /mnt/{TBAM} | egrep -w \'^@RG\' | grep -Po \'SM:[^\\t$]+\' | sed \'s/SM://\' | uniq | sed -e \'s/[[:space:]]*$//\'`\n'.format(TBAM=input_parameters['tumor_bam']) )
-        out.write( 'normal_name=`docker run --rm -v /:/mnt -u $UID --memory 1g lethalfang/samtools:1.7 samtools view -H /mnt/{NBAM} | egrep -w \'^@RG\' | grep -Po \'SM:[^\\t$]+\' | sed \'s/SM://\' | uniq | sed -e \'s/[[:space:]]*$//\'`\n\n'.format(NBAM=input_parameters['normal_bam']) )
-        
-        out.write( 'docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.5.2 \\\n' )
-        out.write( 'java -Xmx{MEM}g -jar /gatk/gatk.jar Mutect2 \\\n'.format( MEM=mem) )
-        out.write( '--reference /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        
-        if input_parameters['inclusion_region']:
-            out.write( '--intervals /mnt/{INCLUSION} \\\n'.format( INCLUSION=input_parameters['inclusion_region']) )
-        
-        out.write( '--input /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
-        out.write( '--input /mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
-        out.write( '--normal-sample ${normal_name} \\\n' )
-        out.write( '--tumor-sample ${tumor_name} \\\n' )
-        out.write( '--native-pair-hmm-threads {threads} \\\n'.format(threads=nt) )
-        
-        if input_parameters['mutect2_arguments']:
-            out.write( '{EXTRA_ARGUMENTS} \\\n'.format(EXTRA_ARGUMENTS=input_parameters['mutect2_arguments']) )
-        
-        out.write( '--output /mnt/{OUTDIR}/unfiltered.{OUTVCF}\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-
-        out.write( 'docker run --rm -v /:/mnt -u $UID broadinstitute/gatk:4.0.5.2 \\\n' )
-        out.write( 'java -Xmx{MEM}g -jar /gatk/gatk.jar FilterMutectCalls \\\n'.format( MEM=mem ) )
-        out.write( '--variant /mnt/{OUTDIR}/unfiltered.{OUTVCF} \\\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-        
-        if input_parameters['mutect2_filter_arguments']:
-            out.write( '{EXTRA_ARGUMENTS} \\\n'.format(EXTRA_ARGUMENTS=input_parameters['mutect2_filter_arguments']) )
-        
-        out.write( '--output /mnt/{OUTDIR}/{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-
-        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
-        
-    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
-
-    return returnCode
-
-
-
-def run_VarScan2(input_parameters, mem=4, minVAF=0.10, minMQ=25, minBQ=20, outvcf='VarScan2.vcf'):
-    
-    logdir         = input_parameters['output_directory'] + os.sep + 'logs'
-    outfile        = logdir + os.sep + 'varscan2.{}.cmd'.format(ts)
-    outname        = re.sub(r'\.[a-zA-Z]+$', '', outvcf )
-
-    if input_parameters['minimum_VAF']:
-        minVAF = input_parameters['minimum_VAF']
-
-    selector_text  = '-l /mnt/{}'.format(input_parameters['inclusion_region']) if input_parameters['inclusion_region'] else ''
-
-    with open(outfile, 'w') as out:
-        
-        out.write( "#!/bin/bash\n" )
-        out.write( '\n' )
-        
-        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
-        out.write( 'set -e\n\n' )
-        
-        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
-
-        out.write( 'docker run --rm -u $UID -v /:/mnt --memory {MEM}G lethalfang/samtools:1.7 bash -c \\\n'.format(MEM=mem) )
-        out.write( '"samtools mpileup \\\n' )
-        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=minMQ, minBQ=minBQ, extra_pileup_arguments=input_parameters['varscan_pileup_arguments'], selector_text=selector_text) )
-        out.write( '/mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '/mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
-        out.write( '> /mnt/{OUTDIR}/normal.pileup"\n\n'.format(OUTDIR=input_parameters['output_directory']) )
-
-        out.write( 'docker run --rm -u $UID -v /:/mnt --memory {MEM}G lethalfang/samtools:1.7 bash -c \\\n'.format(MEM=mem) )
-        out.write( '"samtools mpileup \\\n' )
-        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=minMQ, minBQ=minBQ, extra_pileup_arguments=input_parameters['varscan_pileup_arguments'], selector_text=selector_text) )
-        out.write( '/mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '/mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
-        out.write( '> /mnt/{OUTDIR}/tumor.pileup"\n\n'.format(OUTDIR=input_parameters['output_directory']) )
-        
-        out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
-        out.write( 'java -Xmx{MEM}g -jar /VarScan2.3.7.jar somatic \\\n'.format(MEM=mem) )
-        out.write( '/mnt/{OUTDIR}/normal.pileup \\\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( '/mnt/{OUTDIR}/tumor.pileup \\\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( '/mnt/{OUTDIR}/{OUTNAME} {EXTRA_ARGS} --output-vcf 1 --min-var-freq {VAF}\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname, VAF=minVAF, EXTRA_ARGS=input_parameters['varscan_arguments'] ) )
-                
-        out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
-        out.write( 'java -Xmx{MEM}g -jar /VarScan2.3.7.jar processSomatic \\\n'.format(MEM=mem) )
-        out.write( '/mnt/{OUTDIR}/{OUTNAME}.snp.vcf\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
-                
-        out.write( 'docker run --rm -u $UID -v /:/mnt djordjeklisic/sbg-varscan2:v1 \\\n' )
-        out.write( 'java -Xmx{MEM}g -jar /VarScan2.3.7.jar somaticFilter \\\n'.format(MEM=mem) )
-        out.write( '/mnt/{OUTDIR}/{OUTNAME}.snp.Somatic.hc.vcf \\\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
-        out.write( '-indel-file /mnt/{OUTDIR}/{OUTNAME}.indel.vcf \\\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
-        out.write( '-output-file /mnt/{OUTDIR}/{OUTNAME}.snp.Somatic.hc.filter.vcf\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTNAME=outname) )
-                
-        out.write( 'rm {OUTDIR}/normal.pileup\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( 'rm {OUTDIR}/tumor.pileup\n'.format(OUTDIR=input_parameters['output_directory']) )        
-        
-        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
-    
-        
-    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
-
-    return returnCode
-
-
-
-def run_JointSNVMix2(input_parameters, mem=8, skip_size=10000, converge_threshold=0.01, outvcf='JointSNVMix2.vcf'):
-    
-    logdir         = input_parameters['output_directory'] + os.sep + 'logs'
-    outfile        = logdir + os.sep + 'jointsnvmix2.{}.cmd'.format(ts)
-    reference_dict = input_parameters['reference_dict']
-    
-    with open(outfile, 'w') as out:
-        
-        out.write( "#!/bin/bash\n" )
-        out.write( '\n' )
-        
-        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
-        out.write( 'set -e\n' )
-        out.write( '\n' )
-        
-        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
-        out.write( '\n' )
-        
-        out.write( 'docker run --rm -v /:/mnt --memory {MEM}G -u $UID lethalfang/jointsnvmix2:0.7.5 \\\n'.format(MEM=mem) )
-        out.write( '/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py train joint_snv_mix_two \\\n' )
-        out.write( '--convergence_threshold {} \\\n'.format(converge_threshold) )
-        out.write( '--skip_size {SKIP_SIZE} \\\n'.format(SKIP_SIZE=skip_size) )
-        
-        if input_parameters['jsm_train_arguments']:
-            out.write( '{EXTRA_TRAIN_ARGUMENT} \\\n'.format(EXTRA_TRAIN_ARGUMENT=input_parameters['jsm_train_arguments']) )
-        
-        out.write( '/mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '/mnt/{NORMAL_BAM} \\\n'.format(NORMAL_BAM=input_parameters['normal_bam']) )
-        out.write( '/mnt/{TUMOR_NAM} \\\n'.format(TUMOR_NAM=input_parameters['tumor_bam']) )
-        out.write( '/opt/JointSNVMix-0.7.5/config/joint_priors.cfg \\\n' )
-        out.write( '/opt/JointSNVMix-0.7.5/config/joint_params.cfg \\\n' )
-        out.write( '/mnt/{OUTDIR}/jsm.parameter.cfg\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( '\n' )
-        
-        out.write( 'echo -e \'##fileformat=VCFv4.1\' > {OUTDIR}/{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-        out.write( 'echo -e \'##INFO=<ID=AAAB,Number=1,Type=Float,Description="Probability of Joint Genotype AA in Normal and AB in Tumor">\' >> {OUTDIR}/{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-        out.write( 'echo -e \'##INFO=<ID=AABB,Number=1,Type=Float,Description="Probability of Joint Genotype AA in Normal and BB in Tumor">\' >> {OUTDIR}/{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-        out.write( 'echo -e \'##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\' >> {OUTDIR}/{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-        out.write( 'echo -e \'##FORMAT=<ID=RD,Number=1,Type=Integer,Description="Depth of reference-supporting bases (reads1)">\' >> {OUTDIR}/{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-        out.write( 'echo -e \'##FORMAT=<ID=AD,Number=1,Type=Integer,Description="Depth of variant-supporting bases (reads2)">\' >> {OUTDIR}/{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-        out.write( 'echo -e \'#CHROM\\tPOS\\tID\\tREF\\tALT\\tQUAL\\tFILTER\\tINFO\\tFORMAT\\tNORMAL\\tTUMOR\' >> {OUTDIR}/{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-        out.write( '\n' )
-        
-        out.write( 'docker run --rm -v /:/mnt --memory {}G -u $UID lethalfang/jointsnvmix2:0.7.5 bash -c \\\n'.format( mem ) )
-        out.write( '"/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py classify joint_snv_mix_two \\\n' )
-        
-        if input_parameters['jsm_classify_arguments']:
-            out.write( '{EXTRA_CLASSIFY_ARGUMENTS} \\\n'.format(EXTRA_CLASSIFY_ARGUMENTS=input_parameters['jsm_classify_arguments']) )
-        
-        out.write( '/mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '/mnt/{NORMAL_BAM} \\\n'.format(NORMAL_BAM=input_parameters['normal_bam']) )
-        out.write( '/mnt/{TUMOR_NAM} \\\n'.format(TUMOR_NAM=input_parameters['tumor_bam']) )
-        out.write( "/mnt/{OUTDIR}/jsm.parameter.cfg \\\n".format(OUTDIR=input_parameters['output_directory']) )
-        out.write( '/dev/stdout | awk -F \'\\t\' \'NR!=1 && \\$4!=\\"N\\" && \\$10+\\$11>=0.95\' | \\\n' )
-        out.write( 'awk -F \'\\t\' \'{print \\$1 \\"\\t\\" \\$2 \\"\\t.\\t\\" \\$3 \\"\\t\\" \\$4 \\"\\t.\\t.\\tAAAB=\\" \\$10 \\";AABB=\\" \\$11 \\"\\tRD:AD\\t\\" \\$5 \\":\\" \\$6 \\"\\t\\" \\$7 \\":\\" \\$8}\' \\\n' )
-        out.write( '| /opt/vcfsorter.pl /mnt/{GRCh_DICT} - >> /mnt/{OUTDIR}/{OUTVCF}"\n\n'.format(GRCh_DICT=reference_dict, OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-        
-        if input_parameters['threads'] > 1:
-            out.write( '\n\ni=1\n' )
-            out.write( 'while [[ $i -le {} ]]\n'.format(input_parameters['threads']) )
-            out.write( 'do\n' )
-            out.write( '    docker run --rm -v /:/mnt -u $UID lethalfang/bedtools:2.26.0 bash -c "bedtools intersect -a /mnt/{OUTDIR}/{OUTVCF} -b /mnt/{OUTDIR}/${{i}}/${{i}}.bed -header | uniq > /mnt/{OUTDIR}/${{i}}/{OUTVCF}"\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf,) )
-            out.write( '    i=$(( $i + 1 ))\n' )
-            out.write( 'done\n' )
-        
-        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
-        
-    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
-
-    return returnCode
-
-
-
-def run_SomaticSniper(input_parameters, MQ=1, somaticQuality=15, prior=0.00001, mem=4, outvcf='SomaticSniper.vcf'):
-
-    logdir  = input_parameters['output_directory'] + os.sep + 'logs'
-    outfile = logdir + os.sep + 'somaticsniper.{}.cmd'.format(ts)
-
-    with open(outfile, 'w') as out:
-        
-        out.write( "#!/bin/bash\n" )
-        out.write( '\n' )
-        
-        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
-        out.write( 'set -e\n\n' )
-        
-        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
-        
-        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/somaticsniper:1.0.5.0-2 \\\n'.format(MEM=mem) )
-        out.write( '/opt/somatic-sniper/build/bin/bam-somaticsniper \\\n' )
-        out.write( '-q {MQ} -Q {SQ} -s {PRIOR} -F vcf {EXTRA_ARGS} \\\n'.format(MQ=MQ, SQ=somaticQuality, PRIOR=prior, EXTRA_ARGS=input_parameters['somaticsniper_arguments']) )
-        out.write( '-f /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '/mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
-        out.write( '/mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
-        out.write( '/mnt/{OUTDIR}/{OUTVCF}\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-
-        if input_parameters['threads'] > 1:
-            out.write( '\n\ni=1\n' )
-            out.write( 'while [[ $i -le {} ]]\n'.format(input_parameters['threads']) )
-            out.write( 'do\n' )
-            out.write( '    docker run --rm -v /:/mnt -u $UID lethalfang/bedtools:2.26.0 bash -c "bedtools intersect -a /mnt/{OUTDIR}/{OUTVCF} -b /mnt/{OUTDIR}/${{i}}/${{i}}.bed -header | uniq > /mnt/{OUTDIR}/${{i}}/{OUTVCF}"\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf,) )
-            out.write( '    i=$(( $i + 1 ))\n' )
-            out.write( 'done\n' )
-        
-        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
-
-
-
-    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
-
-    return returnCode
-
-
-
-def run_VarDict(input_parameters, mem=14, minVAF=0.05, process_bed=True, outvcf='VarDict.vcf'):
-    
-    logdir  = input_parameters['output_directory'] + os.sep + 'logs'
-    outfile = logdir + os.sep + 'vardict.{}.cmd'.format(ts)
-    
-    if input_parameters['minimum_VAF']:
-        minVAF = input_parameters['minimum_VAF']
-
-    total_bases = 0
-    num_lines   = 0
-
-    if input_parameters['inclusion_region']:
-        bed_file = input_parameters['inclusion_region']
-        
-        with open(bed_file) as bed:
-            line_i = bed.readline().rstrip()
-            while line_i.startswith('track'):
-                line_i = bed.readline().rstrip()
-            while line_i:
-                item = line_i.rstrip().split('\t')
-                total_bases = total_bases + int(item[2]) - int(item[1])
-                num_lines += 1
-                line_i = bed.readline().rstrip()
-    else:
-        fai_file = input_parameters['genome_reference'] + '.fai'
-        bed_file = '{}/{}'.format(input_parameters['output_directory'], 'genome.bed')
-        
-        with open(fai_file) as fai, open(bed_file, 'w') as wgs_bed:
-            for line_i in fai:
-                
-                item = line_i.split('\t')
-                
-                total_bases += int( item[1] )
-                num_lines   += 1
-                
-                wgs_bed.write( '{}\t{}\t{}\n'.format(item[0], '0', item[1]) )
-    
-    with open(outfile, 'w') as out:
-
-        out.write( "#!/bin/bash\n\n" )
-        
-        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
-        out.write( 'set -e\n\n' )
-        
-        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
-
-        # Decide if Bed file needs to be "split" such that each line has a small enough region
-        if process_bed or total_bases/num_lines > 50000:
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION='latest') )
-            out.write( '/opt/somaticseq/utilities/split_mergedBed.py \\\n' )
-            out.write( '-infile /mnt/{SELECTOR} -outfile /mnt/{OUTDIR}/split_regions.bed\n\n'.format(SELECTOR=bed_file, OUTDIR=input_parameters['output_directory']) )
-
-            bed_file = '{OUTDIR}/split_regions.bed'.format( OUTDIR=input_parameters['output_directory'] )
-
-        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/vardictjava:1.7.0 bash -c \\\n'.format(MEM=mem) )
-        out.write( '"/opt/VarDict-1.7.0/bin/VarDict \\\n' )
-        
-        if input_parameters['vardict_arguments']:
-            out.write( '{EXTRA_ARG} \\\n'.format(EXTRA_ARG=input_parameters['vardict_arguments']) )
-        
-        out.write( '-G /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '-f {VAF} -h \\\n'.format(VAF=minVAF) )
-        out.write( '-b \'/mnt/{TBAM}|/mnt/{NBAM}\' \\\n'.format(TBAM=input_parameters['tumor_bam'], NBAM=input_parameters['normal_bam']) )
-        out.write( '-Q 1 -c 1 -S 2 -E 3 -g 4 /mnt/{INTPUT_BED} \\\n'.format(INTPUT_BED=bed_file) )
-        out.write( '> /mnt/{OUTDIR}/vardict.var"\n\n'.format(OUTDIR=input_parameters['output_directory']) )
-        
-        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/vardictjava:1.7.0 \\\n'.format(MEM=mem) )
-        out.write( 'bash -c "cat /mnt/{OUTDIR}/vardict.var | awk \'NR!=1\' | /opt/VarDict/testsomatic.R | /opt/VarDict/var2vcf_paired.pl -N \'TUMOR|NORMAL\' -f {VAF} \\\n'.format(OUTDIR=input_parameters['output_directory'], VAF=minVAF ) )
-        out.write( '> /mnt/{OUTDIR}/{OUTVCF}"\n\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-
-        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
-        
-    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
-
-    return returnCode
-
-
-
-def run_MuSE(input_parameters, mem=8, outvcf='MuSE.vcf'):
-
-    logdir   = input_parameters['output_directory'] + os.sep + 'logs'
-    outfile  = logdir + os.sep + 'muse.{}.cmd'.format(ts)
-    
-    with open(outfile, 'w') as out:
-
-        out.write( "#!/bin/bash\n\n" )
-        
-        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
-        out.write( 'set -e\n\n' )
-        
-        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
-
-        out.write( 'cat {SELECTOR} | awk -F "\\t" \'{{print $1 "\\t" $2 "\\t" $3}}\' > {OUTDIR}/bed_3columns.bed\n\n'.format(SELECTOR=input_parameters['inclusion_region'], OUTDIR=input_parameters['output_directory'] ) )
-        
-        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {}G marghoob/muse:1.0rc_c \\\n'.format(mem) )
-        out.write( 'MuSEv1.0rc_submission_c039ffa call \\\n' )
-        out.write( '-O /mnt/{OUTDIR}/MuSE \\\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( '-l /mnt/{OUTDIR}/bed_3columns.bed \\\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( '-f /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '/mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
-        out.write( '/mnt/{NBAM}\n\n'.format(NBAM=input_parameters['normal_bam']) )
-        
-        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {}G marghoob/muse:1.0rc_c \\\n'.format(mem) )
-        out.write( 'MuSEv1.0rc_submission_c039ffa sump \\\n' )
-        out.write( '-I /mnt/{OUTDIR}/MuSE.MuSE.txt \\\n'.format(OUTDIR=input_parameters['output_directory']) )
-        
-        if input_parameters['exome_setting']:
-            out.write( '-E \\\n' )
-        else:
-            out.write( '-G \\\n' )
-        
-        if input_parameters['muse_arguments']:
-            out.write( '{EXTRA_ARGS} \\\n'.format( EXTRA_ARGS=input_parameters['muse_arguments'] ) )
-            
-        out.write( '-O /mnt/{OUTDIR}/{OUTVCF} \\\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-        out.write( '-D /mnt/{DBSNP}.gz\n'.format(DBSNP=input_parameters['dbsnp_vcf']) )
-    
-        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
-        
-    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
-
-    return returnCode
-
-
-
-def run_LoFreq(input_parameters, mem=12, vcfprefix='LoFreq.'):
-    
-    logdir   = input_parameters['output_directory'] + os.sep + 'logs'
-    outfile  = logdir + os.sep + 'lofreq.{}.cmd'.format(ts)
-    
-    dbsnp_gz = input_parameters['dbsnp_vcf'] + '.gz'
-    
-    with open(outfile, 'w') as out:
-
-        out.write( "#!/bin/bash\n\n" )
-        
-        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
-        out.write( 'set -e\n\n' )
-        
-        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
-
-        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {}G lethalfang/lofreq:2.1.3.1-1 \\\n'.format(mem) )
-        out.write( 'lofreq somatic \\\n' )
-        out.write( '-t /mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
-        out.write( '-n /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
-        out.write( '--call-indels \\\n' )
-        out.write( '-l /mnt/{SELECTOR} \\\n'.format(SELECTOR=input_parameters['inclusion_region']) )
-        out.write( '-f /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '-o /mnt/{OUTDIR}/{VCF_PREFIX} \\\n'.format(OUTDIR=input_parameters['output_directory'], VCF_PREFIX=vcfprefix) )
-        
-        if input_parameters['lofreq_arguments']:
-            out.write( '{EXTRA_ARGS} \\\n'.format(EXTRA_ARGS=input_parameters['lofreq_arguments']) )
-        
-        out.write( '-d /mnt/{DBSNP_GZ}\n'.format(DBSNP_GZ=dbsnp_gz) )
-
-        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
-        
-    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
-
-    return returnCode
-
-
-
-def run_Scalpel(input_parameters, mem=16, outvcf='Scalpel.vcf'):
-    
-    logdir         = input_parameters['output_directory'] + os.sep + 'logs'
-    outfile        = logdir + os.sep + 'scalpel.{}.cmd'.format(ts)
-
-    with open(outfile, 'w') as out:
-
-        out.write( "#!/bin/bash\n\n" )
-        
-        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
-        out.write( 'set -e\n\n' )
-        
-        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
-
-        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/scalpel:0.5.4 bash -c \\\n'.format(MEM=mem) )
-        out.write( '"/opt/scalpel/scalpel-discovery --somatic \\\n' )
-        out.write( '--ref /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '--bed /mnt/{SELECTOR} \\\n'.format(SELECTOR=input_parameters['inclusion_region']) )
-        out.write( '--normal /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
-        out.write( '--tumor /mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
-        out.write( '--window 600 \\\n' )
-        
-        if input_parameters['scalpel_two_pass']:
-            out.write( '--two-pass \\\n' )
-            
-        if input_parameters['scalpel_discovery_arguments']:
-            out.write( '{DISCOVERY_ARGS} \\\n'.format(DISCOVERY_ARGS=input_parameters['scalpel_discovery_arguments']) )
-            
-        out.write( '--dir /mnt/{OUTDIR}/scalpel && \\\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( '/opt/scalpel/scalpel-export --somatic \\\n' )
-        out.write( '--db /mnt/{OUTDIR}/scalpel/main/somatic.db.dir \\\n'.format(OUTDIR=input_parameters['output_directory']) )
-        out.write( '--ref /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
-        out.write( '--bed /mnt/{SELECTOR} \\\n'.format(SELECTOR=input_parameters['inclusion_region']) )
-        out.write( '{EXPORT_ARG} \\\n'.format(EXPORT_ARG=input_parameters['scalpel_export_arguments']) )
-        out.write( '> /mnt/{OUTDIR}/scalpel/scalpel.vcf"\n\n'.format(OUTDIR=input_parameters['output_directory']) )
-        
-        out.write( 'docker run --rm -v /:/mnt -u $UID lethalfang/scalpel:0.5.4 bash -c \\\n' )
-        out.write( '"cat /mnt/{OUTDIR}/scalpel/scalpel.vcf | /opt/vcfsorter.pl /mnt/{REF_DICT} - \\\n'.format(OUTDIR=input_parameters['output_directory'], REF_DICT=input_parameters['reference_dict'] ) )
-        out.write( '> /mnt/{OUTDIR}/{OUTVCF}\"\n'.format(OUTDIR=input_parameters['output_directory'], OUTVCF=outvcf) )
-
-        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
-        
-    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
-
-    return returnCode
-
-
-
-def run_Strelka2(input_parameters, mem=4, outdirname='Strelka'):
-
-    logdir  = input_parameters['output_directory'] + os.sep + 'logs'
-    outfile = logdir + os.sep + 'strelka.{}.cmd'.format(ts)
-    
-    bed_gz = os.path.basename(input_parameters['inclusion_region']) + '.gz'
-    
-    with open(outfile, 'w') as out:
-
-        out.write( "#!/bin/bash\n\n" )
-        
-        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
-        out.write( 'set -e\n\n' )
-        
-        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
-
-        out.write( 'docker run -v /:/mnt -u $UID --rm --memory {MEM}G lethalfang/tabix:1.7 bash -c "cat /mnt/{SELECTOR} | bgzip > /mnt/{OUTDIR}/{BEDGZ}\"\n'.format(MEM=mem, SELECTOR=input_parameters['inclusion_region'], OUTDIR=input_parameters['output_directory'], BEDGZ=bed_gz ) )
-        out.write( 'docker run -v /:/mnt -u $UID --rm --memory {MEM}G lethalfang/tabix:1.7 tabix -f /mnt/{OUTDIR}/{BEDGZ}\n\n'.format(MEM=mem, OUTDIR=input_parameters['output_directory'], BEDGZ=bed_gz ) )
-
-        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/strelka:2.9.5 \\\n'.format(MEM=mem) )
-        out.write( '/opt/strelka/bin/configureStrelkaSomaticWorkflow.py \\\n' )
-        out.write( '--tumorBam=/mnt/{TBAM} \\\n'.format( TBAM=input_parameters['tumor_bam'] ) )
-        out.write( '--normalBam=/mnt/{NBAM} \\\n'.format( NBAM=input_parameters['normal_bam'] ) )
-        out.write( '--referenceFasta=/mnt/{HUMAN_REFERENCE} \\\n'.format( HUMAN_REFERENCE=input_parameters['genome_reference'] ) )
-        out.write( '--callMemMb={MEM} \\\n'.format(MEM=mem*1024) )
-        out.write( '--callRegions=/mnt/{OUTDIR}/{BEDGZ} \\\n'.format(OUTDIR=input_parameters['output_directory'], BEDGZ=bed_gz) )
-        
-        if input_parameters['exome_setting']:
-            out.write( '--exome \\\n' ) 
-        
-        if input_parameters['strelka_config_arguments']:
-            out.write( '{EXTRA_ARGS} \\\n'.format(EXTRA_ARGS=input_parameters['strelka_config_arguments']) )
-        
-        out.write( '--runDir=/mnt/{OUTDIR}/{DIRNAME}\n\n'.format(OUTDIR=input_parameters['output_directory'], DIRNAME=outdirname) )        
-
-        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}G lethalfang/strelka:2.9.5 \\\n'.format(MEM=mem) )
-        out.write( '/mnt/{OUTDIR}/{DIRNAME}/runWorkflow.py -m local -j 1 {EXTRA_ARGS}\n'.format(OUTDIR=input_parameters['output_directory'], DIRNAME=outdirname, EXTRA_ARGS=input_parameters['strelka_run_arguments']) )
-
-        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
-        
-    returnCode = os.system('{} {}'.format(input_parameters['action'], outfile) )
-
-    return returnCode
-
-
-
-def run_SomaticSeq(input_parameters, mem=16):
-
-    outdir  = input_parameters['output_directory'] + os.sep + input_parameters['somaticseq_directory']
-    logdir  = outdir + os.sep + 'logs'
-    outfile = logdir + os.sep + 'somaticSeq.{}.cmd'.format(ts)
-
-    mutect2       = '/mnt/{}/MuTect2.vcf'.format(input_parameters['output_directory'])
-    varscan_snv   = '/mnt/{}/VarScan2.snp.vcf'.format(input_parameters['output_directory'])
-    varscan_indel = '/mnt/{}/VarScan2.indel.vcf'.format(input_parameters['output_directory'])
-    jsm2          = '/mnt/{}/JointSNVMix2.vcf'.format(input_parameters['output_directory'])
-    sniper        = '/mnt/{}/SomaticSniper.vcf'.format(input_parameters['output_directory'])
-    vardict       = '/mnt/{}/VarDict.vcf'.format(input_parameters['output_directory'])
-    muse          = '/mnt/{}/MuSE.vcf'.format(input_parameters['output_directory'])
-    lofreq_snv    = '/mnt/{}/LoFreq.somatic_final.snvs.vcf.gz'.format(input_parameters['output_directory'])
-    lofreq_indel  = '/mnt/{}/LoFreq.somatic_final.indels.vcf.gz'.format(input_parameters['output_directory'])
-    scalpel       = '/mnt/{}/Scalpel.vcf'.format(input_parameters['output_directory'])
-    strelka_snv   = '/mnt/{}/Strelka/results/variants/somatic.snvs.vcf.gz'.format(input_parameters['output_directory'])
-    strelka_indel = '/mnt/{}/Strelka/results/variants/somatic.indels.vcf.gz'.format(input_parameters['output_directory'])
+    for param_i in DEFAULT_PARAMS:
+        if param_i not in input_parameters:
+            input_parameters[param_i] = DEFAULT_PARAMS[param_i]
+
+    all_paths = []
+    for path_i in input_parameters['normal_bam'], input_parameters['tumor_bam'], input_parameters['genome_reference'], input_parameters['output_directory'], input_parameters['inclusion_region'], input_parameters['exclusion_region'], input_parameters['dbsnp'], input_parameters['cosmic'], input_parameters['snv_classifier'], input_parameters['indel_classifier'], input_parameters['truth_snv'], input_parameters['truth_indel']:
+        if path_i:
+            all_paths.append( path_i )
+
+    container_line, fileDict = container.container_params( f'lethalfang/somaticseq:{VERSION}', tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
+
+    # Mounted paths for all the input files and output directory:
+    mounted_genome_reference = fileDict[ input_parameters['genome_reference'] ]['mount_path']
+    mounted_tumor_bam        = fileDict[ input_parameters['tumor_bam'] ]['mount_path']
+    mounted_normal_bam       = fileDict[ input_parameters['normal_bam'] ]['mount_path']
+    mounted_outdir           = fileDict[ input_parameters['output_directory'] ]['mount_path']
+
+
+    outdir  = os.path.join(input_parameters['output_directory'], input_parameters['somaticseq_directory'])
+    logdir  = os.path.join(outdir, 'logs')
+    outfile = os.path.join(logdir, input_parameters['script'] )
+
+    mutect2       = '{}/MuTect2.vcf'.format(mounted_outdir)
+    varscan_snv   = '{}/VarScan2.snp.vcf'.format(mounted_outdir)
+    varscan_indel = '{}/VarScan2.indel.vcf'.format(mounted_outdir)
+    jsm2          = '{}/JointSNVMix2.vcf'.format(mounted_outdir)
+    sniper        = '{}/SomaticSniper.vcf'.format(mounted_outdir)
+    vardict       = '{}/VarDict.vcf'.format(mounted_outdir)
+    muse          = '{}/MuSE.vcf'.format(mounted_outdir)
+    lofreq_snv    = '{}/LoFreq.somatic_final.snvs.vcf.gz'.format(mounted_outdir)
+    lofreq_indel  = '{}/LoFreq.somatic_final.indels.vcf.gz'.format(mounted_outdir)
+    scalpel       = '{}/Scalpel.vcf'.format(mounted_outdir)
+    strelka_snv   = '{}/Strelka/results/variants/somatic.snvs.vcf.gz'.format(mounted_outdir)
+    strelka_indel = '{}/Strelka/results/variants/somatic.indels.vcf.gz'.format(mounted_outdir)
 
     os.makedirs(logdir, exist_ok=True)
     with open(outfile, 'w') as out:
 
         out.write( "#!/bin/bash\n\n" )
-
-        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
+        
+        out.write(f'#$ -o {logdir}\n' )
+        out.write(f'#$ -e {logdir}\n' )
         out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
+        out.write( '#$ -l h_vmem={}\n'.format( input_parameters['MEM'] ) )
         out.write( 'set -e\n\n' )
 
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
-        out.write( 'docker pull lethalfang/somaticseq:{VERSION} \n\n'.format(VERSION=VERSION) )
-        out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-        out.write( '/opt/somaticseq/somaticseq/run_somaticseq.py \\\n' )
+        #out.write( 'docker pull lethalfang/somaticseq:{} \n\n'.format(VERSION) )
+        
+        out.write(f'{container_line} \\\n' )
+        out.write( 'run_somaticseq.py \\\n' )
 
         if input_parameters['train_somaticseq'] and input_parameters['threads'] == 1:
             out.write( '--somaticseq-train --algorithm {} \\\n'.format(input_parameters['somaticseq_algorithm']) )
 
-        out.write( '--output-directory /mnt/{OUTDIR} \\\n'.format(OUTDIR=outdir) )
-        out.write( '--genome-reference /mnt/{HUMAN_REFERENCE} \\\n'.format(HUMAN_REFERENCE=input_parameters['genome_reference']) )
+        out.write( '--output-directory {} \\\n'.format( os.path.join(mounted_outdir, input_parameters['somaticseq_directory']) ) )
+        out.write( '--genome-reference {} \\\n'.format(mounted_genome_reference) )
 
         if input_parameters['inclusion_region']:
-            out.write( '--inclusion-region /mnt/{} \\\n'.format(input_parameters['inclusion_region']) )
+            mounted_inclusion = fileDict[ input_parameters['inclusion_region'] ]['mount_path']
+            out.write( '--inclusion-region {} \\\n'.format(mounted_inclusion) )
 
         if input_parameters['exclusion_region']:
-            out.write( '--exclusion-region /mnt/{} \\\n'.format(input_parameters['exclusion_region'])  )
+            mounted_exclusion = fileDict[ input_parameters['exclusion_region'] ]['mount_path']
+            out.write( '--exclusion-region {} \\\n'.format(input_parameters['exclusion_region'])  )
 
-        if input_parameters['cosmic_vcf']:
-            out.write( '--cosmic-vcf /mnt/{} \\\n'.format(input_parameters['cosmic_vcf']) )
+        if input_parameters['cosmic']:
+            mounted_cosmic = fileDict[ input_parameters['cosmic'] ]['mount_path']
+            out.write( '--cosmic-vcf {} \\\n'.format(mounted_cosmic) )
 
-        if input_parameters['dbsnp_vcf']:
-            out.write( '--dbsnp-vcf /mnt/{} \\\n'.format(input_parameters['dbsnp_vcf']) )
+        if input_parameters['dbsnp']:
+            mounted_dbsnp  = fileDict[ input_parameters['dbsnp'] ]['mount_path']
+            out.write( '--dbsnp-vcf {} \\\n'.format(input_parameters['dbsnp_vcf']) )
 
         if input_parameters['snv_classifier'] or input_parameters['indel_classifier']:
             out.write( '--algorithm {} \\\n'.format(input_parameters['somaticseq_algorithm']) )
             
             if input_parameters['snv_classifier']:
-                out.write( '--classifier-snv /mnt/{} \\\n'.format(input_parameters['snv_classifier']) )
+                out.write( '--classifier-snv {} \\\n'.format( fileDict[ input_parameters['snv_classifier'] ]['mount_path'] ) )
     
             if input_parameters['indel_classifier']:
-                out.write( '--classifier-indel /mnt/{} \\\n'.format(input_parameters['indel_classifier']) )
+                out.write( '--classifier-indel {} \\\n'.format( fileDict[ input_parameters['indel_classifier'] ]['mount_path'] ) )
 
         if input_parameters['truth_snv']:
-            out.write( '--truth-snv /mnt/{} \\\n'.format(input_parameters['truth_snv']) )
+            out.write( '--truth-snv {} \\\n'.format( fileDict[ input_parameters['truth_snv'] ]['mount_path'] ) )
 
         if input_parameters['truth_indel']:
-            out.write( '--truth-indel /mnt/{} \\\n'.format(input_parameters['truth_indel']) )
+            out.write( '--truth-indel {} \\\n'.format( fileDict[ input_parameters['truth_indel'] ]['mount_path'] ) )
 
         if input_parameters['somaticseq_arguments']:
-            out.write( '{EXTRA_ARGS} \\\n'.format(EXTRA_ARGS=input_parameters['somaticseq_arguments']) )
+            out.write( '{} \\\n'.format(input_parameters['somaticseq_arguments']) )
 
         out.write( 'paired \\\n' )
-        out.write( '--tumor-bam-file  /mnt/{TBAM} \\\n'.format(TBAM=input_parameters['tumor_bam']) )
-        out.write( '--normal-bam-file  /mnt/{NBAM} \\\n'.format(NBAM=input_parameters['normal_bam']) )
+        out.write( '--tumor-bam-file {} \\\n'.format(mounted_tumor_bam) )
+        out.write( '--normal-bam-file {} \\\n'.format(mounted_normal_bam) )
         
         if input_parameters['run_mutect2']:
-            out.write( '--mutect2-vcf {MUTECT2} \\\n'.format(MUTECT2=mutect2) )
+            out.write( '--mutect2-vcf {} \\\n'.format(mutect2) )
 
         if input_parameters['run_varscan2']:
-            out.write( '--varscan-snv {VARSCAN_SNV} \\\n'.format(VARSCAN_SNV=varscan_snv) )
-            out.write( '--varscan-indel {VARSCAN_INDEL} \\\n'.format(VARSCAN_INDEL=varscan_indel) )
+            out.write( '--varscan-snv {} \\\n'.format(varscan_snv) )
+            out.write( '--varscan-indel {} \\\n'.format(varscan_indel) )
 
         if input_parameters['run_jointsnvmix2']:
-            out.write( '--jsm-vcf {JSM} \\\n'.format(JSM=jsm2) )
+            out.write( '--jsm-vcf {} \\\n'.format(jsm2) )
 
         if input_parameters['run_somaticsniper']:
-            out.write( '--somaticsniper-vcf {SNIPER} \\\n'.format(SNIPER=sniper) )
+            out.write( '--somaticsniper-vcf {} \\\n'.format(sniper) )
 
         if input_parameters['run_vardict']:
-            out.write( '--vardict-vcf {VARDICT} \\\n'.format(VARDICT=vardict) )
+            out.write( '--vardict-vcf {} \\\n'.format(vardict) )
 
         if input_parameters['run_muse']:
-            out.write( '--muse-vcf {MUSE} \\\n'.format(MUSE=muse) )
+            out.write( '--muse-vcf {} \\\n'.format(muse) )
 
         if input_parameters['run_lofreq']:
-            out.write( '--lofreq-snv {LOFREQ_SNV} \\\n'.format(LOFREQ_SNV=lofreq_snv) )
-            out.write( '--lofreq-indel {LOFREQ_INDEL} \\\n'.format(LOFREQ_INDEL=lofreq_indel) )
+            out.write( '--lofreq-snv {} \\\n'.format(lofreq_snv) )
+            out.write( '--lofreq-indel {} \\\n'.format(lofreq_indel) )
 
         if input_parameters['run_scalpel']:
-            out.write( '--scalpel-vcf {SCALPEL} \\\n'.format(SCALPEL=scalpel) )
+            out.write( '--scalpel-vcf {} \\\n'.format(scalpel) )
 
         if input_parameters['run_strelka2']:
-            out.write( '--strelka-snv {STRELKA2_SNV} \\\n'.format(STRELKA2_SNV=strelka_snv) )
-            out.write( '--strelka-indel {STRELKA2_INDEL}\n'.format(STRELKA2_INDEL=strelka_indel) )
+            out.write( '--strelka-snv {} \\\n'.format(strelka_snv) )
+            out.write( '--strelka-indel {}\n'.format(strelka_indel) )
 
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
 
-    returnCode = os.system('{} {}'.format(input_parameters['somaticseq_action'], outfile) )
+    # "Run" the script that was generated
+    command_item = (input_parameters['action'], outfile)
+    returnCode   = subprocess.call( command_item )
 
-    return returnCode
+    return outfile
 
 
 
-def merge_results(input_parameters, mem=2):
 
-    if input_parameters['train_somaticseq']:
-        mem=16
+
+def merge_results(input_parameters, tech='docker'):
+
+    DEFAULT_PARAMS = {'MEM': '4G', 'genome_reference': None, 'output_directory' : os.curdir, 'somaticseq_directory': 'SomaticSeq', 'action': 'echo','script': 'mergeResults.{}.cmd'.format(ts), 'snv_classifier': None, 'indel_classifier': None, 'truth_snv': None, 'truth_indel': None, 'somaticseq_arguments': '', 'train_somaticseq': False, 'somaticseq_algorithm': 'xgboost'}
+    
+    for param_i in DEFAULT_PARAMS:
+        if param_i not in input_parameters:
+            input_parameters[param_i] = DEFAULT_PARAMS[param_i]
+
+    all_paths = []
+    for path_i in input_parameters['genome_reference'], input_parameters['output_directory'], input_parameters['snv_classifier'], input_parameters['indel_classifier'], input_parameters['truth_snv'], input_parameters['truth_indel']:
+        if path_i:
+            all_paths.append( path_i )
+
+    container_line, fileDict = container.container_params( f'lethalfang/somaticseq:{VERSION}', tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
+
+    # Mounted paths for all the input files and output directory:
+    mounted_outdir = fileDict[ input_parameters['output_directory'] ]['mount_path']
+
 
     prjdir  = input_parameters['output_directory']
-    logdir  = prjdir + os.sep + 'logs'
-    outfile = logdir + os.sep + 'mergeResults.{}.cmd'.format(ts)
+    logdir  = os.path.join(prjdir, 'logs')
+    outfile = os.path.join(logdir, 'mergeResults.{}.cmd'.format(ts))
 
-    mutect2       = '/mnt/' + prjdir + '/{}/MuTect2.vcf'
-    varscan_snv   = '/mnt/' + prjdir + '/{}/VarScan2.snp.vcf'
-    varscan_indel = '/mnt/' + prjdir + '/{}/VarScan2.indel.vcf'
-    vardict       = '/mnt/' + prjdir + '/{}/VarDict.vcf'
-    muse          = '/mnt/' + prjdir + '/{}/MuSE.vcf'
-    lofreq_snv    = '/mnt/' + prjdir + '/{}/LoFreq.somatic_final.snvs.vcf.gz'
-    lofreq_indel  = '/mnt/' + prjdir + '/{}/LoFreq.somatic_final.indels.vcf.gz'
-    scalpel       = '/mnt/' + prjdir + '/{}/Scalpel.vcf'
-    strelka_snv   = '/mnt/' + prjdir + '/{}/Strelka/results/variants/somatic.snvs.vcf.gz'
-    strelka_indel = '/mnt/' + prjdir + '/{}/Strelka/results/variants/somatic.indels.vcf.gz'
+    mutect2       = mounted_outdir + '/{}/MuTect2.vcf'
+    varscan_snv   = mounted_outdir + '/{}/VarScan2.snp.vcf'
+    varscan_indel = mounted_outdir + '/{}/VarScan2.indel.vcf'
+    vardict       = mounted_outdir + '/{}/VarDict.vcf'
+    muse          = mounted_outdir + '/{}/MuSE.vcf'
+    lofreq_snv    = mounted_outdir + '/{}/LoFreq.somatic_final.snvs.vcf.gz'
+    lofreq_indel  = mounted_outdir + '/{}/LoFreq.somatic_final.indels.vcf.gz'
+    scalpel       = mounted_outdir + '/{}/Scalpel.vcf'
+    strelka_snv   = mounted_outdir + '/{}/Strelka/results/variants/somatic.snvs.vcf.gz'
+    strelka_indel = mounted_outdir + '/{}/Strelka/results/variants/somatic.indels.vcf.gz'
 
     somaticdir    = input_parameters['somaticseq_directory']
     
     os.makedirs(logdir, exist_ok=True)
+    
     with open(outfile, 'w') as out:
 
         out.write( "#!/bin/bash\n\n" )
-
-        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
+        
+        out.write(f'#$ -o {logdir}\n' )
+        out.write(f'#$ -e {logdir}\n' )
         out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
+        out.write( '#$ -l h_vmem={}\n'.format( input_parameters['MEM'] ) )
         out.write( 'set -e\n\n' )
 
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
         if input_parameters['run_mutect2']:
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write(f'{container_line} \\\n' )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( mutect2.format(i) + ' ' )
                 
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/MuTect2.vcf\n\n'.format(prjdir) )
+            out.write('-outfile {}/MuTect2.vcf\n\n'.format(mounted_outdir) )
 
 
         if input_parameters['run_varscan2']:
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write(f'{container_line} \\\n' )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( varscan_snv.format(i) + ' ' )
             
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/VarScan2.snv.vcf\n\n'.format(prjdir) )
+            out.write('-outfile {}/VarScan2.snv.vcf\n\n'.format(mounted_outdir) )
 
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write(f'{container_line} \\\n' )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( varscan_indel.format(i) + ' ' )
             
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/VarScan2.indel.vcf\n\n'.format(prjdir) )
+            out.write('-outfile {}/VarScan2.indel.vcf\n\n'.format(mounted_outdir) )
 
 
         if input_parameters['run_vardict']:
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write(f'{container_line} \\\n' )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( vardict.format(i) + ' ' )
             
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/VarDict.vcf\n\n'.format(prjdir) )
+            out.write('-outfile {}/VarDict.vcf\n\n'.format(mounted_outdir) )
 
 
         if input_parameters['run_muse']:
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write(f'{container_line} \\\n' )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( muse.format(i) + ' ' )
             
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/MuSE.vcf\n\n'.format(prjdir) )
+            out.write('-outfile {}/MuSE.vcf\n\n'.format(mounted_outdir) )
 
 
         if input_parameters['run_lofreq']:
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write(f'{container_line} \\\n' )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( lofreq_snv.format(i) + ' ' )
             
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/LoFreq.snv.vcf\n\n'.format(prjdir) )
+            out.write('-outfile {}/LoFreq.snv.vcf\n\n'.format(mounted_outdir) )
 
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write(f'{container_line} \\\n' )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( lofreq_indel.format(i) + ' ' )
             
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/LoFreq.indel.vcf\n\n'.format(prjdir) )
+            out.write('-outfile {}/LoFreq.indel.vcf\n\n'.format(mounted_outdir) )
 
 
         if input_parameters['run_scalpel']:
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write(f'{container_line} \\\n' )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( scalpel.format(i) + ' ' )
             
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/Scalpel.vcf\n\n'.format(prjdir) )
+            out.write('-outfile {}/Scalpel.vcf\n\n'.format(mounted_outdir) )
 
 
         if input_parameters['run_strelka2']:
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write(f'{container_line} \\\n' )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( strelka_snv.format(i) + ' ' )
                 
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/Strelka.snv.vcf\n\n'.format(prjdir) )
+            out.write('-outfile {}/Strelka.snv.vcf\n\n'.format(mounted_outdir) )
 
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
@@ -848,113 +397,114 @@ def merge_results(input_parameters, mem=2):
                 out.write( strelka_indel.format(i) + ' ' )
                 
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/Strelka.indel.vcf\n\n'.format(prjdir) )
+            out.write('-outfile {}/Strelka.indel.vcf\n\n'.format(mounted_outdir) )
 
 
         ###### SomaticSeq #####
         if input_parameters['run_somaticseq']:
             
             # Ensemble.sSNV.tsv
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write(f'{container_line} \\\n' )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
-                out.write(  '/mnt/{}/{}/{}/Ensemble.sSNV.tsv'.format(prjdir, i, somaticdir) + ' ' )
+                out.write(  '{}/{}/{}/Ensemble.sSNV.tsv'.format(mounted_outdir, i, somaticdir) + ' ' )
                 
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/Ensemble.sSNV.tsv\n\n'.format(prjdir) )
+            out.write('-outfile {}/Ensemble.sSNV.tsv\n\n'.format(mounted_outdir) )
 
             # Ensemble.sINDEL.tsv
             out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
-                out.write(  '/mnt/{}/{}/{}/Ensemble.sINDEL.tsv'.format(prjdir, i, somaticdir) + ' ' )
+                out.write(  '{}/{}/{}/Ensemble.sINDEL.tsv'.format(mounted_outdir, i, somaticdir) + ' ' )
                 
             out.write( '\\\n' )
-            out.write('-outfile /mnt/{}/Ensemble.sINDEL.tsv\n\n'.format(prjdir) )
+            out.write('-outfile {}/Ensemble.sINDEL.tsv\n\n'.format(mounted_outdir) )
 
             
             # If asked to create classifier, do it here when TSV files are combined
             if input_parameters['train_somaticseq'] and input_parameters['truth_snv']:
-                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-                out.write( '/opt/somaticseq/r_scripts/{}_model_builder_ntChange.R /mnt/{}/Ensemble.sSNV.tsv Consistent_Mates Inconsistent_Mates \n\n'.format(input_parameters['somaticseq_algorithm'], prjdir) )
+                out.write(f'{container_line} \\\n' )
+                out.write( 'somatic_xgboost.py train -tsvs {}/Ensemble.sSNV.tsv\n\n'.format(mounted_outdir) )
 
             if input_parameters['train_somaticseq'] and input_parameters['truth_indel']:
-                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
-                out.write( '/opt/somaticseq/r_scripts/{}_model_builder_ntChange.R /mnt/{}/Ensemble.sINDEL.tsv Strelka_QSS Strelka_TQSS Consistent_Mates Inconsistent_Mates \n\n'.format( input_parameters['somaticseq_algorithm'], prjdir) )
+                out.write(f'{container_line} \\\n' )
+                out.write( 'somatic_xgboost.py train {}/Ensemble.sINDEL.tsv\n\n'.format(mounted_outdir) )
 
 
             # If in prediction mode, combine SSeq.Classified.sSNV.vcf, else Consensus.sSNV.vcf
             if input_parameters['snv_classifier']:
                 
-                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write(f'{container_line} \\\n' )
                 out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
-                    out.write(  '/mnt/{}/{}/{}/SSeq.Classified.sSNV.vcf'.format(prjdir, i, somaticdir) + ' ' )
+                    out.write(  '{}/{}/{}/SSeq.Classified.sSNV.vcf'.format(mounted_outdir, i, somaticdir) + ' ' )
                     
                 out.write( '\\\n' )
-                out.write('-outfile /mnt/{}/SSeq.Classified.sSNV.vcf\n\n'.format(prjdir) )
+                out.write('-outfile {}/SSeq.Classified.sSNV.vcf\n\n'.format(mounted_outdir) )
                 
                 # SSeq.Classified.sSNV.tsv
-                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write(f'{container_line} \\\n' )
                 out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
-                    out.write(  '/mnt/{}/{}/{}/SSeq.Classified.sSNV.tsv'.format(prjdir, i, somaticdir) + ' ' )
+                    out.write(  '{}/{}/{}/SSeq.Classified.sSNV.tsv'.format(mounted_outdir, i, somaticdir) + ' ' )
                     
                 out.write( '\\\n' )
-                out.write('-outfile /mnt/{}/SSeq.Classified.sSNV.tsv\n\n'.format(prjdir) )
+                out.write('-outfile {}/SSeq.Classified.sSNV.tsv\n\n'.format(mounted_outdir) )
 
             # Consensus mode: Consensus.sSNV.vcf
             else:
-                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write(f'{container_line} \\\n' )
                 out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
-                    out.write(  '/mnt/{}/{}/{}/Consensus.sSNV.vcf'.format(prjdir, i, somaticdir) + ' ' )
+                    out.write(  '{}/{}/{}/Consensus.sSNV.vcf'.format(mounted_outdir, i, somaticdir) + ' ' )
                     
                 out.write( '\\\n' )
-                out.write('-outfile /mnt/{}/Consensus.sSNV.vcf\n\n'.format(prjdir) )
+                out.write('-outfile {}/Consensus.sSNV.vcf\n\n'.format(mounted_outdir) )
             
             
             # If in prediction mode, combine SSeq.Classified.sINDEL.vcf, else Consensus.sINDEL.vcf
             if input_parameters['indel_classifier']:
                 
-                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write(f'{container_line} \\\n' )
                 out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
-                    out.write(  '/mnt/{}/{}/{}/SSeq.Classified.sINDEL.vcf'.format(prjdir, i, somaticdir) + ' ' )
+                    out.write(  '{}/{}/{}/SSeq.Classified.sINDEL.vcf'.format(mounted_outdir, i, somaticdir) + ' ' )
                     
                 out.write( '\\\n' )
-                out.write('-outfile /mnt/{}/SSeq.Classified.sINDEL.vcf\n\n'.format(prjdir) )
+                out.write('-outfile {}/SSeq.Classified.sINDEL.vcf\n\n'.format(mounted_outdir) )
 
                 # SSeq.Classified.sINDEL.tsv
-                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write(f'{container_line} \\\n' )
                 out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
-                    out.write(  '/mnt/{}/{}/{}/SSeq.Classified.sINDEL.tsv'.format(prjdir, i, somaticdir) + ' ' )
+                    out.write(  '{}/{}/{}/SSeq.Classified.sINDEL.tsv'.format(mounted_outdir, i, somaticdir) + ' ' )
                     
                 out.write( '\\\n' )
-                out.write('-outfile /mnt/{}/SSeq.Classified.sINDEL.tsv\n\n'.format(prjdir) )
+                out.write('-outfile {}/SSeq.Classified.sINDEL.tsv\n\n'.format(mounted_outdir) )
 
             # Consensus mode: Consensus.sINDEL.vcf
             else:
-                out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+                out.write(f'{container_line} \\\n' )
                 out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
-                    out.write(  '/mnt/{}/{}/{}/Consensus.sINDEL.vcf'.format(prjdir, i, somaticdir) + ' ' )
+                    out.write(  '{}/{}/{}/Consensus.sINDEL.vcf'.format(mounted_outdir, i, somaticdir) + ' ' )
                     
                 out.write( '\\\n' )
-                out.write('-outfile /mnt/{}/Consensus.sINDEL.vcf\n\n'.format(prjdir) )
+                out.write('-outfile {}/Consensus.sINDEL.vcf\n\n'.format(mounted_outdir) )
 
-        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+    command_item = (input_parameters['action'], outfile)
+    returnCode   = subprocess.call( command_item )
 
-    return True
+    return outfile
 
 
 
@@ -965,25 +515,27 @@ def merge_results(input_parameters, mem=2):
 
 if __name__ == '__main__':
     
-    workflowArguments = run()
+    args, workflowArguments = run()
     
     if workflowArguments['inclusion_region']:
         bed_file = workflowArguments['inclusion_region']
         
     else:
-        split_bed.fai2bed(workflowArguments['genome_reference'] + '.fai', workflowArguments['output_directory'] + os.sep + 'genome.bed')
-        bed_file = workflowArguments['output_directory'] + os.sep + 'genome.bed'
+        split_bed.fai2bed(workflowArguments['genome_reference'] + '.fai', os.path.join(workflowArguments['output_directory'], 'genome.bed'))
+        bed_file = os.path.join( workflowArguments['output_directory'], 'genome.bed')
     
     split_bed.split(bed_file, workflowArguments['output_directory'] + os.sep + 'bed', workflowArguments['threads'])
 
-    os.makedirs(workflowArguments['output_directory'] + os.sep + 'logs', exist_ok=True)
+    os.makedirs( os.path.join(workflowArguments['output_directory'], 'logs'), exist_ok=True)
 
     # Unparallelizables
     if workflowArguments['run_jointsnvmix2']:
-        run_JointSNVMix2(workflowArguments)
+        import utilities.dockered_pipelines.somatic_mutations.JointSNVMix2 as JointSNVMix2
+        JointSNVMix2.tumor_normal(workflowArguments, args.container_tech)
 
     if workflowArguments['run_somaticsniper']:
-        run_SomaticSniper(workflowArguments)
+        import utilities.dockered_pipelines.somatic_mutations.SomaticSniper as SomaticSniper
+        SomaticSniper.tumor_normal(workflowArguments, args.container_tech)
     
         
     for thread_i in range(1, workflowArguments['threads']+1):
@@ -1010,25 +562,54 @@ if __name__ == '__main__':
         
         # Invoke parallelizable callers one by one:
         if workflowArguments['run_mutect2']:
-            run_MuTect2( perThreadParameter )
+            import utilities.dockered_pipelines.somatic_mutations.MuTect2 as MuTect2
+            MuTect2.tumor_normal( perThreadParameter )
             
         if workflowArguments['run_varscan2']:
-            run_VarScan2( perThreadParameter )
+            import utilities.dockered_pipelines.somatic_mutations.VarScan2 as VarScan2
+            VarScan2.tumor_normal( perThreadParameter )
             
         if workflowArguments['run_vardict']:
-            run_VarDict( perThreadParameter )
+            import utilities.dockered_pipelines.somatic_mutations.VarDict as VarDict
+            VarDict.tumor_normal( perThreadParameter )
 
         if workflowArguments['run_muse']:
-            run_MuSE( perThreadParameter )
+            import utilities.dockered_pipelines.somatic_mutations.MuSE as MuSE
+            
+            if workflowArguments['dbsnp_vcf'].endswith('.vcf.gz'):
+                workflowArguments['dbsnp_gz'] = workflowArguments['dbsnp_vcf']
+            elif workflowArguments['dbsnp_vcf'].endswith('.vcf'):
+                workflowArguments['dbsnp_gz'] = workflowArguments['dbsnp_vcf']+'.gz'
+                assert os.path.exists(workflowArguments['dbsnp_gz'])
+                assert os.path.exists(workflowArguments['dbsnp_gz']+'.tbi')
+            else:
+                raise Exception('MuSE has no properly bgzipped dbsnp file.')
+            
+            MuSE.tumor_normal( perThreadParameter )
+
 
         if workflowArguments['run_lofreq']:
-            run_LoFreq( perThreadParameter )
+            import utilities.dockered_pipelines.somatic_mutations.LoFreq as LoFreq
+
+            if workflowArguments['dbsnp_vcf'].endswith('.vcf.gz'):
+                workflowArguments['dbsnp_gz'] = workflowArguments['dbsnp_vcf']
+            elif workflowArguments['dbsnp_vcf'].endswith('.vcf'):
+                workflowArguments['dbsnp_gz'] = workflowArguments['dbsnp_vcf']+'.gz'
+                assert os.path.exists(workflowArguments['dbsnp_gz'])
+                assert os.path.exists(workflowArguments['dbsnp_gz']+'.tbi')
+            else:
+                raise Exception('LoFreq has no properly bgzipped dbsnp file.')
+
+            LoFreq.tumor_normal( perThreadParameter )
+
 
         if workflowArguments['run_scalpel']:
-            run_Scalpel( perThreadParameter )
+            import utilities.dockered_pipelines.somatic_mutations.Scalpel as Scalpel
+            Scalpel.tumor_normal( perThreadParameter )
 
         if workflowArguments['run_strelka2']:
-            run_Strelka2( perThreadParameter )
+            import utilities.dockered_pipelines.somatic_mutations.Strelka2 as Strelka2
+            Strelka2.tumor_normal( perThreadParameter )
 
         if workflowArguments['run_somaticseq']:
             run_SomaticSeq( perThreadParameter )
