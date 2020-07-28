@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 
-def container_params( container_image, tech='docker', files=[], extra_args='' ):
+def container_params( container_image, tech='docker', files=[], extra_args='', singularity_image_loc='docker://' ):
     
     file_Paths    = [ Path(i) for i in files ]
     file_names    = [ i.name for i in file_Paths ]
@@ -29,7 +29,7 @@ def container_params( container_image, tech='docker', files=[], extra_args='' ):
             container_dir = fileDict[ file_i ][ 'mount_dir' ]
             MOUNT_STRING = MOUNT_STRING + f' -v {sys_dir}:{container_dir}'
         
-        container_string = f'docker run {MOUNT_STRING} -u $UID --rm {container_image}'
+        container_string = f'docker run {MOUNT_STRING} -u $UID --rm {extra_args} {container_image}'
     
     
     elif tech == 'singularity':
@@ -40,7 +40,7 @@ def container_params( container_image, tech='docker', files=[], extra_args='' ):
             container_dir = fileDict[ file_i ][ 'mount_dir' ]
             MOUNT_STRING = MOUNT_STRING + f' --bind {sys_dir}:{container_dir}'
         
-        container_string = f'singularity exec --cleanenv {MOUNT_STRING} docker://{container_image}'
+        container_string = f'singularity exec --cleanenv {MOUNT_STRING} {extra_args} {singularity_image_loc}{container_image}'
     
     
     return container_string, fileDict

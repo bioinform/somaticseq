@@ -149,11 +149,10 @@ if __name__ == '__main__':
     ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 
     args, workflowArguments = run()
-
+    logger.info( 'Create SomaticSeq Workflow Scripts: ' + ', '.join( [ '{}={}'.format(i, vars(args)[i])  for i in vars(args) ] ) )
+    
     ################# TUMOR-NORMAL RUNS #################
     if workflowArguments['which'] == 'paired':
-        
-        logger.info( 'Create SomaticSeq Workflow Scripts: ' + ', '.join( [ '{}={}'.format(i, vars(args)[i])  for i in vars(args) ] ) )
         
         if workflowArguments['inclusion_region']:
             bed_file = workflowArguments['inclusion_region']
