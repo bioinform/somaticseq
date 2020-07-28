@@ -29,6 +29,7 @@ makeSomaticScripts.py paired \
 --dbsnp-vcf        /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
 --action           echo \
 --threads          12 \
+--container-tech   docker \
 --run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq
 ```
 
