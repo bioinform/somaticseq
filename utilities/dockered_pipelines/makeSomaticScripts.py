@@ -195,7 +195,7 @@ if __name__ == '__main__':
                 move('{}/{}.bed'.format(workflowArguments['output_directory'], thread_i), '{}/{}.bed'.format(perThreadParameter['output_directory'], thread_i) )
                 
                 # Results combiner
-                tumor_normal.merge_results(workflowArguments)
+                tumor_normal.merge_results(workflowArguments, args.container_tech)
 
 
             else:

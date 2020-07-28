@@ -40,7 +40,7 @@ def container_params( container_image, tech='docker', files=[], extra_args='' ):
             container_dir = fileDict[ file_i ][ 'mount_dir' ]
             MOUNT_STRING = MOUNT_STRING + f' --bind {sys_dir}:{container_dir}'
         
-        container_string = f'singularity exec {MOUNT_STRING} docker://{container_image}'
+        container_string = f'singularity exec --cleanenv {MOUNT_STRING} docker://{container_image}'
     
     
     return container_string, fileDict
