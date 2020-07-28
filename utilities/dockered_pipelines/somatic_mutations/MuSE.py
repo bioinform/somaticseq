@@ -35,7 +35,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
     assert os.path.exists( input_parameters['normal_bam'] )
     assert os.path.exists( input_parameters['tumor_bam'] )
     assert os.path.exists( input_parameters['genome_reference'] )
-    assert os.path.exists( input_parameters['dbnp_gz'] )
+    assert os.path.exists( input_parameters['dbsnp_gz'] )
     assert os.path.exists( input_parameters['dbsnp_gz']+'.tbi' )
     
     
@@ -55,7 +55,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
     mounted_tumor_bam        = fileDict[ input_parameters['tumor_bam'] ]['mount_path']
     mounted_normal_bam       = fileDict[ input_parameters['normal_bam'] ]['mount_path']
     mounted_outdir           = fileDict[ input_parameters['output_directory'] ]['mount_path']
-    mounted_dbsnp_gz         = fileDict[ input_parameters['dbnp_gz'] ]['mount_path']
+    mounted_dbsnp_gz         = fileDict[ input_parameters['dbsnp_gz'] ]['mount_path']
 
     with open(outfile, 'w') as out:
 

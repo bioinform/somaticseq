@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys, argparse, os, re
+import subprocess
 from copy import copy
 from datetime import datetime
 from shutil import move
@@ -8,9 +9,9 @@ import utilities.split_Bed_into_equal_regions as split_bed
 import utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-MY_DIR = os.path.dirname(os.path.realpath(__file__))
-RepoROOT = os.path.join(MY_DIR, os.pardir, os.pardir)
-sys.path.append( RepoROOT )
+# MY_DIR = os.path.dirname(os.path.realpath(__file__))
+# RepoROOT = os.path.join(MY_DIR, os.pardir, os.pardir)
+# sys.path.append( RepoROOT )
 
 
 ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
@@ -33,7 +34,7 @@ def run():
     parser.add_argument('-exclude',    '--exclusion-region',     type=str,   help='exclusion bed file',  )
     parser.add_argument('-dbsnp',      '--dbsnp-vcf',            type=str,   help='dbSNP vcf file, also requires .idx, .gz, and .gz.tbi files', required=True)
     parser.add_argument('-cosmic',     '--cosmic-vcf',           type=str,   help='cosmic vcf file')
-    parser.add_argument('-minVAF',     '--minimum-VAF',          type=float, help='minimum VAF to look for',)
+    parser.add_argument('-minVAF',     '--minimum-VAF',          type=float, help='minimum VAF to look for', default=0.05)
     parser.add_argument('-action',     '--action',               type=str,   help='action for each mutation caller\' run script', default='echo')
     parser.add_argument('-somaticAct', '--somaticseq-action',    type=str,   help='action for each somaticseq.cmd',               default='echo')
     parser.add_argument('-tech',       '--container-tech',       type=str,   help='docker or singularity',                        default='docker')
@@ -390,7 +391,7 @@ def merge_results(input_parameters, tech='docker'):
             out.write( '\\\n' )
             out.write('-outfile {}/Strelka.snv.vcf\n\n'.format(mounted_outdir) )
 
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write(f'{container_line} \\\n' )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
@@ -414,7 +415,7 @@ def merge_results(input_parameters, tech='docker'):
             out.write('-outfile {}/Ensemble.sSNV.tsv\n\n'.format(mounted_outdir) )
 
             # Ensemble.sINDEL.tsv
-            out.write( 'docker run --rm -v /:/mnt -u $UID --memory {MEM}g lethalfang/somaticseq:{VERSION} \\\n'.format(MEM=mem, VERSION=VERSION) )
+            out.write(f'{container_line} \\\n' )
             out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
@@ -431,7 +432,7 @@ def merge_results(input_parameters, tech='docker'):
 
             if input_parameters['train_somaticseq'] and input_parameters['truth_indel']:
                 out.write(f'{container_line} \\\n' )
-                out.write( 'somatic_xgboost.py train {}/Ensemble.sINDEL.tsv\n\n'.format(mounted_outdir) )
+                out.write( 'somatic_xgboost.py train -tsvs {}/Ensemble.sINDEL.tsv\n\n'.format(mounted_outdir) )
 
 
             # If in prediction mode, combine SSeq.Classified.sSNV.vcf, else Consensus.sSNV.vcf
@@ -576,12 +577,12 @@ if __name__ == '__main__':
         if workflowArguments['run_muse']:
             import utilities.dockered_pipelines.somatic_mutations.MuSE as MuSE
             
-            if workflowArguments['dbsnp_vcf'].endswith('.vcf.gz'):
-                workflowArguments['dbsnp_gz'] = workflowArguments['dbsnp_vcf']
-            elif workflowArguments['dbsnp_vcf'].endswith('.vcf'):
-                workflowArguments['dbsnp_gz'] = workflowArguments['dbsnp_vcf']+'.gz'
-                assert os.path.exists(workflowArguments['dbsnp_gz'])
-                assert os.path.exists(workflowArguments['dbsnp_gz']+'.tbi')
+            if perThreadParameter['dbsnp_vcf'].endswith('.vcf.gz'):
+                perThreadParameter['dbsnp_gz'] = perThreadParameter['dbsnp_vcf']
+            elif perThreadParameter['dbsnp_vcf'].endswith('.vcf'):
+                perThreadParameter['dbsnp_gz'] = perThreadParameter['dbsnp_vcf']+'.gz'
+                assert os.path.exists(perThreadParameter['dbsnp_gz'])
+                assert os.path.exists(perThreadParameter['dbsnp_gz']+'.tbi')
             else:
                 raise Exception('MuSE has no properly bgzipped dbsnp file.')
             
@@ -591,12 +592,12 @@ if __name__ == '__main__':
         if workflowArguments['run_lofreq']:
             import utilities.dockered_pipelines.somatic_mutations.LoFreq as LoFreq
 
-            if workflowArguments['dbsnp_vcf'].endswith('.vcf.gz'):
-                workflowArguments['dbsnp_gz'] = workflowArguments['dbsnp_vcf']
-            elif workflowArguments['dbsnp_vcf'].endswith('.vcf'):
-                workflowArguments['dbsnp_gz'] = workflowArguments['dbsnp_vcf']+'.gz'
-                assert os.path.exists(workflowArguments['dbsnp_gz'])
-                assert os.path.exists(workflowArguments['dbsnp_gz']+'.tbi')
+            if perThreadParameter['dbsnp_vcf'].endswith('.vcf.gz'):
+                perThreadParameter['dbsnp_gz'] = perThreadParameter['dbsnp_vcf']
+            elif perThreadParameter['dbsnp_vcf'].endswith('.vcf'):
+                perThreadParameter['dbsnp_gz'] = perThreadParameter['dbsnp_vcf']+'.gz'
+                assert os.path.exists(perThreadParameter['dbsnp_gz'])
+                assert os.path.exists(perThreadParameter['dbsnp_gz']+'.tbi')
             else:
                 raise Exception('LoFreq has no properly bgzipped dbsnp file.')
 
