@@ -37,7 +37,7 @@ def run():
     parser.add_argument('-minVAF',     '--minimum-VAF',          type=float, help='minimum VAF to look for', default=0.05)
     parser.add_argument('-action',     '--action',               type=str,   help='action for each mutation caller\' run script', default='echo')
     parser.add_argument('-somaticAct', '--somaticseq-action',    type=str,   help='action for each somaticseq.cmd',               default='echo')
-    parser.add_argument('-tech',       '--container-tech',       type=str,   help='docker or singularity',                        default='docker')
+    parser.add_argument('-tech',       '--container-tech',       type=str,   help='docker or singularity', default='docker', choices=('ada', 'xgboost', 'ada.R') )
     parser.add_argument('-dockerargs', '--extra-docker-options', type=str,   help='extra arguments to pass onto docker run',      default='')
     
     # RUN TOOLS
