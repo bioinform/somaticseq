@@ -26,12 +26,14 @@ cd somaticseq
 
 ## To install the bioconda version
 SomaticSeq can also be found on [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/version.svg)](https://anaconda.org/bioconda/somaticseq). To [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/somaticseq/README.html), which also automatically installs a bunch of 3rd-party somatic mutation callers:
-`conda install -c bioconda somaticseq`. To create a conda environment (say, name it `somaticseqConda`) and install, the command would be: `conda create --name somaticSeqConda somaticseq`.
+`conda install -c bioconda somaticseq`. 
+
+To create a conda environment (say, name it `somaticseqConda`) with somaticseq, the command would be: `conda create --name somaticSeqConda somaticseq`.
 
 ## Example commands
 * At minimum, given the results of the individual mutation caller(s), SomaticSeq will extract sequencing features for the combined call set. Required inputs are `--output-directory`, `--genome-reference`, `paired|single`, `--tumor-bam-file`, and `--normal-bam-file`. Everything else is optional.
 * The following four files will be created into the output directory:
-  * *Consensus.sSNV.vcf*, *Consensus.sINDEL.vcf*, *Ensemble.sSNV.tsv*, and *Ensemble.sINDEL.tsv*.
+  * `Consensus.sSNV.vcf`, `Consensus.sINDEL.vcf`, `Ensemble.sSNV.tsv`, and `Ensemble.sINDEL.tsv`.
 
 * If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [dockerized somatic mutation scripts](utilities/dockered_pipelines).
 
@@ -71,7 +73,7 @@ Additional parameters to be specified **before** `paired` option to invoke train
 * `--truth-snv`:        if you have a ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL
 
-Additional input files to be specified **before** `paired` option invoke prediction mode (to use classifiers to score variants). Four additional files will be created, i.e., *SSeq.Classified.sSNV.vcf*, *SSeq.Classified.sSNV.tsv*,  *SSeq.Classified.sINDEL.vcf*, and *SSeq.Classified.sINDEL.tsv*.
+Additional input files to be specified **before** `paired` option invoke prediction mode (to use classifiers to score variants). Four additional files will be created, i.e., `SSeq.Classified.sSNV.vcf`, `SSeq.Classified.sSNV.tsv`,  `SSeq.Classified.sINDEL.vcf`, and `SSeq.Classified.sINDEL.tsv`.
 * `--classifier-snv`:   classifier (.RData file) previously built for SNV
 * `--classifier-indel`: classifier (.RData file) previously built for INDEL
 
