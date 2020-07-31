@@ -428,11 +428,11 @@ def merge_results(input_parameters, tech='docker'):
             # If asked to create classifier, do it here when TSV files are combined
             if input_parameters['train_somaticseq'] and input_parameters['truth_snv']:
                 out.write(f'{container_line} \\\n' )
-                out.write( 'somatic_xgboost.py train -tsvs {}/Ensemble.sSNV.tsv\n\n'.format(mounted_outdir) )
+                out.write( 'somatic_xgboost.py train -threads {} -tsvs {}/Ensemble.sSNV.tsv\n\n'.format(input_parameters['threads'], mounted_outdir) )
 
             if input_parameters['train_somaticseq'] and input_parameters['truth_indel']:
                 out.write(f'{container_line} \\\n' )
-                out.write( 'somatic_xgboost.py train -tsvs {}/Ensemble.sINDEL.tsv\n\n'.format(mounted_outdir) )
+                out.write( 'somatic_xgboost.py train -threads {} -tsvs {}/Ensemble.sINDEL.tsv\n\n'.format(input_parameters['threads'], mounted_outdir) )
 
 
             # If in prediction mode, combine SSeq.Classified.sSNV.vcf, else Consensus.sSNV.vcf
@@ -510,6 +510,9 @@ def merge_results(input_parameters, tech='docker'):
 
 
 
+def workflow( list_of_list, threads=1 ):
+    
+    return True
 
 
 ##########################################################

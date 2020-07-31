@@ -7,7 +7,7 @@ from somaticseq._version import __version__ as VERSION
 ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 
 
-DEFAULT_PARAMS = {'jsm2_image    '          : 'lethalfang/jointsnvmix2:0.7.5',
+DEFAULT_PARAMS = {'jsm2_image'              : 'lethalfang/jointsnvmix2:0.7.5',
                   'MEM'                     : '8G',
                   'threads'                 : 1,
                   'normal_bam'              : None,
