@@ -375,4 +375,4 @@ if __name__ == '__main__':
     if args.run_workflow_locally:
         import utilities.dockered_pipelines.run_workflows as run_workflows
         run_workflows.run_workflows( (workflow_tasks['caller_jobs'], workflow_tasks['somaticseq_jobs'], workflow_tasks['merging_jobs']), args.threads)
-        logger.info( 'SomaticSeq Workflow Done. Check your results.' )
+        logger.info( 'SomaticSeq Workflow Done. Check your results. You may remove the {} sub_directories.'.format(args.threads) )
