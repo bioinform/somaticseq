@@ -509,12 +509,6 @@ def merge_results(input_parameters, tech='docker'):
 
 
 
-
-def workflow( list_of_list, threads=1 ):
-    
-    return True
-
-
 ##########################################################
 
 if __name__ == '__main__':
