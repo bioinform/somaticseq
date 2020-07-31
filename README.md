@@ -96,7 +96,7 @@ Most SomaticSeq modules can be run on their own. Some may be useful in debugging
 
 ### To run somatic mutation callers and then SomaticSeq
 We have created scripts that run all the dockerized somatic mutation callers and then SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines).
-All you need is [docker](https://www.docker.com/).
+You need [docker](https://www.docker.com/) to run these workflows.
 
 ### To create training data to create SomaticSeq classifiers
 We have also dockerized pipelines for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator).

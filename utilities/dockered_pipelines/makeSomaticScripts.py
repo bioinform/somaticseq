@@ -80,6 +80,8 @@ def run():
     
     parser_paired.add_argument('-nt',        '--threads',        type=int, help='Split the input regions into this many threads', default=1)
     
+    parser_paired.add_argument('--run-workflow-locally',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
+    
     parser_paired.set_defaults(which='paired')
 
 
@@ -217,39 +219,32 @@ if __name__ == '__main__':
                 input_arguments['script'] = 'mutect2.{}.cmd'.format(ts)
                 mutect2_job = MuTect2.tumor_normal( input_arguments, args.container_tech )
                 workflow_tasks['caller_jobs'].append(mutect2_job)
-                
-            if workflowArguments['run_varscan2']:
-                import utilities.dockered_pipelines.somatic_mutations.VarScan2 as VarScan2
+
+
+            if workflowArguments['run_scalpel']:
+                import utilities.dockered_pipelines.somatic_mutations.Scalpel as Scalpel
                 input_arguments = copy(perThreadParameter)
-                input_arguments['script'] = 'varscan2.{}.cmd'.format(ts)
-                varscan2_job = VarScan2.tumor_normal( input_arguments, args.container_tech )
-                workflow_tasks['caller_jobs'].append(varscan2_job)
-                
+                input_arguments['script'] = 'scalpel.{}.cmd'.format(ts)
+                scalpel_job = Scalpel.tumor_normal( input_arguments, args.container_tech )
+                workflow_tasks['caller_jobs'].append(scalpel_job)
+
+
             if workflowArguments['run_vardict']:
                 import utilities.dockered_pipelines.somatic_mutations.VarDict as VarDict
                 input_arguments = copy(perThreadParameter)
                 input_arguments['script'] = 'vardict.{}.cmd'.format(ts)
                 vardict_job = VarDict.tumor_normal( input_arguments, args.container_tech )
                 workflow_tasks['caller_jobs'].append(vardict_job)
-                
-            if workflowArguments['run_muse']:
-                import utilities.dockered_pipelines.somatic_mutations.MuSE as MuSE
-                
+
+
+            if workflowArguments['run_varscan2']:
+                import utilities.dockered_pipelines.somatic_mutations.VarScan2 as VarScan2
                 input_arguments = copy(perThreadParameter)
-                input_arguments['script'] = 'muse.{}.cmd'.format(ts)
-                
-                if input_arguments['dbsnp_vcf'].endswith('.vcf.gz'):
-                    input_arguments['dbsnp_gz'] = input_arguments['dbsnp_vcf']
-                elif input_arguments['dbsnp_vcf'].endswith('.vcf'):
-                    input_arguments['dbsnp_gz'] = input_arguments['dbsnp_vcf']+'.gz'
-                    assert os.path.exists(input_arguments['dbsnp_gz'])
-                    assert os.path.exists(input_arguments['dbsnp_gz']+'.tbi')
-                else:
-                    raise Exception('MuSE has no properly bgzipped dbsnp file.')
-            
-                muse_job = MuSE.tumor_normal( input_arguments, args.container_tech )
-                workflow_tasks['caller_jobs'].append(muse_job)
-    
+                input_arguments['script'] = 'varscan2.{}.cmd'.format(ts)
+                varscan2_job = VarScan2.tumor_normal( input_arguments, args.container_tech )
+                workflow_tasks['caller_jobs'].append(varscan2_job)
+
+
             if workflowArguments['run_lofreq']:
                 import utilities.dockered_pipelines.somatic_mutations.LoFreq as LoFreq
                 
@@ -268,13 +263,25 @@ if __name__ == '__main__':
                 lofreq_job = LoFreq.tumor_normal( input_arguments, args.container_tech )
                 workflow_tasks['caller_jobs'].append(lofreq_job)
 
-    
-            if workflowArguments['run_scalpel']:
-                import utilities.dockered_pipelines.somatic_mutations.Scalpel as Scalpel
+
+            if workflowArguments['run_muse']:
+                import utilities.dockered_pipelines.somatic_mutations.MuSE as MuSE
+                
                 input_arguments = copy(perThreadParameter)
-                input_arguments['script'] = 'scalpel.{}.cmd'.format(ts)
-                scalpel_job = Scalpel.tumor_normal( input_arguments, args.container_tech )
-                workflow_tasks['caller_jobs'].append(scalpel_job)
+                input_arguments['script'] = 'muse.{}.cmd'.format(ts)
+                
+                if input_arguments['dbsnp_vcf'].endswith('.vcf.gz'):
+                    input_arguments['dbsnp_gz'] = input_arguments['dbsnp_vcf']
+                elif input_arguments['dbsnp_vcf'].endswith('.vcf'):
+                    input_arguments['dbsnp_gz'] = input_arguments['dbsnp_vcf']+'.gz'
+                    assert os.path.exists(input_arguments['dbsnp_gz'])
+                    assert os.path.exists(input_arguments['dbsnp_gz']+'.tbi')
+                else:
+                    raise Exception('MuSE has no properly bgzipped dbsnp file.')
+            
+                muse_job = MuSE.tumor_normal( input_arguments, args.container_tech )
+                workflow_tasks['caller_jobs'].append(muse_job)
+    
     
             if workflowArguments['run_strelka2']:
                 import utilities.dockered_pipelines.somatic_mutations.Strelka2 as Strelka2
@@ -282,13 +289,13 @@ if __name__ == '__main__':
                 input_arguments['script'] = 'strelka.{}.cmd'.format(ts)
                 strelka2_job = Strelka2.tumor_normal( input_arguments, args.container_tech )
                 workflow_tasks['caller_jobs'].append(strelka2_job)
-    
+
+
             if workflowArguments['run_somaticseq']:
                 input_arguments = copy(perThreadParameter)
                 input_arguments['script'] = 'somaticSeq.{}.cmd'.format(ts)
                 somaticseq_job = tumor_normal.run_SomaticSeq( input_arguments, args.container_tech )
                 workflow_tasks['somaticseq_jobs'].append(somaticseq_job)
-
 
 
     ################# TUMOR-ONLY RUNS #################
@@ -350,7 +357,9 @@ if __name__ == '__main__':
             if workflowArguments['run_somaticseq']:
                 tumor_only.run_SomaticSeq( perThreadParameter )
 
-    ### Log the scripts created ###
+
+
+    ##### Log the scripts created #####
     for script_type in workflow_tasks:
         
         line_i = '{} {} scripts created: '.format( len(workflow_tasks[script_type]), script_type )
@@ -361,3 +370,9 @@ if __name__ == '__main__':
             line_j = '{}) {}'.format(i, script_i)
             logger.info(line_j)
             i += 1
+
+    ########## Execute the workflow ##########
+    if args.run_workflow_locally:
+        import utilities.dockered_pipelines.run_workflows as run_workflows
+        run_workflows.run_workflows( (workflow_tasks['caller_jobs'], workflow_tasks['somaticseq_jobs'], workflow_tasks['merging_jobs']), args.threads)
+        logger.info( 'SomaticSeq Workflow Done. Check your results.' )

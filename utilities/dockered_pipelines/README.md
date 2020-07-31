@@ -4,7 +4,7 @@ This describes a simple way to generate run scripts for each mutation caller we 
 
 ## Requirement
 * Have internet connection and docker daemon. Be able to pull and run docker images from Docker Hub.
-* **Highly recommended**: Have cluster management system with valid `qsub` command, such as Sun Grid Engine.
+* **Optional**: Have cluster management system with valid `qsub` command, such as Sun Grid Engine.
 * The documentation for those scripts can also be found in Section 4 of the [User's Manual](../../docs/Manual.pdf "Documentation").
 
 ## Example Commands
@@ -16,9 +16,13 @@ The following command will create scripts for MuTect2, SomaticSniper, VarDict, M
 Each caller (with the exception of SomaticSniper here) will be split into 12 threads based on equal number of base pairs interrogated in each thread. 
 Then, it will create the SomaticSeq script that merges those 7 callers. This command defaults to majority-vote consensus.
 
-Since it's `--aciton echo` (default), it will just echo the mutation caller scripts locations, but these scripts will **not** be run.
-If you do `--action qsub` instead, then those mutation caller scripts will be qsub'ed via a common cluster management system. 
-You'll still need to mantually run/submit the SomaticSeq script after all the caller jobs are done.
+Since it's `--aciton echo` (default), the path of the scripts will be echo'ed onto the stdout.
+
+Then, these scripts will be executed locally using 12 threads (due to `--run-workflow-locally`) in the following orders:
+
+1) All the individual callers will be executed 12 at a time (due to `--threads 12`). After they are all complete,
+2) SomaticSeq will be run on each of the 12 threads, and then
+3) Merge results from the 12 indepedent threads (12 equal sized regions).
 
 ```
 makeSomaticScripts.py paired \
@@ -30,8 +34,14 @@ makeSomaticScripts.py paired \
 --action           echo \
 --threads          12 \
 --container-tech   docker \
---run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq
+--run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq \
+--run-workflow-locally
 ```
+
+For the time being, `--run-workflow-locally` is only supported for tumor-normal workflow.
+
+If you do not invoke `--run-workflow-locally`, the scripts will be created, but they will not be run. You can either run them manually (e.g., `bash script.cmd`), or submit them in a HPC queue (e.g., `qsub script.cmd`).
+
 
 * To run SomaticSeq in prediction mode, you need to specify classifiers, e.g.,
 
@@ -39,8 +49,6 @@ makeSomaticScripts.py paired \
 --snv-classifier   /PATH/TO/snvClassifier.RData \
 --indel-classifier /PATH/TO/indelClassifier.RData
 ```
-
-* As things are currently set up, training mode is best run seperately because we don't have a workflow engine to manage and then merge the result of each thread. You may invoke ```--train-somaticseq``` here, but SomaticSeq will train on each thread. Now if you use just a single thread (e.g., ```--threads 1``` is the default), you may train it just fine.
 
 ### Tumor-only Workflows (i.e., no matched normal)
 Our tumor-only workflows are not as well validated as the tumor-normal workflows, but SomaticSeq does support it.
