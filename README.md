@@ -8,11 +8,11 @@
 ## Requirements
 This [dockerfile](utilities/Dockerfiles/somaticseq.base-1.3.dockerfile) reveals the dependencies
 * Python 3, plus pysam, numpy, scipy, pandas, and xgboost libraries.
-* R, plus [ada](https://cran.r-project.org/package=ada): required for AdaBoost. (XGBoost is implemented in python).
 * [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing is invoked, and/or when any bed files are used as input files.
+* At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus. SomaticSeq relies on 3rd-party caller(s) to generate mutation candidates.
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
-* At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus.
-* To install SomaticSeq, `cd somaticseq` and then run `./setup.py install`. You'll need to install R and its libraries separately.
+* Optional: R and [ada](https://cran.r-project.org/package=ada): required for AdaBoost. (XGBoost is implemented in python).
+* To install SomaticSeq, `cd somaticseq` and then run `./setup.py install`. You'll need to install R and ada package separately.
 
 ## To install from github source with conda
 ```
@@ -35,7 +35,7 @@ To create a conda environment (say, name it `somaticseqConda`) with somaticseq, 
 * The following four files will be created into the output directory:
   * `Consensus.sSNV.vcf`, `Consensus.sINDEL.vcf`, `Ensemble.sSNV.tsv`, and `Ensemble.sINDEL.tsv`.
 
-* If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [dockerized somatic mutation scripts](utilities/dockered_pipelines).
+* If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [dockerized somatic mutation workflow](utilities/dockered_pipelines).
 
 ```
 # Merge caller results and extract SomaticSeq features
