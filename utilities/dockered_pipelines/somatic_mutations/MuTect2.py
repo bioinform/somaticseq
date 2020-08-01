@@ -89,7 +89,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
         
         out.write( '--normal-sample ${normal_name} \\\n' )
         out.write( '--tumor-sample ${tumor_name} \\\n' )
-        out.write( '--native-pair-hmm-threads {} \\\n'.format( input_parameters['threads'] ))
+        out.write( '--native-pair-hmm-threads {} \\\n'.format( 1 ))
         
         if input_parameters['mutect2_arguments']:
             out.write( '{} \\\n'.format(input_parameters['mutect2_arguments']) )
