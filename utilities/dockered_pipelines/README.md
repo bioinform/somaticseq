@@ -43,12 +43,12 @@ If you do not invoke `--run-workflow-locally`, all the scripts will be created, 
 * To run SomaticSeq in prediction mode, you need to specify classifiers, e.g.,
 
 ```
---snv-classifier   /PATH/TO/snvClassifier.RData --indel-classifier /PATH/TO/indelClassifier.RData
+--snv-classifier /PATH/TO/snv.xgboost.model --indel-classifier /PATH/TO/indel.xgboost.model
 ```
 
-* To run SomaticSeq in training mode (include `--inclusion-region high_confidence.bed` if the truth files are only confident in certain genomic regions).
+* To run SomaticSeq in training mode (include `--inclusion-region /PATH/TO/high_confidence.bed` if the truth files are only confident in certain genomic regions).
 ```
---train-somaticseq --truth-snv all_truth_snvs.vcf --truth-indel all_true_indels.vcf
+--train-somaticseq --truth-snv /PATH/TO/all_truth_snvs.vcf --truth-indel /PATH/TO/all_true_indels.vcf
 ```
 
 
