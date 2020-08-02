@@ -10,9 +10,6 @@ ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 DEFAULT_PARAMS = {'varscan2_image'          : 'djordjeklisic/sbg-varscan2:v1',
                   'MEM'                     : '4G',
                   'threads'                 : 1,
-                  'normal_bam'              : None,
-                  'tumor_bam'               : None,
-                  'genome_reference'        : None,
                   'inclusion_region'        : None,
                   'output_directory'        : os.curdir,
                   'outfile'                 : 'VarScan2.vcf',
@@ -69,7 +66,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
     else:
         selector_text = ''
 
-
     if input_parameters['minimum_VAF']:
         minVAF = input_parameters['minimum_VAF']
 
@@ -124,6 +120,91 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
         
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
     
+        
+    # "Run" the script that was generated
+    command_item = (input_parameters['action'], outfile)
+    returnCode   = subprocess.call( command_item )
+
+    return outfile
+
+
+
+
+
+def tumor_only(input_parameters, tech='docker'):
+    
+    for param_i in DEFAULT_PARAMS:
+        if param_i not in input_parameters:
+            input_parameters[param_i] = DEFAULT_PARAMS[param_i]
+
+    # The following are required:
+    assert os.path.exists( input_parameters['bam'] )
+    assert os.path.exists( input_parameters['genome_reference'] )
+    
+    logdir  = os.path.join( input_parameters['output_directory'], 'logs' )
+    outfile = os.path.join( logdir, input_parameters['script'] )
+
+    all_paths = []
+    for path_i in input_parameters['bam'], input_parameters['genome_reference'], input_parameters['output_directory'], input_parameters['inclusion_region']:
+        if path_i:
+            all_paths.append( path_i )
+
+    container_line, fileDict = container.container_params( input_parameters['varscan2_image'], tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
+    mpileine_line,  plDict   = container.container_params( 'lethalfang/samtools:1.7',          tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
+    
+    
+    # Mounted paths for all the input files and output directory:
+    mounted_genome_reference = fileDict[ input_parameters['genome_reference'] ]['mount_path']
+    mounted_tumor_bam        = fileDict[ input_parameters['bam'] ]['mount_path']
+    mounted_outdir           = fileDict[ input_parameters['output_directory'] ]['mount_path']
+    
+    # Mounted paths for mpileup dockers
+    pl_genome_reference = plDict[ input_parameters['genome_reference'] ]['mount_path']
+    pl_tumor_bam        = plDict[ input_parameters['bam'] ]['mount_path']
+    pl_outdir           = plDict[ input_parameters['output_directory'] ]['mount_path']
+
+
+    if input_parameters['inclusion_region']:
+        selector_text = '-l {}'.format( plDict[ input_parameters['inclusion_region'] ]['mount_path'] )
+    else:
+        selector_text = ''
+
+
+    if input_parameters['minimum_VAF']:
+        minVAF = input_parameters['minimum_VAF']
+
+    outname = re.sub(r'\.[a-zA-Z]+$', '', input_parameters['outfile'] )
+
+
+    with open(outfile, 'w') as out:
+        
+        out.write( "#!/bin/bash\n\n" )
+        
+        out.write(f'#$ -o {logdir}\n' )
+        out.write(f'#$ -e {logdir}\n' )
+        out.write( '#$ -S /bin/bash\n' )
+        out.write( '#$ -l h_vmem={}\n'.format( input_parameters['MEM'] ) )
+        out.write( 'set -e\n\n' )
+        
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
+
+        out.write(f'{mpileine_line} bash -c \\\n' )
+        out.write( '"samtools mpileup \\\n' )
+        out.write( '-B -q {minMQ} -Q {minBQ} {extra_pileup_arguments} {selector_text} -f \\\n'.format(minMQ=input_parameters['min_MQ'], minBQ=input_parameters['min_BQ'], extra_pileup_arguments=input_parameters['varscan_pileup_arguments'], selector_text=selector_text) )
+        out.write( '{} \\\n'.format(pl_genome_reference) )
+        out.write( '{} \\\n'.format(pl_tumor_bam) )
+        out.write( '> {}/tumor.pileup"\n\n'.format(pl_outdir))
+
+
+        out.write(f'{container_line} bash -c \\\n' )
+        out.write( '"java -Xmx{} -jar /VarScan2.3.7.jar mpileup2cns \\\n'.format(input_parameters['MEM']) )
+        out.write( '{}/tumor.pileup \\\n'.format(mounted_outdir) )
+        out.write( '--variants {} --min-var-freq {} --output-vcf 1 \\\n'.format(input_parameters['varscan_arguments'], input_parameters['minimum_VAF']) )
+        out.write( '> {}/{}"\n\n'.format( mounted_outdir, input_parameters['outfile'] ) )
+
+        out.write( 'rm {}/tumor.pileup\n\n'.format(input_parameters['output_directory']) )
+        
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
         
     # "Run" the script that was generated
     command_item = (input_parameters['action'], outfile)

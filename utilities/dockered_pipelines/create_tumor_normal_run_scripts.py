@@ -9,10 +9,6 @@ import utilities.split_Bed_into_equal_regions as split_bed
 import utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-# MY_DIR = os.path.dirname(os.path.realpath(__file__))
-# RepoROOT = os.path.join(MY_DIR, os.pardir, os.pardir)
-# sys.path.append( RepoROOT )
-
 
 ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 
@@ -106,7 +102,7 @@ def run():
 
 def run_SomaticSeq(input_parameters, tech='docker'):
 
-    DEFAULT_PARAMS = {'MEM': '4G', 'normal_bam': None, 'tumor_bam': None, 'genome_reference': None, 'inclusion_region': None, 'exclusion_region': None, 'output_directory' : os.curdir, 'somaticseq_directory': 'SomaticSeq', 'action': 'echo','script': 'somaticseq.{}.cmd'.format(ts), 'dbsnp' : None, 'cosmic': None, 'snv_classifier': None, 'indel_classifier': None, 'truth_snv': None, 'truth_indel': None, 'somaticseq_arguments': '', 'train_somaticseq': False, 'somaticseq_algorithm': 'xgboost'}
+    DEFAULT_PARAMS = {'MEM': '4G', 'genome_reference': None, 'inclusion_region': None, 'exclusion_region': None, 'output_directory' : os.curdir, 'somaticseq_directory': 'SomaticSeq', 'action': 'echo', 'dbsnp' : None, 'cosmic': None, 'snv_classifier': None, 'indel_classifier': None, 'truth_snv': None, 'truth_indel': None, 'somaticseq_arguments': '', 'train_somaticseq': False, 'somaticseq_algorithm': 'xgboost'}
     
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
@@ -249,7 +245,7 @@ def run_SomaticSeq(input_parameters, tech='docker'):
 
 def merge_results(input_parameters, tech='docker'):
 
-    DEFAULT_PARAMS = {'MEM': '4G', 'genome_reference': None, 'output_directory' : os.curdir, 'somaticseq_directory': 'SomaticSeq', 'action': 'echo','script': 'mergeResults.{}.cmd'.format(ts), 'snv_classifier': None, 'indel_classifier': None, 'truth_snv': None, 'truth_indel': None, 'somaticseq_arguments': '', 'train_somaticseq': False, 'somaticseq_algorithm': 'xgboost'}
+    DEFAULT_PARAMS = {'MEM': '4G', 'output_directory': os.curdir, 'somaticseq_directory': 'SomaticSeq', 'action': 'echo', 'script': 'mergeResults.{}.cmd'.format(ts), 'snv_classifier': None, 'indel_classifier': None, 'truth_snv': None, 'truth_indel': None, 'somaticseq_arguments': '', 'train_somaticseq': False, 'somaticseq_algorithm': 'xgboost'}
     
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
@@ -268,7 +264,7 @@ def merge_results(input_parameters, tech='docker'):
 
     prjdir  = input_parameters['output_directory']
     logdir  = os.path.join(prjdir, 'logs')
-    outfile = os.path.join(logdir, 'mergeResults.{}.cmd'.format(ts))
+    outfile = os.path.join(logdir, input_parameters['script'] )
 
     mutect2       = mounted_outdir + '/{}/MuTect2.vcf'
     varscan_snv   = mounted_outdir + '/{}/VarScan2.snp.vcf'
@@ -501,6 +497,8 @@ def merge_results(input_parameters, tech='docker'):
                     
                 out.write( '\\\n' )
                 out.write('-outfile {}/Consensus.sINDEL.vcf\n\n'.format(mounted_outdir) )
+
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
 
     command_item = (input_parameters['action'], outfile)
     returnCode   = subprocess.call( command_item )

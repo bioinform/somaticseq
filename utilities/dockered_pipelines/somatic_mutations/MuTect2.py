@@ -154,10 +154,10 @@ def tumor_only(input_parameters, tech='docker'):
 
         out.write( "#!/bin/bash\n\n" )
         
-        out.write( '#$ -o {LOGDIR}\n'.format(LOGDIR=logdir) )
-        out.write( '#$ -e {LOGDIR}\n'.format(LOGDIR=logdir) )
+        out.write(f'#$ -o {logdir}\n' )
+        out.write(f'#$ -e {logdir}\n' )
         out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}G\n'.format(mem) )
+        out.write( '#$ -l h_vmem={}\n'.format( input_parameters['MEM'] ) )
         out.write( 'set -e\n\n' )
         
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
@@ -175,7 +175,7 @@ def tumor_only(input_parameters, tech='docker'):
         
         out.write( '--input {} \\\n'.format(mounted_tumor_bam) )
         out.write( '--tumor-sample ${tumor_name} \\\n' )
-        out.write( '--native-pair-hmm-threads {} \\\n'.format( input_parameters['threads'] ))
+        out.write( '--native-pair-hmm-threads {} \\\n'.format( 1 ))
         
         if input_parameters['mutect2_arguments']:
             out.write( '{} \\\n'.format(input_parameters['mutect2_arguments']) )

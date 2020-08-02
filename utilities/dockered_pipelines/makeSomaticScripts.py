@@ -97,9 +97,11 @@ def run():
     parser_single.add_argument('-exclude',    '--exclusion-region',     type=str,   help='exclusion bed file',  )
     parser_single.add_argument('-dbsnp',      '--dbsnp-vcf',            type=str,   help='dbSNP vcf file, also requires .idx, .gz, and .gz.tbi files', required=True)
     parser_single.add_argument('-cosmic',     '--cosmic-vcf',           type=str,   help='cosmic vcf file')
-    parser_single.add_argument('-minVAF',     '--minimum-VAF',          type=float, help='minimum VAF to look for',)
+    parser_single.add_argument('-minVAF',     '--minimum-VAF',          type=float, help='minimum VAF to look for', default=0.05)
     parser_single.add_argument('-action',     '--action',               type=str,   help='action for each mutation caller\' run script', default='echo')
     parser_single.add_argument('-somaticAct', '--somaticseq-action',    type=str,   help='action for each somaticseq.cmd',               default='echo')
+    parser_single.add_argument('-tech',       '--container-tech',       type=str,   help='docker or singularity',                        default='docker')
+    parser_single.add_argument('-dockerargs', '--extra-docker-options', type=str,   help='extra arguments to pass onto docker run',      default='')
 
     parser_single.add_argument('-mutect2',    '--run-mutect2',       action='store_true', help='Run MuTect2')
     parser_single.add_argument('-varscan2',   '--run-varscan2',      action='store_true', help='Run VarScan2')
@@ -132,6 +134,8 @@ def run():
 
     parser_single.add_argument('-nt',        '--threads',        type=int, help='Split the input regions into this many threads', default=1)
 
+    parser_single.add_argument('--run-workflow-locally',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
+
     parser_single.set_defaults(which='single')
     
     # Parse the arguments:
@@ -151,7 +155,7 @@ if __name__ == '__main__':
     args, workflowArguments = run()
     logger.info( 'Create SomaticSeq Workflow Scripts: ' + ', '.join( [ '{}={}'.format(i, vars(args)[i])  for i in vars(args) ] ) )
     
-    ts             = re.sub(r'[:-]', '.', datetime.now().isoformat() )
+    ts = re.sub(r'[:-]', '.', datetime.now().isoformat(sep='.', timespec='milliseconds') )
     workflow_tasks = {'caller_jobs':[], 'somaticseq_jobs': [], 'merging_jobs': [] }
     
     ################# TUMOR-NORMAL RUNS #################
@@ -184,6 +188,7 @@ if __name__ == '__main__':
             workflow_tasks['caller_jobs'].append(somaticsniper_job)
         
         
+        # Parallelizables
         to_create_merging_script = True
         for thread_i in range(1, workflowArguments['threads']+1):
             
@@ -312,6 +317,8 @@ if __name__ == '__main__':
     
         os.makedirs(workflowArguments['output_directory'] + os.sep + 'logs', exist_ok=True)
         
+        # Parallelizables
+        to_create_merging_script = True
         for thread_i in range(1, workflowArguments['threads']+1):
             
             if workflowArguments['threads'] > 1:
@@ -328,34 +335,85 @@ if __name__ == '__main__':
                 move('{}/{}.bed'.format(workflowArguments['output_directory'], thread_i), '{}/{}.bed'.format(perThreadParameter['output_directory'], thread_i) )
                 
                 # Results combiner
-                tumor_only.merge_results(workflowArguments)
+                # Results combiner
+                if to_create_merging_script:
+                    input_arguments = copy(workflowArguments)
+                    input_arguments['script'] = 'mergeResults.{}.cmd'.format(ts)
+                    merging_job = tumor_only.merge_results(input_arguments, args.container_tech)
+                    workflow_tasks['merging_jobs'].append(merging_job)
+                    to_create_merging_script = False
 
 
             else:
                 perThreadParameter = copy(workflowArguments)
                 perThreadParameter['inclusion_region'] = bed_file
             
+            
             # Invoke parallelizable callers one by one:
             if workflowArguments['run_mutect2']:
-                tumor_only.run_MuTect2( perThreadParameter )
-                
-            if workflowArguments['run_varscan2']:
-                tumor_only.run_VarScan2( perThreadParameter )
-                
-            if workflowArguments['run_vardict']:
-                tumor_only.run_VarDict( perThreadParameter )
-    
-            if workflowArguments['run_lofreq']:
-                tumor_only.run_LoFreq( perThreadParameter )
-    
+                import utilities.dockered_pipelines.somatic_mutations.MuTect2 as MuTect2
+                input_arguments = copy(perThreadParameter)
+                input_arguments['script'] = 'mutect2.{}.cmd'.format(ts)
+                mutect2_job = MuTect2.tumor_only( input_arguments, args.container_tech )
+                workflow_tasks['caller_jobs'].append(mutect2_job)
+
+
             if workflowArguments['run_scalpel']:
-                tumor_only.run_Scalpel( perThreadParameter )
+                import utilities.dockered_pipelines.somatic_mutations.Scalpel as Scalpel
+                input_arguments = copy(perThreadParameter)
+                input_arguments['script'] = 'scalpel.{}.cmd'.format(ts)
+                scalpel_job = Scalpel.tumor_only( input_arguments, args.container_tech )
+                workflow_tasks['caller_jobs'].append(scalpel_job)
+
+
+            if workflowArguments['run_vardict']:
+                import utilities.dockered_pipelines.somatic_mutations.VarDict as VarDict
+                input_arguments = copy(perThreadParameter)
+                input_arguments['script'] = 'vardict.{}.cmd'.format(ts)
+                vardict_job = VarDict.tumor_only( input_arguments, args.container_tech )
+                workflow_tasks['caller_jobs'].append(vardict_job)
+
+
+            if workflowArguments['run_varscan2']:
+                import utilities.dockered_pipelines.somatic_mutations.VarScan2 as VarScan2
+                input_arguments = copy(perThreadParameter)
+                input_arguments['script'] = 'varscan2.{}.cmd'.format(ts)
+                varscan2_job = VarScan2.tumor_only( input_arguments, args.container_tech )
+                workflow_tasks['caller_jobs'].append(varscan2_job)
+
+
+            if workflowArguments['run_lofreq']:
+                import utilities.dockered_pipelines.somatic_mutations.LoFreq as LoFreq
+                
+                input_arguments = copy(perThreadParameter)
+                input_arguments['script'] = 'lofreq.{}.cmd'.format(ts)
+                
+                if input_arguments['dbsnp_vcf'].endswith('.vcf.gz'):
+                    input_arguments['dbsnp_gz'] = input_arguments['dbsnp_vcf']
+                elif input_arguments['dbsnp_vcf'].endswith('.vcf'):
+                    input_arguments['dbsnp_gz'] = input_arguments['dbsnp_vcf']+'.gz'
+                    assert os.path.exists(input_arguments['dbsnp_gz'])
+                    assert os.path.exists(input_arguments['dbsnp_gz']+'.tbi')
+                else:
+                    raise Exception('LoFreq has no properly bgzipped dbsnp file.')
+    
+                lofreq_job = LoFreq.tumor_only( input_arguments, args.container_tech )
+                workflow_tasks['caller_jobs'].append(lofreq_job)
+    
     
             if workflowArguments['run_strelka2']:
-                tumor_only.run_Strelka2( perThreadParameter )
-    
+                import utilities.dockered_pipelines.somatic_mutations.Strelka2 as Strelka2
+                input_arguments = copy(perThreadParameter)
+                input_arguments['script'] = 'strelka.{}.cmd'.format(ts)
+                strelka2_job = Strelka2.tumor_only( input_arguments, args.container_tech )
+                workflow_tasks['caller_jobs'].append(strelka2_job)
+
+
             if workflowArguments['run_somaticseq']:
-                tumor_only.run_SomaticSeq( perThreadParameter )
+                input_arguments = copy(perThreadParameter)
+                input_arguments['script'] = 'somaticSeq.{}.cmd'.format(ts)
+                somaticseq_job = tumor_only.run_SomaticSeq( input_arguments, args.container_tech )
+                workflow_tasks['somaticseq_jobs'].append(somaticseq_job)
 
 
 
