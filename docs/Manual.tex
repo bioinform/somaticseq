@@ -297,7 +297,7 @@ The parameters of \emph{ensembleOutPrefix}, \emph{consensusOutPrefix}, and \emph
 
 We'll briefly describe the procedures of runPaired here. First of all, the \emph{somaticseq/combine\_callers.py} module (combinePaired function) will combine all the input VCF files into two minimal VCF files, one for SNVs and one for INDELs, that include each unique variant call. These VCF files serve as input files for the next steps, where features are extracted from each of the variant and then converted to the SomaticSeq TSV files by the \emph{somaticseq/somatic\_vcf2tsv.py} module (Sec. \ref{module:vcf2tsv}).
 
-If training mode was invoked (Sec. \ref{somaticseq_train}), SomaticSeq classifiers would be built (Sec. \ref{module:r_train}). If prediction mode was invoked, an additional TSV file with prediction scores will be created (Sec. \ref{module:r_predict}). 
+If training mode was invoked (Sec. \ref{somaticseq_train}), SomaticSeq classifiers would be built (Sec. \ref{module:training}). If prediction mode was invoked, an additional TSV file with prediction scores will be created (Sec. \ref{module:prediction}). 
 
 Finally, the TSV files will be converted to SomaticSeq VCF file output by somaticseq/SSeq\_tsv2vcf.py (Sec. \ref{module:vcf2tsv}). 
 
@@ -415,11 +415,11 @@ somaticseq/SSeq_tsv2vcf.py -h
 
 
 
-\subsection{R scripts for machine learning} \label{module:r_scripts}
+\subsection{Machine learning modules} \label{module:machine_learning}
 
 The training and prediction scripts are written in R.
 
-\subsubsection{SomaticSeq Training} \label{module:r_train}
+\subsubsection{SomaticSeq Training} \label{module:training}
 
 ada\_model\_builder\_ntChange.R or somatic\_xgboost.py is the script that is called during SomaticSeq pipeline to make classifiers. You can also run them indepedently with labeled Ensemble.sSNV.tsv and Ensemble.sINDEL.tsv files. The command for ada is:
 
@@ -438,7 +438,7 @@ somatic_xgboost.py train -tsv Ensemble.sSNV.tsv -threads 4
 
 
 
-\subsubsection{Prediction with trained classifiers} \label{module:r_predict}
+\subsubsection{Prediction with trained classifiers} \label{module:prediction}
 
 ada\_model\_predictor.R or somatic\_xgboost.py is the prediction script. To run it independently, the command for ada is
       
@@ -512,7 +512,6 @@ For your convenience, we have created a couple of scripts that can generate run 
 
   \begin{itemize}
     \item Have internet connection, and able to pull and run docker images from docker.io
-    \item Have cluster management system such as Sun Grid Engine, so that the "qsub" command is valid
   \end{itemize}
 
 
@@ -534,9 +533,8 @@ makeSomaticScripts.py paired \
 --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
 --output-directory /ABSOLUTE/PATH/TO/RESULTS \
 --dbsnp-vcf        /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
---action           echo \
 --threads          12 \
---run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq
+--run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq --run-workflow-locally
 \end{lstlisting}
 
 The command shown above will create scripts for MuTect2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and Strelka. Then, it will create the SomaticSeq script that merges those 7 callers. This command defaults to majority-vote consensus.
@@ -561,7 +559,6 @@ makeSomaticScripts.py paired \
 --dbsnp-vcf            /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
 --truth-snv            /ABSOLUTE/PATH/TO/truth.snv.vcf \
 --truth-indel          /ABSOLUTE/PATH/TO/truth.indel.vcf \
---action               echo \
 --somaticseq-algorithm xgboost \
 --train-somaticseq     \
 --run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq
@@ -1498,6 +1495,14 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
             \item Re-wrote the XGBoost routine to use the xgboost library in python (somaticseq/somatic\_xgboost.py), and made it the default algorithm for SomaticSeq because xgboost in python is orders of magnitudes faster than AdaBoost in R. Added dependencies for python's pandas and xgboost libraries. Thus, if you do not intend to use the AdaBoost package in R (it does not support multi-threaded learning and requires large amount of memory), R is not required. To keep using AdaBoost, make sure to invoke \textit{-algo ada}. As a script, \textit{somatic\_xgboost.py} can also be run on its own, with the ability to take in multiple SomaticSeq TSV files. It will combine the TSV files before training (for prediction mode there can only be one input TSV file). Some parametes are also tunable. Run \textit{somatic\_xgboost.py train -h} or \textit{somatic\_xgboost.py predict -h} to see full options. 
             
             \item Remove obsolete \textit{SomaticSeq.Wrapper.sh} and \textit{ssSomaticSeq.Wrapper.sh} scripts. They were obsolete since v3.0.0. 
+            
+		\end{itemize}
+    
+    
+	\item Version 3.6.1
+
+        \begin{itemize}
+            \item Re-wrote the \textit{makeSomaticScripts.py} module. It now allows the scripts to be executed in parallel where it was created.
             
 		\end{itemize}
     
