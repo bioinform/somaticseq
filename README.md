@@ -3,27 +3,19 @@
 * SomaticSeq is an ensemble caller that has the ability to use machine learning to filter out false positives. 
 The detailed documentation is included in the package, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). 
 A quick guide can also be found [here](http://bioinform.github.io/somaticseq/).
-
 * SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
-
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
-
 * The [v2 branch](../../tree/v2) will continue to be supported in the foreseeable future for bug fixes, but new features will only be introduced in the current master branch. 
 
 
 ## Requirements
 This [dockerfile](utilities/Dockerfiles/somaticseq.base-1.3.dockerfile) reveals the dependencies
 * Python 3, plus pysam, numpy, scipy, pandas, and xgboost libraries.
-
 * [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing is invoked, and/or when any bed files are used as input files.
-
 * At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus. 
 SomaticSeq relies on 3rd-party caller(s) to generate mutation candidates, so you have to run at least one of them, but preferably multiple.
-
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
-
 * Optional: R and [ada](https://cran.r-project.org/package=ada) are required for AdaBoost, whereas XGBoost is implemented in python.
-
 * To install SomaticSeq, clone this repo, `cd somaticseq` and then run `./setup.py install`.
 
 
