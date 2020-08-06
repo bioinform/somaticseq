@@ -1,0 +1,172 @@
+import sys, argparse, os, re
+import subprocess
+import uuid
+from pathlib import Path
+from datetime import datetime
+import utilities.dockered_pipelines.container_option as container
+from somaticseq._version import __version__ as VERSION
+
+ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
+
+DEFAULT_PARAMS = {'alienTrimmerImage'       : 'lethalfang/alientrimmer:0.4.0',
+                  'trimmomaticImage'        : 'lethalfang/trimmomatic:0.39',
+                  'MEM'                     : '36G',
+                  'output_directory'        : os.curdir,
+                  'out_fq1_name'            : 'reads.R1.fastq.gz',
+                  'out_fq2_name'            : 'reads.R2.fastq.gz',
+                  'out_singleton_name'      : 'singleton.fastq.gz',
+                  'minimum_length'          : '36G',
+                  'adapter'                 : '/opt/Trimmomatic/adapters/TruSeq3-PE-2.fa'
+                  'action'                  : 'echo',
+                  'extra_docker_options'    : '',
+                  'extra_trim_arguments'    : '',
+                  'threads'                 : 1,
+                  'script'                  : 'trim.{}.cmd'.format(ts),
+                  }
+
+
+
+def alienTrimmer( input_parameters, tech='docker' ):
+
+    assert os.path.exists( input_parameters['in_fq1'] )
+    
+    if input_parameters['in_fq2']:
+        assert os.path.exists( input_parameters['in_fq2'] )
+        paired_end = True
+    else:
+        paired_end = False
+
+    for param_i in DEFAULT_PARAMS:
+        if param_i not in input_parameters:
+            input_parameters[param_i] = DEFAULT_PARAMS[param_i]
+
+    #
+    logdir  = os.path.join( input_parameters['output_directory'], 'logs' )
+    outfile = os.path.join( logdir, input_parameters['script'] )
+
+    all_paths = []
+    for path_i in input_parameters['output_directory'], input_parameters['output_directory'], input_parameters['output_directory']:
+        if path_i:
+            all_paths.append( path_i )
+
+    trim_line, fileDict = container.container_params( input_parameters['alienTrimmerImage'], tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
+    
+    # Mounted paths for all the input files and output directory:
+    mounted_outdir = fileDict[ input_parameters['output_directory'] ]['mount_path']
+
+    temporary_files = []
+    with open(outfile, 'w') as out:
+
+        out.write( "#!/bin/bash\n\n" )
+        
+        out.write(f'#$ -o {logdir}\n' )
+        out.write(f'#$ -e {logdir}\n' )
+        out.write( '#$ -S /bin/bash\n' )
+        out.write( '#$ -l h_vmem={}\n'.format( input_parameters['MEM'] ) )
+        out.write( 'set -e\n\n' )
+
+        # AlienTrimmer does not do bgzipped fastq files, unfortunately:
+        if input_parameters['in_fq1'].endswith('.gz'):
+            
+            out_fastq_1 = uuid.uuid4().hex + '.fastq'
+            out_fastq_2 = uuid.uuid4().hex + '.fastq'
+            
+            if paired_end:
+                tabix_line, tabixDict = container.container_params( 'lethalfang/tabix:1.7', tech, (input_parameters['output_directory'], input_parameters['in_fq1'], input_parameters['in_fq2']) )
+            else:
+                tabix_line, tabixDict = container.container_params( 'lethalfang/tabix:1.7', tech, (input_parameters['output_directory'], input_parameters['in_fq1']) )
+            
+            tabix_outdir = tabixDict[ input_parameters['output_directory'] ]['mount_path']
+            tabix_fq1    = tabixDict[ input_parameters['in_fq1'] ]['mount_path']
+            
+            out.write(f'{tabix_line} bash -c \\\n' )
+            out.write('"gunzip -c {} > {}/{}"\n\n'.format(tabix_fq1, tabix_outdir, out_fastq_1))
+            mounted_fq1 = os.path.append(mounted_outdir, out_fastq_1)
+            
+            temporary_files.append( out_fastq_1 )
+            
+            if paired_end:
+                tabix_fq2 = tabixDict[ input_parameters['in_fq2'] ]['mount_path']
+                out.write(f'{tabix_line} bash -c \\\n' )
+                out.write('"gunzip -c {} > {}/{}"\n\n'.format(tabix_fq2, tabix_outdir, out_fastq_2))
+                mounted_fq2 = os.path.append(mounted_outdir, out_fastq_2)
+
+                temporary_files.append( out_fastq_2 )
+
+        else:
+            mounted_fq1 = fileDict[ input_parameters['in_fq1'] ]['mount_path']
+            
+            if paired_end:
+                mounted_fq2 = fileDict[ input_parameters['in_fq2'] ]['mount_path']
+
+
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
+
+        out.write(f'{trim_line} \\\n' )
+        out.write('/opt/AlienTrimmer_0.4.0/src/AlienTrimmer \\\n')
+        
+        if paired_end:
+            trimmed_fq1 = uuid.uuid4().hex + '.fastq'
+            trimmed_fq2 = uuid.uuid4().hex + '.fastq'
+            singleton   = uuid.uuid4().hex + '.fastq'
+            
+            out.write('-if {} -ir {} \\\n'.write(mounted_fq1, mounted_fq2) )
+            out.write('-of {}/{} -or {}/{} \\\n'.format(mounted_outdir, trimmed_fq1, mounted_outdir, trimmed_fq2) )
+            out.write('-os {}/{} \\\n'.format(mounted_outdir, singleton) )
+            
+            temporary_files.extend( [trimmed_fq1, trimmed_fq2, singleton] )
+            
+        else:
+            trimmed_fq1 = uuid.uuid4().hex + '.fastq'
+            out.write('-i {} \\\n'.write(mounted_fq1) )
+            out.write('-o {}/{} \\\n'.write(mounted_outdir, trimmed_fq1) )
+
+            temporary_files.append( trimmed_fq1 )
+
+        out.write('-c {} \\\n'.format(input_parameters['adapter']) )
+        out.write('-l {}\n\n'.format(input_parameters['minimum_length']))
+
+        out.write(f'{tabix_line} bash -c \\\n' )
+        out.write('"cat {}/{} | bgzip -@{} > {}/{}"'.format(tabix_outdir, trimmed_fq1, input_parameters['threads'], tabix_outdir, input_parameters['out_fq1_name']) )
+        
+        if paired_end:
+            out.write(f'{tabix_line} bash -c \\\n' )
+            out.write('"cat {}/{} | bgzip -@{} > {}/{}"\n'.format(tabix_outdir, trimmed_fq2, input_parameters['threads'], tabix_outdir, input_parameters['out_fq2_name']) )
+            
+            out.write(f'{tabix_line} bash -c \\\n' )
+            out.write('"cat {}/{} | bgzip -@{} > {}/{}"\n'.format(tabix_outdir, singleton, input_parameters['threads'], tabix_outdir, input_parameters['out_singleton_name']) )
+
+        out.write( '\n' )
+        for file_i in temporary_files:
+            out.write('rm {}\n'.format( os.path.append(input_parameters['output_directory'], file_i)))
+    
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+
+
+    # "Run" the script that was generated
+    command_item = (input_parameters['action'], outfile)
+    returnCode   = subprocess.call( command_item )
+
+    return outfile
+
+
+
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    # INPUT FILES and Global Options
+    parser.add_argument('-outdir', '--output-directory',   type=str, default=os.getcwd())
+    parser.add_argument('-fq1',    '--in-fastq1',          type=str, required=True)
+    parser.add_argument('-fq2',    '--in-fastq2',          type=str, required=True)
+    parser.add_argument('-fout1',  '--out-fastq1_name',    type=str, )
+    parser.add_argument('-fout2',  '--out-fastq2_name',    type=str, )
+    parser.add_argument('-algo',  '--trimming-algorithm',  type=str, choices=('alientrimmed', 'trimmomatic',))
+
