@@ -213,6 +213,8 @@ def trimmomatic( input_parameters, tech='docker' ):
 
         out.write( 'ILLUMINACLIP:{ADAPTER}:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:{MINLEN}\n'.format(ADAPTER=input_parameters['adapter'], MINLEN=input_parameters['minimum_length'] ) )
 
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+
     # "Run" the script that was generated
     command_item = (input_parameters['action'], outfile)
     returnCode   = subprocess.call( command_item )
@@ -245,8 +247,6 @@ def run():
     input_parameters = vars(args)
 
     return args, input_parameters
-
-
 
 
 

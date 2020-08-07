@@ -8,10 +8,10 @@ from somaticseq._version import __version__ as VERSION
 
 ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 
-DEFAULT_PARAMS = {'bwa_image        '       : 'lethalfang/bwa:0.7.17_samtools',
+DEFAULT_PARAMS = {'bwa_image'               : 'lethalfang/bwa:0.7.17_samtools',
                   'MEM'                     : 4,
                   'output_directory'        : os.curdir,
-                  'out_bam':                : 'aligned.bam',
+                  'out_bam'                 : 'aligned.bam',
                   'bam_header'              : '@RG\tID:{ID}\tLB:{LB}\tPL:{PL}\tSM:{SM}',
                   'action'                  : 'echo',
                   'extra_docker_options'    : '',
@@ -46,11 +46,11 @@ def bwa( input_parameters, tech='docker' ):
         if path_i:
             all_paths.append( path_i )
 
-    bwa_line, fileDict = container.container_params( input_parameters['trimmomaticImage'], tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
+    bwa_line, fileDict = container.container_params( input_parameters['bwa_image'], tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
     
     # Mounted paths for all the input files and output directory:
     mounted_outdir    = fileDict[ input_parameters['output_directory'] ]['mount_path']
-    mounted_reference = fileDict[ input_parameters['output_directory'] ]['genome_reference']
+    mounted_reference = fileDict[ input_parameters['genome_reference'] ]['mount_path']
     mounted_fq1       = fileDict[ input_parameters['in_fastq1'] ]['mount_path']
     mounted_fq2       = fileDict[ input_parameters['in_fastq2'] ]['mount_path']
     
@@ -68,9 +68,9 @@ def bwa( input_parameters, tech='docker' ):
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
         out.write(f'{bwa_line} bash -c \\\n' )
-        out.write('"bwa mem \\\n' >> $out_script)
-        out.write('-R \'{}\' \\\n')
-        out.write('-M {} -t {} \\\n'.format( input_parameters['extra_bwa_arguments'], input_parameters['threads'] )
+        out.write('"bwa mem \\\n')
+        out.write('-R \'{}\' \\\n'.format(input_parameters['bam_header']))
+        out.write('-M {} -t {} \\\n'.format( input_parameters['extra_bwa_arguments'], input_parameters['threads'] ))
         out.write('{} \\\n'.format(mounted_reference))
         out.write('{} \\\n'.format(mounted_fq1))
         
@@ -80,7 +80,7 @@ def bwa( input_parameters, tech='docker' ):
         out.write('| samtools view -Sbh - \\\n')
         out.write('| samtools sort -m {MEM}G --threads {THREADS} -o {DIR}/{OUTFILE}"\n'.format(MEM=input_parameters['MEM'], THREADS=input_parameters['threads'], DIR=mounted_outdir, OUTFILE=input_parameters['out_bam']))
 
-
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
 
     # "Run" the script that was generated
     command_item = (input_parameters['action'], outfile)
@@ -88,3 +88,38 @@ def bwa( input_parameters, tech='docker' ):
 
     return outfile
 
+
+
+
+
+
+def run():
+    
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    # INPUT FILES and Global Options
+    parser.add_argument('-outdir', '--output-directory',    type=str, default=os.getcwd())
+    parser.add_argument('-ref',    '--genome-reference',    type=str, required=True)
+    parser.add_argument('-fq1',    '--in-fastq1',           type=str, required=True)
+    parser.add_argument('-fq2',    '--in-fastq2',           type=str, )
+    parser.add_argument('-nt',     '--threads',             type=int, default=1)
+    parser.add_argument('-out',    '--out-bam',             type=str, required=True)
+    parser.add_argument('-header', '--bam-header',          type=str, default='@RG\tID:ID00\tLB:LB0\tPL:illumina\tSM:Sample')
+    parser.add_argument('-extras', '--extra-bwa-arguments', type=str, default='')
+    parser.add_argument('-tech',   '--container-tech',      type=str, choices=('docker', 'singularity'), default='docker')
+    
+    args = parser.parse_args()
+    
+    input_parameters = vars(args)
+
+    return args, input_parameters
+
+
+
+
+
+if __name__ == '__main__':
+    
+    args, input_parameters = run()
+    
+    bwa( input_parameters, args.container_tech )
