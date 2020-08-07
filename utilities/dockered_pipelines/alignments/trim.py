@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys, argparse, os, re
 import subprocess
 import uuid
