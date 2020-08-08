@@ -19,6 +19,7 @@ setup(
              'somaticseq/run_somaticseq.py',
              'somaticseq/single_sample_vcf2tsv.py',
              'somaticseq/somatic_vcf2tsv.py',
+             'somaticseq/somatic_xgboost.py',
              'somaticseq/SSeq_tsv2vcf.py',
              'utilities/attach_pileupVAF.py',
              'utilities/bamQC.py',
@@ -29,9 +30,9 @@ setup(
              'utilities/tally_variants_from_multiple_vcfs.py',
              'utilities/variant_annotation.py',
              'utilities/vcfsorter.pl',
+             'utilities/makeAlignmentScripts.py',
              'utilities/dockered_pipelines/makeSomaticScripts.py',
              'r_scripts/ada_model_builder_ntChange.R',
              'r_scripts/ada_model_predictor.R',
-             'somaticseq/somatic_xgboost.py',
              ]
 )

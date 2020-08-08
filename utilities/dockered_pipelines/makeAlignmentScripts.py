@@ -29,7 +29,7 @@ def run():
     parser.add_argument('-trim',   '--run-trimming',       action='store_true')
     parser.add_argument('-fq1',    '--in-fastq1',          type=str, help='input forward fastq path')
     parser.add_argument('-fq2',    '--in-fastq2',          type=str, help='input reverse fastq path of paired end')
-    parser.add_argument('-fout1',  '--out-fastq1-name',    type=str, required=True)
+    parser.add_argument('-fout1',  '--out-fastq1-name',    type=str, )
     parser.add_argument('-fout2',  '--out-fastq2-name',    type=str, )
     parser.add_argument('--trim-software',                 type=str, choices=('alientrimmer', 'trimmomatic'), default='alientrimmer')
     parser.add_argument('--extra-trim-arguments',          type=str, default='')
@@ -56,6 +56,8 @@ def run():
 if __name__ == '__main__':
     
     args, input_parameters = run()
+    
+    os.makedirs( os.path.join(input_parameters['output_directory]', logs), exist_ok=True )
     
     workflow_tasks = {'trim_jobs':[], 'alignment_jobs': [], 'markdup_jobs': [], 'merging_jobs': [] }
     
