@@ -57,7 +57,7 @@ if __name__ == '__main__':
     
     args, input_parameters = run()
     
-    os.makedirs( os.path.join(input_parameters['output_directory]', 'logs'), exist_ok=True )
+    os.makedirs( os.path.join(input_parameters['output_directory'], 'logs'), exist_ok=True )
     
     workflow_tasks = {'trim_jobs':[], 'alignment_jobs': [], 'markdup_jobs': [], 'merging_jobs': [] }
     
