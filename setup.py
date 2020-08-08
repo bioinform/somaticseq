@@ -30,7 +30,7 @@ setup(
              'utilities/tally_variants_from_multiple_vcfs.py',
              'utilities/variant_annotation.py',
              'utilities/vcfsorter.pl',
-             'utilities/makeAlignmentScripts.py',
+             'utilities/dockered_pipelines/makeAlignmentScripts.py',
              'utilities/dockered_pipelines/makeSomaticScripts.py',
              'r_scripts/ada_model_builder_ntChange.R',
              'r_scripts/ada_model_predictor.R',
