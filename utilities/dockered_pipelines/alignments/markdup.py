@@ -23,7 +23,7 @@ ts = re.sub(r'[:-]', '.', datetime.now().isoformat(sep='.', timespec='millisecon
 
 DEFAULT_PARAMS = {'picard_image'            : 'lethalfang/picard:2.22.7',
                   'samtools_image'          : 'lethalfang/samtools:1.10',
-                  'MEM'                     : '8G',
+                  'MEM'                     : 8,
                   'output_directory'        : os.curdir,
                   'out_bam'                 : 'aligned.markdup.bam',
                   'action'                  : 'echo',
@@ -84,7 +84,7 @@ def picard( input_parameters, tech='docker' ):
         out.write(f'#$ -o {logdir}\n' )
         out.write(f'#$ -e {logdir}\n' )
         out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}\n'.format( input_parameters['MEM'] ) )
+        out.write( '#$ -l h_vmem={}G\n'.format( input_parameters['MEM'] ) )
         out.write( 'set -e\n\n' )
 
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' ) # Do not change this: picard_fractional uses this to end the copying. 
@@ -92,7 +92,7 @@ def picard( input_parameters, tech='docker' ):
         out.write('mkdir -p {}/{}\n\n'.format(input_parameters['output_directory'], tempdir) )
         
         out.write(f'{markdup_line} \\\n' )
-        out.write('java -Xmx{} -jar /opt/picard.jar MarkDuplicatesWithMateCigar \\\n'.format( input_parameters['MEM'] ) )
+        out.write('java -Xmx{}G -jar /opt/picard.jar MarkDuplicatesWithMateCigar \\\n'.format( input_parameters['MEM'] ) )
         out.write('I={} \\\n'.format(mounted_inbam))
         out.write('M={}/{} \\\n'.format(mounted_outdir, re.sub(r'\.(bam|cram)', '', fileDict[input_parameters['in_bam']]['filename']+'.markdup')) )
         out.write('ASSUME_SORT_ORDER=coordinate \\\n')
@@ -149,7 +149,7 @@ def picard_fractional( bed, input_parameters, tech='docker' ):
         out.write(f'#$ -o {logdir}\n' )
         out.write(f'#$ -e {logdir}\n' )
         out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}\n'.format( input_parameters['MEM'] ) )
+        out.write( '#$ -l h_vmem={}G\n'.format( input_parameters['MEM'] ) )
         out.write( 'set -e\n\n' )
 
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )

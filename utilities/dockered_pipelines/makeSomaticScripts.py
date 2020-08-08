@@ -151,9 +151,8 @@ def run():
 
 
 
-if __name__ == '__main__':
+def make_workflow( args, workflowArguments ):
     
-    args, workflowArguments = run()
     logger.info( 'Create SomaticSeq Workflow Scripts: ' + ', '.join( [ '{}={}'.format(i, vars(args)[i])  for i in vars(args) ] ) )
     
     ts = re.sub(r'[:-]', '.', datetime.now().isoformat(sep='.', timespec='milliseconds') )
@@ -435,3 +434,14 @@ if __name__ == '__main__':
         import utilities.dockered_pipelines.run_workflows as run_workflows
         run_workflows.run_workflows( (workflow_tasks['caller_jobs'], workflow_tasks['somaticseq_jobs'], workflow_tasks['merging_jobs']), args.threads)
         logger.info( 'SomaticSeq Workflow Done. Check your results. You may remove the {} sub_directories.'.format(args.threads) )
+
+    return workflow_tasks
+
+
+
+
+if __name__ == '__main__':
+
+    args, workflowArguments = run()
+    
+    make_workflow( args, workflowArguments )

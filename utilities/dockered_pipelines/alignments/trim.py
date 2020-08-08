@@ -12,10 +12,10 @@ ts = re.sub(r'[:-]', '.', datetime.now().isoformat(sep='.', timespec='millisecon
 
 DEFAULT_PARAMS = {'alienTrimmerImage'       : 'lethalfang/alientrimmer:0.4.0',
                   'trimmomaticImage'        : 'lethalfang/trimmomatic:0.39',
-                  'MEM'                     : '36G',
+                  'MEM'                     : 36,
                   'output_directory'        : os.curdir,
-                  'out_fq1_name'            : 'reads.R1.fastq.gz',
-                  'out_fq2_name'            : 'reads.R2.fastq.gz',
+                  'out_fastq1_name'         : 'reads.R1.fastq.gz',
+                  'out_fastq2_name'         : 'reads.R2.fastq.gz',
                   'out_singleton_name'      : 'singleton.fastq.gz',
                   'minimum_length'          : 36,
                   'adapter'                 : '/opt/Trimmomatic/adapters/TruSeq3-PE-2.fa', 
@@ -64,7 +64,7 @@ def alienTrimmer( input_parameters, tech='docker' ):
         out.write(f'#$ -o {logdir}\n' )
         out.write(f'#$ -e {logdir}\n' )
         out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}\n'.format( input_parameters['MEM'] ) )
+        out.write( '#$ -l h_vmem={}G\n'.format( input_parameters['MEM'] ) )
         out.write( 'set -e\n\n' )
 
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
@@ -129,11 +129,11 @@ def alienTrimmer( input_parameters, tech='docker' ):
         out.write('-l {}\n\n'.format(input_parameters['minimum_length']))
 
         out.write(f'{tabix_line} bash -c \\\n' )
-        out.write('"cat {}/{} | bgzip -@{} > {}/{}"\n'.format(tabix_outdir, trimmed_fq1, input_parameters['threads'], tabix_outdir, input_parameters['out_fq1_name']) )
+        out.write('"cat {}/{} | bgzip -@{} > {}/{}"\n'.format(tabix_outdir, trimmed_fq1, input_parameters['threads'], tabix_outdir, input_parameters['out_fastq1_name']) )
         
         if paired_end:
             out.write(f'{tabix_line} bash -c \\\n' )
-            out.write('"cat {}/{} | bgzip -@{} > {}/{}"\n'.format(tabix_outdir, trimmed_fq2, input_parameters['threads'], tabix_outdir, input_parameters['out_fq2_name']) )
+            out.write('"cat {}/{} | bgzip -@{} > {}/{}"\n'.format(tabix_outdir, trimmed_fq2, input_parameters['threads'], tabix_outdir, input_parameters['out_fastq2_name']) )
             
             out.write(f'{tabix_line} bash -c \\\n' )
             out.write('"cat {}/{} | bgzip -@{} > {}/{}"\n'.format(tabix_outdir, singleton, input_parameters['threads'], tabix_outdir, input_parameters['out_singleton_name']) )
@@ -196,21 +196,21 @@ def trimmomatic( input_parameters, tech='docker' ):
         out.write(f'#$ -o {logdir}\n' )
         out.write(f'#$ -e {logdir}\n' )
         out.write( '#$ -S /bin/bash\n' )
-        out.write( '#$ -l h_vmem={}\n'.format( input_parameters['MEM'] ) )
+        out.write( '#$ -l h_vmem={}G\n'.format( input_parameters['MEM'] ) )
         out.write( 'set -e\n\n' )
 
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
         out.write(f'{trim_line} \\\n' )
-        out.write( 'java -Xmx{} -jar /opt/Trimmomatic/trimmomatic.jar \\\n'.format(input_parameters['MEM']) )
+        out.write( 'java -Xmx{}G -jar /opt/Trimmomatic/trimmomatic.jar \\\n'.format(input_parameters['MEM']) )
         
         if paired_end:
             out.write( 'PE -threads {} -phred33 \\\n'.format(input_parameters['threads']) )
-            out.write( '{FQ1} {FQ2} {DIR}/{PAIR1} {DIR}/{UNPAIR1} {DIR}/{PAIR2} {DIR}/{UNPAIR2} \\\n'.format(FQ1=mounted_fq1, FQ2=mounted_fq2, DIR=mounted_outdir, PAIR1=input_parameters['out_fq1_name'], PAIR2=input_parameters['out_fq2_name'], UNPAIR1='unpaired.'+input_parameters['out_fq1_name'], UNPAIR2='unpaired.'+input_parameters['out_fq2_name']) )
+            out.write( '{FQ1} {FQ2} {DIR}/{PAIR1} {DIR}/{UNPAIR1} {DIR}/{PAIR2} {DIR}/{UNPAIR2} \\\n'.format(FQ1=mounted_fq1, FQ2=mounted_fq2, DIR=mounted_outdir, PAIR1=input_parameters['out_fastq1_name'], PAIR2=input_parameters['out_fastq2_name'], UNPAIR1='unpaired.'+input_parameters['out_fastq1_name'], UNPAIR2='unpaired.'+input_parameters['out_fastq2_name']) )
 
         else:
             out.write( 'SE -threads {} -phred33 \\\n'.format(input_parameters['threads']) )
-            out.write( '{FQ1} {DIR}/{PAIR1} \\\n'.format(FQ1=mounted_fq1, DIR=mounted_outdir, PAIR1=input_parameters['out_fq1_name'] ) )
+            out.write( '{FQ1} {DIR}/{PAIR1} \\\n'.format(FQ1=mounted_fq1, DIR=mounted_outdir, PAIR1=input_parameters['out_fastq1_name'] ) )
 
 
         out.write( 'ILLUMINACLIP:{ADAPTER}:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:{MINLEN}\n'.format(ADAPTER=input_parameters['adapter'], MINLEN=input_parameters['minimum_length'] ) )

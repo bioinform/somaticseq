@@ -31,7 +31,7 @@ def run():
     parser.add_argument('-fq2',    '--in-fastq2',          type=str, help='input reverse fastq path of paired end')
     parser.add_argument('-fout1',  '--out-fastq1-name',    type=str, )
     parser.add_argument('-fout2',  '--out-fastq2-name',    type=str, )
-    parser.add_argument('--trim-software',                 type=str, choices=('alientrimmer', 'trimmomatic'), default='alientrimmer')
+    parser.add_argument('--trim-software',                 type=str, choices=('alientrimmer', 'trimmomatic'), default='trimmomatic')
     parser.add_argument('--extra-trim-arguments',          type=str, default='')
 
     parser.add_argument('-align',   '--run-alignment', action='store_true')
@@ -53,16 +53,21 @@ def run():
 
 
 
-if __name__ == '__main__':
+
+def make_workflow(args, input_parameters):
     
-    args, input_parameters = run()
-    
+    ts = re.sub(r'[:-]', '.', datetime.now().isoformat(sep='.', timespec='milliseconds') )
+
     os.makedirs( os.path.join(input_parameters['output_directory'], 'logs'), exist_ok=True )
     
     workflow_tasks = {'trim_jobs':[], 'alignment_jobs': [], 'markdup_jobs': [], 'merging_jobs': [] }
     
     if args.run_trimming:
         import utilities.dockered_pipelines.alignments.trim as trim
+        
+        trim_parameters = copy(input_parameters)
+        trim_parameters['script'] = 'trim.{}.cmd'.format(ts)
+        trim_parameters['MEM'] = 36
         
         if args.trim_software == 'trimmomatic':
             trimming_script = trim.trimmomatic(input_parameters, args.container_tech)
@@ -80,21 +85,36 @@ if __name__ == '__main__':
 
     if args.run_alignment:
         import utilities.dockered_pipelines.alignments.align as align
-        alignment_script = align.bwa(input_parameters, args.container_tech)
+        
+        bwa_parameters = copy(input_parameters)
+        bwa_parameters['script'] = 'align.{}.cmd'.format(ts)
+        bwa_parameters['MEM'] = 8
 
+        if args.run_mark_duplicates:
+            bwa_parameters['out_bam'] = 'aligned.bwa.bam'
+        
+        alignment_script = align.bwa(bwa_parameters, args.container_tech)
         workflow_tasks['alignment_jobs'].append(alignment_script)
+
 
     if args.run_mark_duplicates:
         import utilities.dockered_pipelines.alignments.markdup as markdup
         
+        markdup_parameters = copy(input_parameters)
+        markdup_parameters['script'] = 'markdup.{}.cmd'.format(ts)
+        markdup_parameters['MEM'] = 8
+        
+        if args.run_alignment:
+            markdup_parameters['in_bam'] = os.path.join(bwa_parameters['output_directory'], bwa_parameters['out_bam'])
+        
         if args.parallelize_markdup:
-            fractional_markdup_scripts, merge_markdup_script = markdup.picard_parallel(input_parameters, args.container_tech)
+            fractional_markdup_scripts, merge_markdup_script = markdup.picard_parallel(markdup_parameters, args.container_tech)
             
             workflow_tasks['markdup_jobs'].append(fractional_markdup_scripts)
             workflow_tasks['merging_jobs'].append(merge_markdup_script)
             
         else:
-            markdup_script = markdup.picard(input_parameters, args.container_tech)
+            markdup_script = markdup.picard(markdup_parameters, args.container_tech)
             workflow_tasks['markdup_jobs'].append(markdup_script)
 
 
@@ -104,3 +124,17 @@ if __name__ == '__main__':
         run_workflows.run_workflows( (workflow_tasks['trim_jobs'], workflow_tasks['alignment_jobs'], workflow_tasks['markdup_jobs'], workflow_tasks['merging_jobs']), args.threads)
         logger.info( 'Workflow Done. Check your results. You may remove the {} sub_directories.'.format(args.threads) )
 
+
+    return workflow_tasks
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    
+    args, input_parameters = run()
+    
+    make_workflow(args, input_parameters)
