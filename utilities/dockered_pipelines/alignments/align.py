@@ -26,9 +26,6 @@ DEFAULT_PARAMS = {'bwa_image'               : 'lethalfang/bwa:0.7.17_samtools',
 
 
 def bwa( input_parameters, tech='docker' ):
-
-    assert os.path.exists( input_parameters['in_fastq1'] )
-    assert os.path.exists( input_parameters['genome_reference'] )
     
     if input_parameters['in_fastq2']:
         assert os.path.exists( input_parameters['in_fastq2'] )
