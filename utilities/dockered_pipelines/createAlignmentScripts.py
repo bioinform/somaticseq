@@ -42,7 +42,7 @@ def run():
     parser.add_argument('--extra-markdup-arguments',    type=str, default='')
     parser.add_argument('--parallelize-markdup',  action='store_true', help='parallelize by splitting input bam files and work on each independently, and then merge.')
 
-    parser_single.add_argument('--run-workflow-locally',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
+    parser.add_argument('--run-workflow-locally',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
 
     args = parser.parse_args()
     
