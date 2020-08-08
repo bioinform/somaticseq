@@ -8,7 +8,8 @@ from datetime import datetime
 import utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
+ts = re.sub(r'[:-]', '.', datetime.now().isoformat(sep='.', timespec='milliseconds') )
+
 
 DEFAULT_PARAMS = {'bwa_image'               : 'lethalfang/bwa:0.7.17_samtools',
                   'MEM'                     : 4,

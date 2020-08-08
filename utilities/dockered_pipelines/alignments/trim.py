@@ -8,7 +8,7 @@ from datetime import datetime
 import utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
+ts = re.sub(r'[:-]', '.', datetime.now().isoformat(sep='.', timespec='milliseconds') )
 
 DEFAULT_PARAMS = {'alienTrimmerImage'       : 'lethalfang/alientrimmer:0.4.0',
                   'trimmomaticImage'        : 'lethalfang/trimmomatic:0.39',
