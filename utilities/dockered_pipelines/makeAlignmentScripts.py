@@ -7,7 +7,7 @@ from shutil import move
 from datetime import datetime
 
 FORMAT = '%(levelname)s %(asctime)-15s %(name)-20s %(message)s'
-logger = logging.getLogger('Make Somatic Workflow Scripts')
+logger = logging.getLogger('Alignment_Workflow')
 
 logger.setLevel(logging.DEBUG)
 logging.basicConfig(level=logging.INFO, format=FORMAT)
@@ -110,7 +110,7 @@ def make_workflow(args, input_parameters):
         if args.parallelize_markdup:
             fractional_markdup_scripts, merge_markdup_script = markdup.picard_parallel(markdup_parameters, args.container_tech)
             
-            workflow_tasks['markdup_jobs'].append(fractional_markdup_scripts)
+            workflow_tasks['markdup_jobs'] = fractional_markdup_scripts
             workflow_tasks['merging_jobs'].append(merge_markdup_script)
             
         else:

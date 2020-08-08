@@ -11,7 +11,7 @@ import utilities.dockered_pipelines.tumor_normal_run as tumor_normal
 import utilities.dockered_pipelines.tumor_only_run   as tumor_only
 
 FORMAT = '%(levelname)s %(asctime)-15s %(name)-20s %(message)s'
-logger = logging.getLogger('Make Somatic Workflow Scripts')
+logger = logging.getLogger('Somatic_Mutation_Workflow')
 logger.setLevel(logging.DEBUG)
 logging.basicConfig(level=logging.INFO, format=FORMAT)
 
