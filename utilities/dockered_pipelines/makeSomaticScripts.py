@@ -7,8 +7,8 @@ from shutil import move
 from datetime import datetime
 
 import utilities.split_Bed_into_equal_regions as split_bed
-import utilities.dockered_pipelines.create_tumor_normal_run_scripts as tumor_normal
-import utilities.dockered_pipelines.create_tumor_only_run_scripts   as tumor_only
+import utilities.dockered_pipelines.tumor_normal_run as tumor_normal
+import utilities.dockered_pipelines.tumor_only_run   as tumor_only
 
 FORMAT = '%(levelname)s %(asctime)-15s %(name)-20s %(message)s'
 logger = logging.getLogger('Make Somatic Workflow Scripts')
