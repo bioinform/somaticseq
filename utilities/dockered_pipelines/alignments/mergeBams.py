@@ -27,12 +27,12 @@ DEFAULT_PARAMS = {'picard_image'            : 'lethalfang/picard:2.22.7',
 
 
 
-def picard( inbams, outbam, input_parameters=DEFAULT_PARAMS, remove_inbams=False ):
+def picard( inbams, outbam, tech='docker', input_parameters=DEFAULT_PARAMS, remove_inbams=False ):
 
     logdir  = os.path.join( input_parameters['output_directory'], 'logs' )
     outfile = os.path.join( logdir, input_parameters['script'] )
 
-    all_paths = inbams + outbam
+    all_paths = inbams + [outbam,]
     merge_line, fileDict = container.container_params( input_parameters['picard_image'], tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
 
     mounted_outbam = fileDict[ outbam ]['mount_path']
@@ -63,8 +63,8 @@ def picard( inbams, outbam, input_parameters=DEFAULT_PARAMS, remove_inbams=False
 
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' ) # Do not change this: picard_fractional uses this to end the copying. 
         
-        out.write(f'{markdup_line} \\\n' )
-        out.write('MergeSamFiles {} {} ASSUME_SORTED=true CREATE_INDEX=true O={}\n\n'.format(infile_string, input_parameters['extra_picard_arguments'], mounted_outbam) )
+        out.write(f'{merge_line} \\\n' )
+        out.write('java -Xmx{} -jar /opt/picard.jar MergeSamFiles {} {} ASSUME_SORTED=true CREATE_INDEX=true O={}\n\n'.format(input_parameters['MEM'], infile_string, input_parameters['extra_picard_arguments'], mounted_outbam) )
 
         if remove_inbams:
             out.write( 'rm {}\n\n'.format(' '.join(inbams) ) )

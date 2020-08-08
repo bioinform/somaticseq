@@ -80,3 +80,11 @@ if __name__ == '__main__':
         alignment_script = align.bwa(input_parameters, args.container_tech)
 
         workflow_tasks['alignment_jobs'].append(alignment_script)
+
+    if args.run_mark_duplicates:
+        import utilities.dockered_pipelines.alignments.markdup as markdup
+        
+        if args.parallelize_markdup:
+            fractional_markdup_scripts, merge_markdup_script = markdup.picard_parallel(input_parameters, args.container_tech)
+        else:
+            markdup_script = markdup.picard(input_parameters, args.container_tech)

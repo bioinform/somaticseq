@@ -124,7 +124,11 @@ def picard( input_parameters, tech='docker' ):
 
 
 def picard_fractional( bed, input_parameters, tech='docker' ):
-    
+
+    for param_i in DEFAULT_PARAMS:
+        if param_i not in input_parameters:
+            input_parameters[param_i] = DEFAULT_PARAMS[param_i]
+
     outdir  = str( Path(bed).absolute().parent )
     
     logdir  = os.path.join( outdir, 'logs' )
@@ -198,8 +202,11 @@ def picard_fractional( bed, input_parameters, tech='docker' ):
 
 
 
-def picard_parallel( input_parameters, tech='docker', threads=1 ):
+def picard_parallel( input_parameters, tech='docker' ):
 
+    for param_i in DEFAULT_PARAMS:
+        if param_i not in input_parameters:
+            input_parameters[param_i] = DEFAULT_PARAMS[param_i]
 
     bed_splitted = splitRegions(input_parameters)
 
@@ -222,7 +229,10 @@ def picard_parallel( input_parameters, tech='docker', threads=1 ):
     
     
     out_markduped_bam = os.path.join(input_parameters['output_directory'], input_parameters['out_bam'])
-    merge_script      = mergeBams.picard( fractional_bams, out_markduped_bam, input_parameters, True )
+    
+    merging_parameters = copy(input_parameters)
+    merging_parameters['script'] = 'mergeBam.{}.cmd'.format(ts)
+    merge_script = mergeBams.picard( inbams=fractional_bams, outbam=out_markduped_bam, tech=tech, input_parameters=merging_parameters, remove_inbams=True )
     
     return fractional_outfiles, merge_script
 
@@ -240,7 +250,7 @@ def run():
     parser.add_argument('-inbam',  '--in-bam',                 type=str, required=True)
     parser.add_argument('-outbam', '--out-bam',                type=str, required=True)
     parser.add_argument('-nt',     '--threads',                type=int, default=1)
-    parser.add_argument('-ref',     '--genome-reference',      type=str, default=1)
+    parser.add_argument('-ref',    '--genome-reference',       type=str, help='required if threads>1')
     parser.add_argument('-extras', '--extra-picard-arguments', type=str, default='')
     parser.add_argument('-tech',   '--container-tech',         type=str, choices=('docker', 'singularity'), default='docker')
     
@@ -258,4 +268,7 @@ if __name__ == '__main__':
     
     args, input_parameters = run()
     
-    picard( input_parameters, args.container_tech )
+    if args.threads == 1:
+        picard( input_parameters, args.container_tech )
+    elif args.threads > 1:
+        picard_parallel( input_parameters, args.container_tech )
