@@ -41,7 +41,6 @@ DEFAULT_PARAMS = {'picard_image'            : 'lethalfang/picard:2.22.7',
 def splitRegions(input_parameters):
 
     fai = input_parameters['genome_reference']+'.fai'
-    assert os.path.exists( fai )
 
     tempdir = os.path.join(TMPDIR, uuid.uuid4().hex)
     os.makedirs(tempdir, exist_ok=True)
