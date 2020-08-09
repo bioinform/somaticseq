@@ -5,7 +5,7 @@ The detailed documentation is included in the package, located in [docs/Manual.p
 A quick guide can also be found [here](http://bioinform.github.io/somaticseq/).
 * SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
-* The [v2 branch](../../tree/v2) will continue to be supported in the foreseeable future for bug fixes, but new features will only be introduced in the current master branch. 
+* The [v2 branch](../../tree/v2) is still supported, but it's severely limited comparing to the current versions. 
 
 
 ## Requirements
@@ -16,10 +16,10 @@ This [dockerfile](utilities/Dockerfiles/somaticseq.base-1.3.dockerfile) reveals 
 SomaticSeq relies on 3rd-party caller(s) to generate mutation candidates, so you have to run at least one of them, but preferably multiple.
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
 * Optional: R and [ada](https://cran.r-project.org/package=ada) are required for AdaBoost, whereas XGBoost is implemented in python.
-* To install SomaticSeq, clone this repo, `cd somaticseq` and then run `./setup.py install`.
+* To install SomaticSeq, clone this repo, `cd somaticseq`, and then run `./setup.py install`.
 
 
-## To install from github source with conda
+## To install from github source reop with conda
 ```
 git clone git@github.com:bioinform/somaticseq.git
 conda create --name somaticseq python r bedtools
@@ -102,15 +102,17 @@ Most SomaticSeq modules can be run on their own. They may be useful in debugging
 ## Dockerized workflows and pipelines
 
 ### To run somatic mutation callers and then SomaticSeq
-We have created a module that can run all the dockerized somatic mutation callers and then SomaticSeq at [**utilities/dockered_pipelines**](utilities/dockered_pipelines).
+We have created a module (i.e., `makeSomaticScripts.py`) that can run all the dockerized somatic mutation callers and then SomaticSeq, described at [**utilities/dockered_pipelines**](utilities/dockered_pipelines). There is also an alignment workflow described there.
 You need [docker](https://www.docker.com/) to run these workflows. Singularity is also supported, but is not optimized.
+
 
 ### To create training data to create SomaticSeq classifiers
 We have also dockerized pipelines for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator).
-These pipelines are based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). We have used it to create training set to build SomaticSeq classifiers.
+These pipelines are based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). We have used it to create training set to build SomaticSeq classifiers, though it has not been updated for a while.
 
 ### GATK's best practices for alignment
-The limited pipeline to generate BAM files based on GATK's best practices is at [utilities/dockered_pipelines/alignments](utilities/dockered_pipelines/alignments).
+Described at [**utilities/dockered_pipelines**](utilities/dockered_pipelines). The module is `makeAlignmentScripts.py`.
+
 
 ### Additional workflows
 * A [Snakemake](https://snakemake.readthedocs.io/en/latest/) workflow to run the somatic mutation callers and SomaticSeq was created by [Afif Elghraoui](https://github.com/0xaf1f) at [**utilities/snakemake**](utilities/snakemake). It needs to be updated to work.
