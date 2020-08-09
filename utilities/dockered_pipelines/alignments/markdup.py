@@ -7,6 +7,7 @@ from pathlib import Path
 from datetime import datetime
 from copy import copy
 import tempfile
+from shutil import move
 
 import utilities.split_Bed_into_equal_regions as split_bed
 import utilities.dockered_pipelines.container_option as container
@@ -219,7 +220,7 @@ def picard_parallel( input_parameters, tech='docker' ):
         os.makedirs(subdir_i, exist_ok=True)
         
         new_bed_i = os.path.join(subdir_i, bed_name)
-        os.rename( bed_i, new_bed_i )
+        move( bed_i, new_bed_i )
 
         fractional_outfile, fractional_bam = picard_fractional( new_bed_i, input_parameters, tech )
         
