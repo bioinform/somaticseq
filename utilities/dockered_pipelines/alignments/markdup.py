@@ -181,8 +181,8 @@ def picard_fractional( bed, input_parameters, tech='docker' ):
                 out.write(line_i)
                 line_i = dedup.readline()
 
-        out.write('rm {}'.format( os.path.join(outdir, temp_split_bam) ) )
-
+        out.write('rm {}\n'.format( os.path.join(outdir, temp_split_bam) ) )
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
 
     # "Run" the script that was generated
     command_item = (input_parameters['action'], outfile)
