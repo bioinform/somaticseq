@@ -79,14 +79,47 @@ def bed(infileList, outfile):
 
 
 
+
+
+
+
+
+
+def spreader( infile, outfiles, chunk=4 ):
+    '''
+    Given an infile, it will spread its content into the outfiles "chunk" at a time, e.g,. 
+    If infile is a fastq file, and output is 3 fastq files, then the first 4 lines will go to the 1st output, the next 4 lines to go the 2nd output, the next 4 lines go to the 3rd output, and then the next 4 lines will go back to the 1st output, so on and so forth.
+    '''
+    
+    with genome.open_textfile(infile) as text_in:
+        
+        line_i = text_in.readline()
+        outs   = [ open(out_i, 'w') for out_i in outfiles ]
+        
+        while line_i:
+            for out_i in outs:
+                for i in range( chunk ):
+                    out_i.write(line_i)
+                    line_i = text_in.readline()
+    
+        [ out_i.close() for out_i in outs ]
+    
+    return 0
+
+
+
+
+
+
 def run():
 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Variant Call Type, i.e., snp or indel
-    parser.add_argument('-infiles', '--input-files', type=str, nargs='+', help='Input files', required=True)
-    parser.add_argument('-outfile', '--output-file', type=str,            help='Output file', required=True)
-
+    parser.add_argument('-infiles',  '--input-files', type=str,   nargs='+', help='Input files', required=True)
+    parser.add_argument('-outfile',  '--output-file', type=str,              help='Output file')
+    parser.add_argument('-outfiles', '--output-files', type=str,  nargs='+', help='Output files for spreader' )
+    
     # Parse the arguments:
     args = parser.parse_args()
 
@@ -99,6 +132,8 @@ def run():
         filetype = 'tsv'
     elif infiles[0].lower().endswith('.bed') or infiles[0].lower().endswith('.bed.gz'):
         filetype = 'bed'
+    else:
+        filetype = 'generic'
 
     return infiles, outfile, filetype
 
