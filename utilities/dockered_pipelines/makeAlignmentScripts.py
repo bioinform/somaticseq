@@ -76,16 +76,18 @@ def make_workflow(args, input_parameters):
             
             trim_parameters['threads'] = max(1, int(input_parameters['threads']/len(args.in_fastq1s)))
             
+            out_basename = uid.uuid4().hex
+            
             trim_parameters['in_fastq1'] = fastq_1
             if len(args.in_fastq1s) > 1:
-                trim_parameters['out_fastq1_name'] = uuid.uuid4().hex+'.fastq.gz'
+                trim_parameters['out_fastq1_name'] = out_basename+'_R1.fastq.gz'
                 out_fastq_1s.append( trim_parameters['out_fastq1_name'] )
             
             if len(args.in_fastq2s) >= 1:
                 trim_parameters['in_fastq2'] = args.in_fastq2s[i]
             
             if len(args.in_fastq2s) > 1:
-                trim_parameters['out_fastq2_name'] = uuid.uuid4().hex+'.fastq.gz'
+                trim_parameters['out_fastq2_name'] = out_basename+'_R2.fastq.gz'
                 out_fastq_2s.append( trim_parameters['out_fastq2_name'] )
             
             trim_parameters['script'] = 'trim.{}.{}.cmd'.format(i, ts)
