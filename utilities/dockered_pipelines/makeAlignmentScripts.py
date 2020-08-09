@@ -74,6 +74,8 @@ def make_workflow(args, input_parameters):
         
             trim_parameters = copy(input_parameters)
             
+            trim_parameters['threads'] = max(1, int(input_parameters['threads']/len(args.in_fastq1s)))
+            
             trim_parameters['in_fastq1'] = fastq_1
             if len(args.in_fastq1s) > 1:
                 trim_parameters['out_fastq1_name'] = uuid.uuid4().hex+'.fastq.gz'
