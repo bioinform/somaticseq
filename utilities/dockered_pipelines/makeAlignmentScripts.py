@@ -87,12 +87,13 @@ def make_workflow(args, input_parameters):
                 out_fastq_2s.append( trim_parameters['out_fastq2_name'] )
             
             trim_parameters['script'] = 'trim.{}.{}.cmd'.format(i, ts)
-            trim_parameters['MEM']    = 36
             
             if args.trim_software == 'trimmomatic':
+                trim_parameters['MEM'] = 8
                 trimming_script = trim.trimmomatic(trim_parameters, args.container_tech)
                 
             elif args.trim_software == 'alientrimmer':
+                trim_parameters['MEM'] = 36
                 trimming_script = trim.alienTrimmer(trim_parameters, args.container_tech)
     
             workflow_tasks['trim_fastqs'].append(trimming_script)
@@ -167,6 +168,9 @@ def make_workflow(args, input_parameters):
             markdup_parameters['in_bam'] = os.path.join(bwa_parameters['output_directory'], bwa_parameters['out_bam'])
         
         if args.parallelize_markdup:
+            
+            markdup_parameters['threads'] = max(1, int(input_parameters['threads']/2) )
+            
             fractional_markdup_scripts, merge_markdup_script = markdup.picard_parallel(markdup_parameters, args.container_tech)
             
             workflow_tasks['markdup_bams'] = fractional_markdup_scripts
