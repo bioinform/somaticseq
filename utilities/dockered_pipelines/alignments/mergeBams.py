@@ -32,7 +32,7 @@ def picard( inbams, outbam, tech='docker', input_parameters=DEFAULT_PARAMS, remo
     logdir  = os.path.join( input_parameters['output_directory'], 'logs' )
     outfile = os.path.join( logdir, input_parameters['script'] )
 
-    all_paths = inbams + [outbam,]
+    all_paths = list(inbams) + [outbam,]
     merge_line, fileDict = container.container_params( input_parameters['picard_image'], tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
 
     mounted_outbam = fileDict[ outbam ]['mount_path']

@@ -2,6 +2,7 @@
 
 import sys, argparse, os, re
 import logging
+import uuid
 from copy import copy
 from shutil import move
 from datetime import datetime
@@ -27,14 +28,14 @@ def run():
     parser.add_argument('-tech',   '--container-tech',         type=str, choices=('docker', 'singularity'), default='docker')
     
     parser.add_argument('-trim',   '--run-trimming',       action='store_true')
-    parser.add_argument('-fq1',    '--in-fastq1',          type=str, help='input forward fastq path')
-    parser.add_argument('-fq2',    '--in-fastq2',          type=str, help='input reverse fastq path of paired end')
-    parser.add_argument('-fout1',  '--out-fastq1-name',    type=str, )
-    parser.add_argument('-fout2',  '--out-fastq2-name',    type=str, )
-    parser.add_argument('--trim-software',                 type=str, choices=('alientrimmer', 'trimmomatic'), default='trimmomatic')
-    parser.add_argument('--extra-trim-arguments',          type=str, default='')
+    parser.add_argument('-fq1',    '--in-fastq1s', nargs='*', type=str, help='paths of forward reads')
+    parser.add_argument('-fq2',    '--in-fastq2s', nargs='*', type=str, help='paths of reverse reads in paired-end sequencing')
+    parser.add_argument('-fout1',  '--out-fastq1-name',       type=str, help='file name of forward reads')
+    parser.add_argument('-fout2',  '--out-fastq2-name',       type=str, )
+    parser.add_argument('--trim-software',                    type=str, choices=('alientrimmer', 'trimmomatic'), default='trimmomatic')
+    parser.add_argument('--extra-trim-arguments',             type=str, default='')
 
-    parser.add_argument('-align',   '--run-alignment', action='store_true')
+    parser.add_argument('-align',  '--run-alignment', action='store_true')
     parser.add_argument('-header', '--bam-header',     type=str, default='@RG\tID:ID00\tLB:LB0\tPL:illumina\tSM:Sample')
     parser.add_argument('--extra-bwa-arguments',       type=str, default='')
     
@@ -60,27 +61,85 @@ def make_workflow(args, input_parameters):
 
     os.makedirs( os.path.join(input_parameters['output_directory'], 'logs'), exist_ok=True )
     
-    workflow_tasks = {'trim_jobs':[], 'alignment_jobs': [], 'markdup_jobs': [], 'merging_jobs': [] }
+    workflow_tasks = {'trim_fastqs': [], 'merge_fastqs': [], 'alignment_jobs': [], 'markdup_bams': [], 'merging_bams': [] }
+    
     
     if args.run_trimming:
         import utilities.dockered_pipelines.alignments.trim as trim
         
-        trim_parameters = copy(input_parameters)
-        trim_parameters['script'] = 'trim.{}.cmd'.format(ts)
-        trim_parameters['MEM'] = 36
-        
-        if args.trim_software == 'trimmomatic':
-            trimming_script = trim.trimmomatic(input_parameters, args.container_tech)
-        elif args.trim_software == 'alientrimmer':
-            trimming_script = trim.alienTrimmer(input_parameters, args.container_tech)
+        out_fastq_1s = []
+        out_fastq_2s = []
 
-        workflow_tasks['trim_jobs'].append(trimming_script)
+        for i, fastq_1 in enumerate(args.in_fastq1s):
         
-        # If this step is undertaken, replace in_fastqs as out_fastqs for the next step:
+            trim_parameters = copy(input_parameters)
+            
+            trim_parameters['in_fastq1'] = fastq_1
+            if len(args.in_fastq1s) > 1:
+                trim_parameters['out_fastq1_name'] = uuid.uuid4().hex+'.fastq.gz'
+                out_fastq_1s.append( trim_parameters['out_fastq1_name'] )
+            
+            if len(args.in_fastq2s) >= 1:
+                trim_parameters['in_fastq2'] = args.in_fastq2s[i]
+            
+            if len(args.in_fastq2s) > 1:
+                trim_parameters['out_fastq2_name'] = uuid.uuid4().hex+'.fastq.gz'
+                out_fastq_2s.append( trim_parameters['out_fastq2_name'] )
+            
+            trim_parameters['script'] = 'trim.{}.{}.cmd'.format(i, ts)
+            trim_parameters['MEM']    = 36
+            
+            if args.trim_software == 'trimmomatic':
+                trimming_script = trim.trimmomatic(trim_parameters, args.container_tech)
+                
+            elif args.trim_software == 'alientrimmer':
+                trimming_script = trim.alienTrimmer(trim_parameters, args.container_tech)
+    
+            workflow_tasks['trim_fastqs'].append(trimming_script)
+        
+        
+        # Make input fastqs for downstream processing steps
         input_parameters['in_fastq1'] = os.path.join( input_parameters['output_directory'], input_parameters['out_fastq1_name'] )
         
-        if input_parameters['in_fastq2']:
-            input_parameters['in_fastq2'] = os.path.join( input_parameters['output_directory'], input_parameters['out_fastq2_name'] )
+        if input_parameters['in_fastq2s']:
+                input_parameters['in_fastq2'] = os.path.join( input_parameters['output_directory'], input_parameters['out_fastq2_name'] )
+
+    else:
+        out_fastq_1s = args.in_fastq1s
+        out_fastq_2s = args.in_fastq2s
+        
+        
+    
+    # Merge fastqs for the next output
+    # If this step is undertaken, replace in_fastqs as out_fastqs for the next step:
+    remove_in_fqs = True if args.run_trimming else False
+    if len(args.in_fastq1s) > 1:
+        import utilities.dockered_pipelines.alignments.mergeFastqs as mergeFastqs
+
+        fastq_1s   = [ os.path.join( input_parameters['output_directory'], fq_i ) for fq_i in out_fastq_1s ]
+        merged_fq1 = os.path.join( input_parameters['output_directory'], input_parameters['out_fastq1_name'] )
+        
+        fq1_merge_parameters = copy(input_parameters)
+        
+        fq1_merge_parameters['script'] = 'mergeFastq_1.{}.cmd'.format(ts)
+        fq1_merge_script = mergeFastqs.gz( fastq_1s, merged_fq1, args.container_tech, fq1_merge_parameters, remove_in_fqs )
+        workflow_tasks['merge_fastqs'].append( fq1_merge_script )
+        
+        
+        input_parameters['in_fastq1'] = merged_fq1
+        
+        if len( input_parameters['in_fastq2s'] ) >= 1:
+            
+            fq2_merge_parameters = copy(input_parameters)
+            
+            fq2_merge_parameters['script'] = 'mergeFastq_2.{}.cmd'.format(ts)
+            fastq_2s   = [ os.path.join( input_parameters['output_directory'], fq_i ) for fq_i in out_fastq_2s ]
+            merged_fq2 = os.path.join( input_parameters['output_directory'], input_parameters['out_fastq2_name'] )
+            
+            fq2_merge_script = mergeFastqs.gz( fastq_2s, merged_fq2, args.container_tech, fq2_merge_parameters, remove_in_fqs )
+            workflow_tasks['merge_fastqs'].append( fq2_merge_script )
+            
+            input_parameters['in_fastq2'] = merged_fq2
 
 
     if args.run_alignment:
@@ -110,18 +169,18 @@ def make_workflow(args, input_parameters):
         if args.parallelize_markdup:
             fractional_markdup_scripts, merge_markdup_script = markdup.picard_parallel(markdup_parameters, args.container_tech)
             
-            workflow_tasks['markdup_jobs'] = fractional_markdup_scripts
-            workflow_tasks['merging_jobs'].append(merge_markdup_script)
+            workflow_tasks['markdup_bams'] = fractional_markdup_scripts
+            workflow_tasks['merging_bams'].append(merge_markdup_script)
             
         else:
             markdup_script = markdup.picard(markdup_parameters, args.container_tech)
-            workflow_tasks['markdup_jobs'].append(markdup_script)
+            workflow_tasks['markdup_bams'].append(markdup_script)
 
 
     ########## Execute the workflow ##########
     if args.run_workflow_locally:
         import utilities.dockered_pipelines.run_workflows as run_workflows
-        run_workflows.run_workflows( (workflow_tasks['trim_jobs'], workflow_tasks['alignment_jobs'], workflow_tasks['markdup_jobs'], workflow_tasks['merging_jobs']), args.threads)
+        run_workflows.run_workflows( (workflow_tasks['trim_fastqs'], workflow_tasks['merge_fastqs'], workflow_tasks['alignment_jobs'], workflow_tasks['markdup_bams'], workflow_tasks['merging_bams']), args.threads)
         logger.info( 'Workflow Done. Check your results. You may remove the {} sub_directories.'.format(args.threads) )
 
 
@@ -136,5 +195,4 @@ def make_workflow(args, input_parameters):
 if __name__ == '__main__':
     
     args, input_parameters = run()
-    
     make_workflow(args, input_parameters)

@@ -1,23 +1,26 @@
 # Dockerized Somatic Mutation Detection Pipeline
 
-This describes a simple way to generate run scripts for each dockerized mutation caller that we have incorporated into SomaticSeq workflow.
+We have incorporated some dockerized bioinformatics workflows for somatic mutation detections.
 
 ## Requirement
 * Have internet connection and docker daemon. Be able to pull and run docker images from Docker Hub.
 * The documentation for those scripts can also be found in Section 4 of the [User's Manual](../../docs/Manual.pdf "Documentation").
 
-## Command to run somatic mutation callers, and then SomaticSeq afterwards
+## Somatic mutation detection workflow from BAM files
 
 You may run ```makeSomaticScripts.py [paired|single] -h``` to see all the available options for this command, in either paired (tumor-normal) or single (tumor-only) mode.
 
-### Example: majority-consensus mode (default)
-The following command will create scripts for MuTect2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and Strelka in tumor-normal modes, and run them in parallel. 
-Each caller (with the exception of SomaticSniper here) will be split into 12 threads (due to `--threads 12`) based on equal number of base pairs interrogated in each thread.
-Then, it will create the SomaticSeq script that merges those 7 callers we have invoked. The SomaticSeq scripts will be run *after* all the mutation callers are complete.
-Then, the results will be merged. 
+### Tumor-normal paired mode
+The following command will 
 
-The option `--run-workflow-locally` tells the program to actually run those scripts. 
-Without `--run-workflow-locally`, those scripts will be created but not run (e.g. leaving you the option to submit them to multiple nodes via SGE). 
+1) Create scripts for MuTect2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and Strelka in tumor-normal modes, and then run them in parallel. 
+Each caller (with the exception of SomaticSniper here) will be split into 12 threads (due to `--threads 12`) based on equal number of base pairs interrogated in each thread.
+
+2) Then, it will create the SomaticSeq script that merges the 7 callers we have invoked. The SomaticSeq scripts will be run *after* all the mutation callers are complete.
+
+3) Finally, the results will be merged. 
+
+The option `--run-workflow-locally` tells the program to execute those scripts. Without `--run-workflow-locally`, those scripts will be created but not executed (e.g. leaving you the option to submit them to multiple nodes via SGE). You may also modify and re-run any of these scripts if things did not end successfully.
 
 ```
 makeSomaticScripts.py paired \
@@ -32,8 +35,7 @@ makeSomaticScripts.py paired \
 --run-workflow-locally
 ```
 
-You can also submit the anove command into a SGE system, which will run the whole workflow to a single node with the number of threads you have specified. 
-
+You can also submit the above command into a SGE system, which will run the whole workflow to a single node with the number of threads you have specified. 
 
 * To run SomaticSeq in prediction mode, you need to specify classifiers, e.g.,
 
@@ -41,7 +43,7 @@ You can also submit the anove command into a SGE system, which will run the whol
 --snv-classifier /PATH/TO/snv.xgboost.model --indel-classifier /PATH/TO/indel.xgboost.model
 ```
 
-* To run SomaticSeq in training mode (include `--inclusion-region /PATH/TO/high_confidence.bed` if the truth files are only confident in certain genomic regions).
+* To run SomaticSeq in training mode (include `--inclusion-region /PATH/TO/high_confidence.bed` if the truth files are only confident in certain genomic regions), and then
 ```
 --train-somaticseq --truth-snv /PATH/TO/all_truth_snvs.vcf --truth-indel /PATH/TO/all_true_indels.vcf
 ```
@@ -58,7 +60,31 @@ makeSomaticScripts.py single \
 ```
 
 
-### What does that command do
+## Command to invoke the Alignment Workflow based on "Broad's Best Practices"
+
+### Example to trim, align, and then mark duplicates
+```
+makeAlignmentScripts.py \
+--output-directory /PATH/TO/OUTPUT \
+--in-fastq1s /PATH/TO/RG001_R1.fq.gz /PATH/TO/RG002_R1.fq.gz /PATH/TO/RG003_R1.fq.gz \
+--in-fastq2s /PATH/TO/RG001_R2.fq.gz /PATH/TO/RG002_R2.fq.gz /PATH/TO/RG003_R2.fq.gz \
+--out-fastq1-name merged_R1.fq.gz \
+--out-fastq1-name merged_R2.fq.gz \
+--genome-reference /PATH/TO/GRCh38.fa \
+--out-bam trimmed.aligned.markdup.bam \
+--bam-header '@RG\tID:identity_001\tPL:illumina\tLB:library_001\tSM:Patient_001' \
+--run-trimming --run-alignment --run-mark-duplicates --parallelize-markdup \
+--run-workflow-locally
+```
+
+You may run `makeAlignmentScripts.py -h` to see all the options.
+
+When you invoke `--parallelize-markdup`, picard MarkDuplicates will be run in parallel by first splitting the BAM files, run MarkDuplicates on each of the truncated BAM files, and then merge them at the end. 
+Be aware this may results in slightly different results, so do this at your own risk.
+
+
+
+### What does the commands do
 
 * For each flag such as `--run-mutect2`, `--run-varscan2`, ...., `--run-strelka2`, a run script ending with .cmd will be created in `/ABSOLUTE/PATH/TO/output_results/logs`. 
 * If you do `--run-somaticseq`, the somaticseq script will be created in `/ABSOLUTE/PATH/TO/output_results/SomaticSeq/logs`.
