@@ -5,6 +5,18 @@ import pysam
 import genomicFileHandler.genomic_file_handlers as genome
 from multiprocessing import Pool
 
+
+
+
+def bgzip_compress( infile, remove_infile=True ):
+    pysam.tabix_compress(infile, infile+'.gz', force=True)
+    os.remove(infile)
+    return infile+'.gz'
+
+
+
+
+
 def vcf(infileList, outfile, bgzip=False):
 
     with open(outfile, 'w') as vcfout:
@@ -31,8 +43,8 @@ def vcf(infileList, outfile, bgzip=False):
                     line_i = vcfin.readline()
     
     if bgzip:
+        bgzip_compress(outfile, True)
         actual_outfile = outfile+'.gz'
-        pysam.tabix_index(outfile, force=True, preset='vcf')
     else:
         actual_outfile = outfile
 
@@ -67,8 +79,8 @@ def tsv(infileList, outfile, bgzip=False):
                     line_i = tsvin.readline()
 
     if bgzip:
+        bgzip_compress(outfile, True)
         actual_outfile = outfile+'.gz'
-        pysam.tabix_compress(outfile, actual_outfile, force=True)
     else:
         actual_outfile = outfile
 
@@ -90,21 +102,14 @@ def bed(infileList, outfile, bgzip=False):
                     bedout.write( line_i )
 
     if bgzip:
+        bgzip_compress(outfile, True)
         actual_outfile = outfile+'.gz'
-        pysam.tabix_index(outfile, force=True, preset='bed')
     else:
         actual_outfile = outfile
         
     return actual_outfile
 
 
-
-
-
-def bgzip_compress( infile, remove_infile=True ):
-    pysam.tabix_compress(infile, infile+'.gz', force=True)
-    os.remove(infile)
-    return infile+'.gz'
 
 
 

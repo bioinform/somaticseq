@@ -295,7 +295,7 @@ def merge_results(input_parameters, tech='docker'):
 
         if input_parameters['run_mutect2']:
             out.write(f'{container_line} \\\n' )
-            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+            out.write( 'concat.py --bgzip-output -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( mutect2.format(i) + ' ' )
@@ -306,7 +306,7 @@ def merge_results(input_parameters, tech='docker'):
 
         if input_parameters['run_varscan2']:
             out.write(f'{container_line} \\\n' )
-            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+            out.write( 'concat.py --bgzip-output -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( varscan_snv.format(i) + ' ' )
@@ -315,7 +315,7 @@ def merge_results(input_parameters, tech='docker'):
             out.write('-outfile {}/VarScan2.snv.vcf\n\n'.format(mounted_outdir) )
 
             out.write(f'{container_line} \\\n' )
-            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+            out.write( 'concat.py --bgzip-output -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( varscan_indel.format(i) + ' ' )
@@ -326,7 +326,7 @@ def merge_results(input_parameters, tech='docker'):
 
         if input_parameters['run_vardict']:
             out.write(f'{container_line} \\\n' )
-            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+            out.write( 'concat.py --bgzip-output -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( vardict.format(i) + ' ' )
@@ -337,7 +337,7 @@ def merge_results(input_parameters, tech='docker'):
 
         if input_parameters['run_muse']:
             out.write(f'{container_line} \\\n' )
-            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+            out.write( 'concat.py --bgzip-output -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( muse.format(i) + ' ' )
@@ -348,7 +348,7 @@ def merge_results(input_parameters, tech='docker'):
 
         if input_parameters['run_lofreq']:
             out.write(f'{container_line} \\\n' )
-            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+            out.write( 'concat.py --bgzip-output -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( lofreq_snv.format(i) + ' ' )
@@ -357,7 +357,7 @@ def merge_results(input_parameters, tech='docker'):
             out.write('-outfile {}/LoFreq.snv.vcf\n\n'.format(mounted_outdir) )
 
             out.write(f'{container_line} \\\n' )
-            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+            out.write( 'concat.py --bgzip-output -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( lofreq_indel.format(i) + ' ' )
@@ -368,7 +368,7 @@ def merge_results(input_parameters, tech='docker'):
 
         if input_parameters['run_scalpel']:
             out.write(f'{container_line} \\\n' )
-            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+            out.write( 'concat.py --bgzip-output -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( scalpel.format(i) + ' ' )
@@ -379,7 +379,7 @@ def merge_results(input_parameters, tech='docker'):
 
         if input_parameters['run_strelka2']:
             out.write(f'{container_line} \\\n' )
-            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+            out.write( 'concat.py --bgzip-output -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( strelka_snv.format(i) + ' ' )
@@ -388,7 +388,7 @@ def merge_results(input_parameters, tech='docker'):
             out.write('-outfile {}/Strelka.snv.vcf\n\n'.format(mounted_outdir) )
 
             out.write(f'{container_line} \\\n' )
-            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+            out.write( 'concat.py --bgzip-output -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write( strelka_indel.format(i) + ' ' )
@@ -402,7 +402,7 @@ def merge_results(input_parameters, tech='docker'):
             
             # Ensemble.sSNV.tsv
             out.write(f'{container_line} \\\n' )
-            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+            out.write( 'concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write(  '{}/{}/{}/Ensemble.sSNV.tsv'.format(mounted_outdir, i, somaticdir) + ' ' )
@@ -412,7 +412,7 @@ def merge_results(input_parameters, tech='docker'):
 
             # Ensemble.sINDEL.tsv
             out.write(f'{container_line} \\\n' )
-            out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+            out.write( 'concat.py -infiles \\\n' )
             
             for i in range(1, input_parameters['threads']+1):
                 out.write(  '{}/{}/{}/Ensemble.sINDEL.tsv'.format(mounted_outdir, i, somaticdir) + ' ' )
@@ -435,7 +435,7 @@ def merge_results(input_parameters, tech='docker'):
             if input_parameters['snv_classifier']:
                 
                 out.write(f'{container_line} \\\n' )
-                out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+                out.write( 'concat.py --bgzip-output -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
                     out.write(  '{}/{}/{}/SSeq.Classified.sSNV.vcf'.format(mounted_outdir, i, somaticdir) + ' ' )
@@ -445,7 +445,7 @@ def merge_results(input_parameters, tech='docker'):
                 
                 # SSeq.Classified.sSNV.tsv
                 out.write(f'{container_line} \\\n' )
-                out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+                out.write( 'concat.py --bgzip-output -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
                     out.write(  '{}/{}/{}/SSeq.Classified.sSNV.tsv'.format(mounted_outdir, i, somaticdir) + ' ' )
@@ -456,7 +456,7 @@ def merge_results(input_parameters, tech='docker'):
             # Consensus mode: Consensus.sSNV.vcf
             else:
                 out.write(f'{container_line} \\\n' )
-                out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+                out.write( 'concat.py --bgzip-output -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
                     out.write(  '{}/{}/{}/Consensus.sSNV.vcf'.format(mounted_outdir, i, somaticdir) + ' ' )
@@ -469,7 +469,7 @@ def merge_results(input_parameters, tech='docker'):
             if input_parameters['indel_classifier']:
                 
                 out.write(f'{container_line} \\\n' )
-                out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+                out.write( 'concat.py --bgzip-output -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
                     out.write(  '{}/{}/{}/SSeq.Classified.sINDEL.vcf'.format(mounted_outdir, i, somaticdir) + ' ' )
@@ -479,7 +479,7 @@ def merge_results(input_parameters, tech='docker'):
 
                 # SSeq.Classified.sINDEL.tsv
                 out.write(f'{container_line} \\\n' )
-                out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+                out.write( 'concat.py --bgzip-output -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
                     out.write(  '{}/{}/{}/SSeq.Classified.sINDEL.tsv'.format(mounted_outdir, i, somaticdir) + ' ' )
@@ -490,7 +490,7 @@ def merge_results(input_parameters, tech='docker'):
             # Consensus mode: Consensus.sINDEL.vcf
             else:
                 out.write(f'{container_line} \\\n' )
-                out.write( '/opt/somaticseq/genomicFileHandler/concat.py -infiles \\\n' )
+                out.write( 'concat.py --bgzip-output -infiles \\\n' )
                 
                 for i in range(1, input_parameters['threads']+1):
                     out.write(  '{}/{}/{}/Consensus.sINDEL.vcf'.format(mounted_outdir, i, somaticdir) + ' ' )
