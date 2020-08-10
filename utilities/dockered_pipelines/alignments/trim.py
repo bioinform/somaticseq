@@ -29,11 +29,8 @@ DEFAULT_PARAMS = {'alienTrimmerImage'       : 'lethalfang/alientrimmer:0.4.0',
 
 
 def alienTrimmer( input_parameters, tech='docker' ):
-
-    assert os.path.exists( input_parameters['in_fastq1'] )
     
     if input_parameters['in_fastq2']:
-        assert os.path.exists( input_parameters['in_fastq2'] )
         paired_end = True
     else:
         paired_end = False
@@ -159,11 +156,8 @@ def alienTrimmer( input_parameters, tech='docker' ):
 
 
 def trimmomatic( input_parameters, tech='docker' ):
-
-    assert os.path.exists( input_parameters['in_fastq1'] )
     
     if input_parameters['in_fastq2']:
-        assert os.path.exists( input_parameters['in_fastq2'] )
         paired_end = True
     else:
         paired_end = False

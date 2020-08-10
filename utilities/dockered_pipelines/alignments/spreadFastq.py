@@ -46,7 +46,7 @@ def spread( in_fastqs, out_fastqs, tech='docker', input_parameters={}, remove_in
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' ) # Do not change this: picard_fractional uses this to end the copying. 
         
         out.write(f'{spread_line} \\\n' )
-        out.write('/opt/somaticseq/genomicFileHandler/concat.py -spread -bgzip -infiles {} -outfiles {} \n'.format(infastq_string, outfastq_string) )
+        out.write('concat.py -spread -bgzip -nt {} -infiles {} -outfiles {} \n'.format(input_parameters['threads'], infastq_string, outfastq_string) )
 
         if remove_infiles:
             out.write( 'rm {}\n\n'.format(' '.join(in_fastqs) ) )

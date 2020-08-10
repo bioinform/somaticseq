@@ -3,6 +3,7 @@
 import argparse, os, sys
 import pysam
 import genomicFileHandler.genomic_file_handlers as genome
+from multiprocessing import Pool
 
 def vcf(infileList, outfile, bgzip=False):
 
@@ -100,11 +101,16 @@ def bed(infileList, outfile, bgzip=False):
 
 
 
+def bgzip_compress( infile, remove_infile=True ):
+    pysam.tabix_compress(infile, infile+'.gz', force=True)
+    os.remove(infile)
+    return infile+'.gz'
 
 
 
 
-def spreader( infileList, outfiles, chunk=4, bgzip=False ):
+
+def spreader( infileList, outfiles, chunk=4, bgzip=False, threads=1 ):
     '''
     Given an infile, it will spread its content into the outfiles "chunk" at a time, e.g,. 
     If infile is a fastq file, and output is 3 fastq files, then the first 4 lines will go to the 1st output, the next 4 lines to go the 2nd output, the next 4 lines go to the 3rd output, and then the next 4 lines will go back to the 1st output, so on and so forth.
@@ -120,15 +126,15 @@ def spreader( infileList, outfiles, chunk=4, bgzip=False ):
                     for i in range( chunk ):
                         out_i.write(line_i)
                         line_i = text_in.readline()
-    
-    
+
     [ out_i.close() for out_i in outs ]
     
     if bgzip:
-        actual_outfiles = []
-        for file_i in outfiles:
-            pysam.tabix_compress(file_i, file_i+'.gz', force=True)
-            actual_outfiles.append( file_i+'.gz' )
+        
+        pool = Pool(processes = threads)
+        bash_async      = pool.map_async(bgzip_compress, outfiles)
+        actual_outfiles = bash_async.get()
+        pool.close()
             
     else:
         actual_outfiles = outfiles
@@ -148,14 +154,14 @@ def run():
     parser.add_argument('-infiles',  '--input-files',  type=str,  nargs='*', help='Input files')
     parser.add_argument('-outfile',  '--output-file',  type=str,             help='Output file')
     parser.add_argument('-outfiles', '--output-files', type=str,  nargs='*', help='Output files for spreader' )
-    parser.add_argument('-spread',   '--spread',  action='store_true', help='Spread content into multiple files.')
-    parser.add_argument('-bgzip',    '--bgzip-output',  action='store_true', help='compress the output files')
+    parser.add_argument('-nt',       '--threads',      type=int, help='only invoked in -spread -bgzip when output compression can be parallelized')
+    parser.add_argument('-spread',   '--spread',       action='store_true', help='Spread content into multiple files.')
+    parser.add_argument('-bgzip',    '--bgzip-output', action='store_true', help='compress the output files')
 
     # Parse the arguments:
     args = parser.parse_args()
 
     if args.spread:
-        assert len(args.input_files) == 1
         filetype = 'spread'
     
     elif args.input_files[0].lower().endswith('.vcf') or args.input_files[0].lower().endswith('.vcf.gz'):
@@ -178,7 +184,7 @@ if __name__ == '__main__':
     args, ftype = run()
 
     if ftype == 'spread':
-        spreader(args.input_files, args.output_files, 4, args.bgzip_output)
+        spreader(args.input_files, args.output_files, 4, args.bgzip_output, args.threads)
 
     elif ftype == 'vcf':
         vcf(args.input_files, args.output_file, args.bgzip_output)

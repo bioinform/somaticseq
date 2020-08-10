@@ -34,6 +34,7 @@ def run():
     parser.add_argument('-fout2',  '--out-fastq2-name',       type=str, )
     parser.add_argument('--trim-software',                    type=str, choices=('alientrimmer', 'trimmomatic'), default='trimmomatic')
     parser.add_argument('--extra-trim-arguments',             type=str, default='')
+    parser.add_argument('--split-input-fastqs', action='store_true', help='split input fastq files before trimming to maximize multi-threading efficiency in trimming.')
 
     parser.add_argument('-align',  '--run-alignment', action='store_true')
     parser.add_argument('-header', '--bam-header',     type=str, default='@RG\tID:ID00\tLB:LB0\tPL:illumina\tSM:Sample')
@@ -49,6 +50,10 @@ def run():
     
     input_parameters = vars(args)
 
+    if len(args.in_fastq2s) >= 1:
+        assert len(args.in_fastq1s) == len(args.in_fastq2s)
+        assert args.out_fastq2_name
+
     return args, input_parameters
 
 
@@ -61,32 +66,71 @@ def make_workflow(args, input_parameters):
 
     os.makedirs( os.path.join(input_parameters['output_directory'], 'logs'), exist_ok=True )
     
-    workflow_tasks = {'trim_fastqs': [], 'merge_fastqs': [], 'alignment_jobs': [], 'markdup_bams': [], 'merging_bams': [] }
-    
+    workflow_tasks = {'split_fastqs': [], 'trim_fastqs': [], 'merge_fastqs': [], 'alignment_jobs': [], 'markdup_bams': [], 'merging_bams': [] }
     
     if args.run_trimming:
         import utilities.dockered_pipelines.alignments.trim as trim
+
+        # Split the fastq files into number of files equal to the thread, to maximize multi-threading
+        if args.split_input_fastqs:
+            import utilities.dockered_pipelines.alignments.spreadFastq as spreadFastq
+            
+            spread_parameters = copy(input_parameters)
+            
+            spread_parameters['threads'] = args.threads
+            spread_parameters['MEM'] = 2
+            spread_parameters['script'] = 'spreadFastq_1.{}.cmd'.format(ts)
+
+            out_fastq_names   = [ uuid.uuid4().hex for i in range(args.threads) ]
+            out_fastq1s       = [ os.path.join(spread_parameters['output_directory'], out_name_i+'_R1.fastq') for out_name_i in out_fastq_names]
+            spread_fq1_script = spreadFastq.spread(args.in_fastq1s, out_fastq1s, args.container_tech, spread_parameters, remove_infiles=False)
+            
+            workflow_tasks['split_fastqs'].append(spread_fq1_script)
+            
+            in_fastq1s = [fq_i+'.gz' for fq_i in out_fastq1s]
+            
+            # Is Paired-End
+            if len(args.in_fastq2s) >= 1:
+                
+                spread_parameters['script'] = 'spreadFastq_2.{}.cmd'.format(ts)
+                
+                out_fastq2s       = [ os.path.join(spread_parameters['output_directory'], out_name_i+'_R2.fastq') for out_name_i in out_fastq_names]
+                spread_fq1_script = spreadFastq.spread(args.in_fastq2s, out_fastq2s, args.container_tech, spread_parameters, remove_infiles=False)
+                
+                workflow_tasks['split_fastqs'].append(out_fastq2s)
+        
+                in_fastq2s = [fq_i+'.gz' for fq_i in out_fastq2s]
+            
+            # Is not Paired-End
+            else:
+                in_fastq2s = []
+                
+        
+        else:
+            in_fastq1s = args.in_fastq1s
+            in_fastq2s = args.in_fastq2s
+        
         
         out_fastq_1s = []
         out_fastq_2s = []
 
-        for i, fastq_1 in enumerate(args.in_fastq1s):
+        for i, fastq_1 in enumerate(in_fastq1s):
         
             trim_parameters = copy(input_parameters)
             
-            trim_parameters['threads'] = max(1, int(input_parameters['threads']/len(args.in_fastq1s)))
+            trim_parameters['threads'] = max(1, int(input_parameters['threads']/len(in_fastq1s)))
             
-            out_basename = uid.uuid4().hex
+            out_basename = uuid.uuid4().hex
             
             trim_parameters['in_fastq1'] = fastq_1
-            if len(args.in_fastq1s) > 1:
+            if len(in_fastq1s) > 1:
                 trim_parameters['out_fastq1_name'] = out_basename+'_R1.fastq.gz'
                 out_fastq_1s.append( trim_parameters['out_fastq1_name'] )
             
-            if len(args.in_fastq2s) >= 1:
-                trim_parameters['in_fastq2'] = args.in_fastq2s[i]
+            if len(in_fastq2s) >= 1:
+                trim_parameters['in_fastq2'] = in_fastq2s[i]
             
-            if len(args.in_fastq2s) > 1:
+            if len(in_fastq2s) > 1:
                 trim_parameters['out_fastq2_name'] = out_basename+'_R2.fastq.gz'
                 out_fastq_2s.append( trim_parameters['out_fastq2_name'] )
             
@@ -110,8 +154,8 @@ def make_workflow(args, input_parameters):
                 input_parameters['in_fastq2'] = os.path.join( input_parameters['output_directory'], input_parameters['out_fastq2_name'] )
 
     else:
-        out_fastq_1s = args.in_fastq1s
-        out_fastq_2s = args.in_fastq2s
+        out_fastq_1s = in_fastq1s
+        out_fastq_2s = in_fastq2s
         
         
     
@@ -188,7 +232,7 @@ def make_workflow(args, input_parameters):
     ########## Execute the workflow ##########
     if args.run_workflow_locally:
         import utilities.dockered_pipelines.run_workflows as run_workflows
-        run_workflows.run_workflows( (workflow_tasks['trim_fastqs'], workflow_tasks['merge_fastqs'], workflow_tasks['alignment_jobs'], workflow_tasks['markdup_bams'], workflow_tasks['merging_bams']), args.threads)
+        run_workflows.run_workflows( (workflow_tasks['split_fastqs'], workflow_tasks['trim_fastqs'], workflow_tasks['merge_fastqs'], workflow_tasks['alignment_jobs'], workflow_tasks['markdup_bams'], workflow_tasks['merging_bams']), args.threads)
         logger.info( 'Workflow Done. Check your results. You may remove the {} sub_directories.'.format(args.threads) )
 
 
