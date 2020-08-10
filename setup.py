@@ -32,6 +32,7 @@ setup(
              'utilities/vcfsorter.pl',
              'utilities/dockered_pipelines/makeAlignmentScripts.py',
              'utilities/dockered_pipelines/makeSomaticScripts.py',
+             'genomicFileHandler/concat.py',
              'r_scripts/ada_model_builder_ntChange.R',
              'r_scripts/ada_model_predictor.R',
              ]
