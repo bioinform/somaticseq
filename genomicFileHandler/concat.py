@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse, os, sys
-
-MY_DIR = os.path.dirname(os.path.realpath(__file__))
-PRE_DIR = os.path.join(MY_DIR, os.pardir)
-sys.path.append( PRE_DIR )
-
+import pysam
 import genomicFileHandler.genomic_file_handlers as genome
 
-def vcf(infileList, outfile):
+def vcf(infileList, outfile, bgzip=False):
 
     with open(outfile, 'w') as vcfout:
 
@@ -32,11 +28,19 @@ def vcf(infileList, outfile):
                 while line_i:
                     vcfout.write( line_i )
                     line_i = vcfin.readline()
-    return 0
+    
+    if bgzip:
+        actual_outfile = outfile+'.gz'
+        pysam.tabix_index(outfile, force=True, preset='vcf')
+    else:
+        actual_outfile = outfile
+
+    return actual_outfile
 
 
 
-def tsv(infileList, outfile):
+
+def tsv(infileList, outfile, bgzip=False):
 
     with open(outfile, 'w') as tsvout:
 
@@ -61,21 +65,36 @@ def tsv(infileList, outfile):
                     tsvout.write( line_i )
                     line_i = tsvin.readline()
 
-    return 0
+    if bgzip:
+        actual_outfile = outfile+'.gz'
+        pysam.tabix_compress(outfile, actual_outfile, force=True)
+    else:
+        actual_outfile = outfile
+
+    return actual_outfile
 
 
 
-def bed(infileList, outfile):
+
+
+def bed(infileList, outfile, bgzip=False):
 
     with open(outfile, 'w') as bedout:
-        
+
         for file_i in infileList:
             
             with genome.open_textfile(file_i) as bedin:
-                
+
                 for line_i in bedin:
                     bedout.write( line_i )
-    return 0
+
+    if bgzip:
+        actual_outfile = outfile+'.gz'
+        pysam.tabix_index(outfile, force=True, preset='bed')
+    else:
+        actual_outfile = outfile
+        
+    return actual_outfile
 
 
 
@@ -85,26 +104,36 @@ def bed(infileList, outfile):
 
 
 
-def spreader( infile, outfiles, chunk=4 ):
+def spreader( infileList, outfiles, chunk=4, bgzip=False ):
     '''
     Given an infile, it will spread its content into the outfiles "chunk" at a time, e.g,. 
     If infile is a fastq file, and output is 3 fastq files, then the first 4 lines will go to the 1st output, the next 4 lines to go the 2nd output, the next 4 lines go to the 3rd output, and then the next 4 lines will go back to the 1st output, so on and so forth.
     '''
+
+    outs = [ open(out_i, 'w') for out_i in outfiles ]
+
+    for infile in infileList:
+        with genome.open_textfile(infile) as text_in:
+            line_i = text_in.readline()
+            while line_i:
+                for out_i in outs:
+                    for i in range( chunk ):
+                        out_i.write(line_i)
+                        line_i = text_in.readline()
     
-    with genome.open_textfile(infile) as text_in:
-        
-        line_i = text_in.readline()
-        outs   = [ open(out_i, 'w') for out_i in outfiles ]
-        
-        while line_i:
-            for out_i in outs:
-                for i in range( chunk ):
-                    out_i.write(line_i)
-                    line_i = text_in.readline()
     
-        [ out_i.close() for out_i in outs ]
+    [ out_i.close() for out_i in outs ]
     
-    return 0
+    if bgzip:
+        actual_outfiles = []
+        for file_i in outfiles:
+            pysam.tabix_compress(file_i, file_i+'.gz', force=True)
+            actual_outfiles.append( file_i+'.gz' )
+            
+    else:
+        actual_outfiles = outfiles
+    
+    return actual_outfiles
 
 
 
@@ -116,37 +145,49 @@ def run():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Variant Call Type, i.e., snp or indel
-    parser.add_argument('-infiles',  '--input-files', type=str,   nargs='+', help='Input files', required=True)
-    parser.add_argument('-outfile',  '--output-file', type=str,              help='Output file')
-    parser.add_argument('-outfiles', '--output-files', type=str,  nargs='+', help='Output files for spreader' )
-    
+    parser.add_argument('-infiles',  '--input-files',  type=str,  nargs='*', help='Input files')
+    parser.add_argument('-outfile',  '--output-file',  type=str,             help='Output file')
+    parser.add_argument('-outfiles', '--output-files', type=str,  nargs='*', help='Output files for spreader' )
+    parser.add_argument('-spread',   '--spread',  action='store_true', help='Spread content into multiple files.')
+    parser.add_argument('-bgzip',    '--bgzip-output',  action='store_true', help='compress the output files')
+
     # Parse the arguments:
     args = parser.parse_args()
 
-    infiles  = args.input_files
-    outfile  = args.output_file
-
-    if   infiles[0].lower().endswith('.vcf') or infiles[0].lower().endswith('.vcf.gz'):
+    if args.spread:
+        assert len(args.input_files) == 1
+        filetype = 'spread'
+    
+    elif args.input_files[0].lower().endswith('.vcf') or args.input_files[0].lower().endswith('.vcf.gz'):
         filetype = 'vcf'
-    elif infiles[0].lower().endswith('.tsv') or infiles[0].lower().endswith('.tsv.gz'):
+    
+    elif args.input_files[0].lower().endswith('.tsv') or args.input_files[0].lower().endswith('.tsv.gz'):
         filetype = 'tsv'
-    elif infiles[0].lower().endswith('.bed') or infiles[0].lower().endswith('.bed.gz'):
+    
+    elif args.input_files[0].lower().endswith('.bed') or args.input_files[0].lower().endswith('.bed.gz'):
         filetype = 'bed'
+        
     else:
-        filetype = 'generic'
+        filetype = 'unknown'
 
-    return infiles, outfile, filetype
+    return args, filetype
 
 
 if __name__ == '__main__':
 
-    infiles, outfile, ftype = run()
+    args, ftype = run()
 
-    if ftype == 'vcf':
-        vcf(infiles, outfile)
+    if ftype == 'spread':
+        spreader(args.input_files, args.output_files, 4, args.bgzip_output)
 
-    elif ftype == 'tsv':
-        tsv(infiles, outfile)
+    elif ftype == 'vcf':
+        vcf(args.input_files, args.output_file, args.bgzip_output)
 
     elif ftype == 'bed':
-        bed(infiles, outfile)
+        bed(args.input_files, args.output_file, args.bgzip_output)
+
+    elif ftype == 'tsv':
+        tsv(args.input_files, args.output_file, args.bgzip_output)
+
+    elif ftype == 'unknown':
+        tsv(args.input_files, args.output_file, args.bgzip_output)
