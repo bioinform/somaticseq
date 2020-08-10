@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import sys, argparse, math, gzip, os
+from datetime import datetime
 from genomicFileHandler.genomic_file_handlers import p2phred
 from somaticseq._version import vcf_header as version_line
 
 nan = float('nan')
+time_string = datetime.now().isoformat(sep='_', timespec='seconds')
 
 
 def run():
@@ -195,7 +197,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
 
         # Create vcf headers:
         vcf.write('##fileformat=VCFv4.1\n')
-        vcf.write(version_line + '\n')
+        vcf.write('{}__{}\n'.format(version_line, time_string) )
         
         for header_line_i in extra_headers:
             vcf.write( header_line_i + '\n' )
