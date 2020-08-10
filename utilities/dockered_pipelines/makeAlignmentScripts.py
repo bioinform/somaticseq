@@ -95,9 +95,9 @@ def make_workflow(args, input_parameters):
                 spread_parameters['script'] = 'spreadFastq_2.{}.cmd'.format(ts)
                 
                 out_fastq2s       = [ os.path.join(spread_parameters['output_directory'], out_name_i+'_R2.fastq') for out_name_i in out_fastq_names]
-                spread_fq1_script = spreadFastq.spread(args.in_fastq2s, out_fastq2s, args.container_tech, spread_parameters, remove_infiles=False)
+                spread_fq2_script = spreadFastq.spread(args.in_fastq2s, out_fastq2s, args.container_tech, spread_parameters, remove_infiles=False)
                 
-                workflow_tasks['split_fastqs'].append(out_fastq2s)
+                workflow_tasks['split_fastqs'].append(spread_fq2_script)
         
                 in_fastq2s = [fq_i+'.gz' for fq_i in out_fastq2s]
             
@@ -119,6 +119,12 @@ def make_workflow(args, input_parameters):
             trim_parameters = copy(input_parameters)
             
             trim_parameters['threads'] = max(1, int(input_parameters['threads']/len(in_fastq1s)))
+
+            # If the input_fastqs to trimming are created during the workflow, remove them after trimming
+            if args.split_input_fastqs:
+                trim_parameters['remove_untrimmed'] = True
+            else:
+                trim_parameters['remove_untrimmed'] = False
             
             out_basename = uuid.uuid4().hex
             
@@ -161,7 +167,7 @@ def make_workflow(args, input_parameters):
     
     # Merge fastqs for the next output
     # If this step is undertaken, replace in_fastqs as out_fastqs for the next step:
-    remove_in_fqs = True if args.run_trimming else False
+    remove_in_fqs = True if (args.run_trimming or args.split_input_fastqs) else False
     if len(args.in_fastq1s) > 1:
         import utilities.dockered_pipelines.alignments.mergeFastqs as mergeFastqs
 

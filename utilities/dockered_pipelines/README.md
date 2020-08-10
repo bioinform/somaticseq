@@ -6,9 +6,9 @@ We have incorporated some dockerized bioinformatics workflows for somatic mutati
 * Have internet connection and docker daemon. Be able to pull and run docker images from Docker Hub.
 * The documentation for those scripts can also be found in Section 4 of the [User's Manual](../../docs/Manual.pdf "Documentation").
 
-## Somatic mutation detection workflow from BAM files
+## Somatic mutation detection workflow (makeSomaticScripts.py)
 
-You may run ```makeSomaticScripts.py [paired|single] -h``` to see all the available options for this command, in either paired (tumor-normal) or single (tumor-only) mode.
+You may run ```makeSomaticScripts.py [paired|single] -h``` to see all the available options for this command, in either paired (tumor-normal) or single (tumor-only) mode. This workflow starts from BAM files.
 
 ### Tumor-normal paired mode
 The following command will 
@@ -60,26 +60,32 @@ makeSomaticScripts.py single \
 ```
 
 
-## Command to invoke the Alignment Workflow based on "Broad's Best Practices"
+## Alignment workflow based on "Broad's Best Practices" (makeAlignmentScripts.py)
+
+You may run `makeAlignmentScripts.py -h` to see all the options. This workflow starts from FASTQ files.
 
 ### Example to trim, align, and then mark duplicates
 ```
 makeAlignmentScripts.py \
 --output-directory /PATH/TO/OUTPUT \
---in-fastq1s /PATH/TO/RG001_R1.fq.gz /PATH/TO/RG002_R1.fq.gz /PATH/TO/RG003_R1.fq.gz \
---in-fastq2s /PATH/TO/RG001_R2.fq.gz /PATH/TO/RG002_R2.fq.gz /PATH/TO/RG003_R2.fq.gz \
---out-fastq1-name merged_R1.fq.gz \
---out-fastq1-name merged_R2.fq.gz \
+--in-fastq1s       /PATH/TO/RG001_R1.fq.gz /PATH/TO/RG002_R1.fq.gz /PATH/TO/RG003_R1.fq.gz \
+--in-fastq2s       /PATH/TO/RG001_R2.fq.gz /PATH/TO/RG002_R2.fq.gz /PATH/TO/RG003_R2.fq.gz \
+--out-fastq1-name  Reads_Merged_R1.fq.gz \
+--out-fastq1-name  Reads_Merged_R2.fq.gz \
 --genome-reference /PATH/TO/GRCh38.fa \
---out-bam trimmed.aligned.markdup.bam \
---bam-header '@RG\tID:identity_001\tPL:illumina\tLB:library_001\tSM:Patient_001' \
---run-trimming --run-alignment --run-mark-duplicates --parallelize-markdup \
+--out-bam          trimmed.aligned.markdup.bam \
+--bam-header       '@RG\tID:identity_001\tPL:illumina\tLB:library_001\tSM:Patient_001' \
+--threads          18 \
+--run-trimming --split-input-fastqs \
+--run-alignment \
+--run-mark-duplicates --parallelize-markdup \
 --run-workflow-locally
 ```
 
-You may run `makeAlignmentScripts.py -h` to see all the options.
+If you invoke `--split-input-fastqs`, the input FASTQ files will be split into a number of files equal to the `--threads` number, in order to maximize the multi-threading efficiency of trimming. 
+After trimming on each of those files, the trimmed FASTQs will be merged into the files named with `--out-fastq1-name` and `--out-fastq2-name`.
 
-When you invoke `--parallelize-markdup`, picard MarkDuplicates will be run in parallel by first splitting the BAM files, run MarkDuplicates on each of the truncated BAM files, and then merge them at the end. 
+If you invoke `--parallelize-markdup`, picard MarkDuplicates will be run in parallel by first splitting the BAM files, then run MarkDuplicates on each of the truncated BAM files, and then merge them at the end.
 Be aware this may results in slightly different results, so do this at your own risk.
 
 

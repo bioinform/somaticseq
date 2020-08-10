@@ -24,6 +24,7 @@ DEFAULT_PARAMS = {'alienTrimmerImage'       : 'lethalfang/alientrimmer:0.4.0',
                   'extra_trim_arguments'    : '',
                   'threads'                 : 1,
                   'script'                  : 'trim.{}.cmd'.format(ts),
+                  'remove_untrimmed'        : False,
                   }
 
 
@@ -139,6 +140,14 @@ def alienTrimmer( input_parameters, tech='docker' ):
         for file_i in temporary_files:
             out.write('rm {}\n'.format( os.path.join(input_parameters['output_directory'], file_i)))
     
+        # Remove untrimmed files:
+        if input_parameters['remove_untrimmed']:
+            out.write( '\n' )
+            out.write('rm {}\n'.format(input_parameters['in_fastq1']) )
+                
+            if input_parameters['in_fastq2']:
+                out.write('rm {}\n'.format( input_parameters['in_fastq2'] ) )
+    
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
 
 
@@ -208,6 +217,15 @@ def trimmomatic( input_parameters, tech='docker' ):
 
 
         out.write( 'ILLUMINACLIP:{ADAPTER}:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:{MINLEN}\n'.format(ADAPTER=input_parameters['adapter'], MINLEN=input_parameters['minimum_length'] ) )
+
+        # Remove untrimmed files:
+        if input_parameters['remove_untrimmed']:
+            out.write( '\n' )
+            out.write('rm {}\n'.format(input_parameters['in_fastq1']) )
+                
+            if input_parameters['in_fastq2']:
+                out.write('rm {}\n'.format( input_parameters['in_fastq2'] ) )
+
 
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
 
