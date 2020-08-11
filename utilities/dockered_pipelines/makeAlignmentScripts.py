@@ -209,6 +209,7 @@ def make_workflow(args, input_parameters):
         import utilities.dockered_pipelines.alignments.align as align
         
         bwa_parameters = copy(input_parameters)
+        
         bwa_parameters['script'] = 'align.{}.cmd'.format(ts)
         bwa_parameters['MEM'] = 8
 
@@ -223,6 +224,7 @@ def make_workflow(args, input_parameters):
         import utilities.dockered_pipelines.alignments.markdup as markdup
         
         markdup_parameters = copy(input_parameters)
+        
         markdup_parameters['software'] = input_parameters['markdup_software']
         markdup_parameters['script']   = 'markdup.{}.cmd'.format(ts)
         markdup_parameters['MEM']      = 8
@@ -234,7 +236,10 @@ def make_workflow(args, input_parameters):
             
             markdup_parameters['threads'] = max(1, int(input_parameters['threads']/2) )
             
-            fractional_markdup_scripts, merge_markdup_script = markdup.parallel(markdup_parameters, args.container_tech)
+            merging_parameters = copy(markdup_parameters)
+            
+            merging_parameters['MEM'] = 64
+            fractional_markdup_scripts, merge_markdup_script = markdup.parallel(merging_parameters, args.container_tech)
             
             workflow_tasks['markdup_bams'] = fractional_markdup_scripts
             workflow_tasks['merging_bams'].append(merge_markdup_script)
