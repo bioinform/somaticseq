@@ -60,3 +60,33 @@ def run_workflows( list_of_ListOfTasks, threads = 1 ):
     pool.close()
 
     return True
+
+
+
+
+
+
+
+
+
+def run():
+    
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    # INPUT FILES and Global Options
+    parser.add_argument('-scripts', '--list-of-scripts', nargs='+', type=str,)
+    parser.add_argument('-nt',      '--threads',  type=int, default=1)
+    
+    args = parser.parse_args()
+    
+    return args
+
+
+
+
+
+
+if __name__ == '__main__':
+    
+    args = run()
+    run_workflows( args.list_of_scripts, args.threads )
