@@ -3,6 +3,7 @@
 import sys, argparse, os, re
 import logging
 import uuid
+import math
 from copy import copy
 from shutil import move
 from datetime import datetime
@@ -234,7 +235,7 @@ def make_workflow(args, input_parameters):
         
         if args.parallelize_markdup:
             
-            markdup_parameters['threads'] = max(1, int(input_parameters['threads']/2) )
+            markdup_parameters['threads'] = max(1, math.ceil(input_parameters['threads']/2) )
             
             merging_parameters = copy(markdup_parameters)
             

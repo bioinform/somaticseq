@@ -283,7 +283,11 @@ def parallel( input_parameters, tech='docker' ):
     
     merging_parameters = copy(input_parameters)
     merging_parameters['script'] = 'mergeBam.{}.cmd'.format(ts)
-    merge_script = mergeBams.picard( inbams=fractional_bams, outbam=out_markduped_bam, tech=tech, input_parameters=merging_parameters, remove_inbams=True )
+    
+    if input_parameters['software'] == 'picard':
+        merge_script = mergeBams.picard( inbams=fractional_bams, outbam=out_markduped_bam, tech=tech, input_parameters=merging_parameters, remove_inbams=True )
+    elif input_parameters['software'] == 'sambamba':
+        merge_script = mergeBams.sambamba( inbams=fractional_bams, outbam=out_markduped_bam, tech=tech, input_parameters=merging_parameters, remove_inbams=True )
     
     return fractional_outfiles, merge_script
 
@@ -308,13 +312,14 @@ def run():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # INPUT FILES and Global Options
-    parser.add_argument('-outdir', '--output-directory',       type=str, default=os.getcwd())
-    parser.add_argument('-inbam',  '--in-bam',                 type=str, required=True)
-    parser.add_argument('-outbam', '--out-bam',                type=str, required=True)
-    parser.add_argument('-nt',     '--threads',                type=int, default=1)
-    parser.add_argument('-ref',    '--genome-reference',       type=str, help='required if threads>1')
-    parser.add_argument('-extras', '--extra-picard-arguments', type=str, default='')
-    parser.add_argument('-tech',   '--container-tech',         type=str, choices=('docker', 'singularity'), default='docker')
+    parser.add_argument('-outdir',   '--output-directory',       type=str, default=os.getcwd())
+    parser.add_argument('-inbam',    '--in-bam',                 type=str, required=True)
+    parser.add_argument('-outbam',   '--out-bam',                type=str, required=True)
+    parser.add_argument('-nt',       '--threads',                type=int, default=1)
+    parser.add_argument('-ref',      '--genome-reference',       type=str, help='required if threads>1')
+    parser.add_argument('-extras',   '--extra-picard-arguments', type=str, default='')
+    parser.add_argument('-tech',     '--container-tech',         type=str, choices=('docker', 'singularity'), default='docker')
+    parser.add_argument('-software', '--software',               type=str, choices=('picard', 'sambamba'),    default='picard')
     
     args = parser.parse_args()
     
@@ -330,7 +335,4 @@ if __name__ == '__main__':
     
     args, input_parameters = run()
     
-    if args.threads == 1:
-        picard( input_parameters, args.container_tech )
-    elif args.threads > 1:
-        parallel( input_parameters, args.container_tech )
+    parallel( input_parameters, args.container_tech )
