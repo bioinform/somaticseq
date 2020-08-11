@@ -224,14 +224,14 @@ def fractional( bed, input_parameters, tech='docker' ):
         if input_parameters['software'] == 'picard':
             dedup_script = picard( fractional_parameters, tech )
         elif input_parameters['software'] == 'sambamba':
+            
+            fractional_parameters['threads'] = 2
             dedup_script = sambamba( fractional_parameters, tech )
 
         with open(os.path.join(logdir, fractional_parameters['script'])) as dedup:
             
             line_i = dedup.readline()
-            
-            start_writing = False
-            
+                        
             while not line_i.startswith('echo -e "Start'):
                 line_i = dedup.readline()
                 
