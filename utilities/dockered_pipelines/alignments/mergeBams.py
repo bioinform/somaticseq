@@ -14,7 +14,9 @@ import tempfile
 ts = re.sub(r'[:-]', '.', datetime.now().isoformat(sep='.', timespec='milliseconds') )
 
 
+
 DEFAULT_PARAMS = {'picard_image'            : 'lethalfang/picard:2.22.7',
+                  'sambamba_image'          : 'lethalfang/sambamba:0.7.1',
                   'MEM'                     : 16,
                   'action'                  : 'echo',
                   'extra_docker_options'    : '',
@@ -27,7 +29,13 @@ DEFAULT_PARAMS = {'picard_image'            : 'lethalfang/picard:2.22.7',
 
 
 
-def picard( inbams, outbam, tech='docker', input_parameters=DEFAULT_PARAMS, remove_inbams=False ):
+
+
+def picard( inbams, outbam, tech='docker', input_parameters, remove_inbams=False ):
+
+    for param_i in DEFAULT_PARAMS:
+        if param_i not in input_parameters:
+            input_parameters[param_i] = DEFAULT_PARAMS[param_i]
 
     logdir  = os.path.join( input_parameters['output_directory'], 'logs' )
     outfile = os.path.join( logdir, input_parameters['script'] )
@@ -79,3 +87,52 @@ def picard( inbams, outbam, tech='docker', input_parameters=DEFAULT_PARAMS, remo
     returnCode   = subprocess.call( command_item )
 
     return outfile
+
+
+
+
+
+
+
+
+def sambamba( inbams, outbam, tech='docker', input_parameters, remove_inbams=False ):
+
+    for param_i in DEFAULT_PARAMS:
+        if param_i not in input_parameters:
+            input_parameters[param_i] = DEFAULT_PARAMS[param_i]
+
+    logdir  = os.path.join( input_parameters['output_directory'], 'logs' )
+    outfile = os.path.join( logdir, input_parameters['script'] )
+
+    all_paths = list(inbams) + [outbam,]
+    merge_line, fileDict = container.container_params( input_parameters['sambamba_image'], tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
+
+    mounted_outbam = fileDict[ outbam ]['mount_path']
+    infile_string  = ' '.join( [ fileDict[ file_i ]['mount_path'] for file_i in inbams ] )
+
+    with open(outfile, 'w') as out:
+
+        out.write( "#!/bin/bash\n\n" )
+        
+        out.write(f'#$ -o {logdir}\n' )
+        out.write(f'#$ -e {logdir}\n' )
+        out.write( '#$ -S /bin/bash\n' )
+        out.write( '#$ -l h_vmem={}G\n'.format( input_parameters['MEM'] ) )
+        out.write( 'set -e\n\n' )
+
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' ) # Do not change this: picard_fractional uses this to end the copying. 
+        
+        out.write(f'{merge_line} \\\n' )
+        out.write('sambamba merge -t {} {} {}\n\n'.format(input_parameters['threads'], infile_string, mounted_outbam))
+
+        if remove_inbams:
+            out.write( 'rm {}\n\n'.format(' '.join(inbams) ) )
+
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
+
+    # "Run" the script that was generated
+    command_item = (input_parameters['action'], outfile)
+    returnCode   = subprocess.call( command_item )
+
+    return outfile
+
