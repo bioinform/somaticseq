@@ -238,7 +238,6 @@ def make_workflow(args, input_parameters):
             
             merging_parameters = copy(markdup_parameters)
             
-            merging_parameters['MEM'] = 64
             fractional_markdup_scripts, merge_markdup_script = markdup.parallel(merging_parameters, args.container_tech)
             
             workflow_tasks['markdup_bams'] = fractional_markdup_scripts
