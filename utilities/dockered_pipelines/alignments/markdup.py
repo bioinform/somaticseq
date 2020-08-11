@@ -22,17 +22,20 @@ ts = re.sub(r'[:-]', '.', datetime.now().isoformat(sep='.', timespec='millisecon
 
 
 
-DEFAULT_PARAMS = {'picard_image'            : 'lethalfang/picard:2.22.7',
-                  'samtools_image'          : 'lethalfang/samtools:1.10',
-                  'MEM'                     : 8,
-                  'output_directory'        : os.curdir,
-                  'out_bam'                 : 'aligned.markdup.bam',
-                  'action'                  : 'echo',
-                  'extra_docker_options'    : '',
-                  'extra_picard_arguments'  : '',
-                  'threads'                 : 1,
-                  'script'                  : 'markdup.{}.cmd'.format(ts),
-                  'index_bam'               : True,
+DEFAULT_PARAMS = {'picard_image'             : 'lethalfang/picard:2.22.7',
+                  'sambamba_image'           : 'lethalfang/sambamba:0.7.1',
+                  'samtools_image'           : 'lethalfang/samtools:1.10',
+                  'MEM'                      : 8,
+                  'output_directory'         : os.curdir,
+                  'out_bam'                  : 'aligned.markdup.bam',
+                  'action'                   : 'echo',
+                  'extra_docker_options'     : '',
+                  'extra_picard_arguments'   : '',
+                  'extra_sambamba_arguments' : '',
+                  'threads'                  : 1,
+                  'script'                   : 'markdup.{}.cmd'.format(ts),
+                  'index_bam'                : True,
+                  'software'                 : 'picard',
                   }
 
 
@@ -121,6 +124,58 @@ def picard( input_parameters, tech='docker' ):
 
 
 
+def sambamba( input_parameters, tech='docker' ):
+    
+    for param_i in DEFAULT_PARAMS:
+        if param_i not in input_parameters:
+            input_parameters[param_i] = DEFAULT_PARAMS[param_i]
+
+    #
+    logdir  = os.path.join( input_parameters['output_directory'], 'logs' )
+    outfile = os.path.join( logdir, input_parameters['script'] )
+
+    all_paths = []
+    for path_i in input_parameters['output_directory'], input_parameters['in_bam']:
+        if path_i:
+            all_paths.append( path_i )
+
+    markdup_line, fileDict = container.container_params( input_parameters['sambamba_image'], tech=tech, files=all_paths, extra_args=input_parameters['extra_docker_options'] )
+    
+    # Mounted paths for all the input files and output directory:
+    mounted_outdir    = fileDict[ input_parameters['output_directory'] ]['mount_path']
+    mounted_inbam     = fileDict[ input_parameters['in_bam'] ]['mount_path']
+
+    tempdir = uuid.uuid4().hex
+    with open(outfile, 'w') as out:
+
+        out.write( "#!/bin/bash\n\n" )
+        
+        out.write(f'#$ -o {logdir}\n' )
+        out.write(f'#$ -e {logdir}\n' )
+        out.write( '#$ -S /bin/bash\n' )
+        out.write( '#$ -l h_vmem={}G\n'.format( input_parameters['MEM'] ) )
+        out.write( 'set -e\n\n' )
+
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' ) # Do not change this: picard_fractional uses this to end the copying. 
+
+        out.write('mkdir -p {}/{}\n\n'.format(input_parameters['output_directory'], tempdir) )
+        
+        out.write(f'{markdup_line} \\\n' )
+        out.write('sambamba markdup -t {} --tmpdir {} {} {}\n\n'.format( input_parameters['threads'], os.path.join(mounted_outdir, tempdir), mounted_inbam, os.path.join(mounted_outdir, input_parameters['out_bam'])) )
+        
+        out.write('rm -r {}/{}\n'.format(input_parameters['output_directory'], tempdir) )
+
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' ) # Do not change this: picard_fractional uses this to end the copying. 
+
+
+    # "Run" the script that was generated
+    command_item = (input_parameters['action'], outfile)
+    returnCode   = subprocess.call( command_item )
+
+    return outfile
+
+
+
 
 
 def picard_fractional( bed, input_parameters, tech='docker' ):
@@ -195,13 +250,6 @@ def picard_fractional( bed, input_parameters, tech='docker' ):
 
 
 
-
-
-
-
-
-
-
 def picard_parallel( input_parameters, tech='docker' ):
 
     for param_i in DEFAULT_PARAMS:
@@ -235,6 +283,17 @@ def picard_parallel( input_parameters, tech='docker' ):
     merge_script = mergeBams.picard( inbams=fractional_bams, outbam=out_markduped_bam, tech=tech, input_parameters=merging_parameters, remove_inbams=True )
     
     return fractional_outfiles, merge_script
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -77,7 +77,11 @@ def make_workflow(args, input_parameters):
             
             spread_parameters = copy(input_parameters)
             
-            spread_parameters['threads'] = args.threads
+            if len(args.in_fastq2s) >= 1:
+                spread_parameters['threads'] = max(1, int(args.threads/2))
+            else:
+                spread_parameters['threads'] = args.threads
+            
             spread_parameters['MEM'] = 2
             spread_parameters['script'] = 'spreadFastq_1.{}.cmd'.format(ts)
 
