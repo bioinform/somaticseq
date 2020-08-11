@@ -31,7 +31,7 @@ DEFAULT_PARAMS = {'picard_image'            : 'lethalfang/picard:2.22.7',
 
 
 
-def picard( inbams, outbam, tech='docker', input_parameters, remove_inbams=False ):
+def picard( inbams, outbam, tech='docker', input_parameters={}, remove_inbams=False ):
 
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
@@ -95,7 +95,7 @@ def picard( inbams, outbam, tech='docker', input_parameters, remove_inbams=False
 
 
 
-def sambamba( inbams, outbam, tech='docker', input_parameters, remove_inbams=False ):
+def sambamba( inbams, outbam, tech='docker', input_parameters={}, remove_inbams=False ):
 
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
