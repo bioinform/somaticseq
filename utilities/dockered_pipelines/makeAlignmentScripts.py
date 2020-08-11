@@ -44,8 +44,8 @@ def run():
     
     # Mark Duplicates
     parser.add_argument('-markdup',  '--run-mark-duplicates',   action='store_true')
-    parser.add_argument('--markdup-software',           type=str, choices=('picard', 'sambamba'), default='picard')
-    parser.add_argument('--extra-markdup-arguments',    type=str, default='')
+    parser.add_argument('--markdup-software',           type=str, choices=('picard', 'sambamba'), default='sambamba')
+    parser.add_argument('--extra-markdup-arguments',    type=str, help='place holder for now', default='')
     parser.add_argument('--parallelize-markdup',  action='store_true', help='parallelize by splitting input bam files and work on each independently, and then merge.')
 
     parser.add_argument('--run-workflow-locally',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
@@ -229,7 +229,6 @@ def make_workflow(args, input_parameters):
         
         if args.run_alignment:
             markdup_parameters['in_bam'] = os.path.join(bwa_parameters['output_directory'], bwa_parameters['out_bam'])
-        
         
         if args.parallelize_markdup:
             
