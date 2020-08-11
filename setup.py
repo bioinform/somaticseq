@@ -21,8 +21,6 @@ setup(
              'somaticseq/somatic_vcf2tsv.py',
              'somaticseq/somatic_xgboost.py',
              'somaticseq/SSeq_tsv2vcf.py',
-             'utilities/attach_pileupVAF.py',
-             'utilities/bamQC.py',
              'utilities/linguistic_sequence_complexity.py',
              'utilities/lociCounterWithLabels.py',
              'utilities/remove_callers_from_somaticseq_tsv.py',

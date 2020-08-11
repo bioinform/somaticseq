@@ -74,7 +74,7 @@ def run():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # INPUT FILES and Global Options
-    parser.add_argument('-scripts', '--list-of-scripts', nargs='+', type=str,)
+    parser.add_argument('-scripts', '--list-of-scripts', nargs='*', type=str)
     parser.add_argument('-nt',      '--threads',  type=int, default=1)
     
     args = parser.parse_args()
@@ -89,4 +89,4 @@ def run():
 if __name__ == '__main__':
     
     args = run()
-    run_workflows( args.list_of_scripts, args.threads )
+    run_workflows( [args.list_of_scripts,],  args.threads )
