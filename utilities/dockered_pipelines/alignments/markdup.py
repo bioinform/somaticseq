@@ -91,7 +91,7 @@ def picard( input_parameters, tech='docker' ):
         out.write( '#$ -l h_vmem={}G\n'.format( input_parameters['MEM'] ) )
         out.write( 'set -e\n\n' )
 
-        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' ) # Do not change this: picard_fractional uses this to end the copying. 
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' ) # Do not change this: fractional uses this to end the copying. 
 
         out.write('mkdir -p {}/{}\n\n'.format(input_parameters['output_directory'], tempdir) )
         
@@ -110,7 +110,7 @@ def picard( input_parameters, tech='docker' ):
 
         out.write('rm -r {}/{}\n'.format(input_parameters['output_directory'], tempdir) )
 
-        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' ) # Do not change this: picard_fractional uses this to end the copying. 
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' ) # Do not change this: fractional uses this to end the copying. 
 
 
     # "Run" the script that was generated
@@ -156,7 +156,7 @@ def sambamba( input_parameters, tech='docker' ):
         out.write( '#$ -l h_vmem={}G\n'.format( input_parameters['MEM'] ) )
         out.write( 'set -e\n\n' )
 
-        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' ) # Do not change this: picard_fractional uses this to end the copying. 
+        out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' ) # Do not change this: fractional uses this to end the copying. 
 
         out.write('mkdir -p {}/{}\n\n'.format(input_parameters['output_directory'], tempdir) )
         
@@ -165,7 +165,7 @@ def sambamba( input_parameters, tech='docker' ):
         
         out.write('rm -r {}/{}\n'.format(input_parameters['output_directory'], tempdir) )
 
-        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' ) # Do not change this: picard_fractional uses this to end the copying. 
+        out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' ) # Do not change this: fractional uses this to end the copying. 
 
 
     # "Run" the script that was generated
@@ -178,7 +178,7 @@ def sambamba( input_parameters, tech='docker' ):
 
 
 
-def picard_fractional( bed, input_parameters, tech='docker' ):
+def fractional( bed, input_parameters, tech='docker' ):
 
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
@@ -190,7 +190,7 @@ def picard_fractional( bed, input_parameters, tech='docker' ):
     outfile = os.path.join( logdir, 'markdup_fractional.{}.cmd'.format(ts) )
     os.makedirs(logdir, exist_ok=True)
 
-    samtools_line, stDict  = container.container_params( input_parameters['samtools_image'], tech, [input_parameters['in_bam'], bed, ], input_parameters['extra_docker_options'] )
+    sambam_line, stDict  = container.container_params( input_parameters['sambamba_image'], tech, [input_parameters['in_bam'], bed, ], input_parameters['extra_docker_options'] )
 
     mounted_inbam  = stDict[ input_parameters['in_bam'] ]['mount_path']
     mounted_bed    = stDict[ bed ]['mount_path']
@@ -210,8 +210,8 @@ def picard_fractional( bed, input_parameters, tech='docker' ):
 
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
-        out.write(f'{samtools_line} bash -c \\\n' )
-        out.write('"samtools view {} -L {} -Sbh > {}"\n\n'.format(mounted_inbam, mounted_bed, os.path.join(mounted_outdir, temp_split_bam)) )
+        out.write(f'{sambam_line} bash -c \\\n' )
+        out.write('sambamba view -L {} -t {} -f bam -o {} {}\n\n'.format(mounted_bed, 1, os.path.join(mounted_outdir, temp_split_bam), mounted_inbam) )
 
 
         fractional_parameters = copy( input_parameters )
@@ -221,7 +221,10 @@ def picard_fractional( bed, input_parameters, tech='docker' ):
         fractional_parameters['script'] = 'to_be_deleted.{}.cmd'.format(ts)
         fractional_parameters['index_bam'] = False
         
-        dedup_script = picard( fractional_parameters, tech )
+        if input_parameters['software'] == 'picard':
+            dedup_script = picard( fractional_parameters, tech )
+        elif input_parameters['software'] == 'sambamba':
+            dedup_script = sambamba( fractional_parameters, tech )
 
         with open(os.path.join(logdir, fractional_parameters['script'])) as dedup:
             
@@ -250,7 +253,7 @@ def picard_fractional( bed, input_parameters, tech='docker' ):
 
 
 
-def picard_parallel( input_parameters, tech='docker' ):
+def parallel( input_parameters, tech='docker' ):
 
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
@@ -270,7 +273,7 @@ def picard_parallel( input_parameters, tech='docker' ):
         new_bed_i = os.path.join(subdir_i, bed_name)
         move( bed_i, new_bed_i )
 
-        fractional_outfile, fractional_bam = picard_fractional( new_bed_i, input_parameters, tech )
+        fractional_outfile, fractional_bam = fractional( new_bed_i, input_parameters, tech )
         
         fractional_outfiles.append(fractional_outfile)
         fractional_bams.append(fractional_bam)
@@ -330,4 +333,4 @@ if __name__ == '__main__':
     if args.threads == 1:
         picard( input_parameters, args.container_tech )
     elif args.threads > 1:
-        picard_parallel( input_parameters, args.container_tech )
+        parallel( input_parameters, args.container_tech )

@@ -229,7 +229,7 @@ def make_workflow(args, input_parameters):
             
             markdup_parameters['threads'] = max(1, int(input_parameters['threads']/2) )
             
-            fractional_markdup_scripts, merge_markdup_script = markdup.picard_parallel(markdup_parameters, args.container_tech)
+            fractional_markdup_scripts, merge_markdup_script = markdup.parallel(markdup_parameters, args.container_tech)
             
             workflow_tasks['markdup_bams'] = fractional_markdup_scripts
             workflow_tasks['merging_bams'].append(merge_markdup_script)
