@@ -32,7 +32,7 @@ def run_script( bash_script ):
     logger.info(' '.join(cmd_items) )
     
     start_time = datetime.now()
-    returnCode = subprocess.call( cmd_items )
+    returnCode = subprocess.call( cmd_items, bufsize=0 )
     end_time   = datetime.now()
     run_time   = end_time - start_time
     
