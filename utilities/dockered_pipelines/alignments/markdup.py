@@ -210,7 +210,7 @@ def fractional( bed, input_parameters, tech='docker' ):
 
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' )
 
-        out.write(f'{sambam_line} bash -c \\\n' )
+        out.write(f'{sambam_line} \\\n' )
         out.write('sambamba view -L {} -t {} -f bam -o {} {}\n\n'.format(mounted_bed, 1, os.path.join(mounted_outdir, temp_split_bam), mounted_inbam) )
 
 

@@ -77,7 +77,10 @@ def bwa( input_parameters, tech='docker' ):
             out.write('{} \\\n'.format(mounted_fq2))
         
         out.write('| samtools view -Sbh - \\\n')
-        out.write('| samtools sort -m {MEM}G --threads {THREADS} -o {DIR}/{OUTFILE}"\n'.format(MEM=int(input_parameters['MEM']/2), THREADS=input_parameters['threads'], DIR=mounted_outdir, OUTFILE=input_parameters['out_bam']))
+        out.write('| samtools sort -m {MEM}G --threads {THREADS} -o {DIR}/{OUTFILE}"\n\n'.format(MEM=int(input_parameters['MEM']/2), THREADS=input_parameters['threads'], DIR=mounted_outdir, OUTFILE=input_parameters['out_bam']))
+
+        out.write(f'{bwa_line} \\\n' )
+        out.write('samtools index -@{} {}\n'.format(input_parameters['threads'], os.path.join(mounted_outdir, input_parameters['out_bam']) ) )
 
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
 

@@ -27,6 +27,7 @@ def run():
     parser.add_argument('-extras', '--extra-picard-arguments', type=str, default='')
     parser.add_argument('-tech',   '--container-tech',         type=str, choices=('docker', 'singularity'), default='docker')
     
+    # Trimming
     parser.add_argument('-trim',   '--run-trimming',       action='store_true')
     parser.add_argument('-fq1',    '--in-fastq1s', nargs='*', type=str, help='paths of forward reads')
     parser.add_argument('-fq2',    '--in-fastq2s', nargs='*', type=str, help='paths of reverse reads in paired-end sequencing')
@@ -36,11 +37,14 @@ def run():
     parser.add_argument('--extra-trim-arguments',             type=str, default='')
     parser.add_argument('--split-input-fastqs', action='store_true', help='split input fastq files before trimming to maximize multi-threading efficiency in trimming.')
 
+    # Alignment
     parser.add_argument('-align',  '--run-alignment', action='store_true')
     parser.add_argument('-header', '--bam-header',     type=str, default='@RG\tID:ID00\tLB:LB0\tPL:illumina\tSM:Sample')
     parser.add_argument('--extra-bwa-arguments',       type=str, default='')
     
+    # Mark Duplicates
     parser.add_argument('-markdup',  '--run-mark-duplicates',   action='store_true')
+    parser.add_argument('--markdup-software',           type=str, choices=('picard', 'sambamba'), default='picard')
     parser.add_argument('--extra-markdup-arguments',    type=str, default='')
     parser.add_argument('--parallelize-markdup',  action='store_true', help='parallelize by splitting input bam files and work on each independently, and then merge.')
 
@@ -219,11 +223,13 @@ def make_workflow(args, input_parameters):
         import utilities.dockered_pipelines.alignments.markdup as markdup
         
         markdup_parameters = copy(input_parameters)
-        markdup_parameters['script'] = 'markdup.{}.cmd'.format(ts)
-        markdup_parameters['MEM'] = 8
+        markdup_parameters['software'] = input_parameters['markdup_software']
+        markdup_parameters['script']   = 'markdup.{}.cmd'.format(ts)
+        markdup_parameters['MEM']      = 8
         
         if args.run_alignment:
             markdup_parameters['in_bam'] = os.path.join(bwa_parameters['output_directory'], bwa_parameters['out_bam'])
+        
         
         if args.parallelize_markdup:
             
@@ -235,7 +241,12 @@ def make_workflow(args, input_parameters):
             workflow_tasks['merging_bams'].append(merge_markdup_script)
             
         else:
-            markdup_script = markdup.picard(markdup_parameters, args.container_tech)
+            if markdup_parameters['markdup_software'] == 'picard':
+                markdup_script = markdup.picard(markdup_parameters, args.container_tech)
+            elif markdup_parameters['markdup_software'] == 'sambamba':
+                markdup_script = markdup.sambamba(markdup_parameters, args.container_tech)
+            
+            
             workflow_tasks['markdup_bams'].append(markdup_script)
 
 
