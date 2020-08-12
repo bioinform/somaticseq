@@ -123,7 +123,7 @@ def sambamba( inbams, outbam, tech='docker', input_parameters={}, remove_inbams=
         out.write( 'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n' ) # Do not change this: picard_fractional uses this to end the copying. 
         
         out.write(f'{merge_line} \\\n' )
-        out.write('sambamba merge -t {} {} {}\n\n'.format(input_parameters['threads'], infile_string, mounted_outbam))
+        out.write('sambamba merge -t {} {} {}\n\n'.format(input_parameters['threads'], mounted_outbam, infile_string))
 
         if remove_inbams:
             out.write( 'rm {}\n\n'.format(' '.join(inbams) ) )
