@@ -76,9 +76,9 @@ makeAlignmentScripts.py \
 --out-bam          ngs.trimmed.aligned.marked_dup.bam \
 --bam-header       '@RG\tID:identity_001\tPL:illumina\tLB:library_001\tSM:Patient_001' \
 --threads          18 \
---run-trimming --split-input-fastqs --trim-software trimmomatic \
+--run-trimming --split-input-fastqs \
 --run-alignment \
---run-mark-duplicates --parallelize-markdup --markdup-software sambamba \
+--run-mark-duplicates --parallelize-markdup \
 --run-workflow-locally
 ```
 
