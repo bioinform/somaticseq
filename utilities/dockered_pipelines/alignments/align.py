@@ -3,6 +3,7 @@
 import sys, argparse, os, re
 import subprocess
 import uuid
+import math
 from pathlib import Path
 from datetime import datetime
 import utilities.dockered_pipelines.container_option as container
@@ -12,7 +13,7 @@ ts = re.sub(r'[:-]', '.', datetime.now().isoformat(sep='.', timespec='millisecon
 
 
 DEFAULT_PARAMS = {'bwa_image'               : 'lethalfang/bwa:0.7.17_samtools',
-                  'MEM'                     : 4,
+                  'MEM'                     : 8,
                   'output_directory'        : os.curdir,
                   'out_bam'                 : 'aligned.bam',
                   'bam_header'              : '@RG\tID:{ID}\tLB:{LB}\tPL:{PL}\tSM:{SM}',
@@ -77,7 +78,7 @@ def bwa( input_parameters, tech='docker' ):
             out.write('{} \\\n'.format(mounted_fq2))
         
         out.write('| samtools view -Sbh - \\\n')
-        out.write('| samtools sort -m {MEM}G --threads {THREADS} -o {DIR}/{OUTFILE}"\n\n'.format(MEM=int(input_parameters['MEM']/2), THREADS=input_parameters['threads'], DIR=mounted_outdir, OUTFILE=input_parameters['out_bam']))
+        out.write('| samtools sort -m {MEM}G --threads {THREADS} -o {DIR}/{OUTFILE}"\n\n'.format(MEM=math.ceil(input_parameters['MEM']/2), THREADS=math.ceil(input_parameters['threads']/2), DIR=mounted_outdir, OUTFILE=input_parameters['out_bam']))
 
         out.write(f'{bwa_line} \\\n' )
         out.write('samtools index -@{} {}\n'.format(input_parameters['threads'], os.path.join(mounted_outdir, input_parameters['out_bam']) ) )
