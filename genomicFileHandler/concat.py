@@ -159,7 +159,8 @@ def run():
     parser.add_argument('-infiles',  '--input-files',  type=str,  nargs='*', help='Input files')
     parser.add_argument('-outfile',  '--output-file',  type=str,             help='Output file')
     parser.add_argument('-outfiles', '--output-files', type=str,  nargs='*', help='Output files for spreader' )
-    parser.add_argument('-nt',       '--threads',      type=int, help='only invoked in -spread -bgzip when output compression can be parallelized')
+    parser.add_argument('-chunk',    '--chunk-size',   type=int,             help='In --spread mode, the number of lines to be written into the output file each time. By default chunk=4 by default for fastq files, i.e., every 4 lines make up one read record.', default=4)
+    parser.add_argument('-nt',       '--threads',      type=int, help='only invoked in -spread -bgzip when bgzip compress of output files can be parallelized')
     parser.add_argument('-spread',   '--spread',       action='store_true', help='Spread content into multiple files.')
     parser.add_argument('-bgzip',    '--bgzip-output', action='store_true', help='compress the output files')
 
@@ -184,12 +185,17 @@ def run():
     return args, filetype
 
 
+
+
+
+
+
 if __name__ == '__main__':
 
     args, ftype = run()
 
     if ftype == 'spread':
-        spreader(args.input_files, args.output_files, 4, args.bgzip_output, args.threads)
+        spreader(args.input_files, args.output_files, args.chunk_size, args.bgzip_output, args.threads)
 
     elif ftype == 'vcf':
         vcf(args.input_files, args.output_file, args.bgzip_output)
