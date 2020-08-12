@@ -21,7 +21,7 @@ SomaticSeq relies on 3rd-party caller(s) to generate mutation candidates, so you
 
 ## To install from github source with conda
 ```
-conda create --name my_environment -c conda-forge -c bioconda python bedtools r r-ada
+conda create --name my_environment -c bioconda python bedtools
 conda activate my_environment
 git clone git@github.com:bioinform/somaticseq.git
 cd somaticseq
