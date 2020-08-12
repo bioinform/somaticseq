@@ -64,33 +64,33 @@ makeSomaticScripts.py single \
 
 You may run `makeAlignmentScripts.py -h` to see all the options. This workflow starts from FASTQ files.
 
-### Example to trim, align, and then mark duplicates
+### Example to invoke the workflow trim, align, and then mark duplicates
 ```
 makeAlignmentScripts.py \
 --output-directory /PATH/TO/OUTPUT \
---in-fastq1s       /PATH/TO/RG001_R1.fq.gz /PATH/TO/RG002_R1.fq.gz /PATH/TO/RG003_R1.fq.gz \
---in-fastq2s       /PATH/TO/RG001_R2.fq.gz /PATH/TO/RG002_R2.fq.gz /PATH/TO/RG003_R2.fq.gz \
+--in-fastq1s       /PATH/TO/RG001_R1.fq.gz /PATH/TO/RG002_R1.fq.gz /PATH/TO/RG003_R1.fq.gz ... \
+--in-fastq2s       /PATH/TO/RG001_R2.fq.gz /PATH/TO/RG002_R2.fq.gz /PATH/TO/RG003_R2.fq.gz ... \
 --out-fastq1-name  Reads_Merged_R1.fq.gz \
 --out-fastq1-name  Reads_Merged_R2.fq.gz \
 --genome-reference /PATH/TO/GRCh38.fa \
---out-bam          trimmed.aligned.markdup.bam \
+--out-bam          ngs.trimmed.aligned.marked_dup.bam \
 --bam-header       '@RG\tID:identity_001\tPL:illumina\tLB:library_001\tSM:Patient_001' \
 --threads          18 \
---run-trimming --split-input-fastqs \
+--run-trimming --split-input-fastqs --trim-software trimmomatic \
 --run-alignment \
---run-mark-duplicates --parallelize-markdup \
+--run-mark-duplicates --parallelize-markdup --markdup-software sambamba \
 --run-workflow-locally
 ```
 
 If you invoke `--split-input-fastqs`, the input FASTQ files will be split into a number of files equal to the `--threads` number, in order to maximize the multi-threading efficiency of trimming. 
-After trimming on each of those files, the trimmed FASTQs will be merged into the files named with `--out-fastq1-name` and `--out-fastq2-name`.
+After trimming (by trimmomatic or alientrimmer) on each of those files, the trimmed FASTQs will be merged into the files named with `--out-fastq1-name` and `--out-fastq2-name`.
 
-If you invoke `--parallelize-markdup`, picard MarkDuplicates will be run in parallel by first splitting the BAM files, then run MarkDuplicates on each of the truncated BAM files, and then merge them at the end.
+If you invoke `--parallelize-markdup`, mark duplicates software (picard or sambamba) will be run in parallel by first splitting the BAM files, and then mark duplicates on each of the truncated BAM files, and then merge them at the end.
 Be aware this may results in slightly different results, so do this at your own risk.
 
 
 
-### What does the commands do
+### What do the somatic workflow commands do
 
 * For each flag such as `--run-mutect2`, `--run-varscan2`, ...., `--run-strelka2`, a run script ending with .cmd will be created in `/ABSOLUTE/PATH/TO/output_results/logs`. 
 * If you do `--run-somaticseq`, the somaticseq script will be created in `/ABSOLUTE/PATH/TO/output_results/SomaticSeq/logs`.
