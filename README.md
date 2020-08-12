@@ -21,10 +21,9 @@ SomaticSeq relies on 3rd-party caller(s) to generate mutation candidates, so you
 
 ## To install from github source reop with conda
 ```
+conda create --name my_environment -c conda-forge -c bioconda python bedtools r r-ada
+conda activate my_environment
 git clone git@github.com:bioinform/somaticseq.git
-conda create --name somaticseq python r bedtools
-conda activate somaticseq
-R -e "install.packages('ada', repos = 'http://cran.rstudio.com/')"
 cd somaticseq
 ./setup.py install
 ```
