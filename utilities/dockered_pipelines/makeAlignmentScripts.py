@@ -24,20 +24,19 @@ def run():
     parser.add_argument('-inbam',  '--in-bam',                 type=str, help='input bam path if already aligned')
     parser.add_argument('-outbam', '--out-bam',                type=str, help='output bam file name', required=True)
     parser.add_argument('-nt',     '--threads',                type=int, default=1)
-    parser.add_argument('-ref',    '--genome-reference',       type=str, default=1)
-    parser.add_argument('-extras', '--extra-picard-arguments', type=str, default='')
-    parser.add_argument('-tech',   '--container-tech',         type=str, choices=('docker', 'singularity'), default='docker')
+    parser.add_argument('-ref',    '--genome-reference',       type=str)
+    parser.add_argument('-tech',   '--container-tech',         type=str, default='docker', choices=('docker', 'singularity'))
     
     # Trimming
     parser.add_argument('-trim',   '--run-trimming',       action='store_true')
     parser.add_argument('-fq1',    '--in-fastq1s', nargs='*', type=str, help='paths of forward reads')
     parser.add_argument('-fq2',    '--in-fastq2s', nargs='*', type=str, help='paths of reverse reads in paired-end sequencing')
     parser.add_argument('-fout1',  '--out-fastq1-name',       type=str, help='file name of forward reads')
-    parser.add_argument('-fout2',  '--out-fastq2-name',       type=str, )
-    parser.add_argument('--trim-software',                    type=str, choices=('alientrimmer', 'trimmomatic'), default='trimmomatic')
+    parser.add_argument('-fout2',  '--out-fastq2-name',       type=str, help='file name of reverse reads')
+    parser.add_argument('--trim-software',                    type=str, default='trimmomatic', choices=('alientrimmer', 'trimmomatic'))
     parser.add_argument('--extra-trim-arguments',             type=str, default='')
     parser.add_argument('--split-input-fastqs', action='store_true', help='split input fastq files before trimming to maximize multi-threading efficiency in trimming.')
-
+    
     # Alignment
     parser.add_argument('-align',  '--run-alignment', action='store_true')
     parser.add_argument('-header', '--bam-header',     type=str, default='@RG\tID:ID00\tLB:LB0\tPL:illumina\tSM:Sample')
@@ -45,10 +44,12 @@ def run():
     
     # Mark Duplicates
     parser.add_argument('-markdup',  '--run-mark-duplicates',   action='store_true')
-    parser.add_argument('--markdup-software',           type=str, choices=('picard', 'sambamba'), default='sambamba')
+    parser.add_argument('--markdup-software',           type=str, default='sambamba', choices=('picard', 'sambamba'))
+    parser.add_argument('--extra-picard-arguments',     type=str, default='')
     parser.add_argument('--extra-markdup-arguments',    type=str, help='place holder for now', default='')
     parser.add_argument('--parallelize-markdup',  action='store_true', help='parallelize by splitting input bam files and work on each independently, and then merge.')
 
+    # Run Right Here
     parser.add_argument('--run-workflow-locally',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
 
     args = parser.parse_args()
