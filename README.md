@@ -19,7 +19,7 @@ SomaticSeq relies on 3rd-party caller(s) to generate mutation candidates, so you
 * To install SomaticSeq, clone this repo, `cd somaticseq`, and then run `./setup.py install`.
 
 
-## To install from github source reop with conda
+## To install from github source with conda
 ```
 conda create --name my_environment -c conda-forge -c bioconda python bedtools r r-ada
 conda activate my_environment
