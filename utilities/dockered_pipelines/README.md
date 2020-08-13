@@ -65,17 +65,18 @@ makeSomaticScripts.py single \
 You may run `makeAlignmentScripts.py -h` to see all the options. This workflow starts from FASTQ files.
 
 ### Example to invoke the workflow trim, align, and then mark duplicates
+
 ```
 makeAlignmentScripts.py \
---output-directory /PATH/TO/OUTPUT \
+--output-directory /PATH/TO/OUTPUT_DIRECTORY \
 --in-fastq1s       /PATH/TO/RG001_R1.fq.gz /PATH/TO/RG002_R1.fq.gz /PATH/TO/RG003_R1.fq.gz ... \
 --in-fastq2s       /PATH/TO/RG001_R2.fq.gz /PATH/TO/RG002_R2.fq.gz /PATH/TO/RG003_R2.fq.gz ... \
 --out-fastq1-name  Reads_Merged_R1.fq.gz \
 --out-fastq1-name  Reads_Merged_R2.fq.gz \
 --genome-reference /PATH/TO/GRCh38.fa \
 --out-bam          ngs.trimmed.aligned.marked_dup.bam \
---bam-header       '@RG\tID:identity_001\tPL:illumina\tLB:library_001\tSM:Patient_001' \
---threads          18 \
+--bam-header       '@RG\tID:read_group_001\tPL:illumina\tLB:library_001\tSM:patient_001' \
+--threads          24 \
 --run-trimming --split-input-fastqs \
 --run-alignment \
 --run-mark-duplicates --parallelize-markdup \
@@ -85,8 +86,8 @@ makeAlignmentScripts.py \
 If you invoke `--split-input-fastqs`, the input FASTQ files will be split into a number of files equal to the `--threads` number, in order to maximize the multi-threading efficiency of trimming. 
 After trimming (by trimmomatic or alientrimmer) on each of those files, the trimmed FASTQs will be merged into the files named with `--out-fastq1-name` and `--out-fastq2-name`.
 
-If you invoke `--parallelize-markdup`, mark duplicates software (picard or sambamba) will be run in parallel by first splitting the BAM files, and then mark duplicates on each of the truncated BAM files, and then merge them at the end.
-Be aware this may results in slightly different results, so do this at your own risk.
+If you invoke `--parallelize-markdup`, mark duplicates software (sambamba or picard) will be run in parallel by first splitting the BAM files, and then mark duplicates on each of the truncated BAM files, and then merge them at the end.
+Be aware this may results in slightly different results, so do so at your own risk.
 
 
 
