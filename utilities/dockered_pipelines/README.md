@@ -40,7 +40,7 @@ You can also submit the above command into a SGE system, which will run the whol
 * To run SomaticSeq in prediction mode, you need to specify classifiers, e.g.,
 
 ```
---snv-classifier /PATH/TO/snv.xgboost.model --indel-classifier /PATH/TO/indel.xgboost.model
+--snv-classifier /PATH/TO/snv.xgboost.classifier --indel-classifier /PATH/TO/indel.xgboost.classifier
 ```
 
 * To run SomaticSeq in training mode (include `--inclusion-region /PATH/TO/high_confidence.bed` if the truth files are only confident in certain genomic regions), and then
