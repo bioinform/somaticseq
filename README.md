@@ -1,10 +1,9 @@
 # SomaticSeq
 
 * SomaticSeq is an ensemble caller that has the ability to use machine learning to filter out false positives. 
-The detailed documentation is included in the package, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). 
-A quick guide can also be found [here](http://bioinform.github.io/somaticseq/).
+The detailed documentation is included in the repo, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). 
 * SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
-* Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page. You may also email Li Tai Fang at [li_tai.fang@roche.com](li_tai.fang@roche.com).
+* Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page.
 * The [v2 branch](../../tree/v2) is still supported, but it's severely limited comparing to the current versions. 
 
 
