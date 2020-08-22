@@ -81,7 +81,7 @@ def run():
     
     parser_paired.add_argument('-nt',        '--threads',        type=int, help='Split the input regions into this many threads', default=1)
     
-    parser_paired.add_argument('--run-workflow-locally',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
+    parser_paired.add_argument('-run',   '--run-workflow',  action='store_true', help='Execute the bash scripts right here. Only works on Linux machines with modern bash shells.')
     
     parser_paired.set_defaults(which='paired')
 
@@ -430,7 +430,7 @@ def make_workflow( args, workflowArguments ):
             i += 1
 
     ########## Execute the workflow ##########
-    if args.run_workflow_locally:
+    if args.run_workflow:
         import utilities.dockered_pipelines.run_workflows as run_workflows
         run_workflows.run_workflows( (workflow_tasks['caller_jobs'], workflow_tasks['somaticseq_jobs'], workflow_tasks['merging_jobs']), args.threads)
         logger.info( 'SomaticSeq Workflow Done. Check your results. You may remove the {} sub_directories.'.format(args.threads) )

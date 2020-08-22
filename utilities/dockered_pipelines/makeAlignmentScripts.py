@@ -50,7 +50,7 @@ def run():
     parser.add_argument('--parallelize-markdup',  action='store_true', help='parallelize by splitting input bam files and work on each independently, and then merge.')
 
     # Run Right Here
-    parser.add_argument('--run-workflow-locally',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
+    parser.add_argument('-run',  '--run-workflow',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
 
     args = parser.parse_args()
     
@@ -256,7 +256,7 @@ def make_workflow(args, input_parameters):
 
 
     ########## Execute the workflow ##########
-    if args.run_workflow_locally:
+    if args.run_workflow:
         import utilities.dockered_pipelines.run_workflows as run_workflows
         run_workflows.run_workflows( (workflow_tasks['split_fastqs'], workflow_tasks['trim_fastqs'], workflow_tasks['merge_fastqs'], workflow_tasks['alignment_jobs'], workflow_tasks['markdup_bams'], workflow_tasks['merging_bams']), args.threads)
         logger.info( 'Workflow Done. Check your results. You may remove the {} sub_directories.'.format(args.threads) )

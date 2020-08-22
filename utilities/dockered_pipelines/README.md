@@ -20,7 +20,7 @@ Each caller (with the exception of SomaticSniper here) will be split into 12 thr
 
 3) Finally, the results will be merged. 
 
-The option `--run-workflow-locally` tells the program to execute those scripts. Without `--run-workflow-locally`, those scripts will be created but not executed (e.g. leaving you the option to submit them to multiple nodes via SGE). You may also modify and re-run any of these scripts if things did not end successfully.
+The option `--run-workflow` tells the program to execute those scripts. Without `--run-workflow`, those scripts will be created but not executed (e.g. leaving you the option to submit them to multiple nodes via SGE). You may also modify and re-run any of these scripts if things did not end successfully.
 
 ```
 makeSomaticScripts.py paired \
@@ -32,7 +32,7 @@ makeSomaticScripts.py paired \
 --threads          12 \
 --container-tech   docker \
 --run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq \
---run-workflow-locally
+--run-workflow
 ```
 
 You can also submit the above command into a SGE system, which will run the whole workflow to a single node with the number of threads you have specified. 
@@ -56,7 +56,7 @@ Only call for callers that support single-sample modes, i.e., `--run-mutect2`, `
 
 ```
 makeSomaticScripts.py single \
---bam /ABSOLUTE/PATH/TO/tumor_sample.bam --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa --output-directory /ABSOLUTE/PATH/TO/RESULTS --dbsnp-vcf /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf --threads 12 --run-mutect2 --run-vardict --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq --run-workflow-locally
+--bam /ABSOLUTE/PATH/TO/tumor_sample.bam --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa --output-directory /ABSOLUTE/PATH/TO/RESULTS --dbsnp-vcf /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf --threads 12 --run-mutect2 --run-vardict --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq --run-workflow
 ```
 
 
@@ -80,7 +80,7 @@ makeAlignmentScripts.py \
 --run-trimming --split-input-fastqs \
 --run-alignment \
 --run-mark-duplicates --parallelize-markdup \
---run-workflow-locally
+--run-workflow
 ```
 
 If you invoke `--split-input-fastqs`, the input FASTQ files will be split into a number of files equal to the `--threads` number, in order to maximize the multi-threading efficiency of trimming. 
@@ -103,7 +103,7 @@ Instead, a single-threaded script will be created (and potentially qsub'ed) into
   * However, because SomaticSniper runs fast, single-thread is usually doable even for WGS.
   * After SomaticSniper finishes, the result VCF files will be split into each of the `/ABSOLUTE/PATH/TO/RESULTS/1`, `/ABSOLUTE/PATH/TO/RESULTS/2`, etc., to facilitate region-wise SomaticSeq merging.
 * JointSNVMix2 also does not support partial BAM input, either. Unlike SomaticSniper, it's slow and takes massive amount of memory. It has not been updated for many years. It's not a good idea to run JointSNVMix2 on a WGS data.
-* If you invoke `--run-workflow-locally`, then those scripts will be executed directly by python's multiprocessing module.
+* If you invoke `--run-workflow`, then those scripts will be executed directly by python's multiprocessing module.
 
 
 ### NOTES
