@@ -53,7 +53,7 @@ def run():
     parser_paired.add_argument('-scalpel',    '--run-scalpel',       action='store_true', help='Run Scalpel')
     parser_paired.add_argument('-strelka2',   '--run-strelka2',      action='store_true', help='Run Strelka2')
     parser_paired.add_argument('-somaticseq', '--run-somaticseq',    action='store_true', help='Run SomaticSeq')
-    parser_paired.add_argument('-train',      '--train-somaticseq',  action='store_true', help='SomaticSeq training mode for classifiers')
+    parser_paired.add_argument('-train',      '--train-somaticseq', '--somaticseq-train', action='store_true', help='SomaticSeq training mode for classifiers')
 
     parser_paired.add_argument('-snvClassifier',   '--snv-classifier',    type=str, help='action for each .cmd')
     parser_paired.add_argument('-indelClassifier', '--indel-classifier',  type=str, help='action for each somaticseq.cmd')
@@ -111,7 +111,7 @@ def run():
     parser_single.add_argument('-scalpel',    '--run-scalpel',       action='store_true', help='Run Scalpel')
     parser_single.add_argument('-strelka2',   '--run-strelka2',      action='store_true', help='Run Strelka2')
     parser_single.add_argument('-somaticseq', '--run-somaticseq',    action='store_true', help='Run SomaticSeq')
-    parser_single.add_argument('-train',      '--train-somaticseq',  action='store_true', help='SomaticSeq training mode for classifiers')
+    parser_single.add_argument('-train',      '--train-somaticseq', '--somaticseq-train', action='store_true', help='SomaticSeq training mode for classifiers')
 
     parser_single.add_argument('-snvClassifier',   '--snv-classifier',    type=str, help='action for each .cmd')
     parser_single.add_argument('-indelClassifier', '--indel-classifier',  type=str, help='action for each somaticseq.cmd')
