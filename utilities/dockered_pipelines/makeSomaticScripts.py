@@ -79,9 +79,8 @@ def run():
     parser_paired.add_argument('--somaticseq-arguments',         type=str, help='extra parameters for SomaticSeq',                default='')
     parser_paired.add_argument('--somaticseq-algorithm',         type=str, help='either ada or xgboost', default='xgboost', choices=('ada', 'xgboost', 'ada.R'))
     
-    parser_paired.add_argument('-nt',        '--threads',        type=int, help='Split the input regions into this many threads', default=1)
-    
-    parser_paired.add_argument('-run',   '--run-workflow',  action='store_true', help='Execute the bash scripts right here. Only works on Linux machines with modern bash shells.')
+    parser_paired.add_argument('-nt',  '--threads',        type=int, help='Split the input regions into this many threads', default=1)
+    parser_paired.add_argument('-run', '--run-workflow',  action='store_true', help='Execute the bash scripts right here. Only works on Linux machines with modern bash shells.')
     
     parser_paired.set_defaults(which='paired')
 
@@ -133,9 +132,8 @@ def run():
     
     parser_single.add_argument('-exome', '--exome-setting',  action='store_true', help='Invokes exome setting in Strelka2 and MuSE')
 
-    parser_single.add_argument('-nt',        '--threads',        type=int, help='Split the input regions into this many threads', default=1)
-
-    parser_single.add_argument('--run-workflow-locally',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
+    parser_single.add_argument('-nt',  '--threads',        type=int, help='Split the input regions into this many threads', default=1)
+    parser_single.add_argument('-run', '--run-workflow',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
 
     parser_single.set_defaults(which='single')
     
