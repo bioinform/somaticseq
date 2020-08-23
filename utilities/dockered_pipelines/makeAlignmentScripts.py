@@ -175,10 +175,12 @@ def make_workflow(args, input_parameters):
         
         
     
-    # Merge fastqs for the next output
+    # Merge FASTQ for the next output
     # If this step is undertaken, replace in_fastqs as out_fastqs for the next step:
     remove_in_fqs = True if (args.run_trimming or args.split_input_fastqs) else False
-    if len(args.in_fastq1s) > 1:
+    
+    if len(out_fastq_1s) > 1:
+        
         import utilities.dockered_pipelines.alignments.mergeFastqs as mergeFastqs
 
         fastq_1s   = [ os.path.join( input_parameters['output_directory'], fq_i ) for fq_i in out_fastq_1s ]
