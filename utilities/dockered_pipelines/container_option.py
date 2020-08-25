@@ -6,6 +6,30 @@ from pathlib import Path
 
 
 
+DOCKER_IMAGES = {   'somaticseq_image'        : 'lethalfang/somaticseq:{}'.format(VERSION),
+                    'scalpel_image'           : 'lethalfang/scalpel:0.5.4',
+                    'mutect2_image'           : 'broadinstitute/gatk:4.0.5.2',
+                    'muse_image'              : 'marghoob/muse:1.0rc_c',
+                    'lofreq_image'            : 'lethalfang/lofreq:2.1.3.1-1',
+                    'jsm2_image'              : 'lethalfang/jointsnvmix2:0.7.5',
+                    'vardict_image'           : 'lethalfang/vardictjava:1.7.0',
+                    'somaticsniper_image'     : 'lethalfang/somaticsniper:1.0.5.0-2',
+                    'strelka2_image'          : 'lethalfang/strelka:2.9.5',
+                    'bwa_image'               : 'lethalfang/bwa:0.7.17_samtools',
+                    'picard_image'            : 'lethalfang/picard:2.22.7',
+                    'sambamba_image'          : 'lethalfang/sambamba:0.7.1',
+                    'samtools_image'          : 'lethalfang/samtools:1.10',
+                    'tabix_image'             : 'lethalfang/tabix:1.10',
+                    'picard_image'            : 'lethalfang/picard:2.22.7',
+                    'sambamba_image'          : 'lethalfang/sambamba:0.7.1',
+                }
+
+
+
+
+
+
+
 
 def container_params( container_image, tech='docker', files=[], extra_args='', singularity_image_loc='docker://' ):
     
