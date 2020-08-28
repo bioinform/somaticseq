@@ -35,7 +35,7 @@ def run():
     parser_paired.add_argument('-ref',        '--genome-reference',     type=str,   help='reference fasta file', required=True)
     parser_paired.add_argument('-include',    '--inclusion-region',     type=str,   help='inclusion bed file', )
     parser_paired.add_argument('-exclude',    '--exclusion-region',     type=str,   help='exclusion bed file', )
-    parser_paired.add_argument('-dbsnp',      '--dbsnp-vcf',            type=str,   help='dbSNP vcf file, also requires .idx, .gz, and .gz.tbi files', required=True)
+    parser_paired.add_argument('-dbsnp',      '--dbsnp-vcf',            type=str,   help='dbSNP vcf file, also requires .idx, .gz, and .gz.tbi files')
     parser_paired.add_argument('-cosmic',     '--cosmic-vcf',           type=str,   help='cosmic vcf file')
     parser_paired.add_argument('-minVAF',     '--minimum-VAF',          type=float, help='minimum VAF to look for', default=0.05)
     parser_paired.add_argument('-action',     '--action',               type=str,   help='action for each mutation caller\' run script', default='echo')
