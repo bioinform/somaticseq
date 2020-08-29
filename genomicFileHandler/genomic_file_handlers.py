@@ -164,7 +164,7 @@ def faiordict2contigorder(file_name, file_format):
 def open_textfile(file_name):
 
     # See if the input file is a .gz file:
-    if file_name.lower().endswith('.gz'):
+    if str(file_name).lower().endswith('.gz'):
         return gzip.open(file_name, 'rt')
 
     else:

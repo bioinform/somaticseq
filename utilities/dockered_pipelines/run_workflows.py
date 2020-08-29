@@ -6,6 +6,7 @@ import subprocess
 from datetime import datetime
 from multiprocessing import Pool
 
+
 def seconds_to_readable( second_i ):
 
     days    = second_i // 86400
@@ -64,6 +65,38 @@ def run_workflows( list_of_ListOfTasks, threads = 1 ):
 
 
 
+def cumsum( num_in_each_list ):
+    '''Calculate cumulative sum of a list like np.cumsum'''
+    
+    summed_list = [] 
+    n = len(num_in_each_list) 
+    summed_list = [ sum(num_in_each_list[0:i]) for i in range(0, n+1) ]
+    
+    return summed_list[1:]
+
+
+
+
+def partition_list_to_lists( super_list, num_in_each_list ):
+    '''
+    Given a list, will partition it into multiple lists according to num_in_each_list, i.e., 
+    Ex.
+    super_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    num_in_each_list = [3, 6, 1], which means first 3 items go to 1st list, next 6 items to go 2nd list, and the next 1 item to go the 3rd list
+    Return [ [1, 2, 3], [4, 5, 6, 7, 8, 9], [10] ]
+    '''
+    assert sum( num_in_each_list ) == len(super_list)
+    
+    num_start = cumsum( num_in_each_list )
+    num_start.insert(0, 0)
+    num_start = num_start[:-1]
+
+    list_of_list = []
+    for i, j in zip(num_start, num_in_each_list):
+        list_i = super_list[ i:i+j ]
+        list_of_list.append( list_i )
+        
+    return list_of_list
 
 
 
@@ -71,11 +104,12 @@ def run_workflows( list_of_ListOfTasks, threads = 1 ):
 
 def run():
     
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='1) the first use case is simple, e.g., run the 4 scripts using 2 threads in parallel: run_workflows.py --scripts 1.sh 2.sh 3.sh 4.sh -nt 2. 2) the second use case is more complex, e.g., with -nt 3 threads, the following 10 scripts have to be completed in the following orders: the first 3 need to complete first, and then the next 4 need to complete, and then finally the next 3 will need to complete: run_workflows.py -scripts 1.sh 2.sh 3.sh 4.sh 5.sh 6.sh 7.sh 8.sh 9.sh 10.sh -parts 3 4 3 -nt 3', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # INPUT FILES and Global Options
-    parser.add_argument('-scripts', '--list-of-scripts', nargs='*', type=str)
-    parser.add_argument('-nt',      '--threads',  type=int, default=1)
+    parser.add_argument('-scripts', '--list-of-scripts',     nargs='*', type=str)
+    parser.add_argument('-nt',      '--threads',             default=1, type=int)
+    parser.add_argument('-parts',   '--partition-numbering', nargs='*', type=int )
     
     args = parser.parse_args()
     
@@ -89,4 +123,10 @@ def run():
 if __name__ == '__main__':
     
     args = run()
-    run_workflows( [args.list_of_scripts,],  args.threads )
+    
+    if args.partition_numbering:
+        list_of_workflows = partition_list_to_lists( args.list_of_scripts, args.partition_numbering )
+        run_workflows( list_of_workflows,  args.threads )
+    
+    else:
+        run_workflows( [args.list_of_scripts,],  args.threads )
