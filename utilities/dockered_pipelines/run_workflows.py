@@ -104,7 +104,7 @@ def partition_list_to_lists( super_list, num_in_each_list ):
 
 def run():
     
-    parser = argparse.ArgumentParser(description='1) the first use case is simple, e.g., run the 4 scripts using 2 threads in parallel: run_workflows.py --scripts 1.sh 2.sh 3.sh 4.sh -nt 2. 2) the second use case is more complex, e.g., with -nt 3 threads, the following 10 scripts have to be completed in the following orders: the first 3 need to complete first, and then the next 4 need to complete, and then finally the next 3 will need to complete: run_workflows.py -scripts 1.sh 2.sh 3.sh 4.sh 5.sh 6.sh 7.sh 8.sh 9.sh 10.sh -parts 3 4 3 -nt 3', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='This module has two use cases:\n1) the first use case is simple, e.g., run the 4 scripts using 2 threads in parallel: run_workflows.py --scripts 1.sh 2.sh 3.sh 4.sh -nt 2.\n2) the second use case is more complex, e.g., with -nt 3 threads, the following 10 scripts have to be completed in the following orders: the first 3 need to complete first, and then the next 4 need to complete, and then finally the next 3 will need to complete: run_workflows.py -scripts 1.sh 2.sh 3.sh 4.sh 5.sh 6.sh 7.sh 8.sh 9.sh 10.sh -parts 3 4 3 -nt 3', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # INPUT FILES and Global Options
     parser.add_argument('-scripts', '--list-of-scripts',     nargs='*', type=str)
