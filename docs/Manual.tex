@@ -1486,7 +1486,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
             
             \item Noticed that the xgboost script in R is not compatible with version 1.0+ xgboost library in R.
             
-		\end{itemize}
+	\end{itemize}
 		
     
 	\item Version 3.6.0
@@ -1496,7 +1496,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
             
             \item Remove obsolete \textit{SomaticSeq.Wrapper.sh} and \textit{ssSomaticSeq.Wrapper.sh} scripts. They were obsolete since v3.0.0. 
             
-		\end{itemize}
+	\end{itemize}
     
     
 	\item Version 3.6.1
@@ -1506,8 +1506,20 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
             
             \item Added \textit{makeAlignmentScripts.py} module for alignment workflow.
             
-		\end{itemize}
-    
+	\end{itemize}
+
+
+	\item Version 3.6.2
+
+        \begin{itemize}
+            \item Fixed a bug where linguistic sequence complexity could not be calculated for variant positions at the edge of a chromosome.
+                        
+            \item Added \textit{\texttt{--}by-caller} option for \textit{makeSomaticScripts.py}, such that time-consuming tools will be executed first to optimize run time. Be careful about memory usages. 
+        
+	\end{itemize}
+
+
+
 		
 \end{enumerate}
 
@@ -1515,8 +1527,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 
 
 \section{Contact Us}
-For suggestions, bug reports, or technical support, please post in \href{https://github.com/bioinform/somaticseq/issues}{https://github.com/bioinform/somaticseq/issues}. The developers are alerted when issues are created there. Alternatively, you may also email \href{mailto:li_tai.fang@roche.com}{li\_tai.fang@roche.com}. 
-
+For suggestions, bug reports, or technical support, please post in \href{https://github.com/bioinform/somaticseq/issues}{https://github.com/bioinform/somaticseq/issues}. The developers are alerted when issues are created there. 
 
 
 
