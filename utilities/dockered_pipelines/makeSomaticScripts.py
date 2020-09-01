@@ -137,7 +137,7 @@ def run():
     parser_single.add_argument('-nt',  '--threads',        type=int, help='Split the input regions into this many threads', default=1)
     parser_single.add_argument('-run', '--run-workflow',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
 
-    parser_paired.add_argument('--by-caller',  action='store_true', help='Execution is ordered primarily by tools, i.e., time-consuming tools will start first')
+    parser_single.add_argument('--by-caller',  action='store_true', help='Execution is ordered primarily by tools, i.e., time-consuming tools will start first')
     
     parser_single.set_defaults(which='single')
     
