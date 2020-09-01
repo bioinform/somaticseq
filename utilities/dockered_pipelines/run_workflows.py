@@ -121,7 +121,14 @@ def run():
 
 
 if __name__ == '__main__':
-    
+
+    FORMAT = '%(levelname)s %(asctime)-15s %(name)-20s %(message)s'
+    logger = logging.getLogger('run_workflow.py')
+
+    logger.setLevel(logging.DEBUG)
+    logging.basicConfig(level=logging.INFO, format=FORMAT)
+
+
     args = run()
     
     if args.partition_numbering:
