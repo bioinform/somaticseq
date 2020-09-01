@@ -316,7 +316,7 @@ def make_workflow( args, workflowArguments ):
 
 
         if args.by_caller:
-            workflow_tasks['caller_jobs'] = workflow_tasks['caller_jobs'] + scalpel_jobs + vardict_jobs + mutect_jobs + varscan_jobs + lofreq_jobs + muse_jobs + strelka_jobs
+            workflow_tasks['caller_jobs'] = workflow_tasks['caller_jobs'] + scalpel_jobs + vardict_jobs + mutect_jobs + varscan_jobs + lofreq_jobs + strelka_jobs
         else:
             workflow_tasks['caller_jobs'] = workflow_tasks['caller_jobs'] + jobs_by_threads
                 
