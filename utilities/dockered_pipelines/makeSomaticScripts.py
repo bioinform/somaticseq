@@ -82,6 +82,8 @@ def run():
     parser_paired.add_argument('-nt',  '--threads',        type=int, help='Split the input regions into this many threads', default=1)
     parser_paired.add_argument('-run', '--run-workflow',  action='store_true', help='Execute the bash scripts right here. Only works on Linux machines with modern bash shells.')
     
+    parser_paired.add_argument('--by-caller',  action='store_true', help='Execution is ordered primarily by tools, i.e., time-consuming tools will start first')
+    
     parser_paired.set_defaults(which='paired')
 
 
@@ -135,6 +137,8 @@ def run():
     parser_single.add_argument('-nt',  '--threads',        type=int, help='Split the input regions into this many threads', default=1)
     parser_single.add_argument('-run', '--run-workflow',  action='store_true', help='Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.')
 
+    parser_paired.add_argument('--by-caller',  action='store_true', help='Execution is ordered primarily by tools, i.e., time-consuming tools will start first')
+    
     parser_single.set_defaults(which='single')
     
     # Parse the arguments:
@@ -196,6 +200,7 @@ def make_workflow( args, workflowArguments ):
         lofreq_jobs  = []
         scalpel_jobs = []
         strelka_jobs = []
+        jobs_by_threads = []
         for thread_i in range(1, workflowArguments['threads']+1):
             
             if workflowArguments['threads'] > 1:
@@ -230,13 +235,15 @@ def make_workflow( args, workflowArguments ):
                 input_arguments['script'] = 'mutect2.{}.cmd'.format(ts)
                 mutect2_job = MuTect2.tumor_normal( input_arguments, args.container_tech )
                 mutect_jobs.append( mutect2_job )
-
+                jobs_by_threads.append( mutect2_job )
+                
             if workflowArguments['run_scalpel']:
                 import utilities.dockered_pipelines.somatic_mutations.Scalpel as Scalpel
                 input_arguments = copy(perThreadParameter)
                 input_arguments['script'] = 'scalpel.{}.cmd'.format(ts)
                 scalpel_job = Scalpel.tumor_normal( input_arguments, args.container_tech )
                 scalpel_jobs.append( scalpel_job )
+                jobs_by_threads.append( scalpel_job )
 
             if workflowArguments['run_vardict']:
                 import utilities.dockered_pipelines.somatic_mutations.VarDict as VarDict
@@ -244,6 +251,7 @@ def make_workflow( args, workflowArguments ):
                 input_arguments['script'] = 'vardict.{}.cmd'.format(ts)
                 vardict_job = VarDict.tumor_normal( input_arguments, args.container_tech )
                 vardict_jobs.append( vardict_job )
+                jobs_by_threads.append( vardict_job )
 
             if workflowArguments['run_varscan2']:
                 import utilities.dockered_pipelines.somatic_mutations.VarScan2 as VarScan2
@@ -251,6 +259,7 @@ def make_workflow( args, workflowArguments ):
                 input_arguments['script'] = 'varscan2.{}.cmd'.format(ts)
                 varscan2_job = VarScan2.tumor_normal( input_arguments, args.container_tech )
                 varscan_jobs.append( varscan2_job )
+                jobs_by_threads.append( varscan2_job )
 
             if workflowArguments['run_lofreq']:
                 import utilities.dockered_pipelines.somatic_mutations.LoFreq as LoFreq
@@ -269,6 +278,7 @@ def make_workflow( args, workflowArguments ):
     
                 lofreq_job = LoFreq.tumor_normal( input_arguments, args.container_tech )
                 lofreq_jobs.append( lofreq_job )
+                jobs_by_threads.append( lofreq_job )
 
             if workflowArguments['run_muse']:
                 import utilities.dockered_pipelines.somatic_mutations.MuSE as MuSE
@@ -287,6 +297,7 @@ def make_workflow( args, workflowArguments ):
             
                 muse_job = MuSE.tumor_normal( input_arguments, args.container_tech )
                 muse_jobs.append( muse_job )
+                jobs_by_threads.append( muse_job )
     
             if workflowArguments['run_strelka2']:
                 import utilities.dockered_pipelines.somatic_mutations.Strelka2 as Strelka2
@@ -294,6 +305,8 @@ def make_workflow( args, workflowArguments ):
                 input_arguments['script'] = 'strelka.{}.cmd'.format(ts)
                 strelka2_job = Strelka2.tumor_normal( input_arguments, args.container_tech )
                 strelka_jobs.append( strelka2_job )
+                jobs_by_threads.append( strelka2_job )
+
 
             if workflowArguments['run_somaticseq']:
                 input_arguments = copy(perThreadParameter)
@@ -302,7 +315,12 @@ def make_workflow( args, workflowArguments ):
                 workflow_tasks['somaticseq_jobs'].append(somaticseq_job)
 
 
-        workflow_tasks['caller_jobs'] = workflow_tasks['caller_jobs'] + scalpel_jobs + vardict_jobs + mutect_jobs + varscan_jobs + lofreq_jobs + muse_jobs + strelka_jobs
+        if args.by_caller:
+            workflow_tasks['caller_jobs'] = workflow_tasks['caller_jobs'] + scalpel_jobs + vardict_jobs + mutect_jobs + varscan_jobs + lofreq_jobs + muse_jobs + strelka_jobs
+        else:
+            workflow_tasks['caller_jobs'] = workflow_tasks['caller_jobs'] + jobs_by_threads
+                
+            
 
 
 
@@ -332,6 +350,7 @@ def make_workflow( args, workflowArguments ):
         lofreq_jobs  = []
         scalpel_jobs = []
         strelka_jobs = []
+        jobs_by_threads = []
         for thread_i in range(1, workflowArguments['threads']+1):
             
             if workflowArguments['threads'] > 1:
@@ -368,8 +387,8 @@ def make_workflow( args, workflowArguments ):
                 input_arguments = copy(perThreadParameter)
                 input_arguments['script'] = 'mutect2.{}.cmd'.format(ts)
                 mutect2_job = MuTect2.tumor_only( input_arguments, args.container_tech )
-                workflow_tasks['caller_jobs'].append(mutect2_job)
                 mutect_jobs.append( mutect2_job )
+                jobs_by_threads.append( mutect2_job )
 
 
             if workflowArguments['run_scalpel']:
@@ -377,8 +396,8 @@ def make_workflow( args, workflowArguments ):
                 input_arguments = copy(perThreadParameter)
                 input_arguments['script'] = 'scalpel.{}.cmd'.format(ts)
                 scalpel_job = Scalpel.tumor_only( input_arguments, args.container_tech )
-                workflow_tasks['caller_jobs'].append(scalpel_job)
                 scalpel_jobs.append( scalpel_job )
+                jobs_by_threads.append( scalpel_job )
 
 
             if workflowArguments['run_vardict']:
@@ -386,8 +405,8 @@ def make_workflow( args, workflowArguments ):
                 input_arguments = copy(perThreadParameter)
                 input_arguments['script'] = 'vardict.{}.cmd'.format(ts)
                 vardict_job = VarDict.tumor_only( input_arguments, args.container_tech )
-                workflow_tasks['caller_jobs'].append(vardict_job)
                 vardict_jobs.append( vardict_job )
+                jobs_by_threads.append( vardict_job )
 
 
             if workflowArguments['run_varscan2']:
@@ -395,8 +414,8 @@ def make_workflow( args, workflowArguments ):
                 input_arguments = copy(perThreadParameter)
                 input_arguments['script'] = 'varscan2.{}.cmd'.format(ts)
                 varscan2_job = VarScan2.tumor_only( input_arguments, args.container_tech )
-                workflow_tasks['caller_jobs'].append(varscan2_job)
                 varscan_jobs.append( varscan2_job )
+                jobs_by_threads.append( varscan2_job )
 
 
             if workflowArguments['run_lofreq']:
@@ -415,8 +434,8 @@ def make_workflow( args, workflowArguments ):
                     raise Exception('LoFreq has no properly bgzipped dbsnp file.')
     
                 lofreq_job = LoFreq.tumor_only( input_arguments, args.container_tech )
-                workflow_tasks['caller_jobs'].append(lofreq_job)
                 lofreq_jobs.append( lofreq_job )
+                jobs_by_threads.append(lofreq_job )
                 
     
             if workflowArguments['run_strelka2']:
@@ -424,8 +443,8 @@ def make_workflow( args, workflowArguments ):
                 input_arguments = copy(perThreadParameter)
                 input_arguments['script'] = 'strelka.{}.cmd'.format(ts)
                 strelka2_job = Strelka2.tumor_only( input_arguments, args.container_tech )
-                workflow_tasks['caller_jobs'].append(strelka2_job)
                 strelka_jobs.append( strelka2_job )
+                jobs_by_threads.append( strelka2_job )
 
 
             if workflowArguments['run_somaticseq']:
@@ -435,10 +454,16 @@ def make_workflow( args, workflowArguments ):
                 workflow_tasks['somaticseq_jobs'].append(somaticseq_job)
 
 
-        workflow_tasks['caller_jobs'] = workflow_tasks['caller_jobs'] + scalpel_jobs + vardict_jobs + mutect_jobs + varscan_jobs + lofreq_jobs + strelka_jobs
+        if args.by_caller:
+            workflow_tasks['caller_jobs'] = workflow_tasks['caller_jobs'] + scalpel_jobs + vardict_jobs + mutect_jobs + varscan_jobs + lofreq_jobs + muse_jobs + strelka_jobs
+        else:
+            workflow_tasks['caller_jobs'] = workflow_tasks['caller_jobs'] + jobs_by_threads
         
 
-    ##### Log the scripts created #####
+
+
+    ##############################################
+    ########## Log the scripts created ###########
     for script_type in workflow_tasks:
         
         line_i = '{} {} scripts created: '.format( len(workflow_tasks[script_type]), script_type )
