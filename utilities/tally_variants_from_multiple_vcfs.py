@@ -8,6 +8,7 @@ import genomicFileHandler.concat as concat
 import utilities.split_Bed_into_equal_regions as split_regions
 import vcfModifier.vcfIntersector as vcfIntersector
 import tempfile
+from warnings import warn
 
 def intersect_multiple_vcf_files(inVcfList_and_BedFile):
     
@@ -309,5 +310,9 @@ if __name__ == '__main__':
             print_variantDict(dict_i, args.sample_names, args.filter_labels, args.minimum_samples, printHeader)
         
     else:
+        
+        if args.num_threads > 1:
+            warn('This module is unable parallelize this task without bed file input.')
+        
         variant_dict = make_variant_dict( (args.vcf_files, args.bam_files, args.sample_names) )
         print_variantDict(variant_dict, args.sample_names, args.filter_labels, args.minimum_samples)
