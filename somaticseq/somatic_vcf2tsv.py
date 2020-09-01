@@ -558,8 +558,22 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                         seq_left_80bp  = ref_fa.fetch(my_coordinate[0], max(0, my_coordinate[1]-81), my_coordinate[1])
                         seq_right_80bp = ref_fa.fetch(my_coordinate[0], my_coordinate[1], my_coordinate[1]+81)
 
-                        LC_spanning = sequencing_features.subLC(seq_span_80bp, 20)
-                        LC_adjacent  = min(sequencing_features.subLC(seq_left_80bp, 20), sequencing_features.subLC(seq_right_80bp, 20))
+                        if len(seq_span_80bp) > 20:
+                            LC_spanning = sequencing_features.subLC(seq_span_80bp, 20)
+                        else:
+                            LC_spanning = math.nan
+                        
+                        if len(seq_left_80bp) > 20:
+                            left_LC = sequencing_features.subLC(seq_left_80bp, 20)
+                        else:
+                            left_LC = math.nan
+                        
+                        if len(seq_right_80bp) > 20:
+                            right_LC = sequencing_features.subLC(seq_right_80bp, 20)
+                        else:
+                            right_LC = math.nan
+                        
+                        LC_adjacent  = min(left_LC, right_LC)
 
                         LC_spanning_phred = genome.p2phred(1-LC_spanning, 40)
                         LC_adjacent_phred = genome.p2phred(1-LC_adjacent, 40)
