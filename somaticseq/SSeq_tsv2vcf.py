@@ -257,7 +257,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
             
             try:
                 # Non-PASS MuSE calls are made into fractions. 
-                if tsv_item[MuSE_Tier] != '1':
+                if (tsv_item[MuSE_Tier] != '1') or ('1.0' in tsv_item[MuSE_Tier]):
                     if_MuSE = '0'
                 else:
                     if_MuSE = '1'
@@ -271,7 +271,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                 
                 if_Tool = tsv_item[ toolcode2index[tool_i] ]
                 
-                if if_Tool == '1':
+                if (if_Tool == '1') or ('1.0' in if_Tool):
                     if_Tool = '1'
                 
                 elif if_Tool == 'nan':
