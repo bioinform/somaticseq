@@ -25,11 +25,11 @@ def seconds_to_readable( second_i ):
 
 
 
-def run_script( bash_script ):
+def run_script( bash_script, shell='bash' ):
     
     logger = logging.getLogger(run_script.__name__)
     
-    cmd_items = ('bash', bash_script)
+    cmd_items = (shell, bash_script)
     logger.info(' '.join(cmd_items) )
     
     start_time = datetime.now()
