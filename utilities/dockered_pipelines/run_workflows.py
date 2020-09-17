@@ -5,6 +5,7 @@ import logging
 import subprocess
 from datetime import datetime
 from multiprocessing import Pool
+from functools import partial
 
 
 def seconds_to_readable( second_i ):
@@ -29,7 +30,7 @@ def run_script( bash_script, shell='bash' ):
     
     logger = logging.getLogger(run_script.__name__)
     
-    cmd_items = (shell, bash_script)
+    cmd_items = [shell, bash_script]
     logger.info(' '.join(cmd_items) )
     
     start_time = datetime.now()
@@ -46,16 +47,19 @@ def run_script( bash_script, shell='bash' ):
 
 
 
-def run_workflows( list_of_ListOfTasks, threads = 1 ):
+def run_workflows( list_of_ListOfTasks, threads = 1, shell='bash' ):
     '''
     The input should be a list of "list of tasks."
     Each task shall be executed with the syntax of "bash TASK.sh".
     The order of the "list of tasks" imply precedence, i.e., all tasks in the 1st list must be complete before any task in the 2nd list may proceed.
     '''
+    
     pool = Pool(processes = threads)
     
+    run_script_i = partial(run_script, shell=shell)
+    
     for list_of_tasks in list_of_ListOfTasks:
-        bash_async = pool.map_async(run_script, list_of_tasks, chunksize=1)
+        bash_async = pool.map_async(run_script_i, list_of_tasks)
         outputs    = bash_async.get()
 
     pool.close()
@@ -110,6 +114,7 @@ def run():
     parser.add_argument('-scripts', '--list-of-scripts',     nargs='*', type=str)
     parser.add_argument('-nt',      '--threads',             default=1, type=int)
     parser.add_argument('-parts',   '--partition-numbering', nargs='*', type=int )
+    parser.add_argument('-sh',      '--shell',          default='bash', type=str )
     
     args = parser.parse_args()
     
@@ -133,7 +138,7 @@ if __name__ == '__main__':
     
     if args.partition_numbering:
         list_of_workflows = partition_list_to_lists( args.list_of_scripts, args.partition_numbering )
-        run_workflows( list_of_workflows,  args.threads )
+        run_workflows( list_of_workflows, args.threads, args.shell )
     
     else:
-        run_workflows( [args.list_of_scripts,],  args.threads )
+        run_workflows( [args.list_of_scripts,], args.threads, args.shell )
