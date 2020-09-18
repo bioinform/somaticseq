@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-MAINTAINER Li Tai Fang <li_tai.fang@roche.com>
+MAINTAINER Li Tai Fang <ltfang@gmail.com>
 
 RUN apt-get update && apt-get install -y vcftools wget && apt-get clean
 RUN cd /opt && wget https://www.dropbox.com/s/rbegan3opz2fc4k/vcfsorter.pl && chmod a+x vcfsorter.pl
