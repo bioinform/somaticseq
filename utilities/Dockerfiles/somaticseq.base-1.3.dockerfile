@@ -1,6 +1,4 @@
 FROM ubuntu:20.04
-
-MAINTAINER Li Tai Fang <ltfang@gmail.com>
  
 RUN export DEBIAN_FRONTEND=noninteractive && apt update && apt -y install r-base python3 python3-pip bedtools git wget openjdk-8-jdk && apt-get clean
 RUN pip3 install cython pysam numpy scipy pandas xgboost
