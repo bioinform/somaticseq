@@ -54,7 +54,7 @@
 
 
 
-\author{Li Tai Fang / li\_tai.fang@roche.com}
+\author{Li Tai Fang / ltfang@gmail.com}
 
 \title{SomaticSeq Documentation}
 
@@ -1515,8 +1515,15 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
             \item Fixed a bug where linguistic sequence complexity could not be calculated for variant positions at the edge of a chromosome.
                         
             \item Added \textit{\texttt{--}by-caller} option for \textit{makeSomaticScripts.py}, such that time-consuming tools will be executed first to optimize run time. Be careful about memory usages. 
-        
-	\end{itemize}
+        \end{itemize}
+
+
+	\item Version 3.6.3
+
+        \begin{itemize}
+            \item Change xgboost's default max\_depth to 8, because after going through some parameters 8 is usually better than 12, though xgboost parameters are all tunable. See options by running in command line: (\textit{somatic\_xgboost.py train -h}).
+            
+        \end{itemize}
 
 
 
