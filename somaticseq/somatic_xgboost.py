@@ -11,7 +11,7 @@ from copy import copy
 from somaticseq._version import  __version__
 
 
-DEFAULT_PARAM = {'max_depth': 12, 'nthread': 1, 'objective': 'binary:logistic', 'seed': 0, 'tree_method': 'hist', 'grow_policy': 'lossguide'}
+DEFAULT_PARAM = {'max_depth': 8, 'nthread': 1, 'objective': 'binary:logistic', 'seed': 0, 'tree_method': 'hist', 'grow_policy': 'lossguide'}
 NON_FEATURE   = ['CHROM', 'POS', 'ID', 'REF', 'ALT', 'Strelka_QSS', 'Strelka_TQSS', 'if_COSMIC', 'COSMIC_CNT', 'TrueVariant_or_False']
 
 DEFAULT_XGB_BOOST_ROUNDS  = 500
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     parser_train.add_argument('-tsvs',    '--tsvs-in',          type=str, nargs='+', help='labeled tsv file(s)',  required=True)
     parser_train.add_argument('-out',     '--model-out',        type=str, help='output model file name')
     parser_train.add_argument('-threads', '--num-threads',      type=int, help='num threads.')
-    parser_train.add_argument('-depth',   '--max-depth',        type=int, help='tree max depth. default=12')
+    parser_train.add_argument('-depth',   '--max-depth',        type=int, help='tree max depth. default=8')
     parser_train.add_argument('-seed',    '--seed',             type=int, help='random seed. default=0')
     parser_train.add_argument('-method',  '--tree-method',      type=str, help='tree method. default=hist')
     parser_train.add_argument('-iter',    '--num-boost-rounds', type=int, help='num boosting rounds, i.e., number of trees', default=1000)
