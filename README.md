@@ -40,7 +40,7 @@ To install SomaticSeq in a separate conda environment (let's name it `somaticseq
 * The following four files will be created into the output directory:
   * `Consensus.sSNV.vcf`, `Consensus.sINDEL.vcf`, `Ensemble.sSNV.tsv`, and `Ensemble.sINDEL.tsv`.
 
-* If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [**Dockerized Somatic Mutation Sorkflow**](utilities/dockered_pipelines).
+* If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [**Dockerized Somatic Mutation Workflow**](utilities/dockered_pipelines).
 
 ```
 # Merge caller results and extract SomaticSeq features
