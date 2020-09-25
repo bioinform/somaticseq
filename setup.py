@@ -15,7 +15,7 @@ setup(
     packages=find_packages(),
     package_data={'': ['*.R']},
     install_requires=['pysam', 'numpy', 'scipy', 'pandas', 'xgboost'],
-    scripts=['somaticseq_parallel.py',
+    scripts=['somaticseq/somaticseq_parallel.py',
              'somaticseq/run_somaticseq.py',
              'somaticseq/single_sample_vcf2tsv.py',
              'somaticseq/somatic_vcf2tsv.py',
