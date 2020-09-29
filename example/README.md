@@ -21,21 +21,27 @@ The directory will be `single_somaticseq`.
 
 
 
-## Generate scripts to run dockerized MuTect2, VarDict, and Strelka2 in tumor-normal mode
+## Run dockerized workflow with MuTect2, VarDict, and Strelka2 in tumor-normal mode
 
 ```
 cd example
 ./invoke_dockerized_tumor_normal_callers.sh
 ```
 
-Then, the following scripts will be created
+Then, the following scripts will be created and executed:
 ```
-paired_example/logs/mutect2.year.month.date.timestamp.cmd
-paired_example/logs/strelka.year.month.date.timestamp.cmd
-paired_example/logs/vardict.year.month.date.timestamp.cmd
+paired_example/{1,2}/logs/mutect2.year.month.date.timestamp.cmd
+paired_example/{1,2}/logs/strelka.year.month.date.timestamp.cmd
+paired_example/{1,2}/logs/vardict.year.month.date.timestamp.cmd
+paired_example/{1,2}/SomaticSeq/logs/somaticSeq.year.month.date.timestamp.cmd
+paired_example/logs/mergeResults.year.month.date.timestamp.cmd
 ```
+Directories 1 and 2 are created because the script invokes two parallel processes using `-nt 2`. 
+The caller scripts (i.e., mutect2, strelka, and vardict) will executed first. 
+Then, the somaticSeq scripts will be executed.
+Finally, the mergeResults script will be executed. 
 
-Submit or execute all of them. Once they are complete, *then* their outputs (MuTect2, VarDict, and Strelka2) can be used as input for SomaticSeq. You may submit or execute this one:
-```
-paired_example/SomaticSeq/logs/somaticSeq.year.month.date.timestamp.cmd
-```
+
+
+## dockerized workflow with tumor-only mode.
+Same as above, but run the `invoke_dockerized_tumor_only_callers.sh`.
