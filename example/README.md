@@ -22,7 +22,7 @@ The directory will be `single_somaticseq`.
 
 
 ## Run dockerized workflow with MuTect2, VarDict, and Strelka2 in tumor-normal mode
-
+If you are able to run docker, you may test the following workflow:
 ```
 cd example
 ./invoke_dockerized_tumor_normal_callers.sh
