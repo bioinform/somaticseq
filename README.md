@@ -35,6 +35,9 @@ To [![install with bioconda](https://img.shields.io/badge/install%20with-biocond
 
 To install SomaticSeq in a separate conda environment (let's name it `somaticseqConda`), the command would be: `conda create --name somaticSeqConda somaticseq`.
 
+### Test with small examples
+There are some toy data sets and test scripts in [**example**](example)
+
 ## Run SomaticSeq with an example command
 * At minimum, given the results of the individual mutation caller(s), SomaticSeq will extract sequencing features for the combined call set. Required inputs are `--output-directory`, `--genome-reference`, `paired|single`, `--tumor-bam-file`, and `--normal-bam-file`. Everything else is optional (though without a single VCF file from at least one caller, SomaticSeq will have nothing to do).
 * The following four files will be created into the output directory:

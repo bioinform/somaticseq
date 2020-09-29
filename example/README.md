@@ -37,7 +37,7 @@ paired_example/{1,2}/SomaticSeq/logs/somaticSeq.year.month.date.timestamp.cmd
 paired_example/logs/mergeResults.year.month.date.timestamp.cmd
 ```
 Directories 1 and 2 are created because the script invokes two parallel processes using `-nt 2`. 
-The caller scripts (i.e., mutect2, strelka, and vardict) will executed first. 
+The caller scripts (i.e., mutect2, strelka, and vardict) will be executed first by two parallel processes (`-nt 2`). 
 Then, the somaticSeq scripts will be executed.
 Finally, the mergeResults script will be executed. 
 
