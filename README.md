@@ -33,7 +33,7 @@ To [![install with bioconda](https://img.shields.io/badge/install%20with-biocond
 `conda install -c bioconda somaticseq`. 
 
 
-To install SomaticSeq in a separate conda environment (let's name it `somaticseqConda`), the command would be: `conda create --name somaticSeqConda somaticseq`.
+To install SomaticSeq in a separate conda environment (let's name it `somaticseqConda`), the command would be: `conda create --name somaticSeqConda -c bioconda somaticseq`.
 
 ### Test your installation
 There are some toy data sets and test scripts in [**example**](example) that should finish in <1 minute if installed properly.
