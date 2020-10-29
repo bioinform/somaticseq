@@ -55,8 +55,8 @@ def spread( in_fastqs, out_fastqs, tech='docker', input_parameters={}, remove_in
         
 
     # "Run" the script that was generated
-    command_item = (input_parameters['action'], outfile)
-    returnCode   = subprocess.call( command_item )
+    command_line = '{} {}'.format( input_parameters['action'], outfile )
+    returnCode   = subprocess.call( command_line, shell=True )
 
     return outfile
 

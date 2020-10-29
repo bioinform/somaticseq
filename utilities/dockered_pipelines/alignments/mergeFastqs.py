@@ -59,7 +59,7 @@ def gz( infiles, outfq, tech='docker', input_parameters=DEFAULT_PARAMS, remove_i
         
 
     # "Run" the script that was generated
-    command_item = (input_parameters['action'], outfile)
-    returnCode   = subprocess.call( command_item )
+    command_line = '{} {}'.format( input_parameters['action'], outfile )
+    returnCode   = subprocess.call( command_line, shell=True )
 
     return outfile

@@ -94,7 +94,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker' ):
 
 
     # "Run" the script that was generated
-    command_item = (input_parameters['action'], outfile)
-    returnCode   = subprocess.call( command_item )
+    command_line = '{} {}'.format( input_parameters['action'], outfile )
+    returnCode   = subprocess.call( command_line, shell=True )
 
     return outfile

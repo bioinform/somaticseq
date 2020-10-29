@@ -30,11 +30,11 @@ def run_script( bash_script, shell='bash' ):
     
     logger = logging.getLogger(run_script.__name__)
     
-    cmd_items = [shell, bash_script]
-    logger.info(' '.join(cmd_items) )
+    cmd_line = '{} {}'.format(shell, bash_script)
+    logger.info( cmd_line )
     
     start_time = datetime.now()
-    returnCode = subprocess.call( cmd_items, bufsize=0 )
+    returnCode = subprocess.call( cmd_line, shell=True, bufsize=0 )
     end_time   = datetime.now()
     run_time   = end_time - start_time
     

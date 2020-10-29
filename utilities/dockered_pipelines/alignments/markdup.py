@@ -114,8 +114,8 @@ def picard( input_parameters, tech='docker' ):
 
 
     # "Run" the script that was generated
-    command_item = (input_parameters['action'], outfile)
-    returnCode   = subprocess.call( command_item )
+    command_line = '{} {}'.format( input_parameters['action'], outfile )
+    returnCode   = subprocess.call( command_line, shell=True )
 
     return outfile
 
@@ -169,8 +169,8 @@ def sambamba( input_parameters, tech='docker' ):
 
 
     # "Run" the script that was generated
-    command_item = (input_parameters['action'], outfile)
-    returnCode   = subprocess.call( command_item )
+    command_line = '{} {}'.format( input_parameters['action'], outfile )
+    returnCode   = subprocess.call( command_line, shell=True )
 
     return outfile
 
@@ -243,8 +243,8 @@ def fractional( bed, input_parameters, tech='docker' ):
         out.write( '\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n' )
 
     # "Run" the script that was generated
-    command_item = (input_parameters['action'], outfile)
-    returnCode   = subprocess.call( command_item )
+    command_line = '{} {}'.format( input_parameters['action'], outfile )
+    returnCode   = subprocess.call( command_line, shell=True )
 
     return outfile, os.path.join(outdir, split_deduped_bam)
 
