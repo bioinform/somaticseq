@@ -194,6 +194,9 @@ def run_SomaticSeq(input_parameters, tech='docker'):
         if input_parameters['truth_indel']:
             out.write( '--truth-indel {} \\\n'.format( fileDict[ input_parameters['truth_indel'] ]['mount_path'] ) )
 
+        if input_parameters['somaticseq_algorithm']:
+            out.write( '--algorithm {} \\\n'.format(input_parameters['somaticseq_algorithm']) )
+
         if input_parameters['somaticseq_arguments']:
             out.write( '{} \\\n'.format(input_parameters['somaticseq_arguments']) )
 
@@ -424,11 +427,17 @@ def merge_results(input_parameters, tech='docker'):
             # If asked to create classifier, do it here when TSV files are combined
             if input_parameters['train_somaticseq'] and input_parameters['truth_snv']:
                 out.write(f'{container_line} \\\n' )
-                out.write( 'somatic_xgboost.py train -threads {} -tsvs {}/Ensemble.sSNV.tsv\n\n'.format(input_parameters['threads'], mounted_outdir) )
+                if input_parameters['somaticseq_algorithm'] == 'ada':
+                    out.write( 'ada_model_builder_ntChange.R {}/Ensemble.sSNV.tsv\n\n'.format( mounted_outdir) )
+                else:
+                    out.write( 'somatic_xgboost.py train -threads {} -tsvs {}/Ensemble.sSNV.tsv\n\n'.format(input_parameters['threads'], mounted_outdir) )
 
             if input_parameters['train_somaticseq'] and input_parameters['truth_indel']:
                 out.write(f'{container_line} \\\n' )
-                out.write( 'somatic_xgboost.py train -threads {} -tsvs {}/Ensemble.sINDEL.tsv\n\n'.format(input_parameters['threads'], mounted_outdir) )
+                if input_parameters['somaticseq_algorithm'] == 'ada':
+                    out.write( 'ada_model_builder_ntChange.R {}/Ensemble.sINDEL.tsv\n\n'.format( mounted_outdir) )
+                else:
+                    out.write( 'somatic_xgboost.py train -threads {} -tsvs {}/Ensemble.sINDEL.tsv\n\n'.format(input_parameters['threads'], mounted_outdir) )
 
 
             # If in prediction mode, combine SSeq.Classified.sSNV.vcf, else Consensus.sSNV.vcf
