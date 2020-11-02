@@ -1521,7 +1521,11 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	\item Version 3.6.3
 
         \begin{itemize}
-            \item Change xgboost's default max\_depth to 8, because after going through some parameters 8 is usually better than 12, though xgboost parameters are all tunable. See options by running in command line: (\textit{somatic\_xgboost.py train -h}).
+            \item Change xgboost's default \textit{max\_depth} to 8, because after going through some parameters 8 is usually better than 12, though xgboost parameters are all tunable. See options by running in command line: (\textit{somatic\_xgboost.py train -h}).
+            
+            \item Fixed the \textit{--somaticseq-algorithm} option in \textit{makeSomaticScripts.py}. The default is \textit{xgboost} but you can use \textit{ada}. 
+            
+            \item Used \textit{shell=True} option in many \textit{subprocess.call} instances, to allow more complicated arguments to be passed into, e.g., \textit{--action 'qsub -l walltime=100:00:00'}.
             
         \end{itemize}
 
