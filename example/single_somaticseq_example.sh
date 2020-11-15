@@ -6,7 +6,7 @@ mkdir -p single_somaticseq
 
 somaticseq_parallel.py \
 --somaticseq-train \
---algorithm        ada \
+--algorithm        xgboost \
 --output-directory single_somaticseq \
 --genome-reference tiny.fa \
 --dbsnp-vcf        tiny_dbsnp.vcf \
