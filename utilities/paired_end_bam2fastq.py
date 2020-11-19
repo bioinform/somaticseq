@@ -3,8 +3,8 @@
 import argparse, pysam, gzip
 
 
-NT_PAIRS = {'G':'C', 'T':'A', 'C':'G', 'A':'T', 
-            'g':'c', 't':'a', 'c':'g', 'a':'t',}
+NT_PAIRS = {'G':'C', 'T':'A', 'C':'G', 'A':'T', 'N': 'N'
+            'g':'c', 't':'a', 'c':'g', 'a':'t', 'n': 'n'}
 
 
 
