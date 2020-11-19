@@ -19,7 +19,7 @@ def text_open_write(filename):
         return gzip.open(filename, 'wt')
     else:
         return open(filename, 'w')
-    
+
 
 
 def bam2fq(bam_file, fastq1, fastq2):
