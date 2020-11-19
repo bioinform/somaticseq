@@ -16,7 +16,7 @@ def reverse_complement(seq):
 
 def text_open_write(filename):
     if str(filename).endswith('.gz'):
-        return gzip.open(filename, 'wb')
+        return gzip.open(filename, 'wt')
     else:
         return open(filename, 'w')
     
@@ -89,9 +89,9 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description="Convert paired-end BAM to FASTQ1 and 2", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('-bam', '--bam',    help="bam file in")
-    parser.add_argument('-fq1', '--fastq1', help="fastq1 out")
-    parser.add_argument('-fq2', '--fastq2', help="fastq2 out")
+    parser.add_argument('-bam', '--bam',    type=str, help="bam file in")
+    parser.add_argument('-fq1', '--fastq1', type=str, help="fastq1 out")
+    parser.add_argument('-fq2', '--fastq2', type=str, help="fastq2 out")
 
     args = parser.parse_args()
 
