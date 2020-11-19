@@ -34,7 +34,8 @@ def bam2fq(bam_file, fastq1, fastq2):
             
             if not read_i.is_secondary:
     
-                seq_i = reverse_complement(read_i.query_sequence) if read_i.is_reverse else read_i.query_sequence
+                seq_i  = reverse_complement(read_i.query_sequence) if read_i.is_reverse else read_i.query_sequence
+                qual_i = read_i.qual[::-1] if read_i.is_reverse else read_i.qual
     
                 if read_i.is_read1:
     
@@ -43,7 +44,7 @@ def bam2fq(bam_file, fastq1, fastq2):
                         fq1.write( '@{}/1\n'.format(read_i.query_name) )
                         fq1.write( seq_i + '\n' )
                         fq1.write( '+\n' )
-                        fq1.write( read_i.qual + '\n')
+                        fq1.write( qual_i + '\n')
 
                         read_2 = reads2.pop(read_i.query_name)
 
@@ -56,7 +57,7 @@ def bam2fq(bam_file, fastq1, fastq2):
                         reads1[read_i.query_name] = {}
                         reads1[read_i.query_name]['qname'] = read_i.query_name
                         reads1[read_i.query_name]['seq']   = seq_i
-                        reads1[read_i.query_name]['bq']    = read_i.qual
+                        reads1[read_i.query_name]['bq']    = qual_i
     
                 elif read_i.is_read2:
     
@@ -72,13 +73,13 @@ def bam2fq(bam_file, fastq1, fastq2):
                         fq2.write( '@{}/2\n'.format(read_i.query_name) )
                         fq2.write( seq_i + '\n' )
                         fq2.write( '+\n' )
-                        fq2.write( read_i.qual + '\n')
+                        fq2.write( qual_i + '\n')
                             
                     else:
                         reads2[read_i.query_name] = {}
                         reads2[read_i.query_name]['qname'] = read_i.query_name
                         reads2[read_i.query_name]['seq']   = seq_i
-                        reads2[read_i.query_name]['bq']    = read_i.qual
+                        reads2[read_i.query_name]['bq']    = qual_i
 
     return True
 
