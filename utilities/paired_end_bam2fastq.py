@@ -39,19 +39,19 @@ def bam2fq(bam_file, fastq1, fastq2):
                 if read_i.is_read1:
     
                     if read_i.query_name in reads2:
-                                            
+                        
                         fq1.write( '@{}/1\n'.format(read_i.query_name) )
                         fq1.write( seq_i + '\n' )
                         fq1.write( '+\n' )
                         fq1.write( read_i.qual + '\n')
-    
-                        fq2.write( '@{}/2\n'.format( reads2[read_i.query_name]['qname'] ) )
-                        fq2.write( reads2[read_i.query_name]['seq'] + '\n' )
+
+                        read_2 = reads2.pop(read_i.query_name)
+
+                        fq2.write( '@{}/2\n'.format( read_2['qname'] ) )
+                        fq2.write( read_2['seq'] + '\n' )
                         fq2.write( '+\n' )
-                        fq2.write( reads2[read_i.query_name]['bq'] + '\n')
-    
-                        del reads2[read_i.query_name]
-                        
+                        fq2.write( read_2['bq'] + '\n')
+                            
                     else:
                         reads1[read_i.query_name] = {}
                         reads1[read_i.query_name]['qname'] = read_i.query_name
@@ -62,18 +62,18 @@ def bam2fq(bam_file, fastq1, fastq2):
     
                     if read_i.query_name in reads1:
                         
-                        fq1.write( '@{}/1\n'.format( reads1[read_i.query_name]['qname'] ) )
-                        fq1.write( reads1[read_i.query_name]['seq'] + '\n' )
+                        read_1 = reads1.pop(read_i.query_name)
+                        
+                        fq1.write( '@{}/1\n'.format( read_1['qname'] ) )
+                        fq1.write( read_1['seq'] + '\n' )
                         fq1.write( '+\n' )
-                        fq1.write( reads1[read_i.query_name]['bq'] + '\n')
+                        fq1.write( read_1['bq'] + '\n')
     
                         fq2.write( '@{}/2\n'.format(read_i.query_name) )
                         fq2.write( seq_i + '\n' )
                         fq2.write( '+\n' )
                         fq2.write( read_i.qual + '\n')
-    
-                        del reads1[read_i.query_name]
-                        
+                            
                     else:
                         reads2[read_i.query_name] = {}
                         reads2[read_i.query_name]['qname'] = read_i.query_name
