@@ -11,4 +11,4 @@ paired \
 --truth-snv        $(pwd -P)/Varsim.somatic.truth.vcf \
 --truth-indel      $(pwd -P)/Varsim.somatic.truth.vcf \
 --dbsnp-vcf        $(pwd -P)/tiny_dbsnp.vcf \
---run-mutect2 --run-vardict --run-strelka2 --run-somaticseq --train-somaticseq --run-workflow -nt 2 --run-workflow
+--run-mutect2 --run-vardict --run-strelka2 --run-somaticseq --train-somaticseq -nt 2 --run-workflow
