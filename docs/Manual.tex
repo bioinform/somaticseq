@@ -278,7 +278,7 @@ Section \ref{Wrapper_script} described how to use SomaticSeq as a software. It i
 
 \subsection{Module: somaticseq\_parallel.py} \label{module:somaticseq_parallel}
 
-The \emph{somaticseq\_parallel.py} script simply calls for \emph{somaticseq/run\_somaticseq.py} module (Sec. \ref{module:run_somaticseq}), and parallelize the runs by splitting the input BED file into a number of equal-sized (in terms of total base pairs) regions. The BED file splitting is achieved by \emph{utilities/split\_Bed\_into\_equal\_regions.py} (Sec. \ref{module:split_bed}).
+The \emph{somaticseq\_parallel.py} script simply calls for \emph{somaticseq/run\_somaticseq.py} module (Sec. \ref{module:run_somaticseq}), and parallelize the runs by splitting the input BED file into a number of equal-sized (in terms of total base pairs) regions. The BED file splitting is achieved by \emph{somaticseq/utilities/split\_Bed\_into\_equal\_regions.py} (Sec. \ref{module:split_bed}).
 
 
 \subsection{Module: somaticseq/run\_somaticseq.py} \label{module:run_somaticseq}
@@ -470,7 +470,7 @@ Given a .bed or a .fa.fai file, it will split the input region into N number of 
 Given a list of .bed files and a .fa.fai file, it will return a .bed file detailing which regions were contained from which .bed inputs. 
 
 \begin{lstlisting}
-  somaticseq/utilities/lociCounterWithLabels.py -fai GRCh38.fa.fai -beds 1.bed 2.bed 3.bed -labels 01 02 03 -out overlapping.bed
+  lociCounterWithLabels.py -fai GRCh38.fa.fai -beds 1.bed 2.bed 3.bed -labels 01 02 03 -out overlapping.bed
 \end{lstlisting}
 
 Parameters:
@@ -720,11 +720,11 @@ find /ABSOLUTE/PATH/TO/RESULTS -name 'somaticseq*.cmd' -exec qsub {} \;
 
 \section{Use BAMSurgeon to create training data}
 
-For your convenience, we have created a couple of wrapper scripts that can generate the run script to create training data using BAMSurgon at somaticseq/utilities/dockered\_pipelines/bamSimulator. Descriptions and example commands can be found in the \href{https://github.com/bioinform/somaticseq/tree/master/utilities/dockered_pipelines/bamSimulator}{README} there. 
+For your convenience, we have created a couple of wrapper scripts that can generate the run script to create training data using BAMSurgon at somaticseq/utilities/dockered\_pipelines/bamSimulator. Descriptions and example commands can be found in the \href{https://github.com/bioinform/somaticseq/tree/master/somaticseq/utilities/dockered_pipelines/bamSimulator}{README} there. 
 
 This pipeline is used to spike in in silico somatic mutations into existing BAM files in order to create a training set for somatic mutations.
 
-After the in silico data are generated, you can use the \href{https://github.com/bioinform/somaticseq/blob/master/utilities/dockered_pipelines}{somatic mutation pipeline} on the training data to generate the SomaticSeq classifiers.
+After the in silico data are generated, you can use the \href{https://github.com/bioinform/somaticseq/blob/master/somaticseq/utilities/dockered_pipelines}{somatic mutation pipeline} on the training data to generate the SomaticSeq classifiers.
 
 Classifiers built on training data work if the training data is similar to the data you want to predict. Ideally, the training data are sequenced on the same platform, same sample prep, and similar depth of coverage as the data of interest.
 
@@ -790,7 +790,7 @@ A schematic of the BAMSurgeon simulation procedure
 
 \begin{center}
 
-  \includegraphics[width=6.5in]{../utilities/dockered_pipelines/bamSimulator/replicate_sim.jpg}
+  \includegraphics[width=6.5in]{../somaticseq/utilities/dockered_pipelines/bamSimulator/replicate_sim.jpg}
  % replicate_sim.jpg: 2390x586 px, 144dpi, 42.16x10.34 cm, bb=0 0 1195 293
 \end{center}
 
@@ -815,7 +815,7 @@ The --split-bem will randomly split the high coverage BAM file into two BAM file
 A schematic of the DREAM Challenge simulation procedure
 
 \begin{center}
- \includegraphics[width=6.5in]{../utilities/dockered_pipelines/bamSimulator/dream_sim.jpg}
+ \includegraphics[width=6.5in]{../somaticseq/utilities/dockered_pipelines/bamSimulator/dream_sim.jpg}
  % dream_sim.jpg: 2198x660 px, 144dpi, 38.77x11.64 cm, bb=0 0 1099 330
 \end{center}
 
@@ -834,7 +834,7 @@ The \textit{\texttt{--}merge-bam} will merge the normal and tumor BAM files into
 A schematic of the simulation procedure
 
 \begin{center}
- \includegraphics[width=6.5in]{../utilities/dockered_pipelines/bamSimulator/onkoinsight_sim.png}
+ \includegraphics[width=6.5in]{../somaticseq/utilities/dockered_pipelines/bamSimulator/onkoinsight_sim.png}
  % onkoinsight_sim.png: 1913x764 px, 150dpi, 32.39x12.94 cm, bb=0 0 918 367
 \end{center}
 
@@ -902,7 +902,7 @@ You can control and visualize the shape of target VAF distribution with python c
 
 After the mutation simulation jobs are completed, you may create classifiers with the training data with the following command:
 
-See our \href{https://github.com/bioinform/somaticseq/blob/master/utilities/dockered_pipelines}{somatic mutation pipeline} for more details.
+See our \href{https://github.com/bioinform/somaticseq/blob/master/somaticseq/utilities/dockered_pipelines}{somatic mutation pipeline} for more details.
 
 \begin{lstlisting}
 makeSomaticScripts.py paired \
@@ -1526,6 +1526,8 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
             \item Fixed the \textit{--somaticseq-algorithm} option in \textit{makeSomaticScripts.py}. The default is \textit{xgboost} but you can use \textit{ada}. 
             
             \item Used \textit{shell=True} option in many \textit{subprocess.call} instances, to allow more complicated arguments to be passed into, e.g., \textit{--action 'qsub -l walltime=100:00:00'}.
+            
+            \item Moved packages into somaticseq/somaticseq to prevent potential package conflicts.
             
         \end{itemize}
 
