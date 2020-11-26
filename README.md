@@ -8,7 +8,7 @@ The detailed documentation is included in the repo, located in [docs/Manual.pdf]
 
 
 ## Requirements
-This [dockerfile](utilities/Dockerfiles/somaticseq.base-1.3.dockerfile) reveals the dependencies
+This [dockerfile](somaticseq/utilities/Dockerfiles/somaticseq.base-1.3.dockerfile) reveals the dependencies
 * Python 3, plus pysam, numpy, scipy, pandas, and xgboost libraries.
 * [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing is invoked, and/or when any bed files are used as input files.
 * At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus. 
@@ -41,7 +41,7 @@ There are some toy data sets and test scripts in [**example**](example) that sho
 * The following four files will be created into the output directory:
   * `Consensus.sSNV.vcf`, `Consensus.sINDEL.vcf`, `Ensemble.sSNV.tsv`, and `Ensemble.sINDEL.tsv`.
 
-* If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [**Dockerized Somatic Mutation Workflow**](utilities/dockered_pipelines).
+* If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [**Dockerized Somatic Mutation Workflow**](somaticseq/utilities/dockered_pipelines).
 
 ```
 # Merge caller results and extract SomaticSeq features
@@ -101,20 +101,20 @@ Most SomaticSeq modules can be run on their own. They may be useful in debugging
 ## Dockerized workflows and pipelines
 
 ### To run somatic mutation callers and then SomaticSeq
-We have created a module (i.e., `makeSomaticScripts.py`) that can run all the dockerized somatic mutation callers and then SomaticSeq, described at [**utilities/dockered_pipelines**](utilities/dockered_pipelines). There is also an alignment workflow described there.
+We have created a module (i.e., `makeSomaticScripts.py`) that can run all the dockerized somatic mutation callers and then SomaticSeq, described at [**somaticseq/utilities/dockered_pipelines**](somaticseq/utilities/dockered_pipelines). There is also an alignment workflow described there.
 You need [docker](https://www.docker.com/) to run these workflows. Singularity is also supported, but is not optimized.
 
 
 ### To create training data to create SomaticSeq classifiers
-We have also dockerized pipelines for *in silico* mutation spike in at [**utilities/dockered_pipelines/bamSimulator**](utilities/dockered_pipelines/bamSimulator).
+We have also dockerized pipelines for *in silico* mutation spike in at [**somaticseq/utilities/dockered_pipelines/bamSimulator**](somaticseq/utilities/dockered_pipelines/bamSimulator).
 These pipelines are based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). We have used it to create training set to build SomaticSeq classifiers, though it has not been updated for a while.
 
 ### GATK's best practices for alignment
-Described at [**utilities/dockered_pipelines**](utilities/dockered_pipelines). The module is `makeAlignmentScripts.py`.
+Described at [**somaticseq/utilities/dockered_pipelines**](somaticseq/utilities/dockered_pipelines). The module is `makeAlignmentScripts.py`.
 
 
 ### Additional workflows
-* A [Snakemake](https://snakemake.readthedocs.io/en/latest/) workflow to run the somatic mutation callers and SomaticSeq was created by [Afif Elghraoui](https://github.com/0xaf1f) at [**utilities/snakemake**](utilities/snakemake). It needs to be updated to work.
+* A [Snakemake](https://snakemake.readthedocs.io/en/latest/) workflow to run the somatic mutation callers and SomaticSeq was created by [Afif Elghraoui](https://github.com/0xaf1f) at [**somaticseq/utilities/snakemake**](somaticseq/utilities/snakemake). It needs to be updated to work.
 
 
 ## Video tutorial

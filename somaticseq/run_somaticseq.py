@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, argparse, gzip, os, re, subprocess, logging
-import genomicFileHandler.genomic_file_handlers as genome
-import vcfModifier.copy_TextFile as copy_TextFile
+import argparse, os, subprocess, logging
 import somaticseq.combine_callers as combineCallers
 from somaticseq._version import  __version__
 

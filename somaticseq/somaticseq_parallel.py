@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-import sys, os, argparse, shutil, math, re, subprocess, logging
+import os, logging
 from multiprocessing import Pool
 from functools import partial
 from shutil import rmtree
 
 import somaticseq.run_somaticseq as run_somaticseq
-import utilities.split_Bed_into_equal_regions as split_bed
-import genomicFileHandler.concat as concat
+import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
+import somaticseq.genomicFileHandler.concat as concat
 
 
 

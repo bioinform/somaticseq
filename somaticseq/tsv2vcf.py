@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import sys, argparse, math, gzip, os
-from genomicFileHandler.genomic_file_handlers import p2phred
+from somaticseq.genomicFileHandler.genomic_file_handlers import p2phred
 from somaticseq._version import vcf_header as version_line
 
 nan = math.nan

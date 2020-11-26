@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-import sys, os, argparse, gzip, re, subprocess
-import genomicFileHandler.genomic_file_handlers as genome
-import vcfModifier.copy_TextFile as copy_TextFile
-import vcfModifier.splitVcf as splitVcf
-import vcfModifier.getUniqueVcfPositions as getUniqueVcfPositions
-from vcfModifier.vcfIntersector import *
+import os, re, subprocess
+import somaticseq.vcfModifier.copy_TextFile as copy_TextFile
+import somaticseq.vcfModifier.splitVcf as splitVcf
+import somaticseq.vcfModifier.getUniqueVcfPositions as getUniqueVcfPositions
+from somaticseq.vcfModifier.vcfIntersector import *
 
 
 
@@ -26,7 +25,7 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
 
     if mutect:
         
-        import vcfModifier.modify_MuTect as mod_mutect
+        import somaticseq.vcfModifier.modify_MuTect as mod_mutect
         
         mutect_in = bed_intersector(mutect, os.sep.join(( outdir, 'intersect.mutect1.vcf' )), inclusion, exclusion)
         intermediate_files.add(mutect_in)
@@ -38,7 +37,7 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
         snv_intermediates.append(snv_mutect_out)
 
     if mutect2:
-        import vcfModifier.modify_ssMuTect2 as mod_mutect2
+        import somaticseq.vcfModifier.modify_ssMuTect2 as mod_mutect2
                 
         mutect2_in = bed_intersector(mutect2, os.sep.join(( outdir, 'intersect.mutect2.vcf' )), inclusion, exclusion)
         intermediate_files.add(mutect2_in)
@@ -56,7 +55,7 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
         intermediate_vcfs['MuTect2']['indel'] = indel_mutect_out
         
     if varscan:
-        import vcfModifier.modify_VarScan2 as mod_varscan2
+        import somaticseq.vcfModifier.modify_VarScan2 as mod_varscan2
 
         varscan_in = bed_intersector(varscan, os.sep.join(( outdir, 'intersect.varscan.vcf' )), inclusion, exclusion)
         intermediate_files.add(varscan_in)
@@ -79,7 +78,7 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
         intermediate_vcfs['VarScan2']['indel'] = indel_varscan_out
         
     if vardict:
-        import vcfModifier.modify_VarDict as mod_vardict
+        import somaticseq.vcfModifier.modify_VarDict as mod_vardict
         
         # If the VarDict VCF file has line that clash with bedtools
         cleaned_vardict = os.sep.join(( outdir, 'cleaned.vardict.vcf' ))
@@ -139,7 +138,7 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
         indel_intermediates.append(scalpel_out)
         
     if strelka:
-        import vcfModifier.modify_ssStrelka as mod_strelka
+        import somaticseq.vcfModifier.modify_ssStrelka as mod_strelka
         
         strelka_in = bed_intersector(strelka, os.sep.join(( outdir, 'intersect.strelka.vcf' )), inclusion, exclusion)
         intermediate_files.add(strelka_in)
@@ -202,7 +201,7 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
     # Modify direct VCF outputs for merging:
     if mutect or indelocator:
         
-        import vcfModifier.modify_MuTect as mod_mutect
+        import somaticseq.vcfModifier.modify_MuTect as mod_mutect
 
         if mutect:
             
@@ -229,7 +228,7 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
     
     if mutect2:
         
-        import vcfModifier.modify_MuTect2 as mod_mutect2
+        import somaticseq.vcfModifier.modify_MuTect2 as mod_mutect2
                 
         mutect2_in = bed_intersector(mutect2, os.sep.join(( outdir, 'intersect.mutect2.vcf' )), inclusion, exclusion)
         intermediate_files.add(mutect2_in)
@@ -249,7 +248,7 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
     
     if varscan_snv or varscan_indel:
         
-        import vcfModifier.modify_VarScan2 as mod_varscan2
+        import somaticseq.vcfModifier.modify_VarScan2 as mod_varscan2
         
         if varscan_snv:
             
@@ -274,7 +273,7 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
             indel_intermediates.append(indel_varscan_out)
     
     if jsm:
-        import vcfModifier.modify_JointSNVMix2 as mod_jsm
+        import somaticseq.vcfModifier.modify_JointSNVMix2 as mod_jsm
 
         jsm_in = bed_intersector(jsm, os.sep.join(( outdir, 'intersect.jsm.vcf' )), inclusion, exclusion)
         intermediate_files.add(jsm_in)
@@ -286,7 +285,7 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
         snv_intermediates.append(jsm_out)
     
     if sniper:
-        import vcfModifier.modify_SomaticSniper as mod_sniper
+        import somaticseq.vcfModifier.modify_SomaticSniper as mod_sniper
         
         sniper_in = bed_intersector(sniper, os.sep.join(( outdir, 'intersect.sniper.vcf' )), inclusion, exclusion)
         intermediate_files.add(sniper_in)
@@ -298,7 +297,7 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
         snv_intermediates.append(sniper_out)
         
     if vardict:
-        import vcfModifier.modify_VarDict as mod_vardict
+        import somaticseq.vcfModifier.modify_VarDict as mod_vardict
 
         # If the VarDict VCF file has line that clash with bedtools
         cleaned_vardict = os.sep.join(( outdir, 'cleaned.vardict.vcf' ))
@@ -376,7 +375,7 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
     
     if strelka_snv or strelka_indel:
         
-        import vcfModifier.modify_Strelka as mod_strelka
+        import somaticseq.vcfModifier.modify_Strelka as mod_strelka
 
         if strelka_snv:
             
@@ -402,7 +401,7 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
             
     if tnscope:
 
-        import vcfModifier.modify_MuTect2 as mod_mutect2
+        import somaticseq.vcfModifier.modify_MuTect2 as mod_mutect2
         
         tnscope_in = bed_intersector(tnscope, os.sep.join(( outdir, 'intersect.tnscope.vcf' )), inclusion, exclusion)
         intermediate_files.add(tnscope_in)

@@ -4,8 +4,8 @@ import sys, argparse, math, gzip, os, pysam, re, logging
 import scipy.stats as stats
 from copy import copy
 
-from genomicFileHandler.read_info_extractor import *
-import genomicFileHandler.genomic_file_handlers as genome
+from somaticseq.genomicFileHandler.read_info_extractor import *
+import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 import somaticseq.annotate_caller as annotate_caller
 import somaticseq.sequencing_features as sequencing_features
 

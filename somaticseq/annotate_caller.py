@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-import sys, os, re
-import scipy.stats as stats
-import genomicFileHandler.genomic_file_handlers as genome
-from genomicFileHandler.read_info_extractor import * 
+import re
+import somaticseq.genomicFileHandler.genomic_file_handlers as genome
+from somaticseq.genomicFileHandler.read_info_extractor import * 
 
 
 nan = float('nan')
