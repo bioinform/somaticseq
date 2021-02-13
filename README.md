@@ -1,6 +1,6 @@
 # SEQC2 branch
 
-* This is a special release for SEQC-II cancer reference samples projects. This release is based on SomaticSeq v2.8.1.
+* This is a special release for the SEQC-II cancer reference samples project, which was based on SomaticSeq v2.8.1.
 * Many custom scripts were created here to complete the [SEQC-II](https://www.fda.gov/science-research/bioinformatics-tools/microarraysequencing-quality-control-maqcseqc#MAQC_IV) project.
 * Analysis documentation and latest updates about the project can also be found at [**https://sites.google.com/view/seqc2**](https://sites.google.com/view/seqc2). 
 * This is the [**latest high-confidence reference call set**](http://bit.ly/somatic_call_set).
