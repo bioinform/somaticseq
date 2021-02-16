@@ -9,7 +9,7 @@
 * For regular uses of SomaticSeq, please use Version 3+ ([master](https://github.com/bioinform/somaticseq)) branch.
 
 # SEQC-II Custom Scripts
-* The script we used to generate the latest reference call set is [here](utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh). The steps are documented with greater details [here](https://sites.google.com/view/seqc2/home/data-analysis/high-confidence-somatic-snv-an>
+* The script we used to generate the latest reference call set is [here](utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh). The steps are documented with greater details [here](https://sites.google.com/view/seqc2/home/data-analysis/high-confidence-somatic-snv-and-indel-v1-2).
 * [seqc2_calculateProbablyOfLowVafCalls.py](utilities/seqc2_calculateProbablyOfLowVafCalls.py) calculates the binomial probability that a somatic mutation is missed in our high-confidence regions.
 
 # SomaticSeq
