@@ -19,7 +19,7 @@
 
 # Requirement 
 In order to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`, the software need to be installed
-* Python 3, plus regex, pysam, numpy, scipy, and xlrd libraries
+* Python 3, plus regex, pysam, numpy, scipy, pandas, and xlrd libraries
 * R, plus ada library
 * BEDTools
 * VCFTools
