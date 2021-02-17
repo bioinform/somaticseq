@@ -26,3 +26,6 @@ In order to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`, the
 * tabix
 
 Alternatively, a docker image is also available at docker hub: `lethalfang/somaticseq:seqc2_v1.2`.
+
+## NOTE
+If you have issue navigating FTP site on Chrome, try to enable "Enable support for FTP URLs" in chrome://flags/.
