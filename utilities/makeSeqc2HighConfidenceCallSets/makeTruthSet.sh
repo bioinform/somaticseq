@@ -3,7 +3,7 @@
 set -e
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
-SEQC2="${MYDIR}/../../"   #'/home/fangl10/apps/seqc2/'
+SEQC2="${MYDIR}/../../"   #'/home/lethalfang/apps/seqc2/somaticseq'
 
 HG38='/home/lethalfang/Documents/GRCh38/'
 
@@ -39,20 +39,20 @@ bgzip -f sINDEL.MDKT.dedup_all.SPP.2ndPass.vcf
 
 # Step 10a) Rescue low-VAF calls
 ${SEQC2}/utilities/recalibrate_baseon_deepSeq.py -ref ${HG38}/GRCh38.d1.vd1.fa -infile sSNV.MSDUKT.dedup_all.SPP.2ndPass.vcf.gz -outfile sSNV.MSDUKT.dedup_all.SPP.2ndPass.lowVafRescue.vcf \
---bignova-bwa    /sc1/groups/bfx-red/analysis/datainsights/projects/SEQC2/wg1/BAMs/BigNova/somaticMutations/MutationCalls_MSDUK_Combine_NovaSeq_BWA/sSNV.predicted.v2.7.2.vcf.gz \
---bignova-bowtie /sc1/groups/bfx-red/analysis/datainsights/projects/SEQC2/wg1/BAMs/BigNova/somaticMutations/MutationCalls_MSDUK_Combine_NovaSeq_Bowtie/sSNV.predicted.v2.7.2.vcf.gz \
---bignova-novo   /sc1/groups/bfx-red/analysis/datainsights/projects/SEQC2/wg1/BAMs/BigNova/somaticMutations/MutationCalls_MSDUK_Combine_NovaSeq_Novo/sSNV.predicted.v2.7.2.vcf.gz \
---spp-bwa        /sc1/groups/bfx-red/analysis/datainsights/projects/SEQC2/wg1/SPP.BAMs/somaticMutations/MutationCalls_MSDUK_Combine_NovaSeq_BWA/sSNV.predicted.v2.7.2.vcf.gz \
---spp-bowtie     /sc1/groups/bfx-red/analysis/datainsights/projects/SEQC2/wg1/SPP.BAMs/somaticMutations/MutationCalls_MSDUK_Combine_NovaSeq_Bowtie/sSNV.predicted.v2.7.2.vcf.gz \
---spp-novo       /sc1/groups/bfx-red/analysis/datainsights/projects/SEQC2/wg1/SPP.BAMs/somaticMutations/MutationCalls_MSDUK_Combine_NovaSeq_Novo/sSNV.predicted.v2.7.2.vcf.gz
+--bignova-bwa    BigNova/CombineNova_380X.bwa.Predicted.sSNV.vcf.gz \
+--bignova-bowtie BigNova/CombineNova_380X.bowtie.Predicted.sSNV.vcf.gz \
+--bignova-novo   BigNova/CombineNova_380X.novo.Predicted.sSNV.vcf.gz \
+--spp-bwa        GT/SPP.300X.1-0_vs_0-1.bwa.Predicted.sSNV.vcf.gz \
+--spp-bowtie     GT/SPP.300X.1-0_vs_0-1.bowtie.Predicted.sSNV.vcf.gz \
+--spp-novo       GT/SPP.300X.1-0_vs_0-1.novo.Predicted.sSNV.vcf.gz
 
 ${SEQC2}/utilities/recalibrate_baseon_deepSeq.py -ref ${HG38}/GRCh38.d1.vd1.fa -infile sINDEL.MDKT.dedup_all.SPP.2ndPass.vcf.gz -outfile sINDEL.MDKT.dedup_all.SPP.2ndPass.lowVafRescue.vcf \
---bignova-bwa    /sc1/groups/bfx-red/analysis/datainsights/projects/SEQC2/wg1/BAMs/BigNova/somaticMutations/MutationCalls_MSDUK_Combine_NovaSeq_BWA/sINDEL.predicted.v2.7.2.vcf.gz \
---bignova-bowtie /sc1/groups/bfx-red/analysis/datainsights/projects/SEQC2/wg1/BAMs/BigNova/somaticMutations/MutationCalls_MSDUK_Combine_NovaSeq_Bowtie/sINDEL.predicted.v2.7.2.vcf.gz \
---bignova-novo   /sc1/groups/bfx-red/analysis/datainsights/projects/SEQC2/wg1/BAMs/BigNova/somaticMutations/MutationCalls_MSDUK_Combine_NovaSeq_Novo/sINDEL.predicted.v2.7.2.vcf.gz \
---spp-bwa        /sc1/groups/bfx-red/analysis/datainsights/projects/SEQC2/wg1/SPP.BAMs/somaticMutations/MutationCalls_MSDUK_Combine_NovaSeq_BWA/sINDEL.predicted.v2.7.2.vcf.gz \
---spp-bowtie     /sc1/groups/bfx-red/analysis/datainsights/projects/SEQC2/wg1/SPP.BAMs/somaticMutations/MutationCalls_MSDUK_Combine_NovaSeq_Bowtie/sINDEL.predicted.v2.7.2.vcf.gz \
---spp-novo       /sc1/groups/bfx-red/analysis/datainsights/projects/SEQC2/wg1/SPP.BAMs/somaticMutations/MutationCalls_MSDUK_Combine_NovaSeq_Novo/sINDEL.predicted.v2.7.2.vcf.gz
+--bignova-bwa    BigNova/CombineNova_380X.bwa.Predicted.sINDEL.vcf.gz \
+--bignova-bowtie BigNova/CombineNova_380X.bowtie.Predicted.sINDEL.vcf.gz \
+--bignova-novo   BigNova/CombineNova_380X.novo.Predicted.sINDEL.vcf.gz \
+--spp-bwa        GT/SPP.300X.1-0_vs_0-1.bwa.Predicted.sINDEL.vcf.gz \
+--spp-bowtie     GT/SPP.300X.1-0_vs_0-1.bowtie.Predicted.sINDEL.vcf.gz \
+--spp-novo       GT/SPP.300X.1-0_vs_0-1.novo.Predicted.sINDEL.vcf.gz
 
 bedtools intersect -a sSNV.MSDUKT.dedup_all.SPP.2ndPass.lowVafRescue.vcf -b BED/genome.bed -header | uniq | bgzip > sSNV.MSDUKT.dedup_all.SPP.2ndPass.lowVafRescue01.vcf.gz && rm sSNV.MSDUKT.dedup_all.SPP.2ndPass.lowVafRescue.vcf
 bedtools intersect -a sINDEL.MDKT.dedup_all.SPP.2ndPass.lowVafRescue.vcf -b BED/genome.bed -header | uniq | bgzip > sINDEL.MDKT.dedup_all.SPP.2ndPass.lowVafRescue01.vcf.gz && rm sINDEL.MDKT.dedup_all.SPP.2ndPass.lowVafRescue.vcf
