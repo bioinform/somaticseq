@@ -17,9 +17,12 @@
 * SomaticSeq is an ensemble caller that has the ability to use machine learning to filter out false positives. The detailed documentation is included in the package, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). A quick guide can also be found [here](http://bioinform.github.io/somaticseq/).
 * SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
 
-# Requirement to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`
-Python 3, plus regex, pysam, numpy, scipy, and xlrd libraries
-R, plus ada library
-BEDTools
-VCFTools
-tabix
+# Requirement 
+In order to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`, the software need to be installed
+* Python 3, plus regex, pysam, numpy, scipy, and xlrd libraries
+* R, plus ada library
+* BEDTools
+* VCFTools
+* tabix
+
+Alternatively, a docker image is also available at docker hub: `lethalfang/somaticseq:seqc2_v1.2`.
