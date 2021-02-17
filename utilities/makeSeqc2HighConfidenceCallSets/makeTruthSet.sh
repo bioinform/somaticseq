@@ -3,15 +3,14 @@
 set -e
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
-SEQC2="${MYDIR}/../../"   #'/home/lethalfang/apps/seqc2/somaticseq'
+SEQC2="${MYDIR}/../../"
+HG38='GRCh38'
 
-HG38='/home/lethalfang/Documents/GRCh38/'
 
 ## Reference call set v1.2
 ## Steps are in sync with https://sites.google.com/view/seqc2/home/data-analysis/high-confidence-somatic-snv-and-indel-v1-2
 ## Not all the steps described in the documentation is executed in this script. 
 ## Some "missing" steps are described in https://sites.google.com/view/seqc2, where intermediate files are created, saved, and used here, but not explicitly executed here, usually due to the long run time required.
-
 
 # Step 6) Create an intermediate VCF file, preserving variant calls that has been labeled PASS in at least one out of 63 sample sets
 ${SEQC2}/utilities/highConfidenceBuilder.py -infile sINDEL.v2.8.1.combined.vcf.gz -outfile sINDEL.MDKT.dedup_all.vcf -ncallers 2 -all && bgzip -f sINDEL.MDKT.dedup_all.vcf
