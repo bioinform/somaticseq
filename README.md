@@ -18,9 +18,8 @@
 * SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
 
 # Requirement 
-In order to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`, the software need to be installed
-* Python 3, plus regex, pysam, numpy, scipy, pandas, and xlrd libraries
-* R, plus ada library
+In order to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`, the following software need to be installed
+* Python 3, plus regex, pysam, numpy, scipy, pandas, xlrd, and openpyxl libraries
 * BEDTools
 * VCFTools
 * tabix
