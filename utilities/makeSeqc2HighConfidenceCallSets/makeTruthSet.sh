@@ -104,8 +104,8 @@ bgzip -f sINDEL.MDKT.dedup_all.SPP.2ndPass.lowVafRescued.properIndels.Neu.reLabe
 
 
 # Step 15) Extract calls rescued by NeuSomatic
-${SEQC2}/utilities/neusomatic/reformat_neuOnlyVcf.py -gold sSNV.MSDUKT.dedup_all.SPP.2ndPass.lowVafRescued.Neu.reLabeled.vcf.gz              -neuVcf NeuSomaticOnly.sSNV.vcf.gz   -neuMod neuSomaticInspected.xlsx -outfile NeuRescued.sSNV.vcf
-${SEQC2}/utilities/neusomatic/reformat_neuOnlyVcf.py -gold sINDEL.MDKT.dedup_all.SPP.2ndPass.lowVafRescued.properIndels.Neu.reLabeled.vcf.gz -neuVcf NeuSomaticOnly.sINDEL.vcf.gz -neuMod neuSomaticInspected.xlsx -outfile NeuRescued.sINDEL.vcf
+${SEQC2}/utilities/neusomatic/reformat_neuOnlyVcf.py -gold sSNV.MSDUKT.dedup_all.SPP.2ndPass.lowVafRescued.Neu.reLabeled.vcf.gz              -neuVcf NeuSomaticOnly.sSNV.vcf.gz   -neuMod inspecting_discrepant_calls.xlsx -outfile NeuRescued.sSNV.vcf
+${SEQC2}/utilities/neusomatic/reformat_neuOnlyVcf.py -gold sINDEL.MDKT.dedup_all.SPP.2ndPass.lowVafRescued.properIndels.Neu.reLabeled.vcf.gz -neuVcf NeuSomaticOnly.sINDEL.vcf.gz -neuMod inspecting_discrepant_calls.xlsx -outfile NeuRescued.sINDEL.vcf
 
 bgzip -f NeuRescued.sSNV.vcf
 bgzip -f NeuRescued.sINDEL.vcf
