@@ -7,7 +7,7 @@ RUN pip3 install cython regex pysam numpy scipy pandas xlrd openpyxl
 RUN R -e "install.packages('ada', repos = 'http://cran.rstudio.com/')"
 RUN cd /opt/ && wget https://www.dropbox.com/s/wbcy4egca3ersl3/GATK-3.4-open-3.1.0-SNAPSHOT.tar && tar -xvf GATK-3.4-open-3.1.0-SNAPSHOT.tar && rm GATK-3.4-open-3.1.0-SNAPSHOT.tar && ln -s GATK-3.4-open-3.1.0-SNAPSHOT GATK
 
-RUN cd /opt && mkdir temp && cd temp && wget https://github.com/bioinform/somaticseq/archive/v3.6.2.tar.gz && tar -vxf v3.6.2.tar.gz && cd somaticseq-3.6.2 && ./setup install
+RUN cd /opt && mkdir temp && cd temp && wget https://github.com/bioinform/somaticseq/archive/v3.6.2.tar.gz && tar -vxf v3.6.2.tar.gz && cd somaticseq-3.6.2 && ./setup.py install
 RUN cd /opt && git clone https://github.com/bioinform/somaticseq && cd somaticseq && git checkout seqc2
 
 # RUN cd /opt && wget https://github.com/bioinform/somaticseq/archive/seqc2_v1.2.tar.gz && tar -vxf seqc2_v1.2.tar.gz && ln -s somaticseq-seqc2_v1.2 somaticseq
