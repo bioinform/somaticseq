@@ -11,6 +11,7 @@
 # SEQC-II Custom Scripts
 * The script we used to generate the latest reference call set is [utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh](utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh). 
   * The steps are documented with greater details [here](https://sites.google.com/view/seqc2/home/data-analysis/high-confidence-somatic-snv-and-indel-v1-2).
+  * To re-create v1.2 of the call set with this script, please download the data files needed [here]() and then unpack it. Then, execute the `download_files.sh` there because you'll need to download additional files.
 * [seqc2_calculateProbablyOfLowVafCalls.py](utilities/seqc2_calculateProbablyOfLowVafCalls.py) calculates the binomial probability that a somatic mutation would be missed entirely in our high-confidence regions due to low variant allele frequency.
 
 # SomaticSeq
@@ -20,6 +21,7 @@
 # Requirement 
 In order to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`, the following software need to be installed
 * Python 3, plus regex, pysam, numpy, scipy, pandas, xlrd, and openpyxl libraries
+* SomaticSeq v3.6.2
 * BEDTools
 * VCFTools
 * tabix
