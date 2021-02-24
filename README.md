@@ -9,10 +9,16 @@
 * For regular uses of SomaticSeq, please use Version 3+ ([master](https://github.com/bioinform/somaticseq)) branch.
 
 # SEQC-II Custom Scripts
+
+## To recreate reference call set v1.2
 * The script we used to generate the latest reference call set is [utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh](utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh).
-  * The steps are documented with greater details [here](https://sites.google.com/view/seqc2/home/data-analysis/high-confidence-somatic-snv-and-indel-v1-2).
-  * To re-create v1.2 of the call set with this script, please first download the data files needed [here](http://bit.ly/data_to_recreate_call_set_v1-2), and then unpack it. Read the README.md. You'll also need to run `download_files.sh` there because you'll need to download additional files.
+* The steps are documented with greater details [here](https://sites.google.com/view/seqc2/home/data-analysis/high-confidence-somatic-snv-and-indel-v1-2).
+* To re-create v1.2 of the call set with this script, please first download the data files at `ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/analysis/cancer_reference_samples_supporting_files/data_to_recreate_call_set_v1-2.tar.gz`, and then unpack it. Read the README.md. You'll also need to run `download_files.sh` there because you'll need to download additional files. Then you may use our docker image to run the command as specified in the README.md there. 
+
+## Analysis scripts
 * [seqc2_calculateProbablyOfLowVafCalls.py](utilities/seqc2_calculateProbablyOfLowVafCalls.py) calculates the binomial probability that a somatic mutation would be missed entirely in our high-confidence regions due to low variant allele frequency.
+
+
 
 # SomaticSeq
 * SomaticSeq is an ensemble caller that has the ability to use machine learning to filter out false positives. The detailed documentation is included in the package, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). A quick guide can also be found [here](http://bioinform.github.io/somaticseq/).
