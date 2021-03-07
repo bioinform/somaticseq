@@ -20,6 +20,15 @@
 * The steps are documented with greater details [here](https://sites.google.com/view/seqc2/home/data-analysis/high-confidence-somatic-snv-and-indel-v1-2).
 * To re-create v1.2 of the call set with this script, please first download the data files at `ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/analysis/cancer_reference_samples_supporting_files/data_to_recreate_call_set_v1-2.tar.gz`, and then unpack it. Read the README.md there. You'll also need to run `download_files.sh` there because you'll need to download additional files. Then you may use our docker image to run the (command specified in the README.md there).
 
+### For the impatient, you can just run the following commands to re-create the reference call set v1.2
+```
+wget ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/analysis/cancer_reference_samples_supporting_files/data_to_recreate_call_set_v1-2.tar.gz
+tar -vxf data_to_recreate_call_set_v1-2.tar.gz
+cd data_to_recreate_call_set_v1-2
+./download_files.sh
+docker run --rm -u $UID:$UID --workdir /seqc2 -v $(pwd -P):/seqc2 lethalfang/somaticseq:seqc2_v1.2 /opt/somaticseq/utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh
+```
+
 
 ## Analysis scripts
 * [seqc2_calculateProbablyOfLowVafCalls.py](utilities/seqc2_calculateProbablyOfLowVafCalls.py) calculates the binomial probability that a somatic mutation would be missed entirely in our high-confidence regions due to low variant allele frequency [Suppl. Sec. 1.7].
