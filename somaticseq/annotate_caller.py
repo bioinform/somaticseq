@@ -355,7 +355,11 @@ def Strelka(variant_id, strelka_variants):
         
         strelka_variant_i = strelka_variants[variant_id]
         strelka_classification = 1 if 'PASS' in strelka_variant_i.filters else 0
+        
         somatic_evs = strelka_variant_i.get_info_value('SomaticEVS')
+        if somatic_evs == False:
+            somatic_evs = nan
+        
         qss = strelka_variant_i.get_info_value('QSS')
         tqss = strelka_variant_i.get_info_value('TQSS')
         
