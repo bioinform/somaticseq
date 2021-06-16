@@ -37,11 +37,13 @@ docker run --rm -u $UID:$UID --workdir /seqc2 -v $(pwd -P):/seqc2 lethalfang/som
     * At VAF = 0.03, the three numbers are 0.987777, 0.003745 and 0.845741.
 * [estimate_SequencingErrorRate.py](utilities/estimate_SequencingErrorRate.py) estimates overall sequencing error in a BAM file by assuming every base within a BED file is a reference base. The BAM files are normal samples. The BED file is the high-confidence region minus the germline variant positions (Suppl. Table 2).
 
+
 # SomaticSeq
-* SomaticSeq is an ensemble caller that has the ability to use machine learning to filter out false positives. The detailed documentation is included in the package, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). A quick guide can also be found [here](http://bioinform.github.io/somaticseq/).
+* SomaticSeq is an ensemble caller that has the ability to use machine learning to filter out false positives. To use SomaticSeq in your work, please use the [main branch](https://github.com/bioinform/somaticseq).
 * SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
 
-# Requirement 
+
+# Requirement for this SEQC2 release
 In order to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`, the following software need to be installed
 * Python 3, plus regex, pysam, numpy, scipy, pandas, xlrd, and openpyxl libraries
 * SomaticSeq v3.6.2
@@ -50,6 +52,10 @@ In order to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`, the
 * tabix
 
 Alternatively, a docker image is also available at docker hub: `lethalfang/somaticseq:seqc2_v1.2`.
+
+## Video: building the reference call set for the SEQC-II consortium
+  [![Establishing reference samples, data, and call sets for benchmarking cancer mutation detection](docs/workflow400.png)](https://youtu.be/sGl0gNZH8dE "SEQC-II Video")
+
 
 ## NOTE
 If you have issue navigating FTP site on Chrome, try to enable "Enable support for FTP URLs" in chrome://flags/.
