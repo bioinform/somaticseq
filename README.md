@@ -53,9 +53,6 @@ In order to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`, the
 
 Alternatively, a docker image is also available at docker hub: `lethalfang/somaticseq:seqc2_v1.2`.
 
-## Video: building the reference call set for the SEQC-II consortium
-  [![Establishing reference samples, data, and call sets for benchmarking cancer mutation detection](docs/workflow400.png)](https://youtu.be/sGl0gNZH8dE "SEQC-II Video")
-
 
 ## NOTE
 If you have issue navigating FTP site on Chrome, try to enable "Enable support for FTP URLs" in chrome://flags/.
