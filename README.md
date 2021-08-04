@@ -119,6 +119,6 @@ Described at [**somaticseq/utilities/dockered_pipelines**](somaticseq/utilities/
 
 ## Video tutorial
 
-This 8-minute video was created for SomaticSeq v1.0. The details are slightly outdated, but the main points remain the same.
+This 8-minute video by Li Tai Fang was created for SomaticSeq v1.0. The details are slightly outdated for the current version, but the main points remain the same.
 
   [![SomaticSeq Video](docs/SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")
