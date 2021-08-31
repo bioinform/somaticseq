@@ -10,7 +10,7 @@ setup(
     version=version,
     description='SomaticSeq: An ensemble approach to accurately detect somatic mutations using SomaticSeq',
     author='Li Tai Fang',
-    author_email='li_tai.fang@roche.com',
+    author_email='ltfang@gmail.com',
     url='https://github.com/bioinform/somaticseq',
     packages=find_packages(),
     package_data={'': ['*.R']},
