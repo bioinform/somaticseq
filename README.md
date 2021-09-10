@@ -1,7 +1,7 @@
 # SEQC2 branch
 
 * This is a special release of the SEQC2 Somatic Mutation Working Group to establish cancer reference samples. This is based on SomaticSeq v2.8.1, which has been obsolesced by the [current version](https://github.com/bioinform/somaticseq).
-* The work was published in [Fang LT, Zhu B, Zhao Y, Chen W, Yang Z, Kerrigan L, Langenbach K, de Mars M, Lu C, Idler K, _et al_. Establishing community reference samples, data and call sets for benchmarking cancer mutation detection using whole-genome sequencing. _Nature Biotechnology. 2021;39(9)_](https://doi.org/10.1038/s41587-021-00993-6).
+* The work was published in [Fang, L.T., Zhu, B., Zhao, Y. _et al_. Establishing community reference samples, data and call sets for benchmarking cancer mutation detection using whole-genome sequencing. _Nat Biotechnol 39, 1151–1160 (2021)_](https://doi.org/10.1038/s41587-021-00993-6), or [SharedIt Link](https://rdcu.be/cxs3D).
 * Many custom scripts were created specifically to complete the [SEQC2](https://www.fda.gov/science-research/bioinformatics-tools/microarraysequencing-quality-control-maqcseqc#MAQC_IV) project. For regular uses of SomaticSeq, please use the ([main](https://github.com/bioinform/somaticseq)) branch.
 
 
