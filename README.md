@@ -19,7 +19,6 @@
 
 
 
-
 # SEQC2 Custom Scripts
 
 ## To re-create reference call set v1.2
@@ -46,7 +45,6 @@ docker run --rm -u $UID:$UID --workdir /seqc2 -v $(pwd -P):/seqc2 lethalfang/som
 
 
 
-
 # Requirement for this SEQC2 release
 In order to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`, the following software need to be installed
 * Python 3, plus regex, pysam, numpy, scipy, pandas, xlrd, and openpyxl libraries
@@ -56,7 +54,3 @@ In order to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`, the
 * tabix
 
 Alternatively, a docker image is also available at docker hub: `lethalfang/somaticseq:seqc2_v1.2`.
-
-
-## NOTE
-If you have issue navigating FTP site on Chrome, try to enable "Enable support for FTP URLs" in chrome://flags/.
