@@ -2,7 +2,8 @@
 
 * SomaticSeq is an ensemble caller that has the ability to use machine learning to filter out false positives. 
 The detailed documentation is included in the repo, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). 
-* SomaticSeq's open-access paper: [Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, Afshar PT, Chhibber A, et al. An ensemble approach to accurately detect somatic mutations using SomaticSeq. Genome Biol. 2015;16:197.").
+* SomaticSeq's open-access paper: [Fang, L.T., Afshar, P.T., Chhibber, A. _et al_. An ensemble approach to accurately detect somatic mutations using SomaticSeq. _Genome Biol_ **16**, 197 (2015)](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, et al. Genome Biol (2015)").
+  * Also, a great resource to benchmark somatic mutation calling algorithms: [Fang, L.T., Zhu, B., Zhao, Y. _et al_. Establishing community reference samples, data and call sets for benchmarking cancer mutation detection using whole-genome sequencing. _Nat Biotechnol_ **39**, 1151-1160 (2021)](https://doi.org/10.1038/s41587-021-00993-6 "Fang LT, et al. Nat Biotechnol (2021)"), or [SharedIt Link](https://rdcu.be/cxs3D "Fang LT, et al. Nat Biotechnol (2021)").
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page.
 * The [v2 branch](../../tree/v2) is still supported, but it's severely limited comparing to the current versions. 
 
