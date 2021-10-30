@@ -9,6 +9,23 @@ The detailed documentation is included in the repo, located in [docs/Manual.pdf]
 * The [v2 branch](../../tree/v2) is still supported, but it's severely limited comparing to the current versions. 
 
 
+<hr>
+<table style="text-align: center; width: 100%;">
+  <tr>
+    <td style="vertical-align: bottom; width: 50%;">A quick 8-minute video explaining SomaticSeq v1.0. The details are dated, but the idea are the same.</td>
+    <td style="vertical-align: bottom; width: 50%;">SEQC2's reference samples, data and call sets for benchmarking somatic mutation detection</td>
+  </tr>
+  
+  <tr>
+    <td style="vertical-align: bottom; width: 50%;"><iframe width="380" height="250" src="https://www.youtube.com/embed/MnJdTQWWN6w" frameborder="0" allowfullscreen></iframe></td>
+    <td style="vertical-align: bottom; width: 50%;"><iframe width="380" height="250" src="https://www.youtube.com/embed/nn0BOAONRe8" frameborder="0" allowfullscreen></iframe></td>
+  </tr>
+ 
+</table>
+<hr>
+
+
+
 ## Requirements
 This [dockerfile](Dockerfiles/somaticseq.base-1.3.dockerfile) reveals the dependencies
 * Python 3, plus pysam, numpy, scipy, pandas, and xgboost libraries.
@@ -119,10 +136,3 @@ Described at [**somaticseq/utilities/dockered_pipelines**](somaticseq/utilities/
 
 ### Additional workflows
 * A [Snakemake](https://snakemake.readthedocs.io/en/latest/) workflow to run the somatic mutation callers and SomaticSeq was created by [Afif Elghraoui](https://github.com/0xaf1f) at [**somaticseq/utilities/snakemake**](somaticseq/utilities/snakemake). It needs to be updated to work.
-
-
-## Video tutorial
-
-This 8-minute video by Li Tai Fang was created for SomaticSeq v1.0. The details are slightly outdated for the current version, but the main points remain the same.
-
-  [![SomaticSeq Video](docs/SomaticSeqYoutube.png)](https://www.youtube.com/watch?v=MnJdTQWWN6w "SomaticSeq Video")
