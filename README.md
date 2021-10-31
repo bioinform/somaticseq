@@ -17,8 +17,8 @@ The detailed documentation is included in the repo, located in [docs/Manual.pdf]
   </tr>
   
   <tr>
-    <td style="vertical-align: center; width: 50%;"><a href="https://www.youtube.com/embed/MnJdTQWWN6w"><img src="docs/SomaticSeqYoutube.png" width=380 height=225 /></a></td>
-    <td style="vertical-align: center; width: 50%;"><a href="https://www.youtube.com/embed/nn0BOAONRe8"><img src="docs/workflow400.png" width=380 height=225 /></a></td>
+    <td style="vertical-align: center; width: 50%;"><a href="https://youtu.be/MnJdTQWWN6w"><img src="docs/SomaticSeqYoutube.png" width=380 height=225 /></a></td>
+    <td style="vertical-align: center; width: 50%;"><a href="https://youtu.be/nn0BOAONRe8"><img src="docs/workflow400.png" width=380 height=225 /></a></td>
   </tr>
 
 </table>
