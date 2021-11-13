@@ -10,7 +10,7 @@
 \usepackage{color}
 \usepackage{hyperref}
 \usepackage[document]{ragged2e}
-
+\usepackage{natbib}
 \usepackage{geometry}
 \geometry{letterpaper, margin=1.0in}
 
@@ -754,7 +754,7 @@ Which scenario to use depend on the data sets available to you.
 
 \subsubsection{When you have sequencing replicates of normal samples}
 
-This is our approach to define the high-confidence somatic mutations ``truth set'' for SEQC2 onsortium's cancer reference samples, published in \href{https://doi.org/10.1038/s41587-021-00993-6}{Fang, L.T., Zhu, B., Zhao, Y. \textit{et al}. Establishing community reference samples, data and call sets for benchmarking cancer mutation detection using whole-genome sequencing. \textit{Nat Biotechnol} \textbf{39}, 1151-1160 (2021)}.
+This is our approach to define the high-confidence somatic mutations ``truth set'' for SEQC2 Consortium's cancer reference samples \cite{2021_Fang_Nat_Biotechnol}.
 
 In this case, in silico mutations will be spiked into Replicate\_002.bam. Since Replicate\_002.bam and Replicate\_001.bam are otherwise the same sample, any mutations detected that you did not spike in are false positives. The following command is a single-thread example.
 
@@ -1548,7 +1548,9 @@ For suggestions, bug reports, or technical support, please post in \href{https:/
 
 
 %% REFERENCES
-\bibliographystyle{unsrt}
+%% \bibliographystyle{unsrt}
+
+\bibliographystyle{unsrtnat}
 \bibliography{Refs}
 
 
