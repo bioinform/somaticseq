@@ -13,7 +13,7 @@ In 2021, the [FDA-led MAQC-IV/SEQC2 Consortium](https://www.fda.gov/science-rese
 * Use high-confidence call set as the "ground truth" to investigate how different sample preparations, sequencing library kits, and bioinformatic algorithms affect the accuracy of the somatic mutation pipelines, and develop best practices, e.g., [Xiao W. _et al_. Nat Biotechnol 2021](https://doi.org/10.1038/s41587-021-00994-5). 
 * Use the labeled data to build more accurate machine learning models for somatic mutation detections, e.g., [Sahraeian S.M.E. _et al_. bioRxiv 2019](https://doi.org/10.1101/667261).
 
-
+#### Click [here](docs/seqc2.md) for more SEQC2 details. 
 
 
 <hr>
