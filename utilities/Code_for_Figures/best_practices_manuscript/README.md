@@ -4,6 +4,9 @@
 
   * A companion paper to establish the somatic mutation reference call set: [Fang, L.T., Zhu, B., Zhao, Y. _et al_. Establishing community reference samples, data and call sets for benchmarking cancer mutation detection using whole-genome sequencing. _Nat Biotechnol_ **39**, 1151-1160 (2021)](https://doi.org/10.1038/s41587-021-00993-6 "Fang LT, et al. Nat Biotechnol (2021)") / [PMID:34504347](http://identifiers.org/pubmed/34504347 "Fang LT, et al. Nat Biotechnol (2021)") / [SharedIt Link](https://rdcu.be/cxs3D "Fang LT, et al. Nat Biotechnol (2021)").
 
+#### Click [here](../../../docs/seqc2.md) for more SEQC2 details. 
+
+
 ## Video presentations of the two SEQC2 papers
 
 <hr>

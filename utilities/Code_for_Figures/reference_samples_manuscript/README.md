@@ -4,6 +4,9 @@
 
   * A companion paper to establish best practice: [Xiao, W., Ren, L., Chen, Z. _et al_. Toward best practice in cancer mutation detection with whole-genome and whole-exome sequencing. _Nat Biotechnol_ **39**, 1141-1150 (2021)](https://doi.org/10.1038/s41587-021-00994-5 "Xiao W, et al. Nat Biotechnol (2021)") / [PMID:34504346](http://identifiers.org/pubmed/34504346 "Xiao W, et al. Nat Biotechnol (2021)") / [SharedIt Link](https://rdcu.be/cxASG "Xiao W, et al. Nat Biotechnol (2021)").
 
+#### Click [here](../../../docs/seqc2.md) for more SEQC2 details. 
+
+
 ## Video presentations of the two SEQC2 papers
 
 <hr>

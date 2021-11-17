@@ -10,8 +10,10 @@
 * Many custom scripts were created specifically to complete the SEQC2 project. For regular uses of SomaticSeq, please use the ([main](https://github.com/bioinform/somaticseq)) branch.
 
 
+### Click [here](docs/seqc2.md) for more SEQC2 details. 
 
-# SEQC2 Somatic Mutation Working Group Data
+
+## SEQC2 Somatic Mutation Working Group Data
 * Analysis documentation and latest updates about the SEQC2 somatic mutation project can be found at [**https://sites.google.com/view/seqc2**](https://sites.google.com/view/seqc2).
 * The [**latest** high-confidence somatic reference call set](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release/latest/) can be found at the NCBI FTP site.
   * FTP: ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release
@@ -19,9 +21,9 @@
 * Some BAM files can be found [here](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/WGS/) as well.
   * FTP: ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/
 
-## Video Presentations
 
-<hr>
+----------
+## Video Presentations
 <table style="text-align: center; width: 100%;">
   <tr>
     <td style="vertical-align: bottom; width: 50%;">Establishing somatic mutation reference call set for the SEQC2 cancer reference samples</td>
@@ -34,7 +36,8 @@
   </tr>
 
 </table>
-<hr>
+
+----------
 
 
 # SEQC2 Custom Scripts
@@ -63,7 +66,7 @@ docker run --rm -u $UID:$UID --workdir /seqc2 -v $(pwd -P):/seqc2 lethalfang/som
 
 
 
-# Requirement for this SEQC2 release
+## Requirement for this SEQC2 release
 In order to run `utilities/makeSeqc2HighConfidenceCallSets/makeTruthSet.sh`, the following software need to be installed
 * Python 3, plus regex, pysam, numpy, scipy, pandas, xlrd, and openpyxl libraries
 * SomaticSeq v3.6.2
