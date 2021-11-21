@@ -134,8 +134,13 @@ You need [docker](https://www.docker.com/) to run these workflows. Singularity i
 
 
 ### To create training data to create SomaticSeq classifiers
-We have also dockerized pipelines for *in silico* mutation spike in at [**somaticseq/utilities/dockered_pipelines/bamSimulator**](somaticseq/utilities/dockered_pipelines/bamSimulator).
+
+* I recommend [SEQC2 Somatic Mutation Working Group](docs/seqc2.md)'s [reference sequencing data](https://identifiers.org/ncbi/insdc.sra:SRP162370) and [high-confidence somatic mutation call sets](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release/latest/).
+
+* Before well characterized real data was available, we have dockerized pipelines for *in silico* mutation spike in at [**somaticseq/utilities/dockered_pipelines/bamSimulator**](somaticseq/utilities/dockered_pipelines/bamSimulator).
 These pipelines are based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). We have used it to create training set to build SomaticSeq classifiers, though it has not been updated for a while.
+
+
 
 ### GATK's best practices for alignment
 Described at [**somaticseq/utilities/dockered_pipelines**](somaticseq/utilities/dockered_pipelines). The module is `makeAlignmentScripts.py`.
