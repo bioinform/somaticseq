@@ -19,14 +19,19 @@ In 2021, the [FDA-led MAQC-IV/SEQC2 Consortium](https://www.fda.gov/science-rese
 <hr>
 <table style="text-align: center; width: 100%;">
   <tr>
-    <td style="vertical-align: bottom; width: 50%;">A quick 8-minute video explaining SomaticSeq v1.0. The details are dated, but the idea are the same.</td>
-    <td style="vertical-align: bottom; width: 50%;">SEQC2's reference samples, data and call sets for benchmarking somatic mutation detection</td>
+    <td style="vertical-align: bottom; width: 33%;">8-minute video explaining SomaticSeq v1.0.</td>
+    <td style="vertical-align: bottom; width: 33%;">SEQC2's reference data and call sets for somatic mutations</td>
+    <td style="vertical-align: bottom; width: 33%;"><a href="https://precision.fda.gov/home/apps/app-G6vZ0XQ0P7g1PVv2Pj6bJ95Q-1">SomaticSeq v3.6.3 App</a> on precisionFDA</td>
+
   </tr>
   
   <tr>
-    <td style="vertical-align: center; width: 50%;"><a href="https://youtu.be/MnJdTQWWN6w"><img src="docs/SomaticSeqYoutube.png" width=380 height=223 /></a></td>
-    <td style="vertical-align: center; width: 50%;"><a href="https://youtu.be/nn0BOAONRe8"><img src="docs/workflow400.png" width=380 height=225 /></a></td>
+    <td style="vertical-align: center; width: 33%;"><a href="https://youtu.be/MnJdTQWWN6w"><img src="docs/SomaticSeqYoutube.png" width=300 /></a></td>
+    <td style="vertical-align: center; width: 33%;"><a href="https://youtu.be/nn0BOAONRe8"><img src="docs/workflow400.png" width=300 /></a></td>
+    <td style="vertical-align: center; width: 33%;"><a href="https://youtu.be/fLKokuMGTvk"><img src="docs/precisionfda.png" width=300 /></a></td>
+
   </tr>
+
 
 </table>
 <hr>
