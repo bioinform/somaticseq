@@ -28,7 +28,7 @@ In 2021, the [FDA-led MAQC-IV/SEQC2 Consortium](https://www.fda.gov/science-rese
   <tr>
     <td><a href="https://youtu.be/MnJdTQWWN6w"><img src="docs/SomaticSeqYoutube.png" width="400" /></a></td>
     <td><a href="https://youtu.be/nn0BOAONRe8"><img src="docs/workflow400.png" width="400" /></a></td>
-    <td><a href="https://youtu.be/2WRLf9B3Srw"><img src="docs/precisionfda.png" width="400" /></a></td>
+    <td><a href="https://youtu.be/fLKokuMGTvk"><img src="docs/precisionfda.png" width="400" /></a></td>
 
   </tr>
 
