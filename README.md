@@ -18,6 +18,7 @@ In 2021, the [FDA-led MAQC-IV/SEQC2 Consortium](https://www.fda.gov/science-rese
 
 <hr>
 <table style="width: 100%;">
+
   <tr>
     <td>Briefly explaining SomaticSeq v1.0</td>
     <td>SEQC2 somatic mutation reference data and call sets</td>
@@ -35,11 +36,9 @@ In 2021, the [FDA-led MAQC-IV/SEQC2 Consortium](https://www.fda.gov/science-rese
   <tr>
     <td></td>
     <td></td>
-    <td>Run in <a href="https://youtu.be/F6TSdg0OffM">xgboost train/prediction mode</a></td>
+    <td><a href="https://youtu.be/F6TSdg0OffM">XGBoost train or prediction mode</a></td>
 
   </tr>
-
-
 
 </table>
 <hr>
