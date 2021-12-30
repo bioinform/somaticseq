@@ -15,7 +15,7 @@
 
 ### 1) An ideal example is when you have sequencing replicates of the same normal samples
 
-This is our approach to define high-confidence somatic mutations in SEQC2 consortium's cancer reference samples, presented at [2018 AACR Abstract](http://dx.doi.org/10.1158/1538-7445.AM2018-432).
+This is our approach to define high-confidence somatic mutations in SEQC2 consortium's cancer reference samples, published in [Fang, L.T. _et al_. Nat Biotechnol 2021](https://doi.org/10.1038/s41587-021-00993-6 "Fang LT, et al. Nat Biotechnol (2021)").
 
 In this case, *in silico* mutations will be spiked into Replicate_002.bam. Since Replicate_002.bam and Replicate_001.bam are otherwise the same sample, any mutations detected that you did not spike in are false positives. 
 The following command is a single-thread example. 
