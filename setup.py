@@ -32,6 +32,7 @@ setup(
              'somaticseq/utilities/dockered_pipelines/makeAlignmentScripts.py',
              'somaticseq/utilities/dockered_pipelines/makeSomaticScripts.py',
              'somaticseq/utilities/dockered_pipelines/run_workflows.py',
+             'somaticseq/vcfModifier/splitVcf.py',
              'r_scripts/ada_model_builder_ntChange.R',
              'r_scripts/ada_model_predictor.R',
              ]
