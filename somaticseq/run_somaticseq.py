@@ -81,7 +81,15 @@ def modelPredictor(input_file, output_file, algo, classifier, iterations=100, fe
 
 
 
-def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False, train_seed=0, tree_depth=12, iterations=None, features_excluded=[]):
+def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL', 
+              truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, 
+              pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, 
+              dbsnp=None, cosmic=None, inclusion=None, exclusion=None, 
+              mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, 
+              lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, arb_snvs=[], arb_indels=[],
+              min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, 
+              ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False, 
+              train_seed=0, tree_depth=12, iterations=None, features_excluded=[]):
 
     logger = logging.getLogger(runPaired.__name__)
 
@@ -101,7 +109,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     if strelka_snv:       snvCallers.append('Strelka')
     if tnscope:           snvCallers.append('TNscope')
     if platypus:          snvCallers.append('Platypus')
-
+    [snvCallers.append('SnvCaller_{}'.format(ith_arb)) for ith_arb, arb_snv_i in enumerate(arb_snvs)]
 
     indelCallers = []
     if indelocator or mutect2: indelCallers.append('MuTect')
@@ -112,9 +120,14 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     if strelka_indel:          indelCallers.append('Strelka')
     if tnscope:                indelCallers.append('TNscope')
     if platypus:               indelCallers.append('Platypus')
+    [indelCallers.append('IndelCaller_{}'.format(ith_arb)) for ith_arb, arb_indel_i in enumerate(arb_indels)]
 
     # Function to combine individual VCFs into a simple VCF list of variants:
-    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combinePaired(outdir=outdir, ref=ref, tbam=tbam, nbam=nbam, inclusion=inclusion, exclusion=exclusion, mutect=mutect, indelocator=indelocator, mutect2=mutect2, varscan_snv=varscan_snv, varscan_indel=varscan_indel, jsm=jsm, sniper=sniper, vardict=vardict, muse=muse, lofreq_snv=lofreq_snv, lofreq_indel=lofreq_indel, scalpel=scalpel, strelka_snv=strelka_snv, strelka_indel=strelka_indel, tnscope=tnscope, platypus=platypus, keep_intermediates=True)
+    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combinePaired(outdir=outdir, ref=ref, tbam=tbam, nbam=nbam, inclusion=inclusion, exclusion=exclusion, 
+                                                    mutect=mutect, indelocator=indelocator, mutect2=mutect2, varscan_snv=varscan_snv, varscan_indel=varscan_indel, jsm=jsm, 
+                                                    sniper=sniper, vardict=vardict, muse=muse, lofreq_snv=lofreq_snv, lofreq_indel=lofreq_indel, scalpel=scalpel, 
+                                                    strelka_snv=strelka_snv, strelka_indel=strelka_indel, tnscope=tnscope, platypus=platypus, arb_snvs=arb_snvs, arb_indels=arb_indels,
+                                                    keep_intermediates=True)
 
     files_to_delete.add(outSnv)
     files_to_delete.add(outIndel)
@@ -124,11 +137,14 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
     ensembleSnv   = os.sep.join(( outdir, ensembleOutPrefix + 'sSNV.tsv' ))
     ensembleIndel = os.sep.join(( outdir, ensembleOutPrefix + 'sINDEL.tsv' ))
 
-
     ######################  SNV  ######################
     mutect_infile = intermediateVcfs['MuTect2']['snv'] if intermediateVcfs['MuTect2']['snv'] else mutect
 
-    somatic_vcf2tsv.vcf2tsv(is_vcf=outSnv, nbam_fn=nbam, tbam_fn=tbam, truth=truth_snv, cosmic=cosmic, dbsnp=dbsnp, mutect=mutect_infile, varscan=varscan_snv, jsm=jsm, sniper=sniper, vardict=intermediateVcfs['VarDict']['snv'], muse=muse, lofreq=lofreq_snv, scalpel=None, strelka=strelka_snv, tnscope=intermediateVcfs['TNscope']['snv'], platypus=intermediateVcfs['Platypus']['snv'], dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleSnv)
+    somatic_vcf2tsv.vcf2tsv(is_vcf=outSnv, nbam_fn=nbam, tbam_fn=tbam, truth=truth_snv, cosmic=cosmic, dbsnp=dbsnp, 
+                            mutect=mutect_infile, varscan=varscan_snv, jsm=jsm, sniper=sniper, 
+                            vardict=intermediateVcfs['VarDict']['snv'], muse=muse, lofreq=lofreq_snv, scalpel=None, strelka=strelka_snv, 
+                            tnscope=intermediateVcfs['TNscope']['snv'], platypus=intermediateVcfs['Platypus']['snv'], arbitrary_vcfs=intermediateVcfs['Arbitrary']['snv'],
+                            dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleSnv)
 
 
     # Classify SNV calls
@@ -141,7 +157,9 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
         extra_header = ['##SomaticSeqClassifier={}'.format(classifier_snv), ]
 
-        tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True, extra_headers=extra_header)
+        tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, 
+                        hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, 
+                        normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True, phred_scaled=True, extra_headers=extra_header)
 
 
     else:
@@ -152,14 +170,18 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
             modelTrainer(ensembleSnv, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded)
         
         consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
-        tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
+        tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, 
+                        single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
 
 
 
     ###################### INDEL ######################
     mutect_infile = intermediateVcfs['MuTect2']['indel'] if intermediateVcfs['MuTect2']['indel'] else indelocator
 
-    somatic_vcf2tsv.vcf2tsv(is_vcf=outIndel, nbam_fn=nbam, tbam_fn=tbam, truth=truth_indel, cosmic=cosmic, dbsnp=dbsnp, mutect=mutect_infile, varscan=varscan_indel, vardict=intermediateVcfs['VarDict']['indel'], lofreq=lofreq_indel, scalpel=scalpel, strelka=strelka_indel, tnscope=intermediateVcfs['TNscope']['indel'], platypus=intermediateVcfs['Platypus']['indel'], dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleIndel)
+    somatic_vcf2tsv.vcf2tsv(is_vcf=outIndel, nbam_fn=nbam, tbam_fn=tbam, truth=truth_indel, cosmic=cosmic, dbsnp=dbsnp, 
+                            mutect=mutect_infile, varscan=varscan_indel, vardict=intermediateVcfs['VarDict']['indel'], lofreq=lofreq_indel, scalpel=scalpel, 
+                            strelka=strelka_indel, tnscope=intermediateVcfs['TNscope']['indel'], platypus=intermediateVcfs['Platypus']['indel'], arbitrary_vcfs=intermediateVcfs['Arbitrary']['indel'],
+                            dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleIndel)
 
 
     # Classify INDEL calls
@@ -196,7 +218,13 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 
 
 
-def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, dbsnp=None, cosmic=None, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False, train_seed=0, tree_depth=12, iterations=None, features_excluded=[]):
+def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, 
+              pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, 
+              dbsnp=None, cosmic=None, inclusion=None, exclusion=None, 
+              mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, arb_snvs=[], arb_indels=[],
+              min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, 
+              ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', 
+              keep_intermediates=False, train_seed=0, tree_depth=12, iterations=None, features_excluded=[]):
 
     logger = logging.getLogger(runSingle.__name__)
 
@@ -211,7 +239,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
     if vardict:           snvCallers.append('VarDict')
     if lofreq:            snvCallers.append('LoFreq')
     if strelka:           snvCallers.append('Strelka')
-
+    [snvCallers.append('SnvCaller_{}'.format(ith_arb)) for ith_arb, arb_snv_i in enumerate(arb_snvs)]
 
     indelCallers = []
     if mutect2: indelCallers.append('MuTect2')
@@ -220,10 +248,13 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
     if lofreq:  indelCallers.append('LoFreq')
     if scalpel: indelCallers.append('Scalpel')
     if strelka: indelCallers.append('Strelka')
+    [indelCallers.append('IndelCaller_{}'.format(ith_arb)) for ith_arb, arb_indel_i in enumerate(arb_indels)]
 
 
     # Function to combine individual VCFs into a simple VCF list of variants:
-    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combineSingle(outdir=outdir, ref=ref, bam=bam, inclusion=inclusion, exclusion=exclusion, mutect=mutect, mutect2=mutect2, varscan=varscan, vardict=vardict, lofreq=lofreq, scalpel=scalpel, strelka=strelka, keep_intermediates=True)
+    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combineSingle(outdir=outdir, ref=ref, bam=bam, inclusion=inclusion, exclusion=exclusion, 
+                                                    mutect=mutect, mutect2=mutect2, varscan=varscan, vardict=vardict, lofreq=lofreq, scalpel=scalpel, strelka=strelka, arb_snvs=arb_snvs, arb_indels=arb_indels, 
+                                                    keep_intermediates=True)
 
     files_to_delete.add(outSnv)
     files_to_delete.add(outIndel)
@@ -236,7 +267,10 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
     ######################  SNV  ######################
     mutect_infile = intermediateVcfs['MuTect2']['snv'] if intermediateVcfs['MuTect2']['snv'] else mutect
 
-    single_sample_vcf2tsv.vcf2tsv(is_vcf=outSnv, bam_fn=bam, truth=truth_snv, cosmic=cosmic, dbsnp=dbsnp, mutect=mutect_infile, varscan=intermediateVcfs['VarScan2']['snv'], vardict=intermediateVcfs['VarDict']['snv'], lofreq=intermediateVcfs['LoFreq']['snv'], scalpel=None, strelka=intermediateVcfs['Strelka']['snv'], dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleSnv)
+    single_sample_vcf2tsv.vcf2tsv(is_vcf=outSnv, bam_fn=bam, truth=truth_snv, cosmic=cosmic, dbsnp=dbsnp, 
+                                  mutect=mutect_infile, varscan=intermediateVcfs['VarScan2']['snv'], vardict=intermediateVcfs['VarDict']['snv'], 
+                                  lofreq=intermediateVcfs['LoFreq']['snv'], scalpel=None, strelka=intermediateVcfs['Strelka']['snv'], arbitrary_vcfs=intermediateVcfs['Arbitrary']['snv'],
+                                  dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleSnv)
 
 
     # Classify SNV calls
@@ -249,7 +283,9 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         
         extra_header = ['##SomaticSeqClassifier={}'.format(classifier_snv), ]
         
-        tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True, phred_scaled=True, extra_headers=extra_header)
+        tsv2vcf.tsv2vcf(classifiedSnvTsv, classifiedSnvVcf, snvCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, 
+                        hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, 
+                        tumor_sample_name=sample_name, print_reject=True, phred_scaled=True, extra_headers=extra_header)
 
 
     else:
@@ -265,7 +301,10 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
 
 
     ###################### INDEL ######################
-    single_sample_vcf2tsv.vcf2tsv(is_vcf=outIndel, bam_fn=bam, truth=truth_indel, cosmic=cosmic, dbsnp=dbsnp, mutect=intermediateVcfs['MuTect2']['indel'], varscan=intermediateVcfs['VarScan2']['indel'], vardict=intermediateVcfs['VarDict']['indel'], lofreq=intermediateVcfs['LoFreq']['indel'], scalpel=scalpel, strelka=intermediateVcfs['Strelka']['indel'], dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleIndel)
+    single_sample_vcf2tsv.vcf2tsv(is_vcf=outIndel, bam_fn=bam, truth=truth_indel, cosmic=cosmic, dbsnp=dbsnp, 
+                                  mutect=intermediateVcfs['MuTect2']['indel'], varscan=intermediateVcfs['VarScan2']['indel'], vardict=intermediateVcfs['VarDict']['indel'], 
+                                  lofreq=intermediateVcfs['LoFreq']['indel'], scalpel=scalpel, strelka=intermediateVcfs['Strelka']['indel'], arbitrary_vcfs=intermediateVcfs['Arbitrary']['indel'],
+                                  dedup=True, min_mq=min_mq, min_bq=min_bq, min_caller=min_caller, ref_fa=ref, p_scale=None, outfile=ensembleIndel)
 
 
     # Classify INDEL calls
@@ -278,7 +317,9 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         
         extra_header = ['##SomaticSeqClassifier={}'.format(classifier_indel), ]
         
-        tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True, phred_scaled=True, extra_headers=extra_header)
+        tsv2vcf.tsv2vcf(classifiedIndelTsv, classifiedIndelVcf, indelCallers, pass_score=pass_threshold, lowqual_score=lowqual_threshold, 
+                        hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, 
+                        tumor_sample_name=sample_name, print_reject=True, phred_scaled=True, extra_headers=extra_header)
 
     else:
         # Train INDEL classifier:
@@ -288,7 +329,8 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
             modelTrainer(ensembleIndel, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded)
 
         consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))
-        tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
+        tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, 
+                        single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
 
 
     ## Clean up after yourself ##
@@ -368,21 +410,26 @@ def run():
     parser_paired.add_argument('-strelkaindel',  '--strelka-indel',     type=str,   help='Strelka VCF',       )
     parser_paired.add_argument('-tnscope',       '--tnscope-vcf',       type=str,   help='TNscope VCF',       )
     parser_paired.add_argument('-platypus',      '--platypus-vcf',      type=str,   help='Platypus VCF',      )
+    parser_paired.add_argument('-arbsnv',        '--arbitrary-snvs',    type=str,   help='Additional SNV VCFs', nargs='*')
+    parser_paired.add_argument('-arbindel',      '--arbitrary-indels',  type=str,   help='Additional INDEL VCFs', nargs='*')
 
+    
     parser_paired.set_defaults(which='paired')
 
 
     # Single Sample mode
     parser_single = sample_parsers.add_parser('single')
-    parser_single.add_argument('-bam',     '--bam-file',    type=str, help='BAM File',     required=True)
-    parser_single.add_argument('-SM',      '--sample-name', type=str, help='Sample Name',  default='TUMOR')
-    parser_single.add_argument('-mutect',  '--mutect-vcf',  type=str, help='MuTect VCF',   )
-    parser_single.add_argument('-mutect2', '--mutect2-vcf', type=str, help='MuTect2 VCF',  )
-    parser_single.add_argument('-varscan', '--varscan-vcf', type=str, help='VarScan2 VCF', )
-    parser_single.add_argument('-vardict', '--vardict-vcf', type=str, help='VarDict VCF',  )
-    parser_single.add_argument('-lofreq',  '--lofreq-vcf',  type=str, help='LoFreq VCF',   )
-    parser_single.add_argument('-scalpel', '--scalpel-vcf', type=str, help='Scalpel VCF',  )
-    parser_single.add_argument('-strelka', '--strelka-vcf', type=str, help='Strelka VCF',  )
+    parser_single.add_argument('-bam',      '--bam-file',         type=str, help='BAM File',     required=True)
+    parser_single.add_argument('-SM',       '--sample-name',      type=str, help='Sample Name',  default='TUMOR')
+    parser_single.add_argument('-mutect',   '--mutect-vcf',       type=str, help='MuTect VCF',   )
+    parser_single.add_argument('-mutect2',  '--mutect2-vcf',      type=str, help='MuTect2 VCF',  )
+    parser_single.add_argument('-varscan',  '--varscan-vcf',      type=str, help='VarScan2 VCF', )
+    parser_single.add_argument('-vardict',  '--vardict-vcf',      type=str, help='VarDict VCF',  )
+    parser_single.add_argument('-lofreq',   '--lofreq-vcf',       type=str, help='LoFreq VCF',   )
+    parser_single.add_argument('-scalpel',  '--scalpel-vcf',      type=str, help='Scalpel VCF',  )
+    parser_single.add_argument('-strelka',  '--strelka-vcf',      type=str, help='Strelka VCF',  )
+    parser_single.add_argument('-arbsnv',   '--arbitrary-snvs',   type=str, help='Additional SNV VCFs', nargs='*')
+    parser_single.add_argument('-arbindel', '--arbitrary-indels', type=str, help='Additional INDEL VCFs', nargs='*')
 
     parser_single.set_defaults(which='single')
 
@@ -443,6 +490,8 @@ if __name__ == '__main__':
                    strelka_indel      = args.strelka_indel, \
                    tnscope            = args.tnscope_vcf, \
                    platypus           = args.platypus_vcf, \
+                   arb_snvs           = args.arbitrary_snvs, \
+                   arb_indels         = args.arbitrary_indels, \
                    algo               = args.algorithm, \
                    somaticseq_train   = args.somaticseq_train, \
                    train_seed         = args.seed, \
@@ -480,6 +529,8 @@ if __name__ == '__main__':
                    lofreq             = args.lofreq_vcf, \
                    scalpel            = args.scalpel_vcf, \
                    strelka            = args.strelka_vcf, \
+                   arb_snvs           = args.arbitrary_snvs, \
+                   arb_indels         = args.arbitrary_indels, \
                    algo               = args.algorithm, \
                    somaticseq_train   = args.somaticseq_train, \
                    train_seed         = args.seed, \

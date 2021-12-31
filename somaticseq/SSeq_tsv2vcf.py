@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import re
 from datetime import datetime
 from somaticseq.genomicFileHandler.genomic_file_handlers import p2phred
 from somaticseq._version import vcf_header as version_line
@@ -78,7 +79,9 @@ def dp4_to_gt(ref_for, ref_rev, alt_for, alt_rev, hom_threshold=0.85, het_thresh
 
 
 
-def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_threshold=0.85, het_threshold=0.01, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True, extra_headers=[]):
+def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_threshold=0.85, het_threshold=0.01, 
+            single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', 
+            print_reject=True, phred_scaled=True, extra_headers=[]):
 
     tools_code = {'CGA':           'M',
                   'MuTect':        'M',
@@ -97,10 +100,13 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
     
     mvjsdu = ''
     for tool_i in tools:
-        assert tool_i in tools_code.keys()
-        mvjsdu = mvjsdu + tools_code[tool_i]
+        if tool_i in tools_code:
+            mvjsdu = mvjsdu + tools_code[tool_i]
+        else:
+            # if the string for the code is SnvCaller_N or IndelCaller_N as arbitrary callers
+            mvjsdu = mvjsdu + re.search(r'[0-9]+$', tool_i).group()
     
-    total_num_tools = len(mvjsdu)
+    total_num_tools = len(tools)
     tool_string = ', '.join( tools )
         
     
@@ -138,6 +144,9 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                 toolcode2index['T'] = n
             elif 'if_Platypus'       == item:
                 toolcode2index['Y'] = n
+            elif re.match(r'if_Caller_[0-9]+$', item):
+                single_char_caller_code = re.match(r'if_Caller_([0-9]+$)', item).groups()[0]
+                toolcode2index[single_char_caller_code] = n
 
 
         ALT                    = tsv_header.index('ALT')

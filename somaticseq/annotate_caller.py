@@ -402,6 +402,7 @@ def TNscope(variant_id, tnscope_variants):
 
 
 
+
 def dbSNP(variant_id, dbsnp_variants):
     
     if variant_id in dbsnp_variants:
@@ -418,6 +419,22 @@ def dbSNP(variant_id, dbsnp_variants):
 
     return if_dbsnp, if_common, rsID
 
+
+
+def anyInputVcf(variant_id, input_variants):
+    
+    if variant_id in input_variants:
+        input_variant_i = input_variants[variant_id]
+        if 'REJECT' in input_variant_i.filters:
+            classification = 0
+        elif 'LowQual' in input_variant_i.filters:
+            classification = 0.5
+        else:
+            classification = 1
+    else:
+        classification = 0
+        
+    return classification
 
 
 

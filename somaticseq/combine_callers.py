@@ -7,9 +7,10 @@ import somaticseq.vcfModifier.getUniqueVcfPositions as getUniqueVcfPositions
 from somaticseq.vcfModifier.vcfIntersector import *
 
 
-
 # Combine individual VCF output into a simple combined VCF file, for single-sample callers
-def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, keep_intermediates=False):
+def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, 
+                  mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, 
+                  arb_snvs=[], arb_indels=[], keep_intermediates=False):
     
     hg_dict = re.sub(r'\.fa(sta)?$', '.dict', ref)
     
@@ -17,11 +18,14 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
     snv_intermediates   = []
     indel_intermediates = []
 
-    intermediate_vcfs = {'MuTect2'  :{'snv': None, 'indel': None}, \
-                         'VarScan2' :{'snv': None, 'indel': None}, \
-                         'VarDict'  :{'snv': None, 'indel': None}, \
-                         'LoFreq'   :{'snv': None, 'indel': None}, \
-                         'Strelka'  :{'snv': None, 'indel': None}, }
+    intermediate_vcfs = {'MuTect2'   :{'snv': None, 'indel': None},
+                         'VarScan2'  :{'snv': None, 'indel': None},
+                         'VarDict'   :{'snv': None, 'indel': None},
+                         'LoFreq'    :{'snv': None, 'indel': None},
+                         'Strelka'   :{'snv': None, 'indel': None},
+                         'Arbitrary' :{'snv': [],   'indel': []},
+                         }
+        
 
     if mutect:
         
@@ -156,6 +160,30 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
         intermediate_vcfs['Strelka']['indel'] = indel_strelka_out
 
 
+    for ith_arb, arb_vcf_i in enumerate(arb_snvs):
+                
+        arb_vcf_in = bed_intersector(arb_vcf_i, os.sep.join(( outdir, 'intersect.snv.arb_{}.vcf'.format(ith_arb) )), inclusion, exclusion)
+        intermediate_files.add(arb_vcf_in)
+
+        arb_vcf_out = os.sep.join(( outdir, 'snv.arb_{}.vcf'.format(ith_arb) ))
+        copy_TextFile.copy(arb_vcf_in, arb_vcf_out)
+        intermediate_files.add(arb_vcf_out)
+        snv_intermediates.append(arb_vcf_out)
+        intermediate_vcfs['Arbitrary']['snv'].append( arb_vcf_out )
+
+    for ith_arb, arb_vcf_i in enumerate(arb_indels):
+                
+        arb_vcf_in = bed_intersector(arb_vcf_i, os.sep.join(( outdir, 'intersect.indel.arb_{}.vcf'.format(ith_arb) )), inclusion, exclusion)
+        intermediate_files.add(arb_vcf_in)
+
+        arb_vcf_out = os.sep.join(( outdir, 'indel.arb_{}.vcf'.format(ith_arb) ))
+        copy_TextFile.copy(arb_vcf_in, arb_vcf_out)
+        intermediate_files.add(arb_vcf_out)
+        indel_intermediates.append(arb_vcf_out)
+        intermediate_vcfs['Arbitrary']['indel'].append( arb_vcf_out )
+
+
+
     # Combine SNV/INDEL variant candidates
     snv_combined   = os.sep.join(( outdir, 'unsorted.CombineVariants.snv.vcf' ))
     indel_combined = os.sep.join(( outdir, 'unsorted.CombineVariants.indel.vcf' ))
@@ -185,7 +213,9 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, mutect=None,
 
 
 # Combine individual VCF output into a simple combined VCF file, for paired sample callers
-def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, keep_intermediates=False):
+def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, 
+                  mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, 
+                  arb_snvs=[], arb_indels=[], keep_intermediates=False):
     
     hg_dict = re.sub(r'\.fa(sta)?$', '.dict', ref)
     
@@ -193,10 +223,12 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
     snv_intermediates   = []
     indel_intermediates = []
     
-    intermediate_vcfs = {'MuTect2':  {'snv': None, 'indel': None}, \
-                         'VarDict':  {'snv': None, 'indel': None}, \
-                         'TNscope':  {'snv': None, 'indel': None}, \
-                         'Platypus': {'snv': None, 'indel': None} }
+    intermediate_vcfs = {'MuTect2':   {'snv': None, 'indel': None},
+                         'VarDict':   {'snv': None, 'indel': None},
+                         'TNscope':   {'snv': None, 'indel': None},
+                         'Platypus':  {'snv': None, 'indel': None},
+                         'Arbitrary': {'snv': [],   'indel': []},
+                         }
     
     # Modify direct VCF outputs for merging:
     if mutect or indelocator:
@@ -436,7 +468,28 @@ def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, mutec
         intermediate_vcfs['Platypus']['snv']   = snv_platypus_out
         intermediate_vcfs['Platypus']['indel'] = indel_platypus_out
 
-    
+    for ith_arb, arb_vcf_i in enumerate(arb_snvs):
+                
+        arb_vcf_in = bed_intersector(arb_vcf_i, os.sep.join(( outdir, 'intersect.snv.arb_{}.vcf'.format(ith_arb) )), inclusion, exclusion)
+        intermediate_files.add(arb_vcf_in)
+
+        arb_vcf_out = os.sep.join(( outdir, 'snv.arb_{}.vcf'.format(ith_arb) ))
+        copy_TextFile.copy(arb_vcf_in, arb_vcf_out)
+        intermediate_files.add(arb_vcf_out)
+        snv_intermediates.append(arb_vcf_out)
+        intermediate_vcfs['Arbitrary']['snv'].append( arb_vcf_out )
+
+    for ith_arb, arb_vcf_i in enumerate(arb_indels):
+                
+        arb_vcf_in = bed_intersector(arb_vcf_i, os.sep.join(( outdir, 'intersect.indel.arb_{}.vcf'.format(ith_arb) )), inclusion, exclusion)
+        intermediate_files.add(arb_vcf_in)
+
+        arb_vcf_out = os.sep.join(( outdir, 'indel.arb_{}.vcf'.format(ith_arb) ))
+        copy_TextFile.copy(arb_vcf_in, arb_vcf_out)
+        intermediate_files.add(arb_vcf_out)
+        indel_intermediates.append(arb_vcf_out)
+        intermediate_vcfs['Arbitrary']['indel'].append( arb_vcf_out )
+
     
     # Combine SNV/INDEL variant candidates
     snv_combined   = os.sep.join(( outdir, 'unsorted.CombineVariants.snv.vcf' ))

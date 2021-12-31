@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import re
+import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 
 cigar_aln_match    = 0
 cigar_insertion    = 1

@@ -126,8 +126,10 @@ out_header = \
 {tBAM_ALT_InDel_3bp}\t\
 {tBAM_ALT_InDel_2bp}\t\
 {tBAM_ALT_InDel_1bp}\t\
-{InDel_Length}\t\
-{TrueVariant_or_False}'
+{InDel_Length}'
+
+extra_caller_header = ''
+label_header = '{TrueVariant_or_False}'
 
 
 
@@ -161,6 +163,7 @@ def run():
     parser.add_argument('-scalpel',  '--scalpel-vcf',             type=str,   help='Scalpel VCF',       )
     parser.add_argument('-tnscope',  '--tnscope-vcf',             type=str,   help='TNscope VCF',       )
     parser.add_argument('-platypus', '--platypus-vcf',            type=str,   help='Platypus VCF',      )
+    parser.add_argument('-arbvcfs',  '--arbitrary-vcfs',          type=str,   help='Arbitrary extra VCFs', nargs='*', default=[])
 
     parser.add_argument('-ref',     '--genome-reference',         type=str,   help='.fasta.fai file to get the contigs', required=True)
     parser.add_argument('-dedup',   '--deduplicate',     action='store_true', help='Do not consider duplicate reads from BAM files. Default is to count everything', default=False)
@@ -181,7 +184,9 @@ def run():
 
 
 
-def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, truth=None, cosmic=None, dbsnp=None, mutect=None, varscan=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq=None, scalpel=None, strelka=None, tnscope=None, platypus=None, dedup=True, min_mq=1, min_bq=5, min_caller=0, ref_fa=None, p_scale=None, outfile=None):
+def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, truth=None, cosmic=None, dbsnp=None, 
+            mutect=None, varscan=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq=None, scalpel=None, strelka=None, tnscope=None, platypus=None, arbitrary_vcfs=[],
+            dedup=True, min_mq=1, min_bq=5, min_caller=0, ref_fa=None, p_scale=None, outfile=None):
 
     # Convert contig_sequence to chrom_seq dict:
     fai_file  = ref_fa + '.fai'
@@ -211,8 +216,6 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
 
         # Define NaN and Inf:
     nan = float('nan')
-    inf = float('inf')
-    pattern_chr_position = genome.pattern_chr_position
 
     ## Running
     with genome.open_textfile(mysites) as my_sites, open(outfile, 'w') as outhandle:
@@ -280,6 +283,12 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
             platypus      = genome.open_textfile(platypus)
             platypus_line = genome.skip_vcf_header( platypus )
 
+        arbitrary_file_handle = {}
+        arbitrary_line        = {}
+        for ith_arbi, arbitrary_vcf_i in enumerate(arbitrary_vcfs):
+            arbitrary_file_handle[ith_arbi] = genome.open_textfile(arbitrary_vcf_i)
+            arbitrary_line[ith_arbi] = genome.skip_vcf_header( arbitrary_file_handle[ith_arbi] )
+            
         # Get through all the headers:
         while my_line.startswith('#') or my_line.startswith('track='):
             my_line = my_sites.readline().rstrip()
@@ -290,7 +299,15 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
         coordinate_i = coordinate_i.group() if coordinate_i else ''
 
         # First line:
-        outhandle.write( out_header.replace('{','').replace('}','')  + '\n' )
+        header_part_1 = out_header.replace('{','').replace('}','')
+        
+        additional_arbi_caller_numbers = sorted(arbitrary_file_handle.keys())
+        for arbi_caller_num in additional_arbi_caller_numbers:
+            header_part_1 = header_part_1 + '\t' + 'if_Caller_{}'.format(arbi_caller_num)
+            
+        header_last_part = label_header.replace('{','').replace('}','')
+        
+        outhandle.write( '\t'.join((header_part_1, header_last_part)) + '\n')
 
         while my_line:
 
@@ -407,6 +424,11 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                 if dbsnp:    got_dbsnp,    dbsnp_variants,    dbsnp_line    = genome.find_vcf_at_coordinate(my_coordinate, dbsnp_line,   dbsnp,   chrom_seq)
                 if cosmic:   got_cosmic,   cosmic_variants,   cosmic_line   = genome.find_vcf_at_coordinate(my_coordinate, cosmic_line,  cosmic,  chrom_seq)
 
+                got_arbitraries    = {}
+                arbitrary_variants = {}
+                for ith_arbi in arbitrary_file_handle:
+                    got_arbitraries[ith_arbi], arbitrary_variants[ith_arbi], arbitrary_line[ith_arbi] = genome.find_vcf_at_coordinate(my_coordinate, arbitrary_line[ith_arbi], arbitrary_file_handle[ith_arbi], chrom_seq)
+
 
                 # Now, use pysam to look into the BAM file(s), variant by variant from the input:
                 for ith_call, my_call in enumerate( variants_at_my_coordinate ):
@@ -505,6 +527,13 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                         platypus_classification = nan
 
 
+                    arbitrary_classifications = {}
+                    for ith_arbi_var in arbitrary_file_handle:
+                        arbi_classification_i = annotate_caller.anyInputVcf(variant_id, arbitrary_variants[ith_arbi_var])
+                        arbitrary_classifications[ith_arbi_var] = arbi_classification_i
+                        num_callers += arbi_classification_i
+                        
+
                     # Potentially write the output only if it meets this threshold:
                     if num_callers >= min_caller:
 
@@ -582,7 +611,7 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                         my_identifiers = ';'.join(my_identifiers) if my_identifiers else '.'
 
                         ###
-                        out_line = out_header.format( \
+                        out_line_part_1 = out_header.format( \
                         CHROM                      = my_coordinate[0],                                                    \
                         POS                        = my_coordinate[1],                                                    \
                         ID                         = my_identifiers,                                                      \
@@ -690,18 +719,30 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
                         tBAM_ALT_InDel_3bp         = tBamFeatures['alt_indel_3bp'],                                       \
                         tBAM_ALT_InDel_2bp         = tBamFeatures['alt_indel_2bp'],                                       \
                         tBAM_ALT_InDel_1bp         = tBamFeatures['alt_indel_1bp'],                                       \
-                        InDel_Length               = indel_length,                                                        \
-                        TrueVariant_or_False       = judgement )
+                        InDel_Length               = indel_length)
+                        
+                        additional_caller_columns = []
+                        for arbi_key_i in additional_arbi_caller_numbers:
+                            additional_caller_columns.append( str(arbitrary_classifications[arbi_key_i]) )
+                        additional_caller_columns = '\t'.join(additional_caller_columns)
+                        
+                        label_column = label_header.format(TrueVariant_or_False = judgement)
+
+                        if len(additional_arbi_caller_numbers)>0:
+                            out_line = '\t'.join(( out_line_part_1, additional_caller_columns, label_column ))
+                        else:
+                            out_line = '\t'.join(( out_line_part_1, label_column ))
 
                         # Print it out to stdout:
-                        outhandle.write(out_line + '\n')
+                        outhandle.write( out_line + '\n')
 
             # Read into the next line:
             if not is_vcf:
                 my_line = my_sites.readline().rstrip()
 
         ##########  Close all open files if they were opened  ##########
-        opened_files = (ref_fa, nbam, tbam, truth, cosmic, dbsnp, mutect, varscan, jsm, sniper, vardict, muse, lofreq, scalpel, strelka, tnscope, platypus)
+        opened_files = [ref_fa, nbam, tbam, truth, cosmic, dbsnp, mutect, varscan, jsm, sniper, vardict, muse, lofreq, scalpel, strelka, tnscope, platypus]
+        [opened_files.append( extra_opened_file ) for extra_opened_file in arbitrary_file_handle.values()]
         [opened_file.close() for opened_file in opened_files if opened_file]
 
 
@@ -709,29 +750,30 @@ def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, nbam_fn=None, tbam_fn=None, t
 if __name__ == '__main__':
     runParameters = run()
 
-    vcf2tsv(is_vcf     = runParameters['vcf_format'], \
-            is_bed     = runParameters['bed_format'], \
-            is_pos     = runParameters['positions_list'], \
-            nbam_fn    = runParameters['normal_bam_file'], \
-            tbam_fn    = runParameters['tumor_bam_file'], \
-            truth      = runParameters['ground_truth_vcf'], \
-            cosmic     = runParameters['cosmic_vcf'], \
-            dbsnp      = runParameters['dbsnp_vcf'], \
-            mutect     = runParameters['mutect_vcf'], \
-            varscan    = runParameters['varscan_vcf'], \
-            jsm        = runParameters['jsm_vcf'], \
-            sniper     = runParameters['somaticsniper_vcf'], \
-            vardict    = runParameters['vardict_vcf'], \
-            muse       = runParameters['muse_vcf'], \
-            lofreq     = runParameters['lofreq_vcf'], \
-            scalpel    = runParameters['scalpel_vcf'], \
-            strelka    = runParameters['strelka_vcf'], \
-            tnscope    = runParameters['tnscope_vcf'], \
-            platypus   = runParameters['platypus_vcf'], \
-            dedup      = runParameters['deduplicate'], \
-            min_mq     = runParameters['minimum_mapping_quality'], \
-            min_bq     = runParameters['minimum_base_quality'], \
-            min_caller = runParameters['minimum_num_callers'], \
-            ref_fa     = runParameters['genome_reference'], \
-            p_scale    = runParameters['p_scale'], \
-            outfile    = runParameters['output_tsv_file'])
+    vcf2tsv(is_vcf         = runParameters['vcf_format'],
+            is_bed         = runParameters['bed_format'],
+            is_pos         = runParameters['positions_list'],
+            nbam_fn        = runParameters['normal_bam_file'],
+            tbam_fn        = runParameters['tumor_bam_file'],
+            truth          = runParameters['ground_truth_vcf'],
+            cosmic         = runParameters['cosmic_vcf'],
+            dbsnp          = runParameters['dbsnp_vcf'],
+            mutect         = runParameters['mutect_vcf'],
+            varscan        = runParameters['varscan_vcf'],
+            jsm            = runParameters['jsm_vcf'],
+            sniper         = runParameters['somaticsniper_vcf'],
+            vardict        = runParameters['vardict_vcf'],
+            muse           = runParameters['muse_vcf'],
+            lofreq         = runParameters['lofreq_vcf'],
+            scalpel        = runParameters['scalpel_vcf'],
+            strelka        = runParameters['strelka_vcf'],
+            tnscope        = runParameters['tnscope_vcf'],
+            platypus       = runParameters['platypus_vcf'],
+            arbitrary_vcfs = runParameters['arbitrary_vcfs'],
+            dedup          = runParameters['deduplicate'],
+            min_mq         = runParameters['minimum_mapping_quality'],
+            min_bq         = runParameters['minimum_base_quality'],
+            min_caller     = runParameters['minimum_num_callers'],
+            ref_fa         = runParameters['genome_reference'],
+            p_scale        = runParameters['p_scale'],
+            outfile        = runParameters['output_tsv_file'])

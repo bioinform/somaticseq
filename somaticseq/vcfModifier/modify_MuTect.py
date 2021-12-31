@@ -31,7 +31,7 @@ def run():
 
 
 
-def convert(infile, outfile, tbam, nbam):
+def convert(infile, outfile, tbam, nbam=None):
     
     paired_mode = True if nbam else False
 
@@ -83,7 +83,7 @@ def convert(infile, outfile, tbam, nbam):
 
                     # Keep up to the first sample column, then make sure it's labeled the TUMOR sample name
                     header_items = header_items[:idx_SM1+1]
-                    header_items[idx_SM1] = args.tumor_sample_name
+                    header_items[idx_SM1] = 'TUMOR'
     
                 replaced_header = '\t'.join(header_items)
                 vcfout.write(replaced_header + '\n')
