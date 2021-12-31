@@ -105,7 +105,7 @@ The script somaticseq\_parallel.py can 1) train the call set into a classifier, 
     \emph{R}, as well as \emph{ada} library (if you intend to use this).
 
     \item
-    At its core, SomaticSeq combines and then filters the results of multiple somatic mutation detection algorithms based on many sequencing features. Generally speaking, at least one compatible caller needs to be run to generate a list of mutation candidates for SomaticSeq to evaluate. It is compatible with the following callers: the original MuTect/Indelocator as well as GATK4's Mutect2 \cite{mutect}, VarScan2 \cite{varscan2}, JointSNVMix2 \cite{jointsnvmix2}, SomaticSniper \cite{somaticsniper}, VarDict \cite{vardict}, MuSE \cite{muse}, LoFreq \cite{lofreq}, Scalpel \cite{scalpel}, Strelka2 \cite{strelka2}, TNscope \cite{tnscope}, and Platypus \cite{platypus}.  
+    At its core, SomaticSeq combines and then filters the results of multiple somatic mutation detection algorithms based on many sequencing features. Generally speaking, at least one compatible caller needs to be run to generate a list of mutation candidates for SomaticSeq to evaluate. It is compatible with the following callers: the original MuTect/Indelocator as well as GATK4's Mutect2 \cite{mutect}, VarScan2 \cite{varscan2}, JointSNVMix2 \cite{jointsnvmix2}, SomaticSniper \cite{somaticsniper}, VarDict \cite{vardict}, MuSE \cite{muse}, LoFreq \cite{lofreq}, Scalpel \cite{scalpel}, Strelka2 \cite{strelka2}, TNscope \cite{tnscope}, and Platypus \cite{platypus}. As v3.7.0, users are allowed to input \emph{any} additional VCF file as calls. 
     
     \item
     \emph{Docker} [\href{http://www.docker.com}{http://www.docker.com}] is a container technology that can be used to package softwares and their dependencies in a portable Docker images, which can be used to execute a workflow reproducibly across different platforms and environments. SomaticSeq does not require Docker \textit{per se}, but we have created Docker images of it, along with a number of compatible somatic mutation callers to make life easier for new users. The advantage of using container technologies like Docker, is that one does not necessarily have to create the right software environment with the correct dependencies for every software in a workflow, e.g,. by creating a Docker image for MuTect2, the users can simply use that Docker image for MuTect 2 tasks. Otherwise, they must make sure to have the correct Java version and others dependencies to run MuTect2, and that those dependencies do not conflict with other software that may need different Java versions. 
@@ -219,7 +219,7 @@ SomaticSeq supports any combination of the somatic mutation callers we have inco
 
 \subsection{SomaticSeq Prediction Mode} \label{somaticseq_prediction}
 
-Make sure the classifiers (.RData files) are supplied, Without either of them, or it will fall back to the simple caller consensus mode.
+Make sure the classifiers are supplied, Without either of them, or it will fall back to the simple caller consensus mode.
 
 \begin{lstlisting}
 # The *.RData files are trained classifier from the training mode.
@@ -239,14 +239,16 @@ paired                 \
 --vardict-vcf          VarDict/variants.vcf \
 --muse-vcf             MuSE/variants.snp.vcf \
 --strelka-snv          Strelka/variants.snv.vcf \
---strelka-indel        Strelka/variants.indel.vcf
+--strelka-indel        Strelka/variants.indel.vcf \
+--arbitrary-snvs       MoreSNVs_1.vcf MoreSNVs_2.vcf MoreSNVs_3.vcf \
+--arbitrary-indels     MoreIndelss_1.vcf MoreIndels_2.vcf MoreIndels_3.vcf
 \end{lstlisting}
 
 
 
 \subsection{SomaticSeq Consensus Mode} \label{somaticseq_default_mode}
 
-Same as the commands previously, but without including the classifiers (.RData files) or invoking \textit{--somaticseq-train}. Without those information, SomaticSeq will forgo machine learning, and fall back into a simple majority vote. The following is an example:
+Same as the commands previously, but without including the classifiers or invoking \textit{--somaticseq-train}. Without those information, SomaticSeq will forgo machine learning, and fall back into a simple majority vote. The following is an example:
 
 \begin{lstlisting}
 # The *.RData files are trained classifier from the training mode.
@@ -1539,7 +1541,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	\item Version 3.7.0
 	
         \begin{itemize}
-            \item Allow input of any arbitrary VCF file in addition to the callers we have already incorporated (listed in Introduction). Must seperate the SNVs and indels into separate VCF files before using them as input to SomaticSeq.
+            \item Allow input of any arbitrary VCF file in addition to the callers we have already incorporated (listed in Introduction), e.g., \textit{--arbitrary-snvs extra\_snv\_X.vcf extra\_snv\_Y.vcf --arbitrary-indels extra\_indel\_X.vcf extra\_indel\_Y.vcf}. Must seperate the SNVs and indels into separate VCF files before using them as input to SomaticSeq. Calls labeled REJECT will not be counted. Calls without filter label will be counted as a bona fide call for that particular VCF file. 
         
         \end{itemize}
 \end{enumerate}
