@@ -290,7 +290,11 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                     if_Tool = '0'
                 
                 MVJS.append( if_Tool )
-                num_tools = num_tools + int(if_Tool)
+                
+                try:
+                    num_tools = num_tools + int(if_Tool)
+                except ValueError:
+                    raise Exception('{}={} could not be added up as num_tools'.format(tool_i, if_Tool))
                 
             MVJS = ','.join(MVJS)
 
