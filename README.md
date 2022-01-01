@@ -6,7 +6,7 @@ The detailed documentation is included in the repo, located in [docs/Manual.pdf]
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page.
 * The [v2 branch](../../tree/v2) is still supported, but it's severely limited comparing to the current versions. 
 
-## Labeled data for benchmarking and model training
+## Training data for benchmarking and/or model building
 
 In 2021, the [FDA-led MAQC-IV/SEQC2 Consortium](https://www.fda.gov/science-research/bioinformatics-tools/microarraysequencing-quality-control-maqcseqc#MAQC_IV) has produced multi-center multi-platform whole-genome and whole-exome [sequencing data sets](https://identifiers.org/ncbi/insdc.sra:SRP162370) for a pair of tumor-normal reference samples (HCC1395 and HCC1395BL), along with the high-confidence [somatic mutation call set](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release/latest/). This work was published in [Fang, L.T., Zhu, B., Zhao, Y. _et al_. Establishing community reference samples, data and call sets for benchmarking cancer mutation detection using whole-genome sequencing. _Nat Biotechnol_ **39**, 1151-1160 (2021)](https://doi.org/10.1038/s41587-021-00993-6 "Fang LT, et al. Nat Biotechnol (2021)") / [PMID:34504347](http://identifiers.org/pubmed/34504347 "Fang LT, et al. Nat Biotechnol (2021)") / [SharedIt Link](https://rdcu.be/cxs3D "Fang LT, et al. Nat Biotechnol (2021)"). The following are some of the use cases for these resources:
 
@@ -45,12 +45,10 @@ In 2021, the [FDA-led MAQC-IV/SEQC2 Consortium](https://www.fda.gov/science-rese
 
 
 
-## Requirements
+## Installation Requirements
 This [dockerfile](Dockerfiles/somaticseq.base-1.3.dockerfile) reveals the dependencies
 * Python 3, plus pysam, numpy, scipy, pandas, and xgboost libraries.
 * [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing is invoked, and/or when any bed files are used as input files.
-* At least one of the callers we have incorporated, i.e., MuTect2 (GATK4) / MuTect / Indelocator, VarScan2, JointSNVMix2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, Strelka2, TNscope, and/or Platypus. 
-SomaticSeq relies on 3rd-party caller(s) to generate mutation candidates, so you have to run at least one of them, but preferably multiple.
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
 * Optional: R and [ada](https://cran.r-project.org/package=ada) are required for AdaBoost, whereas XGBoost is implemented in python.
 * To install SomaticSeq, clone this repo, `cd somaticseq`, and then run `./setup.py install`.
@@ -77,11 +75,18 @@ There are some toy data sets and test scripts in [**example**](example) that sho
 
 
 ## Run SomaticSeq with an example command
-* At minimum, given the results of the individual mutation caller(s), SomaticSeq will extract sequencing features for the combined call set. Required inputs are `--output-directory`, `--genome-reference`, `paired|single`, `--tumor-bam-file`, and `--normal-bam-file`. Everything else is optional (though without a single VCF file from at least one caller, SomaticSeq will have nothing to do).
+* At minimum, given the results of the individual mutation caller(s), SomaticSeq will extract sequencing features for the combined call set. Required inputs are 
+  * `--output-directory` and `--genome-reference`, then
+  * Either `paired` or `single` to invoke paired or single sample mode, 
+    * if `paired`: `--tumor-bam-file`, and `--normal-bam-file` are both required.
+    * if `single`: `--bam-file` is required. 
+    
+  Everything else is optional (though without a single VCF file from at least one caller, SomaticSeq do nothing).
+
 * The following four files will be created into the output directory:
   * `Consensus.sSNV.vcf`, `Consensus.sINDEL.vcf`, `Ensemble.sSNV.tsv`, and `Ensemble.sINDEL.tsv`.
 
-* If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [**Dockerized Somatic Mutation Workflow**](somaticseq/utilities/dockered_pipelines).
+* If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [**Dockerized Somatic Mutation Workflow**](somaticseq/utilities/dockered_pipelines) as a start.
 
 ```
 # Merge caller results and extract SomaticSeq features
@@ -106,10 +111,14 @@ paired \
 --lofreq-indel      LoFreq/variants.indel.vcf \
 --scalpel-vcf       Scalpel/variants.indel.vcf \
 --strelka-snv       Strelka/variants.snv.vcf \
---strelka-indel     Strelka/variants.indel.vcf
+--strelka-indel     Strelka/variants.indel.vcf \
+--arbitrary-snvs    additional_snv_calls_1.vcf.gz additional_snv_calls_2.vcf.gz ... \
+--arbitrary-indels  additional_indel_calls_1.vcf.gz additional_indel_calls_2.vcf.gz ... 
 ```
 
-* `--inclusion-region` or `--exclusion-region` will require BEDTools in your path.
+* `--arbitrary-snvs` and `--arbitrary-indels` are added in v3.7.0. It allows users to input **any** arbitrary VCF files from callers we did not explicitly incorporate. SNVs and indels have to be separated. If your caller puts SNVs and indels in the same output VCF file, you may split it by `splitVcf.py -infile combined_small_variants.vcf -snv snvs.vcf -indel indels.vcf`. As usual, input can be either `.vcf` or `.vcf.gz`. 
+ 
+* `--inclusion-region` or `--exclusion-region` will require `bedtools` in your path.
 * `--algorithm` will default to `xgboost` as v3.6.0, but can also be `ada` (AdaBoost in R). XGBoost supports multi-threading and can be orders of magnitude faster than AdaBoost, and seems to be about the same in terms of accuracy, so we changed the default from `ada` to `xgboost` as v3.6.0.
 * To split the job into multiple threads, place `--threads X` before the `paired` option to indicate X threads. It simply creates multiple BED file (each consisting of 1/X of total base pairs) for SomaticSeq to run on each of those sub-BED files in parallel. It then merges the results. This requires `bedtools` in your path.
 * For all input VCF files, either .vcf or .vcf.gz are acceptable.
