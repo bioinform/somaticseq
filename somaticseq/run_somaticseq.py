@@ -410,8 +410,8 @@ def run():
     parser_paired.add_argument('-strelkaindel',  '--strelka-indel',     type=str,   help='Strelka VCF',       )
     parser_paired.add_argument('-tnscope',       '--tnscope-vcf',       type=str,   help='TNscope VCF',       )
     parser_paired.add_argument('-platypus',      '--platypus-vcf',      type=str,   help='Platypus VCF',      )
-    parser_paired.add_argument('-arbsnv',        '--arbitrary-snvs',    type=str,   help='Additional SNV VCFs', nargs='*')
-    parser_paired.add_argument('-arbindel',      '--arbitrary-indels',  type=str,   help='Additional INDEL VCFs', nargs='*')
+    parser_paired.add_argument('-arbsnv',        '--arbitrary-snvs',    type=str,   help='Additional SNV VCFs', nargs='*', default=[])
+    parser_paired.add_argument('-arbindel',      '--arbitrary-indels',  type=str,   help='Additional INDEL VCFs', nargs='*', default=[])
 
     
     parser_paired.set_defaults(which='paired')
@@ -428,8 +428,8 @@ def run():
     parser_single.add_argument('-lofreq',   '--lofreq-vcf',       type=str, help='LoFreq VCF',   )
     parser_single.add_argument('-scalpel',  '--scalpel-vcf',      type=str, help='Scalpel VCF',  )
     parser_single.add_argument('-strelka',  '--strelka-vcf',      type=str, help='Strelka VCF',  )
-    parser_single.add_argument('-arbsnv',   '--arbitrary-snvs',   type=str, help='Additional SNV VCFs', nargs='*')
-    parser_single.add_argument('-arbindel', '--arbitrary-indels', type=str, help='Additional INDEL VCFs', nargs='*')
+    parser_single.add_argument('-arbsnv',   '--arbitrary-snvs',   type=str, help='Additional SNV VCFs', nargs='*', default=[])
+    parser_single.add_argument('-arbindel', '--arbitrary-indels', type=str, help='Additional INDEL VCFs', nargs='*', default=[])
 
     parser_single.set_defaults(which='single')
 
