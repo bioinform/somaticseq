@@ -276,7 +276,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
             
             MVJS = []
             num_tools = 0
-            for tool_i in toolcode2index: # for tool_i in mvjsdu:
+            for tool_i in mvjsdu: # for tool_i in toolcode2index:
                 
                 if_Tool = tsv_item[ toolcode2index[tool_i] ]
                 
