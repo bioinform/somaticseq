@@ -57,7 +57,7 @@ def bed_include(infile, inclusion_region, outfile):
     
     if inclusion_region:
     
-        cmd_line = 'intersectBed -header -a {} -b {} | uniq > {}'.format(infile, inclusion_region, outfile)
+        cmd_line = 'bedtools intersect -header -a {} -b {} | uniq > {}'.format(infile, inclusion_region, outfile)
         subprocess.check_call(cmd_line, shell=True)
         
     else:
@@ -72,7 +72,7 @@ def bed_exclude(infile, exclusion_region, outfile):
     assert infile != outfile
     
     if exclusion_region:
-        cmd_line = 'intersectBed -header -a {} -b {} -v | uniq > {}'.format(infile, exclusion_region, outfile) 
+        cmd_line = 'bedtools intersect -header -a {} -b {} -v | uniq > {}'.format(infile, exclusion_region, outfile) 
         subprocess.check_call(cmd_line, shell=True)
         
     else:
@@ -98,7 +98,7 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
         
         included_temp_file = infile_noext + uuid.uuid4().hex + file_ext
 
-        cmd_line = 'intersectBed -header -a {} -b {} | uniq > {}'.format(infile, inclusion_region, included_temp_file)
+        cmd_line = 'bedtools intersect -header -a {} -b {} | uniq > {}'.format(infile, inclusion_region, included_temp_file)
         subprocess.check_call(cmd_line, shell=True)
 
         infile  = included_temp_file
@@ -107,7 +107,7 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
     
     if exclusion_region:
         
-        cmd_line = 'intersectBed -header -a {} -b {} -v | uniq > {}'.format(infile, exclusion_region, outfile)
+        cmd_line = 'bedtools intersect -header -a {} -b {} -v | uniq > {}'.format(infile, exclusion_region, outfile)
         subprocess.check_call(cmd_line, shell=True)
     
     if inclusion_region and not exclusion_region:
