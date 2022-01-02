@@ -22,9 +22,12 @@ DEFAULT_NUM_TREES_PREDICT = 100
 
 
 
-def modelTrainer(input_file, algo, threads=1, seed=0, max_depth=12, iterations=200, features_to_exclude=[]):
+def modelTrainer(input_file, algo, threads=1, seed=0, max_depth=12, iterations=200, features_to_exclude=None):
     
     logger = logging.getLogger(modelTrainer.__name__)
+    
+    if features_to_exclude is None:
+        features_to_exclude = []
     
     if algo == 'ada' or algo == 'ada.R':
         command_item = ('ada_model_builder_ntChange.R', input_file)
@@ -55,9 +58,12 @@ def modelTrainer(input_file, algo, threads=1, seed=0, max_depth=12, iterations=2
 
 
     
-def modelPredictor(input_file, output_file, algo, classifier, iterations=100, features_to_exclude=[]):
+def modelPredictor(input_file, output_file, algo, classifier, iterations=100, features_to_exclude=None):
     
     logger = logging.getLogger(modelPredictor.__name__)
+    
+    if features_to_exclude is None:
+        features_to_exclude = []
     
     if algo == 'ada' or algo == 'ada.R':
         command_item = ('ada_model_predictor.R', classifier, input_file, output_file)
@@ -86,12 +92,16 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
               pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, 
               dbsnp=None, cosmic=None, inclusion=None, exclusion=None, 
               mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, 
-              lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, arb_snvs=[], arb_indels=[],
+              lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, arb_snvs=None, arb_indels=None,
               min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, 
               ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False, 
-              train_seed=0, tree_depth=12, iterations=None, features_excluded=[]):
+              train_seed=0, tree_depth=12, iterations=None, features_excluded=None):
 
     logger = logging.getLogger(runPaired.__name__)
+
+    if features_excluded is None: features_excluded = []
+    if arb_snvs is None: arb_snvs = []
+    if arb_indels is None: arb_indels = []
 
     import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
@@ -221,12 +231,16 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
 def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel=None, classifier_snv=None, classifier_indel=None, 
               pass_threshold=0.5, lowqual_threshold=0.1, hom_threshold=0.85, het_threshold=0.01, 
               dbsnp=None, cosmic=None, inclusion=None, exclusion=None, 
-              mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, arb_snvs=[], arb_indels=[],
+              mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, arb_snvs=None, arb_indels=None,
               min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, 
               ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', 
-              keep_intermediates=False, train_seed=0, tree_depth=12, iterations=None, features_excluded=[]):
+              keep_intermediates=False, train_seed=0, tree_depth=12, iterations=None, features_excluded=None):
 
     logger = logging.getLogger(runSingle.__name__)
+    
+    if features_excluded is None: features_excluded = []
+    if arb_snvs is None: arb_snvs = []
+    if arb_indels is None: arb_indels = []
 
     import somaticseq.single_sample_vcf2tsv as single_sample_vcf2tsv
     import somaticseq.SSeq_tsv2vcf as tsv2vcf

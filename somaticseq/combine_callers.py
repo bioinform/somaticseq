@@ -10,7 +10,10 @@ from somaticseq.vcfModifier.vcfIntersector import *
 # Combine individual VCF output into a simple combined VCF file, for single-sample callers
 def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None, 
                   mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, 
-                  arb_snvs=[], arb_indels=[], keep_intermediates=False):
+                  arb_snvs=None, arb_indels=None, keep_intermediates=False):
+    
+    if arb_snvs is None: arb_snvs = []
+    if arb_indels is None: arb_indels = []
     
     hg_dict = re.sub(r'\.fa(sta)?$', '.dict', ref)
     
@@ -215,8 +218,11 @@ def combineSingle(outdir, ref, bam, inclusion=None, exclusion=None,
 # Combine individual VCF output into a simple combined VCF file, for paired sample callers
 def combinePaired(outdir, ref, tbam, nbam, inclusion=None, exclusion=None, 
                   mutect=None, indelocator=None, mutect2=None, varscan_snv=None, varscan_indel=None, jsm=None, sniper=None, vardict=None, muse=None, lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, 
-                  arb_snvs=[], arb_indels=[], keep_intermediates=False):
+                  arb_snvs=None, arb_indels=None, keep_intermediates=False):
     
+    if arb_snvs is None: arb_snvs = []
+    if arb_indels is None: arb_indels = []
+
     hg_dict = re.sub(r'\.fa(sta)?$', '.dict', ref)
     
     intermediate_files  = set()

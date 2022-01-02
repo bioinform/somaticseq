@@ -131,9 +131,12 @@ def run():
 
 
 def vcf2tsv(is_vcf=None, is_bed=None, is_pos=None, bam_fn=None, truth=None, cosmic=None, dbsnp=None, 
-            mutect=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, arbitrary_vcfs=[],
+            mutect=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, arbitrary_vcfs=None,
             dedup=True, min_mq=1, min_bq=5, min_caller=0, ref_fa=None, p_scale=None, outfile=None):
 
+    if arbitrary_vcfs is None:
+        arbitrary_vcfs = []
+    
     # Convert contig_sequence to chrom_seq dict:
     fai_file  = ref_fa + '.fai'
     chrom_seq = genome.faiordict2contigorder(fai_file, 'fai')
