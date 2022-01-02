@@ -1,4 +1,4 @@
-import sys, argparse, os, re
+import os, re
 import subprocess
 from datetime import datetime
 import somaticseq.utilities.dockered_pipelines.container_option as container

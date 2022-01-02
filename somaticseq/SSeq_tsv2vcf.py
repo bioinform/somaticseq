@@ -98,13 +98,17 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                   'Platypus':      'Y'}
     
     
-    mvjsdu = ''
+    tool_combo_key = ''
+    tool_combo_list = []
     for tool_i in tools:
         if tool_i in tools_code:
-            mvjsdu = mvjsdu + tools_code[tool_i]
+            tool_combo_key = tool_combo_key + tools_code[tool_i]
+            tool_combo_list.append(tools_code[tool_i])
         else:
             # if the string for the code is SnvCaller_N or IndelCaller_N as arbitrary callers
-            mvjsdu = mvjsdu + re.search(r'[0-9]+$', tool_i).group()
+            arbi_tool_character = re.search(r'[0-9]+$', tool_i).group()
+            tool_combo_key = tool_combo_key + arbi_tool_character
+            tool_combo_list.append(arbi_tool_character)
     
     total_num_tools = len(tools)
     tool_string = ', '.join( tools )
@@ -215,7 +219,7 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
         vcf.write('##FILTER=<ID=PASS,Description="Accept as a confident somatic mutation calls with probability value at least {}">\n'.format(pass_score) )
         vcf.write('##FILTER=<ID=REJECT,Description="Rejected as a confident somatic mutation with ONCOSCORE below 2">\n')
         vcf.write('##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Somatic mutation in primary">\n')
-        vcf.write('##INFO=<ID={COMBO},Number={NUM},Type=Integer,Description="Calling decision of the {NUM} algorithms: {TOOL_STRING}">\n'.format(COMBO=mvjsdu, NUM=total_num_tools, TOOL_STRING=tool_string) )
+        vcf.write('##INFO=<ID={COMBO},Number={NUM},Type=Integer,Description="Calling decision of the {NUM} algorithms: {TOOL_STRING}">\n'.format(COMBO=tool_combo_key, NUM=total_num_tools, TOOL_STRING=tool_string) )
         vcf.write('##INFO=<ID=NUM_TOOLS,Number=1,Type=Float,Description="Number of tools called it Somatic">\n')
         vcf.write('##INFO=<ID=LC,Number=1,Type=Float,Description="Linguistic sequence complexity in Phred scale between 0 to 40. Higher value means higher complexity.">\n')
         
@@ -274,9 +278,9 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                 if_MuSE = '.'
             
             
-            MVJS = []
+            tool_combo_values = []
             num_tools = 0
-            for tool_i in mvjsdu: # for tool_i in toolcode2index:
+            for tool_i in tool_combo_list: # for tool_i in tool_combo_key:
                 
                 if_Tool = tsv_item[ toolcode2index[tool_i] ]
                 
@@ -289,16 +293,16 @@ def tsv2vcf(tsv_fn, vcf_fn, tools, pass_score=0.5, lowqual_score=0.1, hom_thresh
                 else:
                     if_Tool = '0'
                 
-                MVJS.append( if_Tool )
+                tool_combo_values.append( if_Tool )
                 
                 try:
                     num_tools = num_tools + int(if_Tool)
                 except ValueError:
                     raise Exception('{}={} could not be added up as num_tools'.format(tool_i, if_Tool))
                 
-            MVJS = ','.join(MVJS)
+            tool_combo_values = ','.join(tool_combo_values)
 
-            info_string = '{COMBO}={MVJSD};NUM_TOOLS={NUM_TOOLS}'.format( COMBO=mvjsdu, MVJSD=MVJS, NUM_TOOLS=num_tools )
+            info_string = '{COMBO}={TOOL_COMBO_VALUES};NUM_TOOLS={NUM_TOOLS}'.format( COMBO=tool_combo_key, TOOL_COMBO_VALUES=tool_combo_values, NUM_TOOLS=num_tools )
             
             # Make backward compatible for tsv files without LC
             try:
