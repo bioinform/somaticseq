@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 from setuptools import setup, find_packages
-from somaticseq._version import  __version__ as version
+from somaticseq._version import  __version__
 
-print(version)
+print(__version__)
 
 setup(
     name='SomaticSeq',
-    version=version,
+    version=__version__,
     description='SomaticSeq: An ensemble approach to accurately detect somatic mutations using SomaticSeq',
     author='Li Tai Fang',
     author_email='ltfang@gmail.com',
@@ -24,6 +24,7 @@ setup(
              'somaticseq/genomicFileHandler/concat.py',
              'somaticseq/utilities/linguistic_sequence_complexity.py',
              'somaticseq/utilities/lociCounterWithLabels.py',
+             'somaticseq/utilities/paired_end_bam2fastq.py',
              'somaticseq/utilities/remove_callers_from_somaticseq_tsv.py',
              'somaticseq/utilities/split_Bed_into_equal_regions.py',
              'somaticseq/utilities/tally_variants_from_multiple_vcfs.py',

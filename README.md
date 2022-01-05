@@ -8,10 +8,10 @@ The detailed documentation is included in the repo, located in [docs/Manual.pdf]
 
 ## Training data for benchmarking and/or model building
 
-In 2021, the [FDA-led MAQC-IV/SEQC2 Consortium](https://www.fda.gov/science-research/bioinformatics-tools/microarraysequencing-quality-control-maqcseqc#MAQC_IV) has produced multi-center multi-platform whole-genome and whole-exome [sequencing data sets](https://identifiers.org/ncbi/insdc.sra:SRP162370) for a pair of tumor-normal reference samples (HCC1395 and HCC1395BL), along with the high-confidence [somatic mutation call set](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release/latest/). This work was published in [Fang, L.T., Zhu, B., Zhao, Y. _et al_. Establishing community reference samples, data and call sets for benchmarking cancer mutation detection using whole-genome sequencing. _Nat Biotechnol_ **39**, 1151-1160 (2021)](https://doi.org/10.1038/s41587-021-00993-6 "Fang LT, et al. Nat Biotechnol (2021)") / [PMID:34504347](http://identifiers.org/pubmed:34504347 "Fang LT, et al. Nat Biotechnol (2021)") / [SharedIt Link](https://rdcu.be/cxs3D "Fang LT, et al. Nat Biotechnol (2021)"). The following are some of the use cases for these resources:
+In 2021, the [FDA-led MAQC-IV/SEQC2 Consortium](https://www.fda.gov/science-research/bioinformatics-tools/microarraysequencing-quality-control-maqcseqc#MAQC_IV) has produced multi-center multi-platform whole-genome and whole-exome [sequencing data sets](https://identifiers.org/ncbi/insdc.sra:SRP162370) for a pair of tumor-normal reference samples (HCC1395 and HCC1395BL), along with the high-confidence [somatic mutation call set](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release/latest/). This work was published in [Fang, L.T., Zhu, B., Zhao, Y. _et al_. Establishing community reference samples, data and call sets for benchmarking cancer mutation detection using whole-genome sequencing. _Nat Biotechnol_ **39**, 1151-1160 (2021)](https://doi.org/10.1038/s41587-021-00993-6 "Fang LT, et al. Nat Biotechnol (2021)") / [PMID:34504347](http://identifiers.org/pubmed:34504347 "Fang LT, et al. Nat Biotechnol (2021)") / [Free Read-Only Link](https://bit.ly/2021nbt "Fang LT, et al. Nat Biotechnol (2021)"). The following are some of the use cases for these resources:
 
 * Use high-confidence call set as the "ground truth" to investigate how different sample preparations, sequencing library kits, and bioinformatic algorithms affect the accuracy of the somatic mutation pipelines, and develop best practices, e.g., [Xiao W. _et al_. Nat Biotechnol 2021](https://doi.org/10.1038/s41587-021-00994-5). 
-* Use high-confidence call set as the "ground truth" to build accurate and robust machine learning models for somatic mutation detections, e.g., [Sahraeian S.M.E. _et al_. Genome Biol 2022](https://doi.org/10.1101/667261).
+* Use high-confidence call set as the "ground truth" to build accurate and robust machine learning models for somatic mutation detections, e.g., [Sahraeian S.M.E. _et al_. Genome Biol 2022](https://doi.org/10.1186/s13059-021-02592-9)
 
 #### Click for [more details of the SEQC2's somatic mutation project](docs/seqc2.md).
 
@@ -116,12 +116,15 @@ paired \
 --arbitrary-indels  additional_indel_calls_1.vcf.gz additional_indel_calls_2.vcf.gz ... 
 ```
 
-* `--arbitrary-snvs` and `--arbitrary-indels` are added in v3.7.0. It allows users to input **any** arbitrary VCF files from callers we did not explicitly incorporate. SNVs and indels have to be separated. If your caller puts SNVs and indels in the same output VCF file, you may split it by `splitVcf.py -infile combined_small_variants.vcf -snv snvs.vcf -indel indels.vcf`. As usual, input can be either `.vcf` or `.vcf.gz`. 
+* For all of those input VCF files, both `.vcf` and `.vcf.gz` are acceptable. SomaticSeq also accepts `.cram`, but some callers only take `.bam`. 
+
+* `--arbitrary-snvs` and `--arbitrary-indels` are added in v3.7.0. It allows users to input **any** arbitrary VCF files from callers that we did not explicitly incorporate. SNVs and indels have to be separated. If your caller puts SNVs and indels in the same output VCF file, you may split it using a SomaticSeq utility script: `splitVcf.py -infile combined_small_variants.vcf -snv snvs.vcf -indel indels.vcf`. As usual, input can be either `.vcf` or `.vcf.gz`, but output will be `.vcf`. 
  
 * `--inclusion-region` or `--exclusion-region` will require `bedtools` in your path.
-* `--algorithm` will default to `xgboost` as v3.6.0, but can also be `ada` (AdaBoost in R). XGBoost supports multi-threading and can be orders of magnitude faster than AdaBoost, and seems to be about the same in terms of accuracy, so we changed the default from `ada` to `xgboost` as v3.6.0.
+
+* `--algorithm` defaults to `xgboost` as v3.6.0, but can also be `ada` (AdaBoost in R). XGBoost supports multi-threading and can be orders of magnitude faster than AdaBoost, and seems to be about the same in terms of accuracy, so we changed the default from `ada` to `xgboost` as v3.6.0 and that's what we recommend now.
+
 * To split the job into multiple threads, place `--threads X` before the `paired` option to indicate X threads. It simply creates multiple BED file (each consisting of 1/X of total base pairs) for SomaticSeq to run on each of those sub-BED files in parallel. It then merges the results. This requires `bedtools` in your path.
-* For all input VCF files, either .vcf or .vcf.gz are acceptable.
 
 Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two classifiers (SNV and indel) will be created..
 * `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires ground truth VCF files as follows:
@@ -151,7 +154,7 @@ Most SomaticSeq modules can be run on their own. They may be useful in debugging
 
 ### To run somatic mutation callers and then SomaticSeq
 We have created a module (i.e., `makeSomaticScripts.py`) that can run all the dockerized somatic mutation callers and then SomaticSeq, described at [**somaticseq/utilities/dockered_pipelines**](somaticseq/utilities/dockered_pipelines). There is also an alignment workflow described there.
-You need [docker](https://www.docker.com/) to run these workflows. Singularity is also supported, but is not optimized.
+You need [docker](https://www.docker.com/) to run these workflows. Singularity is also supported, but is not optimized. Let me know if you find bugs. 
 
 
 ### To create training data to create SomaticSeq classifiers
@@ -161,11 +164,13 @@ You need [docker](https://www.docker.com/) to run these workflows. Singularity i
 * Before well characterized real data was available, we have dockerized pipelines for *in silico* mutation spike in at [**somaticseq/utilities/dockered_pipelines/bamSimulator**](somaticseq/utilities/dockered_pipelines/bamSimulator).
 These pipelines are based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon). We have used it to create training set to build SomaticSeq classifiers, though it has not been updated for a while.
 
+* Combine both BAMSurgeon *in silico* spike in and the real SEQC2 training data **may** give you better model than using either, which was shown in [Sahraeian S.M.E. _et al_. 2022](https://doi.org/10.1186/s13059-021-02592-9). The reason may be that the real data's high-confidence call sets do not have the most challenging genomic regions, whereas *in silico* data do not have the most realistic data characteristics. Combining both allows them to cover each other's shortcomings. 
 
 
-### GATK's best practices for alignment
+
+### Dockerized alignment pipeline based on GATK's best practices
 Described at [**somaticseq/utilities/dockered_pipelines**](somaticseq/utilities/dockered_pipelines). The module is `makeAlignmentScripts.py`.
 
 
 ### Additional workflows
-* A [Snakemake](https://snakemake.readthedocs.io/en/latest/) workflow to run the somatic mutation callers and SomaticSeq was created by [Afif Elghraoui](https://github.com/0xaf1f) at [**somaticseq/utilities/snakemake**](somaticseq/utilities/snakemake). It needs to be updated to work.
+* A [Snakemake](https://snakemake.readthedocs.io/en/latest/) workflow to run the somatic mutation callers and SomaticSeq was created by [Afif Elghraoui](https://github.com/0xaf1f) at [**somaticseq/utilities/snakemake**](somaticseq/utilities/snakemake). It needs to be updated.
