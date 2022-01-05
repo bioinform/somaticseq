@@ -172,5 +172,10 @@ These pipelines are based on [BAMSurgeon](https://github.com/adamewing/bamsurgeo
 Described at [**somaticseq/utilities/dockered_pipelines**](somaticseq/utilities/dockered_pipelines). The module is `makeAlignmentScripts.py`.
 
 
-### Additional workflows
-* A [Snakemake](https://snakemake.readthedocs.io/en/latest/) workflow to run the somatic mutation callers and SomaticSeq was created by [Afif Elghraoui](https://github.com/0xaf1f) at [**somaticseq/utilities/snakemake**](somaticseq/utilities/snakemake). It needs to be updated.
+### Utilities
+We have some generally useful scripts in [utilities](somaticseq/utilities). Some of the more useful tools, e.g.,  
+
+* `lociCounterWithLabels.py` finds overlapping regions among multiple bed files.
+* `paired_end_bam2fastq.py` converts paired-end bam files into 1.fastq and 2.fastq files. It will not require an enormous amount of memory, nor will the resulting files crap out on downstream GATK tools.
+* `split_Bed_into_equal_regions.py` splits one bed file into a number of output bed files, where each output bed file will have the same total length.
+* `run_workflows.py` is a rudimentary workflow manager that executes multiple scripts at once. 
