@@ -105,7 +105,7 @@ The script somaticseq\_parallel.py can 1) train the call set into a classifier, 
     \emph{R}, as well as \emph{ada} library (if you intend to use this).
 
     \item
-    At its core, SomaticSeq combines and then filters the results of multiple somatic mutation detection algorithms based on many sequencing features. Generally speaking, at least one compatible caller needs to be run to generate a list of mutation candidates for SomaticSeq to evaluate. It is compatible with the following callers: the original MuTect/Indelocator as well as GATK4's Mutect2 \cite{mutect}, VarScan2 \cite{varscan2}, JointSNVMix2 \cite{jointsnvmix2}, SomaticSniper \cite{somaticsniper}, VarDict \cite{vardict}, MuSE \cite{muse}, LoFreq \cite{lofreq}, Scalpel \cite{scalpel}, Strelka2 \cite{strelka2}, TNscope \cite{tnscope}, and Platypus \cite{platypus}. As v3.7.0, users are allowed to input \emph{any} additional VCF file as calls. 
+    At its core, SomaticSeq combines and then filters the results of multiple somatic mutation detection algorithms based on many sequencing features. At least one caller needs to be run to generate a list of mutation candidates for SomaticSeq to evaluate. The following callers have been directly incorporated into SomaticSeq: the original MuTect/Indelocator as well as GATK4's Mutect2 \cite{mutect}, VarScan2 \cite{varscan2}, JointSNVMix2 \cite{jointsnvmix2}, SomaticSniper \cite{somaticsniper}, VarDict \cite{vardict}, MuSE \cite{muse}, LoFreq \cite{lofreq}, Scalpel \cite{scalpel}, Strelka2 \cite{strelka2}, TNscope \cite{tnscope}, and Platypus \cite{platypus}. As v3.7.0, users are allowed to input \emph{any} VCF file(s) in addition to the ones mentioned previously. 
     
     \item
     \emph{Docker} [\href{http://www.docker.com}{http://www.docker.com}] is a container technology that can be used to package softwares and their dependencies in a portable Docker images, which can be used to execute a workflow reproducibly across different platforms and environments. SomaticSeq does not require Docker \textit{per se}, but we have created Docker images of it, along with a number of compatible somatic mutation callers to make life easier for new users. The advantage of using container technologies like Docker, is that one does not necessarily have to create the right software environment with the correct dependencies for every software in a workflow, e.g,. by creating a Docker image for MuTect2, the users can simply use that Docker image for MuTect 2 tasks. Otherwise, they must make sure to have the correct Java version and others dependencies to run MuTect2, and that those dependencies do not conflict with other software that may need different Java versions. 
@@ -188,7 +188,7 @@ All the VCF files from individual callers are optional, but you need at least on
 
 \begin{lstlisting}
 somaticseq_parallel.py \
---output-directory     OUTPUT_DIR \
+--output-directory     SomaticSeq_OUT \
 --genome-reference     GRCh38.fa \
 --inclusion-region     genome.bed \
 --exclusion-region     blacklist.bed \
@@ -204,7 +204,9 @@ paired                 \
 --vardict-vcf          VarDict.vcf \
 --muse-vcf             MuSE.vcf \
 --strelka-snv          Strelka/results/variants/somatic.snvs.vcf.gz \
---strelka-indel        Strelka/results/variants/somatic.indels.vcf.gz
+--strelka-indel        Strelka/results/variants/somatic.indels.vcf.gz \
+--arbitrary-snvs       additional_snv_calls_1.vcf.gz additional_snv_calls_2.vcf.gz ... \
+--arbitrary-indels     additional_indel_calls_1.vcf.gz additional_indel_calls_2.vcf.gz ... 
 \end{lstlisting}
 
 
@@ -429,15 +431,15 @@ ada\_model\_builder\_ntChange.R or somatic\_xgboost.py is the script that is cal
 
 \begin{lstlisting}
 # Training:
-r_scripts/ada_model_builder_ntChange.R Ensemble.sSNV.tsv
+ada_model_builder_ntChange.R Ensemble.sSNV.tsv
 \end{lstlisting}
 
 
-For extreme gradient boosting (xgboost) algorithm, the program can be run multi-threaded:
+For extreme gradient boosting (xgboost) algorithm, the program can be run multi-threaded. Multiple input files are allowed to combine training data. 
 
 \begin{lstlisting}
 # Training:
-somatic_xgboost.py train -tsv Ensemble.sSNV.tsv -threads 4
+somatic_xgboost.py train -tsv Ensemble.sSNV.tsv -out somatic_snv.classifier -threads 4
 \end{lstlisting}
 
 
@@ -455,7 +457,7 @@ ada_model_predictor.R Ensemble.sSNV.tsv.Classifier.RData   Ensemble.sSNV.tsv   P
 If classifier was based on xgboost:
 \begin{lstlisting}
 # Mutation prediction:
-xgboost.py predict -model Ensemble.sSNV.tsv.gz.xgb.v3.x.x.model -tsv Ensemble.sSNV.tsv.gz -out SSeq.Predicted.sSNV.tsv
+somatic_xgboost.py predict -model Ensemble.sSNV.tsv.gz.xgb.v3.x.x.model -tsv Ensemble.sSNV.tsv.gz -out SSeq.Predicted.sSNV.tsv
 \end{lstlisting}
 
 
@@ -538,7 +540,7 @@ makeSomaticScripts.py paired \
 --output-directory /ABSOLUTE/PATH/TO/RESULTS \
 --dbsnp-vcf        /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf \
 --threads          12 \
---run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq --run-workflow-locally
+--run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq --run-workflow
 \end{lstlisting}
 
 The command shown above will create scripts for MuTect2, SomaticSniper, VarDict, MuSE, LoFreq, Scalpel, and Strelka. Then, it will create the SomaticSeq script that merges those 7 callers. This command defaults to majority-vote consensus.
@@ -587,9 +589,8 @@ makeSomaticScripts.py paired \
 --snv-classifier       /ABSOLUTE/PATH/TO/Snv_Classifier.RData \
 --indel-classifier     /ABSOLUTE/PATH/TO/Indel_Classifier.RData \
 --somaticseq-algorithm xgboost \
---action               echo \
 --threads              12 \
---run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq
+--run-mutect2 --run-somaticsniper --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq --run-workflow
 \end{lstlisting}
 
 Notice the command includes --classifier-snv and --classifier-indel. Make sure the classifier and the \textit{--somaticseq-algorithm} argument matches. 
