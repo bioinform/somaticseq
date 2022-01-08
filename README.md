@@ -177,5 +177,5 @@ We have some generally useful scripts in [utilities](somaticseq/utilities). Some
 
 * `lociCounterWithLabels.py` finds overlapping regions among multiple bed files.
 * `paired_end_bam2fastq.py` converts paired-end bam files into 1.fastq and 2.fastq files. It will not require an enormous amount of memory, nor will the resulting files crap out on downstream GATK tools.
+* `run_workflows.py` is a rudimentary workflow manager that executes multiple scripts at once.
 * `split_Bed_into_equal_regions.py` splits one bed file into a number of output bed files, where each output bed file will have the same total length.
-* `run_workflows.py` is a rudimentary workflow manager that executes multiple scripts at once. 
