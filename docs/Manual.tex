@@ -11,7 +11,6 @@
 \usepackage{hyperref}
 \usepackage[document]{ragged2e}
 \usepackage{natbib}
-%\usepackage{amsrefs}
 
 \usepackage{geometry}
 \geometry{letterpaper, margin=1.0in}
@@ -1542,9 +1541,11 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	\item Version 3.7.0
 	
         \begin{itemize}
-            \item Allow input of any arbitrary VCF files in addition to the callers we have already incorporated (listed in Introduction), e.g., \textit{--arbitrary-snvs callerX\_snv.vcf callerY\_snv.vcf --arbitrary-indels callerA\_indel.vcf callerB\_indel.vcf}. Must seperate the SNVs and indels into separate VCF files before using them as input to SomaticSeq. If you have a VCF file that has combined SNV and indels, you may use this script included in our repo: \textit{somaticseq/somaticseq/vcfModifier/splitVcf.py -infile combined\_variants.vcf -snv snvs.vcf -indel indels.vcf}. Input can be both .vcf or .vcf.gz. Output will be .vcf. Calls labeled REJECT will not be counted. Calls without filter label will be counted as a bona fide call for that particular VCF file.
+            \item Allow input of any arbitrary VCF files in addition to the callers we have already incorporated (listed in Introduction), e.g., \textit{--arbitrary-snvs callerX\_snv.vcf callerY\_snv.vcf --arbitrary-indels callerA\_indel.vcf callerB\_indel.vcf}. Must seperate the SNVs and indels into separate VCF files before using them as input to SomaticSeq. If you have a VCF file that has combined SNV and indels, you may use this script included in our repo: \textit{somaticseq/somaticseq/vcfModifier/splitVcf.py -infile combined\_variants.vcf -snv snvs.vcf -indel indels.vcf}. Input can be both \textit{.vcf} or \textit{.vcf.gz}. Output will be .vcf. For the ``arbitrary input VCF files,'' calls labeled as REJECT in the FILTER field will not be counted and will be assigned a value of 0 in the \textit{if\_Caller\_X} field. Calls labeled as LowQual will be assigned a value of 0.1. Calls without any filter label will be counted as a bona fide call for that particular VCF file and assigned a value of 1, i.e., as though it is a PASS call. So modify your VCF files accordigly if needed.
             
-            \item Changed \textit{intersectBed} to \textit{bedtools intersect} in some of the shell commands. 
+            \item Changed \textit{intersectBed} to \textit{bedtools intersect} in some of the shell commands.
+            
+            \item In dockerized somatic mutation workflow, updated \textit{broadinstitute/gatk:4.0.5.2} to \textit{broadinstitute/gatk:4.2.4.1}. 
         
         \end{itemize}
 \end{enumerate}
