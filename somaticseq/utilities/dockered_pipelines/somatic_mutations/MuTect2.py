@@ -6,7 +6,7 @@ import somaticseq.utilities.dockered_pipelines.container_option as container
 ts = re.sub(r'[:-]', '.', datetime.now().isoformat() )
 
 
-DEFAULT_PARAMS = {'mutect2_image'           : 'broadinstitute/gatk:4.0.5.2',
+DEFAULT_PARAMS = {'mutect2_image'           : 'broadinstitute/gatk:4.2.4.1',
                   'MEM'                     : '8G',
                   'threads'                 : 1,
                   'inclusion_region'        : None,
@@ -99,7 +99,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech='docker'):
         out.write(f'{container_line} \\\n' )
         out.write( 'java -Xmx{} -jar /gatk/gatk.jar FilterMutectCalls \\\n'.format( input_parameters['MEM'] ) )
         out.write( '--variant {}/unfiltered.{} \\\n'.format(mounted_outdir, input_parameters['outfile']) )
-        
+        out.write(f'--reference {mounted_genome_reference} \\\n' )
         
         if input_parameters['mutect2_filter_arguments']:
             out.write( '{} \\\n'.format(input_parameters['mutect2_filter_arguments']) )
