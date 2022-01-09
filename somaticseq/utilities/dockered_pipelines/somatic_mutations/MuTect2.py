@@ -185,7 +185,8 @@ def tumor_only(input_parameters, tech='docker'):
         out.write(f'{container_line} \\\n' )
         out.write( 'java -Xmx{} -jar /gatk/gatk.jar FilterMutectCalls \\\n'.format( input_parameters['MEM'] ) )
         out.write( '--variant {}/unfiltered.{} \\\n'.format(mounted_outdir, input_parameters['outfile']) )
-        
+        out.write(f'--reference {mounted_genome_reference} \\\n' )
+
         if input_parameters['mutect2_filter_arguments']:
             out.write( '{} \\\n'.format(input_parameters['mutect2_filter_arguments']) )
         
