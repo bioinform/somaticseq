@@ -150,7 +150,7 @@ Do not worry if Python throws the following warning. This occurs when SciPy atte
 Run `somatic_xgboost.py train --help` to see the options, e.g.,
 
 ```
-somatic_xgboost.py train -tsvs SAMPLE_1.tsv SAMPLE_02.tsv .... SAMPLE_X.tsv -out multi_sample.xgboost.classifier -threads 8 -depth 12 -seed 1234 -method hist -iter 250 --extra-params grow_policy:lossguide max_leaves:24
+somatic_xgboost.py train -tsvs SAMPLE_1/Ensemble.sSNV.tsv SAMPLE_2/Ensemble.sSNV.tsv ... SAMPLE_N/Ensemble.sSNV.tsv -out multiSample.SNV.classifier -threads 8 -depth 12 -seed 42 -method hist -iter 250 --extra-params grow_policy:lossguide max_leaves:24
 ```
 
 ## Run SomaticSeq modules seperately
