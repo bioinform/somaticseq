@@ -146,6 +146,13 @@ Do not worry if Python throws the following warning. This occurs when SciPy atte
 ```
 
 
+## To train for SomaticSeq classifiers with multiple data sets
+Run `somatic_xgboost.py train --help` to see the options, e.g.,
+
+```
+somatic_xgboost.py train -tsvs SAMPLE_1.tsv SAMPLE_02.tsv .... SAMPLE_X.tsv -out multi_sample.xgboost.classifier -threads 8 -depth 12 -seed 1234 -method hist -iter 250 --extra-params grow_policy:lossguide max_leaves:24
+```
+
 ## Run SomaticSeq modules seperately
 Most SomaticSeq modules can be run on their own. They may be useful in debugging context, or be run for your own purposes. See [this page](MODULES.md) for your options.
 
