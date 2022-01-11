@@ -1546,8 +1546,14 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
             \item Changed \textit{intersectBed} to \textit{bedtools intersect} in some of the shell commands.
             
             \item In dockerized somatic mutation workflow, updated \textit{broadinstitute/gatk:4.0.5.2} to \textit{broadinstitute/gatk:4.2.4.1}. 
-        
         \end{itemize}
+        
+	\item Version 3.7.1
+	
+        \begin{itemize}
+            \item Fix dbsnp, cosmic, and exclusion-region input parameter dictionary for \textit{makeSomaticScripts.py}.
+        \end{itemize}
+    
 \end{enumerate}
 
 
