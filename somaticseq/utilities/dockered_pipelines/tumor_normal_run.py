@@ -101,14 +101,16 @@ def run():
 
 def run_SomaticSeq(input_parameters, tech='docker'):
 
-    DEFAULT_PARAMS = {'MEM': '4G', 'genome_reference': None, 'inclusion_region': None, 'exclusion_region': None, 'output_directory' : os.curdir, 'somaticseq_directory': 'SomaticSeq', 'action': 'echo', 'dbsnp' : None, 'cosmic': None, 'snv_classifier': None, 'indel_classifier': None, 'truth_snv': None, 'truth_indel': None, 'somaticseq_arguments': '', 'train_somaticseq': False, 'somaticseq_algorithm': 'xgboost'}
+    DEFAULT_PARAMS = {'MEM': '4G', 'genome_reference': None, 'inclusion_region': None, 'exclusion_region': None, 'output_directory' : os.curdir, 
+                      'somaticseq_directory': 'SomaticSeq', 'action': 'echo', 'dbsnp_vcf' : None, 'cosmic_vcf': None, 'snv_classifier': None, 'indel_classifier': None, 
+                      'truth_snv': None, 'truth_indel': None, 'somaticseq_arguments': '', 'train_somaticseq': False, 'somaticseq_algorithm': 'xgboost'}
     
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
 
     all_paths = []
-    for path_i in input_parameters['normal_bam'], input_parameters['tumor_bam'], input_parameters['genome_reference'], input_parameters['output_directory'], input_parameters['inclusion_region'], input_parameters['exclusion_region'], input_parameters['dbsnp'], input_parameters['cosmic'], input_parameters['snv_classifier'], input_parameters['indel_classifier'], input_parameters['truth_snv'], input_parameters['truth_indel']:
+    for path_i in input_parameters['normal_bam'], input_parameters['tumor_bam'], input_parameters['genome_reference'], input_parameters['output_directory'], input_parameters['inclusion_region'], input_parameters['exclusion_region'], input_parameters['dbsnp_vcf'], input_parameters['cosmic_vcf'], input_parameters['snv_classifier'], input_parameters['indel_classifier'], input_parameters['truth_snv'], input_parameters['truth_indel']:
         if path_i:
             all_paths.append( path_i )
 
@@ -168,15 +170,15 @@ def run_SomaticSeq(input_parameters, tech='docker'):
 
         if input_parameters['exclusion_region']:
             mounted_exclusion = fileDict[ input_parameters['exclusion_region'] ]['mount_path']
-            out.write( '--exclusion-region {} \\\n'.format(input_parameters['exclusion_region'])  )
+            out.write( '--exclusion-region {} \\\n'.format(mounted_exclusion) )
 
-        if input_parameters['cosmic']:
-            mounted_cosmic = fileDict[ input_parameters['cosmic'] ]['mount_path']
+        if input_parameters['cosmic_vcf']:
+            mounted_cosmic = fileDict[ input_parameters['cosmic_vcf'] ]['mount_path']
             out.write( '--cosmic-vcf {} \\\n'.format(mounted_cosmic) )
 
-        if input_parameters['dbsnp']:
-            mounted_dbsnp  = fileDict[ input_parameters['dbsnp'] ]['mount_path']
-            out.write( '--dbsnp-vcf {} \\\n'.format(input_parameters['dbsnp_vcf']) )
+        if input_parameters['dbsnp_vcf']:
+            mounted_dbsnp  = fileDict[ input_parameters['dbsnp_vcf'] ]['mount_path']
+            out.write( '--dbsnp-vcf {} \\\n'.format(mounted_dbsnp) )
 
         if input_parameters['snv_classifier'] or input_parameters['indel_classifier']:
             out.write( '--algorithm {} \\\n'.format(input_parameters['somaticseq_algorithm']) )
