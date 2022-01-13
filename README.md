@@ -81,7 +81,7 @@ There are some toy data sets and test scripts in [**example**](example) that sho
     * if `paired`: `--tumor-bam-file`, and `--normal-bam-file` are both required.
     * if `single`: `--bam-file` is required. 
     
-  Everything else is optional (though without a single VCF file from at least one caller, SomaticSeq do nothing).
+  Everything else is optional (though without a single VCF file from at least one caller, SomaticSeq does nothing).
 
 * The following four files will be created into the output directory:
   * `Consensus.sSNV.vcf`, `Consensus.sINDEL.vcf`, `Ensemble.sSNV.tsv`, and `Ensemble.sINDEL.tsv`.
@@ -91,34 +91,36 @@ There are some toy data sets and test scripts in [**example**](example) that sho
 ```
 # Merge caller results and extract SomaticSeq features
 somaticseq_parallel.py \
---output-directory  $OUTPUT_DIR \
---genome-reference  GRCh38.fa \
---inclusion-region  genome.bed \
---exclusion-region  blacklist.bed \
---algorithm         xgboost \
---threads           24 \
+  --output-directory  $OUTPUT_DIR \
+  --genome-reference  GRCh38.fa \
+  --inclusion-region  genome.bed \
+  --exclusion-region  blacklist.bed \
+  --algorithm         xgboost \
+  --threads           24 \
 paired \
---tumor-bam-file    tumor.bam \
---normal-bam-file   matched_normal.bam \
---mutect2-vcf       MuTect2/variants.vcf \
---varscan-snv       VarScan2/variants.snp.vcf \
---varscan-indel     VarScan2/variants.indel.vcf \
---jsm-vcf           JointSNVMix2/variants.snp.vcf \
---somaticsniper-vcf SomaticSniper/variants.snp.vcf \
---vardict-vcf       VarDict/variants.vcf \
---muse-vcf          MuSE/variants.snp.vcf \
---lofreq-snv        LoFreq/variants.snp.vcf \
---lofreq-indel      LoFreq/variants.indel.vcf \
---scalpel-vcf       Scalpel/variants.indel.vcf \
---strelka-snv       Strelka/variants.snv.vcf \
---strelka-indel     Strelka/variants.indel.vcf \
---arbitrary-snvs    additional_snv_calls_1.vcf.gz additional_snv_calls_2.vcf.gz ... \
---arbitrary-indels  additional_indel_calls_1.vcf.gz additional_indel_calls_2.vcf.gz ... 
+  --tumor-bam-file    tumor.bam \
+  --normal-bam-file   matched_normal.bam \
+  --mutect2-vcf       MuTect2/variants.vcf \
+  --varscan-snv       VarScan2/variants.snp.vcf \
+  --varscan-indel     VarScan2/variants.indel.vcf \
+  --jsm-vcf           JointSNVMix2/variants.snp.vcf \
+  --somaticsniper-vcf SomaticSniper/variants.snp.vcf \
+  --vardict-vcf       VarDict/variants.vcf \
+  --muse-vcf          MuSE/variants.snp.vcf \
+  --lofreq-snv        LoFreq/variants.snp.vcf \
+  --lofreq-indel      LoFreq/variants.indel.vcf \
+  --scalpel-vcf       Scalpel/variants.indel.vcf \
+  --strelka-snv       Strelka/variants.snv.vcf \
+  --strelka-indel     Strelka/variants.indel.vcf \
+  --arbitrary-snvs    additional_snv_calls_1.vcf.gz additional_snv_calls_2.vcf.gz ... \
+  --arbitrary-indels  additional_indel_calls_1.vcf.gz additional_indel_calls_2.vcf.gz ... 
 ```
 
-* For all of those input VCF files, both `.vcf` and `.vcf.gz` are acceptable. SomaticSeq also accepts `.cram`, but some callers only take `.bam`. 
+* For all of those input VCF files, both `.vcf` and `.vcf.gz` are acceptable. SomaticSeq also accepts `.cram`, but some callers may only take `.bam`. 
 
-* `--arbitrary-snvs` and `--arbitrary-indels` are added in v3.7.0. It allows users to input **any** arbitrary VCF files from callers that we did not explicitly incorporate. SNVs and indels have to be separated. If your caller puts SNVs and indels in the same output VCF file, you may split it using a SomaticSeq utility script: `splitVcf.py -infile combined_small_variants.vcf -snv snvs.vcf -indel indels.vcf`. As usual, input can be either `.vcf` or `.vcf.gz`, but output will be `.vcf`. 
+* `--arbitrary-snvs` and `--arbitrary-indels` are added since v3.7.0. It allows users to input **any** arbitrary VCF file(s) from caller(s) that we did not explicitly incorporate. SNVs and indels have to be separated. 
+  * If your caller puts SNVs and indels in the same output VCF file, you may split it using a SomaticSeq utility script, e.g., `splitVcf.py -infile small_variants.vcf -snv snvs.vcf -indel indels.vcf`. As usual, input can be either `.vcf` or `.vcf.gz`, but output will be `.vcf`. 
+  * For those VCF file(s), any calls **not** labeled REJECT or LowQual will be considered a bona fide somatic mutation call. REJECT calls will be skipped. LowQual calls will be considered, but will not have a value of `1` in `if_Caller` machine learning feature. 
  
 * `--inclusion-region` or `--exclusion-region` will require `bedtools` in your path.
 
@@ -127,7 +129,7 @@ paired \
 * To split the job into multiple threads, place `--threads X` before the `paired` option to indicate X threads. It simply creates multiple BED file (each consisting of 1/X of total base pairs) for SomaticSeq to run on each of those sub-BED files in parallel. It then merges the results. This requires `bedtools` in your path.
 
 Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two classifiers (SNV and indel) will be created..
-* `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires ground truth VCF files as follows:
+* `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires ground truth VCF files.
 * `--truth-snv`:        if you have a ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL
 
@@ -138,7 +140,7 @@ Additional input files to be specified **before** `paired` option invoke predict
 Without those paramters above to invoking training or prediction mode, SomaticSeq will default to majority-vote consensus mode.
 
 
-Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data, e.g., z-scores between reference- and variant-supporting reads will be NaN if there is no reference read at a position.
+Do not worry if Python throws the following warning. This occurs when SciPy attempts a statistical test with empty data, e.g., z-scores between reference- and variant-supporting reads will be `nan` if there is no reference read at a position.
 
 ```
   RuntimeWarning: invalid value encountered in double_scalars
@@ -150,10 +152,11 @@ Do not worry if Python throws the following warning. This occurs when SciPy atte
 Run `somatic_xgboost.py train --help` to see the options, e.g.,
 
 ```
-somatic_xgboost.py train -tsvs SAMPLE_1/Ensemble.sSNV.tsv SAMPLE_2/Ensemble.sSNV.tsv ... SAMPLE_N/Ensemble.sSNV.tsv \
--out multiSample.SNV.classifier \
--threads 8 -depth 12 -seed 42 -method hist -iter 250 \
---extra-params grow_policy:lossguide max_leaves:24
+somatic_xgboost.py train \
+  -tsvs SAMPLE_1/Ensemble.sSNV.tsv SAMPLE_2/Ensemble.sSNV.tsv ... SAMPLE_N/Ensemble.sSNV.tsv \
+  -out multiSample.SNV.classifier \
+  -threads 8 -depth 12 -seed 42 -method hist -iter 250 \
+  --extra-params grow_policy:lossguide max_leaves:24
 ```
 
 ## Run SomaticSeq modules seperately

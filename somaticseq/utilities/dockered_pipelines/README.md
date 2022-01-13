@@ -20,7 +20,9 @@ Each caller (with the exception of SomaticSniper here) will be split into 12 thr
 
 3) Finally, the results will be merged. 
 
-The option `--run-workflow` tells the program to execute those scripts. Without `--run-workflow`, those scripts will be created but not executed (e.g. leaving you the option to submit them to multiple nodes via SGE). You may also modify and re-run any of these scripts if things did not end successfully.
+  * The option `--run-workflow` tells the program to execute those scripts. Without `--run-workflow`, those scripts will be created but not executed (e.g. leaving you the option to submit them to multiple nodes via SGE). You may also modify and re-run any of these scripts if things did not end successfully. 
+
+  * The option `--by-caller` tells the program to execute the slowest callers first, in this order (if they are invoked): Scalpel, Vardict, MuTect2, VarScan, LoFreq, MuSE, and then Strelka. Otherwise, it will execute by regions. Beware though, it will also run the most memory-hungry callers at the same time. 
 
 ```
 makeSomaticScripts.py paired \
@@ -32,7 +34,7 @@ makeSomaticScripts.py paired \
 --threads          12 \
 --container-tech   docker \
 --run-mutect2 --run-vardict --run-muse --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq \
---run-workflow
+--run-workflow --by-caller
 ```
 
 You can also submit the above command into a SGE system, which will run the whole workflow to a single node with the number of threads you have specified. 
@@ -44,6 +46,7 @@ You can also submit the above command into a SGE system, which will run the whol
 ```
 
 * To run SomaticSeq in training mode (include `--inclusion-region /PATH/TO/high_confidence.bed` if the truth files are only confident in certain genomic regions), and then
+
 ```
 --train-somaticseq --truth-snv /PATH/TO/all_truth_snvs.vcf --truth-indel /PATH/TO/all_true_indels.vcf
 ```
