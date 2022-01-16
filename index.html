@@ -111,7 +111,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
             </p>
 
             <p>
-            The <a href="https://www.fda.gov/science-research/bioinformatics-tools/microarraysequencing-quality-control-maqcseqc#MAQC_IV" target="_blank">SEQC2/MAQC-IV Consortium</a> has published <a href="https://identifiers.org/ncbi/insdc.sra:SRP162370" target="_blank">numerous whole-genome and whole-exome sequencing replicates from multiple sequencing centers</a> for a pair of tumor-normal reference samples, along with the <a href="https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release/latest/" target="_blank">high-confidence somatic mutation reference call set</a>. These resources can be used to train machine learning classifers (e.g., <a href="https://doi.org/10.1101/667261" target="_blank">Sahraeian SME <i>et al</i>. bioRxiv 2019</a>) or evaluate algorithms and pipelines (e.g., <a href="https://doi.org/10.1038/s41587-021-00994-5" target="_blank">Xiao W <i>et al</i>. Nat Biotechnol 2021</a>). That work is published as:<br>
+            The <a href="https://www.fda.gov/science-research/bioinformatics-tools/microarraysequencing-quality-control-maqcseqc#MAQC_IV" target="_blank">SEQC2/MAQC-IV Consortium</a> has published <a href="https://identifiers.org/ncbi/insdc.sra:SRP162370" target="_blank">numerous whole-genome and whole-exome sequencing replicates from multiple sequencing centers</a> for a pair of tumor-normal reference samples, along with the <a href="https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release/latest/" target="_blank">high-confidence somatic mutation reference call set</a>. These resources can be used to train machine learning classifers (e.g., <a href="https://doi.org/10.1186/s13059-021-02592-9" target="_blank">Sahraeian SME <i>et al</i>. Genome Biol 2022</a>) or evaluate algorithms and pipelines (e.g., <a href="https://doi.org/10.1038/s41587-021-00994-5" target="_blank">Xiao W <i>et al</i>. Nat Biotechnol 2021</a>). This work is published as:<br>
 
                 <ul>
                 <li>
@@ -181,7 +181,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <h2>Download SomaticSeq</h2>
 
     <ul>
-        <li>The source code is hosted at <a href="https://github.com/bioinform/somaticseq/" onclick="trackOutboundLink('https://github.com/bioinform/somaticseq'); return false'">https://github.com/bioinform/somaticseq</a></li>
+        <li>The source code and README's are hosted at <a href="https://github.com/bioinform/somaticseq/" onclick="trackOutboundLink('https://github.com/bioinform/somaticseq'); return false'">https://github.com/bioinform/somaticseq</a></li>
 
         <li>The packaged releases can be found at <a href="https://github.com/bioinform/somaticseq/releases"
                                            onclick="trackOutboundLink('https://github.com/bioinform/somaticseq/releases'); return false;">https://github.com/bioinform/somaticseq/releases</a></li>
@@ -196,7 +196,7 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
 
     <ul>
         <li>Python3, plus numpy, scipy, pysam, pandas, and xgboost packages</li>
-        <li>BEDtools if inclusion and/or exclusion regions are used</li>
+        <li>BEDtools (bedtools should be in the PATH)</li>
         <li>Optional: dbSNP and COSMIC VCF file (if you want to use those information as a part of your training set)</li>
     </ul>
 
@@ -205,7 +205,6 @@ w.addEventListener ? w.addEventListener("load",function(){document.body.addEvent
     <h2>Running SomaticSeq</h2>
 
         <ul>
-            <li>This SomaticSeq procedure takes about 3 hours for a call set of 50K calls on 30X tumor-normal genome on a single thread.</li>
             <li>All VCF, BAM, and FASTA files need to be sorted identically. For VCF files, both .vcf and .vcf.gz are acceptable.</li>
             <li>The following command can be run when those individual mutation callers have completed running. 
                 To use our entire somatic mutation pipelines, read the README in our <a href="https://github.com/bioinform/somaticseq/" onclick="trackOutboundLink('https://github.com/bioinform/somaticseq'); return false'">source code</a>. The pipeline is available in both <a href="https://www.docker.com/" target=_blank>Docker</a> and <a href="http://singularity.lbl.gov/" target=_blank>Singularity</a>.</li>
