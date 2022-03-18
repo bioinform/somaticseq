@@ -1554,7 +1554,14 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
         \begin{itemize}
             \item Fix dbsnp, cosmic, and exclusion-region input parameter dictionary for \textit{makeSomaticScripts.py}.
         \end{itemize}
-    
+
+        
+	\item Version 3.7.2
+	
+        \begin{itemize}
+            \item Change \textit{-u \$UID} to \textit{-u \$(id -u):\$(id -g)} for docker command in \textit{somaticseq/utilities/dockered\_pipelines/container\_option.py}.
+        \end{itemize}
+
 \end{enumerate}
 
 

@@ -53,7 +53,7 @@ def container_params( container_image, tech='docker', files=[], extra_args='', s
             container_dir = fileDict[ file_i ][ 'mount_dir' ]
             MOUNT_STRING = MOUNT_STRING + f' -v {sys_dir}:{container_dir}'
         
-        container_string = f'docker run {MOUNT_STRING} -u $UID --rm {extra_args} {container_image}'
+        container_string = f'docker run {MOUNT_STRING} -u $(id -u):$(id -g) --rm {extra_args} {container_image}'
     
     
     elif tech == 'singularity':
