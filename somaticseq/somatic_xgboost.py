@@ -3,11 +3,8 @@
 import argparse
 import xgboost as xgb
 import pandas as pd
-import numpy as np
-import re
 import logging
 import somaticseq.ntchange_type as ntchange
-from copy import copy
 from somaticseq._version import  __version__
 
 
@@ -170,6 +167,8 @@ if __name__ == '__main__':
         if args.tree_method:
             PARAM['tree_method'] = args.tree_method
 
+        # If they're integers, floats, bools, etc., they will be eval'ed to them.
+        # If they're strings, they're remain strings.
         if args.extra_params:
             for param_string in args.extra_params:
                 param_i, value_i = param_string.split(':')
