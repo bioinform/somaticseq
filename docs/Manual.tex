@@ -1560,6 +1560,8 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	
         \begin{itemize}
             \item Change \textit{-u \$UID} to \textit{-u \$(id -u):\$(id -g)} for docker command in \textit{somaticseq/utilities/dockered\_pipelines/container\_option.py}.
+            
+            \item Checking order when VCF file are being read. Raise Exception when they are not sorted according to the reference (implemented in the \textit{catchup\_multilines} function in \textit{somaticseq/genomicFileHandler/genomic\_file\_handlers.py}).
         \end{itemize}
 
 \end{enumerate}
@@ -1568,7 +1570,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 
 
 \section{Contact Us}
-For suggestions, bug reports, or technical support, please post in \href{https://github.com/bioinform/somaticseq/issues}{https://github.com/bioinform/somaticseq/issues}. The developers are alerted when issues are created there. 
+For suggestions, bug reports, feature requests, or technical support, please go ahead and post them as issues in \href{https://github.com/bioinform/somaticseq/issues}{https://github.com/bioinform/somaticseq/issues}. The developers will be alerted when issues are created there. 
 
 
 

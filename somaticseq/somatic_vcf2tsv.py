@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 
-import sys, argparse, math, gzip, os, pysam, re, logging
+import argparse
+import math
+import os
+import pysam
+import re
+import logging
 import scipy.stats as stats
 from copy import copy
 
-from somaticseq.genomicFileHandler.read_info_extractor import *
+from somaticseq.genomicFileHandler.read_info_extractor import genomic_coordinates, rescale
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 import somaticseq.annotate_caller as annotate_caller
 import somaticseq.sequencing_features as sequencing_features

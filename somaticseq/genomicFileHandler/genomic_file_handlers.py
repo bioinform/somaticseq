@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
+import gzip
+import re
+import math
 from pysam import AlignmentFile
-import sys, os, gzip, re, math
 
 # The regular expression pattern for "chrXX 1234567" in both VarScan2 Output and VCF files:
 pattern_major_chr_position = re.compile(r'^(?:chr)?(?:[1-9]|1[0-9]|2[0-2]|[XY]|MT?)\t[0-9]+\b')
@@ -485,7 +487,12 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, chrom_sequence):
             next_coord = re.match( pattern_chr_position, line_j )
 
             if next_coord:
-                coordinate_j = next_coord.group()
+                coordinate_k = next_coord.group()
+                if whoisbehind(coordinate_j, coordinate_k, chrom_sequence) == 1:
+                    raise Exception('{} does not seem to be properly sorted: {} then {}.'.format(
+                        filehandle_j.name, coordinate_j, coordinate_k) )
+
+                coordinate_j = coordinate_k
             else:
                 coordinate_j = ''
 
@@ -510,10 +517,12 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, chrom_sequence):
             next_coord = re.match( pattern_chr_position, line_j )
 
             if next_coord:
+                coordinate_k = next_coord.group()
                 if whoisbehind(coordinate_j, next_coord.group(), chrom_sequence) == 1:
-                    raise Exception('{} does not seem to be properly sorted'.format(filehandle_j.name) )
+                    raise Exception('{} does not seem to be properly sorted: {} then {}.'.format(
+                        filehandle_j.name, coordinate_j, coordinate_k) )
 
-                coordinate_j = next_coord.group()
+                coordinate_j = coordinate_k
             else:
                 coordinate_j = ''
 
@@ -531,7 +540,12 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, chrom_sequence):
                 next_coord = re.match( pattern_chr_position, line_j )
 
                 if next_coord:
-                    coordinate_j = next_coord.group()
+                    coordinate_k = next_coord.group()
+                    if whoisbehind(coordinate_j, coordinate_k, chrom_sequence) == 1:
+                        raise Exception('{} does not seem to be properly sorted: {} then {}.'.format(
+                            filehandle_j.name, coordinate_j, coordinate_k) )
+
+                    coordinate_j = coordinate_k
                 else:
                     coordinate_j = ''
 
