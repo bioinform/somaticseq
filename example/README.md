@@ -19,6 +19,8 @@ cd example
 ```
 The directory will be `single_somaticseq`.
 
+### To check the results of the two commands above, run `results_check.sh`.
+
 
 
 ## Run dockerized workflow with MuTect2, VarDict, and Strelka2 in tumor-normal mode
