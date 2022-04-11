@@ -19,7 +19,7 @@ cd example
 ```
 The directory will be `single_somaticseq`.
 
-### To check the results of the two commands above, run `results_check.sh`.
+### To check the results of `paired_somaticseq_example.sh` and/or `single_somaticseq_example.sh`, run `results_check.sh`.
 
 
 
