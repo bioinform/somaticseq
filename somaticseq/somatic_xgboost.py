@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse
+import logging
 import xgboost as xgb
 import pandas as pd
-import logging
+from copy import copy
 import somaticseq.ntchange_type as ntchange
 from somaticseq._version import  __version__
+
+
+FORMAT = '%(levelname)s %(asctime)-15s %(name)-20s %(message)s'
+logger = logging.getLogger('Somatic_Xgboost')
+logger.setLevel(logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 
 
 DEFAULT_PARAM = {'max_depth': 8, 'nthread': 1, 'objective': 'binary:logistic', 'seed': 0, 'tree_method': 'hist', 'grow_policy': 'lossguide'}
@@ -13,6 +20,26 @@ NON_FEATURE   = ['CHROM', 'POS', 'ID', 'REF', 'ALT', 'Strelka_QSS', 'Strelka_TQS
 
 DEFAULT_XGB_BOOST_ROUNDS  = 500
 DEFAULT_NUM_TREES_PREDICT = 100
+
+
+def param_list_to_dict(param_list, existing_param_dict=DEFAULT_PARAM):
+    '''
+    param_list is what will be passed from the CLI, e.g., ['scale_pos_weight:0.8', 'seed:42']
+    If the value is integer, float, bool, etc., it will be eval'ed as such. Otherwise, it'll remain as a string.
+    '''
+    
+    updated_param_dict = copy(existing_param_dict)
+    for param_string in param_list:
+        param_i, value_i = param_string.split(':')
+        try:
+            value_i = eval(value_i)
+        except NameError:
+            pass
+        
+        updated_param_dict[ param_i ] = value_i
+    
+    return updated_param_dict
+
 
 
 
@@ -41,11 +68,11 @@ def save_feature_importance_to_file(xgb_model, filename):
 
 def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds=DEFAULT_XGB_BOOST_ROUNDS, model=None):
 
-    logger = logging.getLogger( 'XGBOOST_' + builder.__name__)
+    logger = logging.getLogger( 'xgboost_' + builder.__name__)
     logger.info('TRAINING {} for XGBOOST'.format( ','.join(input_tsvs)) )
     logger.info('Columns removed before training: {}'.format( ', '.join(non_feature)) )
     logger.info('Number of boosting rounds = {}'.format(num_rounds) )
-    logger.info( 'PARAMETER: ' + ', '.join( [ '{}: {}'.format(i, param[i]) for i in param ] ) )
+    logger.info( 'Hyperparameters: ' + ', '.join( [ '{}={}'.format(i, param[i]) for i in param ] ) )
 
 
     if not model:
@@ -74,7 +101,7 @@ def builder(input_tsvs, param=DEFAULT_PARAM, non_feature=NON_FEATURE, num_rounds
 
 def predictor(model, input_tsv, output_tsv, non_feature=NON_FEATURE, iterations=DEFAULT_NUM_TREES_PREDICT):
 
-    logger = logging.getLogger( 'XGBOOST_' + predictor.__name__)
+    logger = logging.getLogger( 'xgboost_' + predictor.__name__)
     logger.info('Columns removed for prediction: {}'.format( ','.join(non_feature)) )
     logger.info('Number of trees to use = {}'.format(iterations) )
 
@@ -111,15 +138,6 @@ def predictor(model, input_tsv, output_tsv, non_feature=NON_FEATURE, iterations=
 # Execute:
 if __name__ == '__main__':
     
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    ch.setFormatter(formatter)
-    logger = logging.getLogger('SomaticSeq_XGBOOST')
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(ch)
-
-
     parser = argparse.ArgumentParser(description="Run XGBoost", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     sample_parsers = parser.add_subparsers(title="mode")
@@ -153,7 +171,7 @@ if __name__ == '__main__':
 
     if args.which == 'train':
         
-        PARAM = DEFAULT_PARAM
+        PARAM = copy(DEFAULT_PARAM)
         
         if args.num_threads:
             PARAM['nthread'] = args.num_threads
@@ -170,19 +188,12 @@ if __name__ == '__main__':
         # If they're integers, floats, bools, etc., they will be eval'ed to them.
         # If they're strings, they're remain strings.
         if args.extra_params:
-            for param_string in args.extra_params:
-                param_i, value_i = param_string.split(':')
-                try:
-                    value_i = eval(value_i)
-                except NameError:
-                    pass
-                
-                PARAM[ param_i ] = value_i
-
+            PARAM = param_list_to_dict(args.extra_params, PARAM)
+            
         for feature_i in args.features_excluded:
             NON_FEATURE.append( feature_i )
         
-        builder(args.tsvs_in, param=PARAM, non_feature=NON_FEATURE, num_rounds=args.num_boost_rounds, model=args.model_out)
+        _ = builder(args.tsvs_in, param=PARAM, non_feature=NON_FEATURE, num_rounds=args.num_boost_rounds, model=args.model_out)
 
 
 
@@ -191,4 +202,4 @@ if __name__ == '__main__':
         for feature_i in args.features_excluded:
             NON_FEATURE.append( feature_i )
 
-        predictor(args.model, args.tsv_in, args.predicted_tsv, non_feature=NON_FEATURE, iterations=args.num_trees)
+        _ = predictor(args.model, args.tsv_in, args.predicted_tsv, non_feature=NON_FEATURE, iterations=args.num_trees)

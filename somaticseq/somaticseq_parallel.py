@@ -33,7 +33,7 @@ def runPaired_by_region(inclusion, outdir=None, ref=None, tbam=None, nbam=None, 
                         tnscope=None, platypus=None, arb_snvs=[], arb_indels=[],
                         min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, ensembleOutPrefix='Ensemble.', 
                         consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', 
-                        keep_intermediates=False, train_seed=0, tree_depth=12, iterations=200, features_excluded=[]):
+                        keep_intermediates=False, train_seed=0, tree_depth=12, iterations=200, features_excluded=[], hyperparameters=None):
 
     #logger = logging.getLogger(runPaired_by_region.__name__)
 
@@ -60,7 +60,7 @@ def runSingle_by_region(inclusion, outdir, ref, bam, sample_name='TUMOR', truth_
                         mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, arb_snvs=[], arb_indels=[],
                         min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, 
                         ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', 
-                        keep_intermediates=False, train_seed=0, tree_depth=12, iterations=200, features_excluded=[]):
+                        keep_intermediates=False, train_seed=0, tree_depth=12, iterations=200, features_excluded=[], hyperparameters=None):
 
     #logger = logging.getLogger(runSingle_by_region.__name__)
     
@@ -146,6 +146,7 @@ if __name__ == '__main__':
                    tree_depth         = args.tree_depth,
                    iterations         = args.iterations,
                    features_excluded  = args.features_excluded,
+                   hyperparameters    = args.extra_hyperparameters,
                    keep_intermediates = args.keep_intermediates,
                    )
 
@@ -188,6 +189,7 @@ if __name__ == '__main__':
                    tree_depth         = args.tree_depth,
                    iterations         = args.iterations,
                    features_excluded  = args.features_excluded,
+                   hyperparameters    = args.extra_hyperparameters,
                    keep_intermediates = args.keep_intermediates,
                    )
 
@@ -221,8 +223,8 @@ if __name__ == '__main__':
         
         num_iterations = args.iterations if args.iterations else run_somaticseq.DEFAULT_XGB_BOOST_ROUNDS
             
-        run_somaticseq.modelTrainer(snv_training_file,   args.algorithm, threads=args.threads, seed=args.seed, max_depth=args.tree_depth, iterations=num_iterations, features_to_exclude=args.features_excluded)
-        run_somaticseq.modelTrainer(indel_training_file, args.algorithm, threads=args.threads, seed=args.seed, max_depth=args.tree_depth, iterations=num_iterations, features_to_exclude=args.features_excluded)
+        run_somaticseq.modelTrainer(snv_training_file,   args.algorithm, threads=args.threads, seed=args.seed, max_depth=args.tree_depth, iterations=num_iterations, features_to_exclude=args.features_excluded, hyperparameters=args.extra_hyperparameters)
+        run_somaticseq.modelTrainer(indel_training_file, args.algorithm, threads=args.threads, seed=args.seed, max_depth=args.tree_depth, iterations=num_iterations, features_to_exclude=args.features_excluded, hyperparameters=args.extra_hyperparameters)
         
 
     # Clean up after yourself

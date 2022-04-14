@@ -22,7 +22,7 @@ DEFAULT_NUM_TREES_PREDICT = 100
 
 
 
-def modelTrainer(input_file, algo, threads=1, seed=0, max_depth=12, iterations=200, features_to_exclude=None):
+def modelTrainer(input_file, algo, threads=1, seed=0, max_depth=12, iterations=200, features_to_exclude=None, hyperparameters=None):
     
     logger = logging.getLogger(modelTrainer.__name__)
     
@@ -46,11 +46,14 @@ def modelTrainer(input_file, algo, threads=1, seed=0, max_depth=12, iterations=2
         xgb_param['max_depth'] = max_depth
         xgb_param['seed']      = seed
         
+        if hyperparameters:
+            xgb_param = somatic_xgboost.param_list_to_dict(hyperparameters, xgb_param)
+        
         non_features = somatic_xgboost.NON_FEATURE
         for feature_i in features_to_exclude:
             non_features.append( feature_i )
         
-        logger.info( 'PARAMETER: ' + ', '.join( [ '{}: {}'.format(i, xgb_param[i]) for i in xgb_param ] ) )
+        logger.info( 'PARAMETER: ' + ', '.join( [ '{}={}'.format(i, xgb_param[i]) for i in xgb_param ] ) )
         
         xgb_model = somatic_xgboost.builder( [input_file,], param=xgb_param, non_feature=non_features, num_rounds=iterations )
         
@@ -95,7 +98,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
               lofreq_snv=None, lofreq_indel=None, scalpel=None, strelka_snv=None, strelka_indel=None, tnscope=None, platypus=None, arb_snvs=None, arb_indels=None,
               min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, 
               ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', keep_intermediates=False, 
-              train_seed=0, tree_depth=12, iterations=None, features_excluded=None):
+              train_seed=0, tree_depth=12, iterations=None, features_excluded=None, hyperparameters=None):
 
     logger = logging.getLogger(runPaired.__name__)
 
@@ -177,7 +180,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         if somaticseq_train and truth_snv:
             
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
-            modelTrainer(ensembleSnv, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded)
+            modelTrainer(ensembleSnv, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded, hyperparameters=hyperparameters)
         
         consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
         tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, 
@@ -211,7 +214,7 @@ def runPaired(outdir, ref, tbam, nbam, tumor_name='TUMOR', normal_name='NORMAL',
         if somaticseq_train and truth_indel:
             
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
-            modelTrainer(ensembleIndel, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded)
+            modelTrainer(ensembleIndel, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded, hyperparameters=hyperparameters)
 
         consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))
         tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=False, paired_mode=True, normal_sample_name=normal_name, tumor_sample_name=tumor_name, print_reject=True)
@@ -234,7 +237,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
               mutect=None, mutect2=None, varscan=None, vardict=None, lofreq=None, scalpel=None, strelka=None, arb_snvs=None, arb_indels=None,
               min_mq=1, min_bq=5, min_caller=0.5, somaticseq_train=False, 
               ensembleOutPrefix='Ensemble.', consensusOutPrefix='Consensus.', classifiedOutPrefix='SSeq.Classified.', algo='ada', 
-              keep_intermediates=False, train_seed=0, tree_depth=12, iterations=None, features_excluded=None):
+              keep_intermediates=False, train_seed=0, tree_depth=12, iterations=None, features_excluded=None, hyperparameters=None):
 
     logger = logging.getLogger(runSingle.__name__)
     
@@ -307,7 +310,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         if somaticseq_train and truth_snv:
             
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
-            modelTrainer(ensembleSnv, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded)
+            modelTrainer(ensembleSnv, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded, hyperparameters=hyperparameters)
 
         consensusSnvVcf = os.sep.join(( outdir, consensusOutPrefix + 'sSNV.vcf' ))
         tsv2vcf.tsv2vcf(ensembleSnv, consensusSnvVcf, snvCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, single_mode=True, paired_mode=False, tumor_sample_name=sample_name, print_reject=True)
@@ -340,7 +343,7 @@ def runSingle(outdir, ref, bam, sample_name='TUMOR', truth_snv=None, truth_indel
         if somaticseq_train and truth_indel:
             
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
-            modelTrainer(ensembleIndel, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded)
+            modelTrainer(ensembleIndel, algo, threads=1, seed=train_seed, max_depth=tree_depth, iterations=iterations, features_to_exclude=features_excluded, hyperparameters=hyperparameters)
 
         consensusIndelVcf = os.sep.join(( outdir, consensusOutPrefix + 'sINDEL.vcf' ))
         tsv2vcf.tsv2vcf(ensembleIndel, consensusIndelVcf, indelCallers, hom_threshold=hom_threshold, het_threshold=het_threshold, 
@@ -394,6 +397,7 @@ def run():
     parser.add_argument('-tdepth', '--tree-depth',  type=int, help='max tree depth for xgboost training', default=12)
     parser.add_argument('-iters',  '--iterations',  type=int, help='num boosting rounds for xgboost: default is 500 for training and 100 for predicting, i.e., by default, 500 trees are built for classifier, but only the first 100 trees are used.')
     parser.add_argument('--features-excluded',      type=str, nargs='*', help='features to exclude for xgboost training. Must be same for train/predict.', default=[] )
+    parser.add_argument('--extra-hyperparameters',  type=str, nargs='*', help='extra xgboost training hyperparameters in format of PARAM_1:VALUE_1 PARAM_2:VALUE_2. Will overwrite defaults and other options.', default=None)
 
     parser.add_argument('--keep-intermediates', action='store_true', help='Keep intermediate files', default=False)
 
@@ -467,89 +471,91 @@ if __name__ == '__main__':
 
     if args.which == 'paired':
 
-        runPaired( outdir             = args.output_directory, \
-                   ref                = args.genome_reference, \
-                   tbam               = args.tumor_bam_file, \
-                   nbam               = args.normal_bam_file, \
-                   tumor_name         = args.tumor_sample, \
-                   normal_name        = args.normal_sample, \
-                   truth_snv          = args.truth_snv, \
-                   truth_indel        = args.truth_indel, \
-                   classifier_snv     = args.classifier_snv, \
-                   classifier_indel   = args.classifier_indel, \
-                   pass_threshold     = args.pass_threshold, \
-                   lowqual_threshold  = args.lowqual_threshold, \
-                   hom_threshold      = args.homozygous_threshold, \
-                   het_threshold      = args.heterozygous_threshold, \
-                   min_mq             = args.minimum_mapping_quality, \
-                   min_bq             = args.minimum_base_quality, \
-                   min_caller         = args.minimum_num_callers, \
-                   dbsnp              = args.dbsnp_vcf, \
-                   cosmic             = args.cosmic_vcf, \
-                   inclusion          = args.inclusion_region, \
-                   exclusion          = args.exclusion_region, \
-                   mutect             = args.mutect_vcf, \
-                   indelocator        = args.indelocator_vcf, \
-                   mutect2            = args.mutect2_vcf, \
-                   varscan_snv        = args.varscan_snv, \
-                   varscan_indel      = args.varscan_indel, \
-                   jsm                = args.jsm_vcf, \
-                   sniper             = args.somaticsniper_vcf, \
-                   vardict            = args.vardict_vcf, \
-                   muse               = args.muse_vcf, \
-                   lofreq_snv         = args.lofreq_snv, \
-                   lofreq_indel       = args.lofreq_indel, \
-                   scalpel            = args.scalpel_vcf, \
-                   strelka_snv        = args.strelka_snv, \
-                   strelka_indel      = args.strelka_indel, \
-                   tnscope            = args.tnscope_vcf, \
-                   platypus           = args.platypus_vcf, \
-                   arb_snvs           = args.arbitrary_snvs, \
-                   arb_indels         = args.arbitrary_indels, \
-                   algo               = args.algorithm, \
-                   somaticseq_train   = args.somaticseq_train, \
-                   train_seed         = args.seed, \
-                   tree_depth         = args.tree_depth, \
-                   iterations         = args.iterations, \
-                   features_excluded  = args.features_excluded, \
-                   keep_intermediates = args.keep_intermediates, \
+        runPaired( outdir             = args.output_directory,
+                   ref                = args.genome_reference,
+                   tbam               = args.tumor_bam_file,
+                   nbam               = args.normal_bam_file,
+                   tumor_name         = args.tumor_sample,
+                   normal_name        = args.normal_sample,
+                   truth_snv          = args.truth_snv,
+                   truth_indel        = args.truth_indel,
+                   classifier_snv     = args.classifier_snv,
+                   classifier_indel   = args.classifier_indel,
+                   pass_threshold     = args.pass_threshold,
+                   lowqual_threshold  = args.lowqual_threshold,
+                   hom_threshold      = args.homozygous_threshold,
+                   het_threshold      = args.heterozygous_threshold,
+                   min_mq             = args.minimum_mapping_quality,
+                   min_bq             = args.minimum_base_quality,
+                   min_caller         = args.minimum_num_callers,
+                   dbsnp              = args.dbsnp_vcf,
+                   cosmic             = args.cosmic_vcf,
+                   inclusion          = args.inclusion_region,
+                   exclusion          = args.exclusion_region,
+                   mutect             = args.mutect_vcf,
+                   indelocator        = args.indelocator_vcf,
+                   mutect2            = args.mutect2_vcf,
+                   varscan_snv        = args.varscan_snv,
+                   varscan_indel      = args.varscan_indel,
+                   jsm                = args.jsm_vcf,
+                   sniper             = args.somaticsniper_vcf,
+                   vardict            = args.vardict_vcf,
+                   muse               = args.muse_vcf,
+                   lofreq_snv         = args.lofreq_snv,
+                   lofreq_indel       = args.lofreq_indel,
+                   scalpel            = args.scalpel_vcf,
+                   strelka_snv        = args.strelka_snv,
+                   strelka_indel      = args.strelka_indel,
+                   tnscope            = args.tnscope_vcf,
+                   platypus           = args.platypus_vcf,
+                   arb_snvs           = args.arbitrary_snvs,
+                   arb_indels         = args.arbitrary_indels,
+                   algo               = args.algorithm,
+                   somaticseq_train   = args.somaticseq_train,
+                   train_seed         = args.seed,
+                   tree_depth         = args.tree_depth,
+                   iterations         = args.iterations,
+                   features_excluded  = args.features_excluded,
+                   hyperparameters    = args.extra_hyperparameters,
+                   keep_intermediates = args.keep_intermediates,
                    )
 
     elif args.which == 'single':
 
-        runSingle( outdir             = args.output_directory, \
-                   ref                = args.genome_reference, \
-                   bam                = args.bam_file, \
-                   sample_name        = args.sample_name, \
-                   truth_snv          = args.truth_snv, \
-                   truth_indel        = args.truth_indel, \
-                   classifier_snv     = args.classifier_snv, \
-                   classifier_indel   = args.classifier_indel, \
-                   pass_threshold     = args.pass_threshold, \
-                   lowqual_threshold  = args.lowqual_threshold, \
-                   hom_threshold      = args.homozygous_threshold, \
-                   het_threshold      = args.heterozygous_threshold, \
-                   min_mq             = args.minimum_mapping_quality, \
-                   min_bq             = args.minimum_base_quality, \
-                   min_caller         = args.minimum_num_callers, \
-                   dbsnp              = args.dbsnp_vcf, \
-                   cosmic             = args.cosmic_vcf, \
-                   inclusion          = args.inclusion_region, \
-                   exclusion          = args.exclusion_region, \
-                   mutect             = args.mutect_vcf, \
-                   mutect2            = args.mutect2_vcf, \
-                   varscan            = args.varscan_vcf, \
-                   vardict            = args.vardict_vcf, \
-                   lofreq             = args.lofreq_vcf, \
-                   scalpel            = args.scalpel_vcf, \
-                   strelka            = args.strelka_vcf, \
-                   arb_snvs           = args.arbitrary_snvs, \
-                   arb_indels         = args.arbitrary_indels, \
-                   algo               = args.algorithm, \
-                   somaticseq_train   = args.somaticseq_train, \
-                   train_seed         = args.seed, \
-                   tree_depth         = args.tree_depth, \
-                   iterations         = args.iterations, \
-                   features_excluded  = args.features_excluded, \
-                   keep_intermediates = args.keep_intermediates, \
+        runSingle( outdir             = args.output_directory,
+                   ref                = args.genome_reference,
+                   bam                = args.bam_file,
+                   sample_name        = args.sample_name,
+                   truth_snv          = args.truth_snv,
+                   truth_indel        = args.truth_indel,
+                   classifier_snv     = args.classifier_snv,
+                   classifier_indel   = args.classifier_indel,
+                   pass_threshold     = args.pass_threshold,
+                   lowqual_threshold  = args.lowqual_threshold,
+                   hom_threshold      = args.homozygous_threshold,
+                   het_threshold      = args.heterozygous_threshold,
+                   min_mq             = args.minimum_mapping_quality,
+                   min_bq             = args.minimum_base_quality,
+                   min_caller         = args.minimum_num_callers,
+                   dbsnp              = args.dbsnp_vcf,
+                   cosmic             = args.cosmic_vcf,
+                   inclusion          = args.inclusion_region,
+                   exclusion          = args.exclusion_region,
+                   mutect             = args.mutect_vcf,
+                   mutect2            = args.mutect2_vcf,
+                   varscan            = args.varscan_vcf,
+                   vardict            = args.vardict_vcf,
+                   lofreq             = args.lofreq_vcf,
+                   scalpel            = args.scalpel_vcf,
+                   strelka            = args.strelka_vcf,
+                   arb_snvs           = args.arbitrary_snvs,
+                   arb_indels         = args.arbitrary_indels,
+                   algo               = args.algorithm,
+                   somaticseq_train   = args.somaticseq_train,
+                   train_seed         = args.seed,
+                   tree_depth         = args.tree_depth,
+                   iterations         = args.iterations,
+                   features_excluded  = args.features_excluded,
+                   hyperparameters    = args.extra_hyperparameters,
+                   keep_intermediates = args.keep_intermediates,
                    )
