@@ -87,6 +87,7 @@ There are some toy data sets and test scripts in [**example**](example) that sho
   * `Consensus.sSNV.vcf`, `Consensus.sINDEL.vcf`, `Ensemble.sSNV.tsv`, and `Ensemble.sINDEL.tsv`.
 
 * If you're searching for pipelines to run those individual somatic mutation callers, feel free to take advantage of our [**Dockerized Somatic Mutation Workflow**](somaticseq/utilities/dockered_pipelines) as a start.
+  * Important note: multi-argument options (e.g., `--extra-hyperparameters` or `--features-excluded`) cannot be placed immediately before `paired` or `single`, because those options would try to "grab" `paired` or `single` as an additional argument.
 
 ```
 # Merge caller results and extract SomaticSeq features
@@ -129,7 +130,7 @@ paired \
 
 Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two classifiers (SNV and indel) will be created..
 * `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires ground truth VCF files.
-  * `--extra-hyperparameters`: add hyperparameters for xgboost, e.g., `--extra-hyperparameters scale_pos_weight:0.1 grow_policy:lossguide max_leaves:12`. Beware that this option cannot be placed immediately before `paired` or `single`, because this option would try to "grab" `paired` or `single` as an additional argument. 
+  * `--extra-hyperparameters`: add hyperparameters for xgboost, e.g., `--extra-hyperparameters scale_pos_weight:0.1 grow_policy:lossguide max_leaves:12`. 
 * `--truth-snv`:        if you have a ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL
 
