@@ -1,10 +1,10 @@
 # SomaticSeq
 
 SomaticSeq is an ensemble somatic SNV/indel caller that has the ability to use machine learning to filter out false positives from other callers. 
-The detailed documentation is included in the repo, located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). 
+The detailed documentation is located in [docs/Manual.pdf](docs/Manual.pdf "User Manual"). 
 * It was published in [Fang, L.T., Afshar, P.T., Chhibber, A. _et al_. An ensemble approach to accurately detect somatic mutations using SomaticSeq. _Genome Biol_ **16**, 197 (2015)](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, et al. Genome Biol (2015)").
 * Feel free to report issues and/or ask questions at the [Issues](../../issues "Issues") page.
-* The [v2 branch](../../tree/v2) is still supported, but it's severely limited comparing to the current versions. 
+* The [v2 branch](../../tree/v2) is still supported, but it's severely limited comparing to the current versions.
 
 ## Training data for benchmarking and/or model building
 
@@ -56,8 +56,8 @@ This [dockerfile](Dockerfiles/somaticseq.base-1.3.dockerfile) reveals the depend
 
 ## To install from github source with conda
 ```
-conda create --name my_environment -c bioconda python bedtools
-conda activate my_environment
+conda create --name my_env -c bioconda python bedtools
+conda activate my_env
 git clone git@github.com:bioinform/somaticseq.git
 cd somaticseq
 ./setup.py install
@@ -95,7 +95,6 @@ somaticseq_parallel.py \
   --genome-reference  GRCh38.fa \
   --inclusion-region  genome.bed \
   --exclusion-region  blacklist.bed \
-  --algorithm         xgboost \
   --threads           24 \
 paired \
   --tumor-bam-file    tumor.bam \
@@ -130,6 +129,7 @@ paired \
 
 Additional parameters to be specified **before** `paired` option to invoke training mode. In addition to the four files specified above, two classifiers (SNV and indel) will be created..
 * `--somaticseq-train`: FLAG to invoke training mode with no argument, which also requires ground truth VCF files.
+  * `--extra-hyperparameters`: add hyperparameters for xgboost, e.g., `--extra-hyperparameters scale_pos_weight:0.1 grow_policy:lossguide max_leaves:12`. Beware that this option cannot be placed immediately before `paired` or `single`, because this option would try to "grab" `paired` or `single` as an additional argument. 
 * `--truth-snv`:        if you have a ground truth VCF file for SNV
 * `--truth-indel`:      if you have a ground truth VCF file for INDEL
 
@@ -156,7 +156,7 @@ somatic_xgboost.py train \
   -tsvs SAMPLE_1/Ensemble.sSNV.tsv SAMPLE_2/Ensemble.sSNV.tsv ... SAMPLE_N/Ensemble.sSNV.tsv \
   -out multiSample.SNV.classifier \
   -threads 8 -depth 12 -seed 42 -method hist -iter 250 \
-  --extra-params grow_policy:lossguide max_leaves:24
+  --extra-params scale_pos_weight:0.1 grow_policy:lossguide max_leaves:12
 ```
 
 ## Run SomaticSeq modules seperately

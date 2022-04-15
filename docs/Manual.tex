@@ -1528,9 +1528,9 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
         \begin{itemize}
             \item Change xgboost's default \textit{max\_depth} to 8, because after going through some parameters 8 is better than 12 most of the times, though xgboost parameters are all tunable. See options by running in command line: (\textit{somatic\_xgboost.py train -h}).
             
-            \item Fixed the \textit{--somaticseq-algorithm} option in \textit{makeSomaticScripts.py}. The default is \textit{xgboost} but you can use \textit{ada}. 
+            \item Fixed the \textit{\texttt{--}somaticseq-algorithm} option in \textit{makeSomaticScripts.py}. The default is \textit{xgboost} but you can use \textit{ada}. 
             
-            \item Used \textit{shell=True} option in many \textit{subprocess.call} instances, to allow more complicated arguments to be passed into, e.g., \textit{--action 'qsub -l walltime=100:00:00'}.
+            \item Used \textit{shell=True} option in many \textit{subprocess.call} instances, to allow more complicated arguments to be passed into, e.g., \textit{\texttt{--}action 'qsub -l walltime=100:00:00'}.
             
             \item Moved utilities, genomicFileHandler, and vcfModifier directories into somaticseq/somaticseq to prevent potential package conflicts.
             
@@ -1542,7 +1542,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	\item Version 3.7.0
 	
         \begin{itemize}
-            \item Allow input of any arbitrary VCF files in addition to the callers we have already incorporated (listed in Introduction), e.g., \textit{--arbitrary-snvs callerX\_snv.vcf callerY\_snv.vcf --arbitrary-indels callerA\_indel.vcf callerB\_indel.vcf}. Must seperate the SNVs and indels into separate VCF files before using them as input to SomaticSeq. If you have a VCF file that has combined SNV and indels, you may use this script included in our repo: \textit{somaticseq/somaticseq/vcfModifier/splitVcf.py -infile combined\_variants.vcf -snv snvs.vcf -indel indels.vcf}. Input can be both \textit{.vcf} or \textit{.vcf.gz}. Output will be .vcf. For the ``arbitrary input VCF files,'' calls labeled as REJECT in the FILTER field will not be counted and will be assigned a value of 0 in the \textit{if\_Caller\_X} field. Calls labeled as LowQual will be assigned a value of 0.1. Calls without any filter label will be counted as a bona fide call for that particular VCF file and assigned a value of 1, i.e., as though it is a PASS call. So modify your VCF files accordigly if needed.
+            \item Allow input of any arbitrary VCF files in addition to the callers we have already incorporated (listed in Introduction), e.g., \textit{\texttt{--}arbitrary-snvs callerX\_snv.vcf callerY\_snv.vcf \texttt{--}arbitrary-indels callerA\_indel.vcf callerB\_indel.vcf}. Must seperate the SNVs and indels into separate VCF files before using them as input to SomaticSeq. If you have a VCF file that has combined SNV and indels, you may use this script included in our repo: \textit{somaticseq/somaticseq/vcfModifier/splitVcf.py -infile combined\_variants.vcf -snv snvs.vcf -indel indels.vcf}. Input can be both \textit{.vcf} or \textit{.vcf.gz}. Output will be .vcf. For the ``arbitrary input VCF files,'' calls labeled as REJECT in the FILTER field will not be counted and will be assigned a value of 0 in the \textit{if\_Caller\_X} field. Calls labeled as LowQual will be assigned a value of 0.1. Calls without any filter label will be counted as a bona fide call for that particular VCF file and assigned a value of 1, i.e., as though it is a PASS call. So modify your VCF files accordigly if needed.
             
             \item Changed \textit{intersectBed} to \textit{bedtools intersect} in some of the shell commands.
             
@@ -1563,6 +1563,16 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
             
             \item Most robustly check sorting order when VCF files are being read. Raise Exception when they are not sorted according to the reference (implemented in the \textit{catchup\_multilines} function in \textit{somaticseq/genomicFileHandler/genomic\_file\_handlers.py}).
         \end{itemize}
+        
+        
+	\item Version 3.7.3
+	
+        \begin{itemize}
+            \item Allow xgboost extra hyperparameters be passed into \textit{somaticseq\_parallel.py} like \textit{somaticseq\_parallel.py \texttt{--}somaticseq-train \texttt{--}extra-hyperparameters scale\_pos\_weight:0.1 seed:100}. They could always be passed into \textit{somatic\_xgboost.py}. Beware, however, multi-argument options like \textit{\texttt{--}extra-hyperparameters} and \textit{\texttt{--}features-excluded} cannot be placed immediately before \textit{paired}, because otherwise it'll try to include \textit{paired} as an argument instead of invoking \textit{paired} mode.
+            
+        \end{itemize}
+
+        
 
 \end{enumerate}
 
