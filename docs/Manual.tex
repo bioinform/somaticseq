@@ -10,8 +10,8 @@
 \usepackage{color}
 \usepackage{hyperref}
 \usepackage[document]{ragged2e}
-%\usepackage{natbib}
-\usepackage{apacite}
+\usepackage{natbib}
+%\usepackage{apacite}
 
 \usepackage{geometry}
 \geometry{letterpaper, margin=1.0in}
@@ -1568,7 +1568,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	\item Version 3.7.3
 	
         \begin{itemize}
-            \item Allow xgboost extra hyperparameters be passed into \textit{somaticseq\_parallel.py} like \textit{somaticseq\_parallel.py \texttt{--}somaticseq-train \texttt{--}extra-hyperparameters scale\_pos\_weight:0.1 seed:100}. They could always be passed into \textit{somatic\_xgboost.py}. Beware, however, multi-argument options like \textit{\texttt{--}extra-hyperparameters} and \textit{\texttt{--}features-excluded} cannot be placed immediately before \textit{paired}, because otherwise it'll try to include \textit{paired} as an argument instead of invoking \textit{paired} mode.
+            \item Allow xgboost hyperparameters be passed into \textit{somaticseq\_parallel.py}, e.g., \textit{somaticseq\_parallel.py \texttt{--}somaticseq-train \texttt{--}extra-hyperparameters scale\_pos\_weight:0.1 seed:100}. Previously, they could only be passed into \textit{somatic\_xgboost.py}. Beware, however, multi-argument options like \textit{\texttt{--}extra-hyperparameters} and \textit{\texttt{--}features-excluded} cannot be placed immediately before \textit{paired} or \textit{single}, because otherwise it'll try to include \textit{paired}/\textit{single} as an argument instead of invoking \textit{paired}/\textit{single} mode.
             
         \end{itemize}
 
@@ -1586,8 +1586,8 @@ For suggestions, bug reports, feature requests, or technical support, please go 
 
 
 %% REFERENCES
-%\bibliographystyle{unsrt}
-\bibliographystyle{apacite}
+\bibliographystyle{unsrt}
+%\bibliographystyle{apacite}
 \bibliography{Refs}
 
 
