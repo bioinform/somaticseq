@@ -6,7 +6,7 @@ from somaticseq._version import  __version__
 print(__version__)
 
 setup(
-    name='SomaticSeq',
+    name='somaticseq',
     version=__version__,
     description='SomaticSeq: An ensemble approach to accurately detect somatic mutations using SomaticSeq',
     author='Li Tai Fang',

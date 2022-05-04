@@ -8,6 +8,6 @@ Manual.blg
 Manual.log
 Manual.out
 Manual.synctex.gz
-SomaticSeq.egg-info
+*.egg-info
 dist
 build

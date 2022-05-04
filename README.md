@@ -44,9 +44,10 @@ In 2021, the [FDA-led MAQC-IV/SEQC2 Consortium](https://www.fda.gov/science-rese
 <hr>
 
 
+# Installation
 
-## Installation Requirements
-This [dockerfile](Dockerfiles/somaticseq.base-1.3.dockerfile) reveals the dependencies
+## Dependencies
+This [dockerfile](Dockerfiles/somaticseq.base-1.4.dockerfile) reveals the dependencies
 * Python 3, plus pysam, numpy, scipy, pandas, and xgboost libraries.
 * [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing is invoked, and/or when any bed files are used as input files.
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
@@ -60,9 +61,13 @@ conda create --name my_env -c bioconda python bedtools
 conda activate my_env
 git clone git@github.com:bioinform/somaticseq.git
 cd somaticseq
-./setup.py install
+pip install .
 ```
 
+## To install using pip
+```
+pip install somaticseq
+```
 
 ## To install the bioconda version
 SomaticSeq can also be found on [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/version.svg)](https://anaconda.org/bioconda/somaticseq). 
