@@ -52,19 +52,10 @@ This [dockerfile](Dockerfiles/somaticseq.base-1.4.dockerfile) reveals the depend
 * [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel processing is invoked, and/or when any bed files are used as input files.
 * Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
 * Optional: R and [ada](https://cran.r-project.org/package=ada) are required for AdaBoost, whereas XGBoost is implemented in python.
-* To install SomaticSeq, clone this repo, `cd somaticseq`, and then run `./setup.py install`.
-
-
-## To install from github source with conda
-```
-conda create --name my_env -c bioconda python bedtools
-conda activate my_env
-git clone git@github.com:bioinform/somaticseq.git
-cd somaticseq
-pip install .
-```
+* To install SomaticSeq, clone this repo, `cd somaticseq`, and then run `pip install .` or `./setup.py install`.
 
 ## To install using pip
+Make sure to install `bedtools` separately. 
 ```
 pip install somaticseq
 ```
@@ -76,6 +67,14 @@ To [![install with bioconda](https://img.shields.io/badge/install%20with-biocond
 conda install -c bioconda somaticseq
 ```
 
+## To install from github source with conda
+```
+conda create --name my_env -c bioconda python bedtools
+conda activate my_env
+git clone git@github.com:bioinform/somaticseq.git
+cd somaticseq
+pip install -e .
+```
 
 ### Test your installation
 There are some toy data sets and test scripts in [**example**](example) that should finish in <1 minute if installed properly.
