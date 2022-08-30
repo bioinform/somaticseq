@@ -38,13 +38,13 @@ The high-confidence somatic mutations and high-confidence regions for the real S
 
 ## How to create classifiers for future use
 
-[Sahraeian S.M.E. _et al_. Genome Biol (2022)](https://doi.org/10.1186/s13059-021-02592-9) has looked at different strategies of picking training data to build classifiers. Generally speaking, if you only need to classifier WGS data with 10-ng fresh DNA input, then you can just use `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/LBP/LBP_*_[NT]_10ng_*.bwa.dedup.bam` only. However, if you want a more robust classifier, then you should include a diverse set of training data. The accuracy suffers quite minimally for any specific data type, but the robustness improves considerably. Still, if you do not expect to use it on FFPE data, then there is little reason to include FFPE data in your training set. 
+[Sahraeian S.M.E. _et al_. Genome Biol (2022)](https://doi.org/10.1186/s13059-021-02592-9) has looked at different strategies of picking training data to build classifiers. Generally speaking, if you only need to call somatic mutations in WGS data with 10-ng fresh DNA input, then you can just use `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/LBP/LBP_*_[NT]_10ng_*.bwa.dedup.bam` files only. However, if you want a more robust classifier, then you should include a diverse set of training data. The accuracy suffers quite minimally for any specific data type, but the robustness improves considerably. Still, if you do not expect to use it on FFPE data, then there is no reason to include FFPE data in your training set. 
 
 1) Download multiple pairs of bam files from above (`https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG`). Some callers require the index files be named .bam.bai. After you download the .bai files, you should make link or copies of the .bai files, so .bam.bai also exist for all bam files.
 
 2) Run SomaticSeq workflow (choosing the mutation callers you want to use, but make sure to use the same set to call your real data) **with truth set**, e.g., 
 
-- Make training data from SEQC2 real samples:
+- Make training data from SEQC2 real samples (the replicate number has no meaning. It's perfectly okay to pair `IL_T_1` and `IL_N_3`, for instance.):
 ```
     makeSomaticScripts.py \
     paired \
@@ -58,7 +58,7 @@ The high-confidence somatic mutations and high-confidence regions for the real S
     --run-workflow --threads $(nproc) --run-mutect2 --run-vardict --run-strelka2 --run-somaticseq
 ```
 
-- Make training data from semi-synthetic tumor-normal pairs:
+- Make training data from semi-synthetic tumor-normal pairs (since `synthetic_tumor_IL1N.dedup.bam` was created from `WGS_IL_N_1.bwa.dedup.bam`, so do **not** use `WGS_IL_N_1.bwa.dedup.bam` as the matched normal here.):
 ```
     makeSomaticScripts.py \
     paired \
@@ -75,10 +75,10 @@ I did not invoke `--train-somaticseq`, because I want to create a single classif
 3) Create SNV and indel classifiers from multiple training data sets
 ```
     somatic_xgboost.py train -tsvs training_wgs_IL_1/Ensemble.sSNV.tsv training_synthetic_IL_1vs2/Ensemble.sSNV.tsv ... \
-                            -threads $(nproc) -out seqc2_derived_snv.classifier 
+                             -threads $(nproc) -out seqc2_derived_snv.classifier 
 
     somatic_xgboost.py train -tsvs training_wgs_IL_1/Ensemble.sINDEL.tsv training_synthetic_IL_1vs2/Ensemble.sINDEL.tsv ... \
-                            -threads $(nproc) -out seqc2_derived_indel.classifier 
+                             -threads $(nproc) -out seqc2_derived_indel.classifier 
 ```
 
 4) Now you can use these classifiers to call your own data, e.g., 
