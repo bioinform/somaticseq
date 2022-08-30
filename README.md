@@ -14,7 +14,7 @@ In 2021, the [FDA-led MAQC-IV/SEQC2 Consortium](https://www.fda.gov/science-rese
 * Use high-confidence call set as the "ground truth" to build accurate and robust machine learning models for somatic mutation detections, e.g., [Sahraeian S.M.E. _et al_. Genome Biol 2022](https://doi.org/10.1186/s13059-021-02592-9)
 
 #### Click for [more details of the SEQC2's somatic mutation project](docs/seqc2.md).
-
+#### [Recommendation](docs/train_for_classifiers.md) of how to use SEQC2 data to create SomaticSeq classifiers.
 
 <hr>
 <table style="width: 100%;">

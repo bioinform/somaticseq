@@ -11,3 +11,4 @@ Manual.synctex.gz
 *.egg-info
 dist
 build
+.vscode/
