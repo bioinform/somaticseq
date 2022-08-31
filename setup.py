@@ -5,10 +5,16 @@ from somaticseq._version import  __version__
 
 print(__version__)
 
+with open('README.md', 'r') as fn:
+    long_description = fn.read()
+
+
 setup(
     name='somaticseq',
     version=__version__,
     description='SomaticSeq: An ensemble approach to accurately detect somatic mutations using SomaticSeq',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author='Li Tai Fang',
     author_email='ltfang@gmail.com',
     url='https://github.com/bioinform/somaticseq',
