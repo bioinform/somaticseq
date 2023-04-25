@@ -8,9 +8,9 @@ import somaticseq.vcfModifier.copy_TextFile as copy_TextFile
 import somaticseq.vcfModifier.getUniqueVcfPositions as getUniqueVcfPositions
 import somaticseq.vcfModifier.splitVcf as splitVcf
 from somaticseq.vcfModifier.vcfIntersector import (
-    remove_vcf_illegal_lines,
     bed_intersector,
-    vcfsorter
+    remove_vcf_illegal_lines,
+    vcfsorter,
 )
 
 

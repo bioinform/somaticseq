@@ -9,9 +9,9 @@ import scipy.stats as stats
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 from somaticseq.genomicFileHandler.read_info_extractor import (
     cigar_soft_clip,
-    position_of_aligned_read,
     dedup_test,
     mean,
+    position_of_aligned_read,
 )
 
 nan = float("nan")

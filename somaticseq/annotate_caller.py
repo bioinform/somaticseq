@@ -8,7 +8,7 @@ from somaticseq.genomicFileHandler.read_info_extractor import (
     mutect2_ECNT,
     mutect2_nlod,
     mutect2_STR,
-    mutect2_tlod
+    mutect2_tlod,
 )
 
 nan = float("nan")
