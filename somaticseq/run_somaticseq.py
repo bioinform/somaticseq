@@ -26,7 +26,14 @@ DEFAULT_NUM_TREES_PREDICT = 100
 
 
 def modelTrainer(
-    input_file, algo, threads=1, seed=0, max_depth=12, iterations=200, features_to_exclude=None, hyperparameters=None
+    input_file,
+    algo,
+    threads=1,
+    seed=0,
+    max_depth=12,
+    iterations=200,
+    features_to_exclude=None,
+    hyperparameters=None,
 ):
 
     logger = logging.getLogger(modelTrainer.__name__)
@@ -58,7 +65,10 @@ def modelTrainer(
         for feature_i in features_to_exclude:
             non_features.append(feature_i)
 
-        logger.info("PARAMETER: " + ", ".join(["{}={}".format(i, xgb_param[i]) for i in xgb_param]))
+        logger.info(
+            "PARAMETER: "
+            + ", ".join(["{}={}".format(i, xgb_param[i]) for i in xgb_param])
+        )
 
         xgb_model = somatic_xgboost.builder(
             [
@@ -72,7 +82,9 @@ def modelTrainer(
         return xgb_model
 
 
-def modelPredictor(input_file, output_file, algo, classifier, iterations=100, features_to_exclude=None):
+def modelPredictor(
+    input_file, output_file, algo, classifier, iterations=100, features_to_exclude=None
+):
 
     logger = logging.getLogger(modelPredictor.__name__)
 
@@ -94,7 +106,9 @@ def modelPredictor(input_file, output_file, algo, classifier, iterations=100, fe
         for feature_i in features_to_exclude:
             non_features.append(feature_i)
 
-        somatic_xgboost.predictor(classifier, input_file, output_file, non_features, iterations)
+        somatic_xgboost.predictor(
+            classifier, input_file, output_file, non_features, iterations
+        )
 
         return output_file
 
@@ -187,7 +201,10 @@ def runPaired(
         snvCallers.append("TNscope")
     if platypus:
         snvCallers.append("Platypus")
-    [snvCallers.append("SnvCaller_{}".format(ith_arb)) for ith_arb, arb_snv_i in enumerate(arb_snvs)]
+    [
+        snvCallers.append("SnvCaller_{}".format(ith_arb))
+        for ith_arb, arb_snv_i in enumerate(arb_snvs)
+    ]
 
     indelCallers = []
     if indelocator or mutect2:
@@ -206,7 +223,10 @@ def runPaired(
         indelCallers.append("TNscope")
     if platypus:
         indelCallers.append("Platypus")
-    [indelCallers.append("IndelCaller_{}".format(ith_arb)) for ith_arb, arb_indel_i in enumerate(arb_indels)]
+    [
+        indelCallers.append("IndelCaller_{}".format(ith_arb))
+        for ith_arb, arb_indel_i in enumerate(arb_indels)
+    ]
 
     # Function to combine individual VCFs into a simple VCF list of variants:
     outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combinePaired(
@@ -245,7 +265,11 @@ def runPaired(
     ensembleIndel = os.sep.join((outdir, ensembleOutPrefix + "sINDEL.tsv"))
 
     ######################  SNV  ######################
-    mutect_infile = intermediateVcfs["MuTect2"]["snv"] if intermediateVcfs["MuTect2"]["snv"] else mutect
+    mutect_infile = (
+        intermediateVcfs["MuTect2"]["snv"]
+        if intermediateVcfs["MuTect2"]["snv"]
+        else mutect
+    )
 
     somatic_vcf2tsv.vcf2tsv(
         is_vcf=outSnv,
@@ -282,7 +306,12 @@ def runPaired(
 
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
         modelPredictor(
-            ensembleSnv, classifiedSnvTsv, algo, classifier_snv, iterations=iterations, features_to_exclude=features_excluded
+            ensembleSnv,
+            classifiedSnvTsv,
+            algo,
+            classifier_snv,
+            iterations=iterations,
+            features_to_exclude=features_excluded,
         )
 
         extra_header = [
@@ -337,7 +366,11 @@ def runPaired(
         )
 
     ###################### INDEL ######################
-    mutect_infile = intermediateVcfs["MuTect2"]["indel"] if intermediateVcfs["MuTect2"]["indel"] else indelocator
+    mutect_infile = (
+        intermediateVcfs["MuTect2"]["indel"]
+        if intermediateVcfs["MuTect2"]["indel"]
+        else indelocator
+    )
 
     somatic_vcf2tsv.vcf2tsv(
         is_vcf=outIndel,
@@ -504,7 +537,10 @@ def runSingle(
         snvCallers.append("LoFreq")
     if strelka:
         snvCallers.append("Strelka")
-    [snvCallers.append("SnvCaller_{}".format(ith_arb)) for ith_arb, arb_snv_i in enumerate(arb_snvs)]
+    [
+        snvCallers.append("SnvCaller_{}".format(ith_arb))
+        for ith_arb, arb_snv_i in enumerate(arb_snvs)
+    ]
 
     indelCallers = []
     if mutect2:
@@ -519,7 +555,10 @@ def runSingle(
         indelCallers.append("Scalpel")
     if strelka:
         indelCallers.append("Strelka")
-    [indelCallers.append("IndelCaller_{}".format(ith_arb)) for ith_arb, arb_indel_i in enumerate(arb_indels)]
+    [
+        indelCallers.append("IndelCaller_{}".format(ith_arb))
+        for ith_arb, arb_indel_i in enumerate(arb_indels)
+    ]
 
     # Function to combine individual VCFs into a simple VCF list of variants:
     outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combineSingle(
@@ -548,7 +587,11 @@ def runSingle(
     ensembleIndel = os.sep.join((outdir, ensembleOutPrefix + "sINDEL.tsv"))
 
     ######################  SNV  ######################
-    mutect_infile = intermediateVcfs["MuTect2"]["snv"] if intermediateVcfs["MuTect2"]["snv"] else mutect
+    mutect_infile = (
+        intermediateVcfs["MuTect2"]["snv"]
+        if intermediateVcfs["MuTect2"]["snv"]
+        else mutect
+    )
 
     single_sample_vcf2tsv.vcf2tsv(
         is_vcf=outSnv,
@@ -579,7 +622,12 @@ def runSingle(
 
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
         modelPredictor(
-            ensembleSnv, classifiedSnvTsv, algo, classifier_snv, iterations=iterations, features_to_exclude=features_excluded
+            ensembleSnv,
+            classifiedSnvTsv,
+            algo,
+            classifier_snv,
+            iterations=iterations,
+            features_to_exclude=features_excluded,
         )
 
         extra_header = [
@@ -738,21 +786,50 @@ def run():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
-    parser.add_argument("-outdir", "--output-directory", type=str, help="output directory", default=".")
-    parser.add_argument("-ref", "--genome-reference", type=str, help=".fasta.fai file to get the contigs", required=True)
+    parser.add_argument(
+        "-outdir", "--output-directory", type=str, help="output directory", default="."
+    )
+    parser.add_argument(
+        "-ref",
+        "--genome-reference",
+        type=str,
+        help=".fasta.fai file to get the contigs",
+        required=True,
+    )
 
     parser.add_argument("--truth-snv", type=str, help="VCF of true hits")
     parser.add_argument("--truth-indel", type=str, help="VCF of true hits")
     parser.add_argument("--classifier-snv", type=str, help="RData for SNV")
     parser.add_argument("--classifier-indel", type=str, help="RData for INDEL")
-    parser.add_argument("--pass-threshold", type=float, help="SCORE for PASS", default=0.5)
-    parser.add_argument("--lowqual-threshold", type=float, help="SCORE for LowQual", default=0.1)
+    parser.add_argument(
+        "--pass-threshold", type=float, help="SCORE for PASS", default=0.5
+    )
+    parser.add_argument(
+        "--lowqual-threshold", type=float, help="SCORE for LowQual", default=0.1
+    )
 
     parser.add_argument(
-        "-algo", "--algorithm", type=str, help="ada or xgboost", default="xgboost", choices=("ada", "xgboost", "ada.R")
+        "-algo",
+        "--algorithm",
+        type=str,
+        help="ada or xgboost",
+        default="xgboost",
+        choices=("ada", "xgboost", "ada.R"),
     )
-    parser.add_argument("-hom", "--homozygous-threshold", type=float, help="VAF for homozygous", default=0.85)
-    parser.add_argument("-het", "--heterozygous-threshold", type=float, help="VAF for heterozygous", default=0.01)
+    parser.add_argument(
+        "-hom",
+        "--homozygous-threshold",
+        type=float,
+        help="VAF for homozygous",
+        default=0.85,
+    )
+    parser.add_argument(
+        "-het",
+        "--heterozygous-threshold",
+        type=float,
+        help="VAF for heterozygous",
+        default=0.01,
+    )
 
     parser.add_argument(
         "-minMQ",
@@ -762,10 +839,18 @@ def run():
         default=1,
     )
     parser.add_argument(
-        "-minBQ", "--minimum-base-quality", type=float, help="Minimum base quality below which is considered poor", default=5
+        "-minBQ",
+        "--minimum-base-quality",
+        type=float,
+        help="Minimum base quality below which is considered poor",
+        default=5,
     )
     parser.add_argument(
-        "-mincaller", "--minimum-num-callers", type=float, help="Minimum number of tools to be considered", default=0.5
+        "-mincaller",
+        "--minimum-num-callers",
+        type=float,
+        help="Minimum number of tools to be considered",
+        default=0.5,
     )
 
     parser.add_argument(
@@ -776,16 +861,34 @@ def run():
     )
     parser.add_argument("-cosmic", "--cosmic-vcf", type=str, help="COSMIC VCF")
 
-    parser.add_argument("-include", "--inclusion-region", type=str, help="inclusion bed")
-    parser.add_argument("-exclude", "--exclusion-region", type=str, help="exclusion bed")
-
-    parser.add_argument("-nt", "--threads", type=int, help="number of threads", default=1)
+    parser.add_argument(
+        "-include", "--inclusion-region", type=str, help="inclusion bed"
+    )
+    parser.add_argument(
+        "-exclude", "--exclusion-region", type=str, help="exclusion bed"
+    )
 
     parser.add_argument(
-        "-train", "--somaticseq-train", action="store_true", help="Invoke training mode with ground truths", default=False
+        "-nt", "--threads", type=int, help="number of threads", default=1
     )
-    parser.add_argument("-seed", "--seed", type=int, help="seed for xgboost training", default=0)
-    parser.add_argument("-tdepth", "--tree-depth", type=int, help="max tree depth for xgboost training", default=12)
+
+    parser.add_argument(
+        "-train",
+        "--somaticseq-train",
+        action="store_true",
+        help="Invoke training mode with ground truths",
+        default=False,
+    )
+    parser.add_argument(
+        "-seed", "--seed", type=int, help="seed for xgboost training", default=0
+    )
+    parser.add_argument(
+        "-tdepth",
+        "--tree-depth",
+        type=int,
+        help="max tree depth for xgboost training",
+        default=12,
+    )
     parser.add_argument(
         "-iters",
         "--iterations",
@@ -807,18 +910,31 @@ def run():
         default=None,
     )
 
-    parser.add_argument("--keep-intermediates", action="store_true", help="Keep intermediate files", default=False)
+    parser.add_argument(
+        "--keep-intermediates",
+        action="store_true",
+        help="Keep intermediate files",
+        default=False,
+    )
 
     # Modes:
     sample_parsers = parser.add_subparsers(title="sample_mode")
 
     # Paired Sample mode
     parser_paired = sample_parsers.add_parser("paired")
-    parser_paired.add_argument("-tbam", "--tumor-bam-file", type=str, help="Tumor BAM File", required=True)
-    parser_paired.add_argument("-nbam", "--normal-bam-file", type=str, help="Normal BAM File", required=True)
+    parser_paired.add_argument(
+        "-tbam", "--tumor-bam-file", type=str, help="Tumor BAM File", required=True
+    )
+    parser_paired.add_argument(
+        "-nbam", "--normal-bam-file", type=str, help="Normal BAM File", required=True
+    )
 
-    parser_paired.add_argument("-tumorSM", "--tumor-sample", type=str, help="Tumor Name", default="TUMOR")
-    parser_paired.add_argument("-normalSM", "--normal-sample", type=str, help="Normal Name", default="NORMAL")
+    parser_paired.add_argument(
+        "-tumorSM", "--tumor-sample", type=str, help="Tumor Name", default="TUMOR"
+    )
+    parser_paired.add_argument(
+        "-normalSM", "--normal-sample", type=str, help="Normal Name", default="NORMAL"
+    )
 
     parser_paired.add_argument(
         "-mutect",
@@ -916,17 +1032,33 @@ def run():
         type=str,
         help="Platypus VCF",
     )
-    parser_paired.add_argument("-arbsnv", "--arbitrary-snvs", type=str, help="Additional SNV VCFs", nargs="*", default=[])
     parser_paired.add_argument(
-        "-arbindel", "--arbitrary-indels", type=str, help="Additional INDEL VCFs", nargs="*", default=[]
+        "-arbsnv",
+        "--arbitrary-snvs",
+        type=str,
+        help="Additional SNV VCFs",
+        nargs="*",
+        default=[],
+    )
+    parser_paired.add_argument(
+        "-arbindel",
+        "--arbitrary-indels",
+        type=str,
+        help="Additional INDEL VCFs",
+        nargs="*",
+        default=[],
     )
 
     parser_paired.set_defaults(which="paired")
 
     # Single Sample mode
     parser_single = sample_parsers.add_parser("single")
-    parser_single.add_argument("-bam", "--bam-file", type=str, help="BAM File", required=True)
-    parser_single.add_argument("-SM", "--sample-name", type=str, help="Sample Name", default="TUMOR")
+    parser_single.add_argument(
+        "-bam", "--bam-file", type=str, help="BAM File", required=True
+    )
+    parser_single.add_argument(
+        "-SM", "--sample-name", type=str, help="Sample Name", default="TUMOR"
+    )
     parser_single.add_argument(
         "-mutect",
         "--mutect-vcf",
@@ -969,9 +1101,21 @@ def run():
         type=str,
         help="Strelka VCF",
     )
-    parser_single.add_argument("-arbsnv", "--arbitrary-snvs", type=str, help="Additional SNV VCFs", nargs="*", default=[])
     parser_single.add_argument(
-        "-arbindel", "--arbitrary-indels", type=str, help="Additional INDEL VCFs", nargs="*", default=[]
+        "-arbsnv",
+        "--arbitrary-snvs",
+        type=str,
+        help="Additional SNV VCFs",
+        nargs="*",
+        default=[],
+    )
+    parser_single.add_argument(
+        "-arbindel",
+        "--arbitrary-indels",
+        type=str,
+        help="Additional INDEL VCFs",
+        nargs="*",
+        default=[],
     )
 
     parser_single.set_defaults(which="single")
@@ -979,7 +1123,10 @@ def run():
     args = parser.parse_args()
     # inputParameters = vars(args)
 
-    logger.info("SomaticSeq Input Arguments: " + ", ".join(["{}={}".format(i, vars(args)[i]) for i in vars(args)]))
+    logger.info(
+        "SomaticSeq Input Arguments: "
+        + ", ".join(["{}={}".format(i, vars(args)[i]) for i in vars(args)])
+    )
 
     return args
 

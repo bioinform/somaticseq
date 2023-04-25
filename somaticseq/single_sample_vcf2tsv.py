@@ -11,7 +11,6 @@ from copy import copy
 
 import pysam
 import scipy.stats as stats
-
 import somaticseq.annotate_caller as annotate_caller
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 import somaticseq.sequencing_features as sequencing_features
@@ -102,10 +101,20 @@ def run():
 
     input_sites = parser.add_mutually_exclusive_group()
     input_sites.add_argument(
-        "-myvcf", "--vcf-format", type=str, help="Input file is VCF formatted.", required=False, default=None
+        "-myvcf",
+        "--vcf-format",
+        type=str,
+        help="Input file is VCF formatted.",
+        required=False,
+        default=None,
     )
     input_sites.add_argument(
-        "-mybed", "--bed-format", type=str, help="Input file is BED formatted.", required=False, default=None
+        "-mybed",
+        "--bed-format",
+        type=str,
+        help="Input file is BED formatted.",
+        required=False,
+        default=None,
     )
     input_sites.add_argument(
         "-mypos",
@@ -116,8 +125,22 @@ def run():
         default=None,
     )
 
-    parser.add_argument("-bam", "--in-bam", type=str, help="Tumor tBAM File", required=True, default=None)
-    parser.add_argument("-truth", "--ground-truth-vcf", type=str, help="VCF of true hits", required=False, default=None)
+    parser.add_argument(
+        "-bam",
+        "--in-bam",
+        type=str,
+        help="Tumor tBAM File",
+        required=True,
+        default=None,
+    )
+    parser.add_argument(
+        "-truth",
+        "--ground-truth-vcf",
+        type=str,
+        help="VCF of true hits",
+        required=False,
+        default=None,
+    )
     parser.add_argument(
         "-dbsnp",
         "--dbsnp-vcf",
@@ -135,16 +158,70 @@ def run():
         default=None,
     )
 
-    parser.add_argument("-mutect", "--mutect-vcf", type=str, help="MuTect VCF", required=False, default=None)
-    parser.add_argument("-varscan", "--varscan-vcf", type=str, help="VarScan2 VCF", required=False, default=None)
-    parser.add_argument("-vardict", "--vardict-vcf", type=str, help="VarDict VCF", required=False, default=None)
-    parser.add_argument("-lofreq", "--lofreq-vcf", type=str, help="LoFreq VCF", required=False, default=None)
-    parser.add_argument("-scalpel", "--scalpel-vcf", type=str, help="Scalpel VCF", required=False, default=None)
-    parser.add_argument("-strelka", "--strelka-vcf", type=str, help="Strelka VCF", required=False, default=None)
-    parser.add_argument("-arbvcfs", "--arbitrary-vcfs", type=str, help="Arbitrary extra VCFs", nargs="*", default=[])
+    parser.add_argument(
+        "-mutect",
+        "--mutect-vcf",
+        type=str,
+        help="MuTect VCF",
+        required=False,
+        default=None,
+    )
+    parser.add_argument(
+        "-varscan",
+        "--varscan-vcf",
+        type=str,
+        help="VarScan2 VCF",
+        required=False,
+        default=None,
+    )
+    parser.add_argument(
+        "-vardict",
+        "--vardict-vcf",
+        type=str,
+        help="VarDict VCF",
+        required=False,
+        default=None,
+    )
+    parser.add_argument(
+        "-lofreq",
+        "--lofreq-vcf",
+        type=str,
+        help="LoFreq VCF",
+        required=False,
+        default=None,
+    )
+    parser.add_argument(
+        "-scalpel",
+        "--scalpel-vcf",
+        type=str,
+        help="Scalpel VCF",
+        required=False,
+        default=None,
+    )
+    parser.add_argument(
+        "-strelka",
+        "--strelka-vcf",
+        type=str,
+        help="Strelka VCF",
+        required=False,
+        default=None,
+    )
+    parser.add_argument(
+        "-arbvcfs",
+        "--arbitrary-vcfs",
+        type=str,
+        help="Arbitrary extra VCFs",
+        nargs="*",
+        default=[],
+    )
 
     parser.add_argument(
-        "-ref", "--genome-reference", type=str, help=".fasta.fai file to get the contigs", required=True, default=None
+        "-ref",
+        "--genome-reference",
+        type=str,
+        help=".fasta.fai file to get the contigs",
+        required=True,
+        default=None,
     )
     parser.add_argument(
         "-dedup",
@@ -180,10 +257,22 @@ def run():
         default=0,
     )
 
-    parser.add_argument("-scale", "--p-scale", type=str, help="phred, fraction, or none", required=False, default=None)
+    parser.add_argument(
+        "-scale",
+        "--p-scale",
+        type=str,
+        help="phred, fraction, or none",
+        required=False,
+        default=None,
+    )
 
     parser.add_argument(
-        "-outfile", "--output-tsv-file", type=str, help="Output TSV Name", required=False, default=os.sys.stdout
+        "-outfile",
+        "--output-tsv-file",
+        type=str,
+        help="Output TSV Name",
+        required=False,
+        default=os.sys.stdout,
     )
 
     args = parser.parse_args()
@@ -300,7 +389,9 @@ def vcf2tsv(
         arbitrary_line = {}
         for ith_arbi, arbitrary_vcf_i in enumerate(arbitrary_vcfs):
             arbitrary_file_handle[ith_arbi] = genome.open_textfile(arbitrary_vcf_i)
-            arbitrary_line[ith_arbi] = genome.skip_vcf_header(arbitrary_file_handle[ith_arbi])
+            arbitrary_line[ith_arbi] = genome.skip_vcf_header(
+                arbitrary_file_handle[ith_arbi]
+            )
 
         # Get through all the headers:
         while my_line.startswith("#") or my_line.startswith("track="):
@@ -316,7 +407,9 @@ def vcf2tsv(
 
         additional_arbi_caller_numbers = sorted(arbitrary_file_handle.keys())
         for arbi_caller_num in additional_arbi_caller_numbers:
-            header_part_1 = header_part_1 + "\t" + "if_Caller_{}".format(arbi_caller_num)
+            header_part_1 = (
+                header_part_1 + "\t" + "if_Caller_{}".format(arbi_caller_num)
+            )
 
         header_last_part = label_header.replace("{", "").replace("}", "")
 
@@ -349,7 +442,9 @@ def vcf2tsv(
                     coordinate_j = coordinate_j.group() if coordinate_j else ""
 
                     if genome.whoisbehind(coordinate_i, coordinate_j, chrom_seq) == 1:
-                        raise Exception("{} does not seem to be properly sorted.".format(mysites))
+                        raise Exception(
+                            "{} does not seem to be properly sorted.".format(mysites)
+                        )
 
                     coordinate_i = coordinate_j
                     ###################################################################################
@@ -365,11 +460,15 @@ def vcf2tsv(
 
             elif is_bed:
                 bed_item = my_line.split("\t")
-                my_coordinates = genomic_coordinates(bed_item[0], int(bed_item[1]) + 1, int(bed_item[2]))
+                my_coordinates = genomic_coordinates(
+                    bed_item[0], int(bed_item[1]) + 1, int(bed_item[2])
+                )
 
             elif is_pos:
                 pos_item = my_line.split("\t")
-                my_coordinates = genomic_coordinates(pos_item[0], int(pos_item[1]), int(pos_item[1]))
+                my_coordinates = genomic_coordinates(
+                    pos_item[0], int(pos_item[1]), int(pos_item[1])
+                )
 
             elif fai_file:
                 fai_item = my_line.split("\t")
@@ -397,10 +496,22 @@ def vcf2tsv(
                         indel_lengths.append(indel_length)
 
                         # Extract these information if they exist in the VCF file, but they could be re-written if dbSNP/COSMIC are supplied.
-                        if_dbsnp = 1 if re.search(r"rs[0-9]+", variant_i.identifier) else 0
-                        if_cosmic = 1 if re.search(r"COS[MN][0-9]+", variant_i.identifier) else 0
-                        if_common = 1 if variant_i.get_info_value("COMMON") == "1" else 0
-                        num_cases = variant_i.get_info_value("CNT") if variant_i.get_info_value("CNT") else nan
+                        if_dbsnp = (
+                            1 if re.search(r"rs[0-9]+", variant_i.identifier) else 0
+                        )
+                        if_cosmic = (
+                            1
+                            if re.search(r"COS[MN][0-9]+", variant_i.identifier)
+                            else 0
+                        )
+                        if_common = (
+                            1 if variant_i.get_info_value("COMMON") == "1" else 0
+                        )
+                        num_cases = (
+                            variant_i.get_info_value("CNT")
+                            if variant_i.get_info_value("CNT")
+                            else nan
+                        )
 
                         if variant_i.identifier == ".":
                             my_identifier_i = set()
@@ -413,7 +524,9 @@ def vcf2tsv(
                 ## If not, 1) get ref_base, first_alt from other VCF files.
                 #          2) Create placeholders for dbSNP and COSMIC that can be overwritten with dbSNP/COSMIC VCF files (if provided)
                 else:
-                    variants_at_my_coordinate = [None]  # Just to have something to iterate
+                    variants_at_my_coordinate = [
+                        None
+                    ]  # Just to have something to iterate
                     ref_base = first_alt = indel_length = None
 
                     # Could be re-written if dbSNP/COSMIC are supplied. If not, they will remain NaN.
@@ -421,39 +534,75 @@ def vcf2tsv(
 
                 #################################### Find the same coordinate in those VCF files ####################################
                 if mutect:
-                    got_mutect, mutect_variants, mutect_line = genome.find_vcf_at_coordinate(
+                    (
+                        got_mutect,
+                        mutect_variants,
+                        mutect_line,
+                    ) = genome.find_vcf_at_coordinate(
                         my_coordinate, mutect_line, mutect, chrom_seq
                     )
                 if varscan:
-                    got_varscan, varscan_variants, varscan_line = genome.find_vcf_at_coordinate(
+                    (
+                        got_varscan,
+                        varscan_variants,
+                        varscan_line,
+                    ) = genome.find_vcf_at_coordinate(
                         my_coordinate, varscan_line, varscan, chrom_seq
                     )
                 if vardict:
-                    got_vardict, vardict_variants, vardict_line = genome.find_vcf_at_coordinate(
+                    (
+                        got_vardict,
+                        vardict_variants,
+                        vardict_line,
+                    ) = genome.find_vcf_at_coordinate(
                         my_coordinate, vardict_line, vardict, chrom_seq
                     )
                 if lofreq:
-                    got_lofreq, lofreq_variants, lofreq_line = genome.find_vcf_at_coordinate(
+                    (
+                        got_lofreq,
+                        lofreq_variants,
+                        lofreq_line,
+                    ) = genome.find_vcf_at_coordinate(
                         my_coordinate, lofreq_line, lofreq, chrom_seq
                     )
                 if scalpel:
-                    got_scalpel, scalpel_variants, scalpel_line = genome.find_vcf_at_coordinate(
+                    (
+                        got_scalpel,
+                        scalpel_variants,
+                        scalpel_line,
+                    ) = genome.find_vcf_at_coordinate(
                         my_coordinate, scalpel_line, scalpel, chrom_seq
                     )
                 if strelka:
-                    got_strelka, strelka_variants, strelka_line = genome.find_vcf_at_coordinate(
+                    (
+                        got_strelka,
+                        strelka_variants,
+                        strelka_line,
+                    ) = genome.find_vcf_at_coordinate(
                         my_coordinate, strelka_line, strelka, chrom_seq
                     )
                 if truth:
-                    got_truth, truth_variants, truth_line = genome.find_vcf_at_coordinate(
+                    (
+                        got_truth,
+                        truth_variants,
+                        truth_line,
+                    ) = genome.find_vcf_at_coordinate(
                         my_coordinate, truth_line, truth, chrom_seq
                     )
                 if dbsnp:
-                    got_dbsnp, dbsnp_variants, dbsnp_line = genome.find_vcf_at_coordinate(
+                    (
+                        got_dbsnp,
+                        dbsnp_variants,
+                        dbsnp_line,
+                    ) = genome.find_vcf_at_coordinate(
                         my_coordinate, dbsnp_line, dbsnp, chrom_seq
                     )
                 if cosmic:
-                    got_cosmic, cosmic_variants, cosmic_line = genome.find_vcf_at_coordinate(
+                    (
+                        got_cosmic,
+                        cosmic_variants,
+                        cosmic_line,
+                    ) = genome.find_vcf_at_coordinate(
                         my_coordinate, cosmic_line, cosmic, chrom_seq
                     )
 
@@ -465,7 +614,10 @@ def vcf2tsv(
                         arbitrary_variants[ith_arbi],
                         arbitrary_line[ith_arbi],
                     ) = genome.find_vcf_at_coordinate(
-                        my_coordinate, arbitrary_line[ith_arbi], arbitrary_file_handle[ith_arbi], chrom_seq
+                        my_coordinate,
+                        arbitrary_line[ith_arbi],
+                        arbitrary_file_handle[ith_arbi],
+                        chrom_seq,
                     )
 
                 # Now, use pysam to look into the tBAM file(s), variant by variant from the input:
@@ -473,7 +625,11 @@ def vcf2tsv(
 
                     if is_vcf:
                         # The particular line in the input VCF file:
-                        variant_id = ((my_call.chromosome, my_call.position), my_call.refbase, my_call.altbase)
+                        variant_id = (
+                            (my_call.chromosome, my_call.position),
+                            my_call.refbase,
+                            my_call.altbase,
+                        )
 
                         ref_base = ref_bases[ith_call]
                         first_alt = alt_bases[ith_call]
@@ -481,53 +637,78 @@ def vcf2tsv(
                         my_identifiers = all_my_identifiers[ith_call]
 
                     else:
-                        variant_id = ((my_coordinate[0], my_coordinate[1]), ref_base, first_alt)
+                        variant_id = (
+                            (my_coordinate[0], my_coordinate[1]),
+                            ref_base,
+                            first_alt,
+                        )
 
                     # Reset num_caller to 0 for each variant in the same coordinate
                     num_callers = 0
 
                     #################### Collect Caller Vcf ####################:
                     if mutect:
-                        mutect_classification, tlod, ecnt = annotate_caller.ssMuTect(variant_id, mutect_variants)
+                        mutect_classification, tlod, ecnt = annotate_caller.ssMuTect(
+                            variant_id, mutect_variants
+                        )
                         num_callers += mutect_classification
                     else:
                         mutect_classification = tlod = ecnt = nan
 
                     if varscan:
-                        varscan_classification, score_varscan2 = annotate_caller.ssVarScan(variant_id, varscan_variants)
+                        (
+                            varscan_classification,
+                            score_varscan2,
+                        ) = annotate_caller.ssVarScan(variant_id, varscan_variants)
                         num_callers += varscan_classification
                     else:
                         varscan_classification = score_varscan2 = nan
 
                     if vardict:
-                        vardict_classification, msi, msilen, shift3, t_pmean, t_pstd, t_qstd = annotate_caller.ssVarDict(
-                            variant_id, vardict_variants
-                        )
+                        (
+                            vardict_classification,
+                            msi,
+                            msilen,
+                            shift3,
+                            t_pmean,
+                            t_pstd,
+                            t_qstd,
+                        ) = annotate_caller.ssVarDict(variant_id, vardict_variants)
                         num_callers += vardict_classification
                     else:
-                        vardict_classification = msi = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
+                        vardict_classification = (
+                            msi
+                        ) = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
 
                     if lofreq:
-                        lofreq_classification = annotate_caller.ssLoFreq(variant_id, lofreq_variants)
+                        lofreq_classification = annotate_caller.ssLoFreq(
+                            variant_id, lofreq_variants
+                        )
                         num_callers += lofreq_classification
                     else:
                         lofreq_classification = nan
 
                     if scalpel:
-                        scalpel_classification = annotate_caller.ssScalpel(variant_id, scalpel_variants)
+                        scalpel_classification = annotate_caller.ssScalpel(
+                            variant_id, scalpel_variants
+                        )
                         num_callers += scalpel_classification
                     else:
                         scalpel_classification = nan
 
                     if strelka:
-                        strelka_classification = annotate_caller.ssStrelka(variant_id, strelka_variants)
+                        strelka_classification = annotate_caller.ssStrelka(
+                            variant_id, strelka_variants
+                        )
                         num_callers += strelka_classification
                     else:
                         strelka_classification = nan
 
                     arbitrary_classifications = {}
                     for ith_arbi_var in arbitrary_file_handle:
-                        arbi_classification_i = annotate_caller.anyInputVcf(variant_id, arbitrary_variants[ith_arbi_var])
+                        arbi_classification_i = annotate_caller.anyInputVcf(
+                            variant_id, arbitrary_variants[ith_arbi_var]
+                        )
                         arbitrary_classifications[ith_arbi_var] = arbi_classification_i
                         num_callers += arbi_classification_i
 
@@ -547,29 +728,48 @@ def vcf2tsv(
 
                         ########## dbSNP ########## Will overwrite dbSNP info from input VCF file
                         if dbsnp:
-                            if_dbsnp, if_common, rsID = annotate_caller.dbSNP(variant_id, dbsnp_variants)
+                            if_dbsnp, if_common, rsID = annotate_caller.dbSNP(
+                                variant_id, dbsnp_variants
+                            )
                             for ID_i in rsID:
                                 my_identifiers.add(ID_i)
 
                         ########## COSMIC ########## Will overwrite COSMIC info from input VCF file
                         if cosmic:
-                            if_cosmic, num_cases, cosmicID = annotate_caller.COSMIC(variant_id, cosmic_variants)
+                            if_cosmic, num_cases, cosmicID = annotate_caller.COSMIC(
+                                variant_id, cosmic_variants
+                            )
                             for ID_i in cosmicID:
                                 my_identifiers.add(ID_i)
 
                         ########## ######### INFO EXTRACTION FROM BAM FILES ########## #########
                         # Tumor tBAM file:
-                        tBamFeatures = sequencing_features.from_bam(bam, my_coordinate, ref_base, first_alt, min_mq, min_bq)
+                        tBamFeatures = sequencing_features.from_bam(
+                            bam, my_coordinate, ref_base, first_alt, min_mq, min_bq
+                        )
 
                         # Homopolymer eval:
-                        homopolymer_length, site_homopolymer_length = sequencing_features.from_genome_reference(
+                        (
+                            homopolymer_length,
+                            site_homopolymer_length,
+                        ) = sequencing_features.from_genome_reference(
                             ref_fa, my_coordinate, ref_base, first_alt
                         )
 
                         # Linguistic sequence complexity in a +/-80bp window, but substring calculation stops at 20-bp substring.
-                        seq_span_80bp = ref_fa.fetch(my_coordinate[0], max(0, my_coordinate[1] - 41), my_coordinate[1] + 40)
-                        seq_left_80bp = ref_fa.fetch(my_coordinate[0], max(0, my_coordinate[1] - 81), my_coordinate[1])
-                        seq_right_80bp = ref_fa.fetch(my_coordinate[0], my_coordinate[1], my_coordinate[1] + 81)
+                        seq_span_80bp = ref_fa.fetch(
+                            my_coordinate[0],
+                            max(0, my_coordinate[1] - 41),
+                            my_coordinate[1] + 40,
+                        )
+                        seq_left_80bp = ref_fa.fetch(
+                            my_coordinate[0],
+                            max(0, my_coordinate[1] - 81),
+                            my_coordinate[1],
+                        )
+                        seq_right_80bp = ref_fa.fetch(
+                            my_coordinate[0], my_coordinate[1], my_coordinate[1] + 81
+                        )
 
                         if len(seq_span_80bp) > 20:
                             LC_spanning = sequencing_features.subLC(seq_span_80bp, 20)
@@ -592,7 +792,9 @@ def vcf2tsv(
                         LC_adjacent_phred = genome.p2phred(1 - LC_adjacent, 40)
 
                         # Fill the ID field of the TSV/VCF
-                        my_identifiers = ";".join(my_identifiers) if my_identifiers else "."
+                        my_identifiers = (
+                            ";".join(my_identifiers) if my_identifiers else "."
+                        )
 
                         ###
                         out_line_part_1 = out_header.format(
@@ -607,7 +809,9 @@ def vcf2tsv(
                             if_VarDict=vardict_classification,
                             if_LoFreq=lofreq_classification,
                             if_Scalpel=scalpel_classification,
-                            VarScan2_Score=rescale(score_varscan2, "phred", p_scale, 1001),
+                            VarScan2_Score=rescale(
+                                score_varscan2, "phred", p_scale, 1001
+                            ),
                             if_dbsnp=if_dbsnp,
                             COMMON=if_common,
                             if_COSMIC=if_cosmic,
@@ -626,10 +830,12 @@ def vcf2tsv(
                             T_DP=tBamFeatures["dp"],
                             tBAM_REF_MQ="%g" % tBamFeatures["ref_mq"],
                             tBAM_ALT_MQ="%g" % tBamFeatures["alt_mq"],
-                            tBAM_p_MannWhitneyU_MQ="%g" % tBamFeatures["p_mannwhitneyu_mq"],
+                            tBAM_p_MannWhitneyU_MQ="%g"
+                            % tBamFeatures["p_mannwhitneyu_mq"],
                             tBAM_REF_BQ="%g" % tBamFeatures["ref_bq"],
                             tBAM_ALT_BQ="%g" % tBamFeatures["alt_bq"],
-                            tBAM_p_MannWhitneyU_BQ="%g" % tBamFeatures["p_mannwhitneyu_bq"],
+                            tBAM_p_MannWhitneyU_BQ="%g"
+                            % tBamFeatures["p_mannwhitneyu_bq"],
                             tBAM_REF_NM="%g" % tBamFeatures["ref_NM"],
                             tBAM_ALT_NM="%g" % tBamFeatures["alt_NM"],
                             tBAM_NM_Diff="%g" % tBamFeatures["NM_Diff"],
@@ -637,16 +843,29 @@ def vcf2tsv(
                             tBAM_REF_Discordant=tBamFeatures["ref_discordant_reads"],
                             tBAM_ALT_Concordant=tBamFeatures["alt_concordant_reads"],
                             tBAM_ALT_Discordant=tBamFeatures["alt_discordant_reads"],
-                            tBAM_Concordance_FET=rescale(tBamFeatures["concordance_fet"], "fraction", p_scale, 1001),
+                            tBAM_Concordance_FET=rescale(
+                                tBamFeatures["concordance_fet"],
+                                "fraction",
+                                p_scale,
+                                1001,
+                            ),
                             T_REF_FOR=tBamFeatures["ref_for"],
                             T_REF_REV=tBamFeatures["ref_rev"],
                             T_ALT_FOR=tBamFeatures["alt_for"],
                             T_ALT_REV=tBamFeatures["alt_rev"],
-                            tBAM_StrandBias_FET=rescale(tBamFeatures["strandbias_fet"], "fraction", p_scale, 1001),
-                            tBAM_p_MannWhitneyU_EndPos="%g" % tBamFeatures["p_mannwhitneyu_endpos"],
+                            tBAM_StrandBias_FET=rescale(
+                                tBamFeatures["strandbias_fet"],
+                                "fraction",
+                                p_scale,
+                                1001,
+                            ),
+                            tBAM_p_MannWhitneyU_EndPos="%g"
+                            % tBamFeatures["p_mannwhitneyu_endpos"],
                             tBAM_REF_Clipped_Reads=tBamFeatures["ref_SC_reads"],
                             tBAM_ALT_Clipped_Reads=tBamFeatures["alt_SC_reads"],
-                            tBAM_Clipping_FET=rescale(tBamFeatures["clipping_fet"], "fraction", p_scale, 1001),
+                            tBAM_Clipping_FET=rescale(
+                                tBamFeatures["clipping_fet"], "fraction", p_scale, 1001
+                            ),
                             tBAM_MQ0=tBamFeatures["MQ0"],
                             tBAM_Other_Reads=tBamFeatures["noise_read_count"],
                             tBAM_Poor_Reads=tBamFeatures["poor_read_count"],
@@ -661,13 +880,23 @@ def vcf2tsv(
 
                         additional_caller_columns = []
                         for arbi_key_i in additional_arbi_caller_numbers:
-                            additional_caller_columns.append(str(arbitrary_classifications[arbi_key_i]))
+                            additional_caller_columns.append(
+                                str(arbitrary_classifications[arbi_key_i])
+                            )
                         additional_caller_columns = "\t".join(additional_caller_columns)
 
-                        label_column = label_header.format(TrueVariant_or_False=judgement)
+                        label_column = label_header.format(
+                            TrueVariant_or_False=judgement
+                        )
 
                         if len(additional_arbi_caller_numbers) > 0:
-                            out_line = "\t".join((out_line_part_1, additional_caller_columns, label_column))
+                            out_line = "\t".join(
+                                (
+                                    out_line_part_1,
+                                    additional_caller_columns,
+                                    label_column,
+                                )
+                            )
                         else:
                             out_line = "\t".join((out_line_part_1, label_column))
 
@@ -679,8 +908,23 @@ def vcf2tsv(
                 my_line = my_sites.readline().rstrip()
 
         ##########  Close all open files if they were opened  ##########
-        opened_files = [ref_fa, bam, truth, cosmic, dbsnp, mutect, varscan, vardict, lofreq, scalpel, strelka]
-        [opened_files.append(extra_opened_file) for extra_opened_file in arbitrary_file_handle.values()]
+        opened_files = [
+            ref_fa,
+            bam,
+            truth,
+            cosmic,
+            dbsnp,
+            mutect,
+            varscan,
+            vardict,
+            lofreq,
+            scalpel,
+            strelka,
+        ]
+        [
+            opened_files.append(extra_opened_file)
+            for extra_opened_file in arbitrary_file_handle.values()
+        ]
         [opened_file.close() for opened_file in opened_files if opened_file]
 
 

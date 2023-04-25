@@ -5,9 +5,8 @@ import logging
 from copy import copy
 
 import pandas as pd
-import xgboost as xgb
-
 import somaticseq.ntchange_type as ntchange
+import xgboost as xgb
 from somaticseq._version import __version__
 
 FORMAT = "%(levelname)s %(asctime)-15s %(name)-20s %(message)s"
@@ -69,7 +68,9 @@ def save_feature_importance_to_file(xgb_model, filename):
     feature_total_gain = xgb_model.get_score(importance_type="total_gain")
     feature_total_cover = xgb_model.get_score(importance_type="total_cover")
 
-    line_i = "{}\t{}\t{}\t{}\t{}\t{}\n".format("FEATURE", "GAIN", "WEIGHT", "COVER", "TOTAL_GAIN", "TOTAL_COVER")
+    line_i = "{}\t{}\t{}\t{}\t{}\t{}\n".format(
+        "FEATURE", "GAIN", "WEIGHT", "COVER", "TOTAL_GAIN", "TOTAL_COVER"
+    )
 
     with open(filename, "w") as fout:
 
@@ -102,12 +103,19 @@ def builder(
     logger.info("TRAINING {} for XGBOOST".format(",".join(input_tsvs)))
     logger.info("Columns removed before training: {}".format(", ".join(non_feature)))
     logger.info("Number of boosting rounds = {}".format(num_rounds))
-    logger.info("Hyperparameters: " + ", ".join(["{}={}".format(i, param[i]) for i in param]))
+    logger.info(
+        "Hyperparameters: " + ", ".join(["{}={}".format(i, param[i]) for i in param])
+    )
 
     if not model:
         model = input_tsvs[0] + ".xgb.v{}.classifier".format(__version__)
 
-    input_data = pd.concat([pd.read_csv(input_tsv_i, sep="\t", low_memory=False) for input_tsv_i in input_tsvs])
+    input_data = pd.concat(
+        [
+            pd.read_csv(input_tsv_i, sep="\t", low_memory=False)
+            for input_tsv_i in input_tsvs
+        ]
+    )
 
     train_data = ntchange.ntchange(input_data)
     for non_feature_i in non_feature:
@@ -151,7 +159,9 @@ def predictor(
     chunksize = 10000
     writeMode, writeHeader = "w", True
 
-    for input_data in pd.read_csv(input_tsv, sep="\t", chunksize=chunksize, low_memory=False):
+    for input_data in pd.read_csv(
+        input_tsv, sep="\t", chunksize=chunksize, low_memory=False
+    ):
 
         test_data = ntchange.ntchange(input_data)
         for non_feature_i in non_feature:
@@ -197,11 +207,21 @@ if __name__ == "__main__":
         help="labeled tsv file(s)",
         required=True,
     )
-    parser_train.add_argument("-out", "--model-out", type=str, help="output model file name")
-    parser_train.add_argument("-threads", "--num-threads", type=int, help="num threads.")
-    parser_train.add_argument("-depth", "--max-depth", type=int, help="tree max depth. default=8")
-    parser_train.add_argument("-seed", "--seed", type=int, help="random seed. default=0")
-    parser_train.add_argument("-method", "--tree-method", type=str, help="tree method. default=hist")
+    parser_train.add_argument(
+        "-out", "--model-out", type=str, help="output model file name"
+    )
+    parser_train.add_argument(
+        "-threads", "--num-threads", type=int, help="num threads."
+    )
+    parser_train.add_argument(
+        "-depth", "--max-depth", type=int, help="tree max depth. default=8"
+    )
+    parser_train.add_argument(
+        "-seed", "--seed", type=int, help="random seed. default=0"
+    )
+    parser_train.add_argument(
+        "-method", "--tree-method", type=str, help="tree method. default=hist"
+    )
     parser_train.add_argument(
         "-iter",
         "--num-boost-rounds",
@@ -226,9 +246,15 @@ if __name__ == "__main__":
 
     # PREDICTION mode
     parser_predict = sample_parsers.add_parser("predict")
-    parser_predict.add_argument("-model", "--model", type=str, help="xgboost model", required=True)
-    parser_predict.add_argument("-tsv", "--tsv-in", type=str, help="tsv file in", required=True)
-    parser_predict.add_argument("-out", "--predicted-tsv", type=str, help="tsv file out", required=True)
+    parser_predict.add_argument(
+        "-model", "--model", type=str, help="xgboost model", required=True
+    )
+    parser_predict.add_argument(
+        "-tsv", "--tsv-in", type=str, help="tsv file in", required=True
+    )
+    parser_predict.add_argument(
+        "-out", "--predicted-tsv", type=str, help="tsv file out", required=True
+    )
     parser_predict.add_argument(
         "-ntrees",
         "--num-trees",
