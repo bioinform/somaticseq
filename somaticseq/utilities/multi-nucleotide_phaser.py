@@ -9,7 +9,7 @@ import sys
 
 import pysam
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
-from somaticseq.genomicFileHandler.read_info_extractor import *
+from somaticseq.genomicFileHandler.read_info_extractor import position_of_aligned_read
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
@@ -67,7 +67,6 @@ with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, op
 
     # Get into the bulk of the VCF file
     while my_line:
-
         my_vcf = genome.Vcf_line(my_line)
 
         if len(my_vcf.refbase) == 1:
@@ -91,26 +90,21 @@ with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, op
             if (my_coordinates[-1][0] == my_vcf.chromosome) and (
                 my_vcf.position - my_coordinates[-1][1] == 0
             ):
-
                 base_options[-1].extend(my_vcf.altbase.split(","))
                 vcf_lines.append(my_line)
-
             # If the next vcf line is still within the threshold:
             elif (my_coordinates[-1][0] == my_vcf.chromosome) and (
                 my_vcf.position - my_coordinates[-1][1] <= threshold
             ):
-
                 # For the "missing" reference bases:
                 missing_bases = ref_fa.fetch(
                     my_vcf.chromosome, my_coordinates[-1][1], my_vcf.position - 1
                 )
-
                 for i, missing_coordinate_i in enumerate(
                     range(my_coordinates[-1][1] + 1, my_vcf.position)
                 ):
                     my_coordinates.append((my_vcf.chromosome, missing_coordinate_i))
                     base_options.append([missing_bases[i]])
-
                 # The next vcf coordinate
                 my_coordinates.append((my_vcf.chromosome, my_vcf.position))
                 base_options.append([my_vcf.refbase])
@@ -121,7 +115,6 @@ with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, op
         # Trigger the procedure:
         # If the number is too large, 2^n possibilities and will run out of memory (hence less than 6)
         if 6 > len(my_coordinates) > 1:
-
             ref_string = ref_fa.fetch(
                 my_coordinates[0][0], my_coordinates[0][1] - 1, my_coordinates[-1][1]
             )
@@ -136,13 +129,10 @@ with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, op
             reads = bam.fetch(
                 my_coordinates[0][0], my_coordinates[0][1] - 1, my_coordinates[-1][1]
             )
-
             for read_i in reads:
                 if not (read_i.is_unmapped or read_i.is_duplicate):
-
                     mnp_call = ""
                     for coordinate_i in my_coordinates:
-
                         (
                             code_i,
                             ith_base,
@@ -150,12 +140,9 @@ with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, op
                             indel_length_i,
                             flanking_indel_i,
                         ) = position_of_aligned_read(read_i, coordinate_i[1] - 1)
-
                         # The position is matched:
                         if (code_i == 0 or code_i == 1 or code_i == 2) and base_call_i:
-
                             mnp_call = mnp_call + base_call_i
-
                     if mnp_call in mnp_tally:
                         mnp_tally[mnp_call] += 1
 
@@ -172,7 +159,6 @@ with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, op
 
             # phased_coordinates = [ str(item[1]) for item in my_coordinates]
             # info_line = 'PDP={};COORDINATES={}'.format(pdp, ','.join(phased_coordinates) )
-
             # How to label PASS/LowQual/REJECT for the phased calls:
             status_score = 0
             for i_th_status in filter_status:
@@ -199,7 +185,6 @@ with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, op
                 FORMAT="GT",
                 SAMPLE="0/1",
             )
-
             outfile.write(mnp_line + "\n")
 
         for line_j in vcf_lines:

@@ -14,7 +14,10 @@ import scipy.stats as stats
 import somaticseq.annotate_caller as annotate_caller
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 import somaticseq.sequencing_features as sequencing_features
-from somaticseq.genomicFileHandler.read_info_extractor import *
+from somaticseq.genomicFileHandler.read_info_extractor import (
+    genomic_coordinates,
+    rescale,
+)
 
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
@@ -98,7 +101,6 @@ def run():
         description="This is a SomaticSeq subroutine to convert a VCF file into a TSV file with all the SomaticSeq features for tumor-only modes. Any VCF file can be used as the main input. The output will have the same variants. Also required is the BAM files, with additional optional inputs.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-
     input_sites = parser.add_mutually_exclusive_group()
     input_sites.add_argument(
         "-myvcf",
@@ -124,7 +126,6 @@ def run():
         required=False,
         default=None,
     )
-
     parser.add_argument(
         "-bam",
         "--in-bam",
@@ -157,7 +158,6 @@ def run():
         required=False,
         default=None,
     )
-
     parser.add_argument(
         "-mutect",
         "--mutect-vcf",
@@ -214,7 +214,6 @@ def run():
         nargs="*",
         default=[],
     )
-
     parser.add_argument(
         "-ref",
         "--genome-reference",
@@ -231,7 +230,6 @@ def run():
         required=False,
         default=False,
     )
-
     parser.add_argument(
         "-minMQ",
         "--minimum-mapping-quality",
@@ -256,7 +254,6 @@ def run():
         required=False,
         default=0,
     )
-
     parser.add_argument(
         "-scale",
         "--p-scale",
@@ -265,7 +262,6 @@ def run():
         required=False,
         default=None,
     )
-
     parser.add_argument(
         "-outfile",
         "--output-tsv-file",
@@ -274,11 +270,8 @@ def run():
         required=False,
         default=os.sys.stdout,
     )
-
     args = parser.parse_args()
-
     inputParameters = vars(args)
-
     return inputParameters
 
 
@@ -344,43 +337,34 @@ def vcf2tsv(
     with genome.open_textfile(mysites) as my_sites, open(outfile, "w") as outhandle:
 
         my_line = my_sites.readline().rstrip()
-
         bam = pysam.AlignmentFile(bam_fn, reference_filename=ref_fa)
         ref_fa = pysam.FastaFile(ref_fa)
 
         if truth:
             truth = genome.open_textfile(truth)
             truth_line = genome.skip_vcf_header(truth)
-
         if cosmic:
             cosmic = genome.open_textfile(cosmic)
             cosmic_line = genome.skip_vcf_header(cosmic)
-
         if dbsnp:
             dbsnp = genome.open_textfile(dbsnp)
             dbsnp_line = genome.skip_vcf_header(dbsnp)
-
         # 6 Incorporate callers: get thru the #'s
         if mutect:
             mutect = genome.open_textfile(mutect)
             mutect_line = genome.skip_vcf_header(mutect)
-
         if varscan:
             varscan = genome.open_textfile(varscan)
             varscan_line = genome.skip_vcf_header(varscan)
-
         if vardict:
             vardict = genome.open_textfile(vardict)
             vardict_line = genome.skip_vcf_header(vardict)
-
         if lofreq:
             lofreq = genome.open_textfile(lofreq)
             lofreq_line = genome.skip_vcf_header(lofreq)
-
         if scalpel:
             scalpel = genome.open_textfile(scalpel)
             scalpel_line = genome.skip_vcf_header(scalpel)
-
         if strelka:
             strelka = genome.open_textfile(strelka)
             strelka_line = genome.skip_vcf_header(strelka)
@@ -402,7 +386,6 @@ def vcf2tsv(
         coordinate_i = coordinate_i.group() if coordinate_i else ""
 
         # First line:
-        # First line:
         header_part_1 = out_header.replace("{", "").replace("}", "")
 
         additional_arbi_caller_numbers = sorted(arbitrary_file_handle.keys())
@@ -410,21 +393,14 @@ def vcf2tsv(
             header_part_1 = (
                 header_part_1 + "\t" + "if_Caller_{}".format(arbi_caller_num)
             )
-
         header_last_part = label_header.replace("{", "").replace("}", "")
-
         outhandle.write("\t".join((header_part_1, header_last_part)) + "\n")
-
         while my_line:
-
             # If VCF, get all the variants with the same coordinate into a list:
             if is_vcf:
-
                 my_vcf = genome.Vcf_line(my_line)
                 my_coordinates = [(my_vcf.chromosome, my_vcf.position)]
-
                 variants_at_my_coordinate = []
-
                 alt_bases = my_vcf.altbase.split(",")
                 for alt_i in alt_bases:
                     vcf_i = copy(my_vcf)
@@ -433,14 +409,12 @@ def vcf2tsv(
 
                 # As long as the "coordinate" stays the same, it will keep reading until it's different.
                 while my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
-
                     my_line = my_sites.readline().rstrip()
                     my_vcf = genome.Vcf_line(my_line)
 
                     ########## This block is code is to ensure the input VCF file is properly sorted ##
                     coordinate_j = re.match(genome.pattern_chr_position, my_line)
                     coordinate_j = coordinate_j.group() if coordinate_j else ""
-
                     if genome.whoisbehind(coordinate_i, coordinate_j, chrom_seq) == 1:
                         raise Exception(
                             "{} does not seem to be properly sorted.".format(mysites)
@@ -448,49 +422,39 @@ def vcf2tsv(
 
                     coordinate_i = coordinate_j
                     ###################################################################################
-
                     if my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
-
                         alt_bases = my_vcf.altbase.split(",")
                         for alt_i in alt_bases:
 
                             vcf_i = copy(my_vcf)
                             vcf_i.altbase = alt_i
                             variants_at_my_coordinate.append(vcf_i)
-
             elif is_bed:
                 bed_item = my_line.split("\t")
                 my_coordinates = genomic_coordinates(
                     bed_item[0], int(bed_item[1]) + 1, int(bed_item[2])
                 )
-
             elif is_pos:
                 pos_item = my_line.split("\t")
                 my_coordinates = genomic_coordinates(
                     pos_item[0], int(pos_item[1]), int(pos_item[1])
                 )
-
             elif fai_file:
                 fai_item = my_line.split("\t")
                 my_coordinates = genomic_coordinates(fai_item[0], 1, int(fai_item[1]))
 
             ##### ##### ##### ##### ##### #####
             for my_coordinate in my_coordinates:
-
                 ######## If VCF, can get ref base, variant base, as well as other identifying information ########
                 if is_vcf:
-
                     ref_bases = []
                     alt_bases = []
                     indel_lengths = []
                     all_my_identifiers = []
-
                     for variant_i in variants_at_my_coordinate:
-
                         ref_base = variant_i.refbase
                         first_alt = variant_i.altbase.split(",")[0]
                         indel_length = len(first_alt) - len(ref_base)
-
                         ref_bases.append(ref_base)
                         alt_bases.append(first_alt)
                         indel_lengths.append(indel_length)
@@ -512,7 +476,6 @@ def vcf2tsv(
                             if variant_i.get_info_value("CNT")
                             else nan
                         )
-
                         if variant_i.identifier == ".":
                             my_identifier_i = set()
                         else:
@@ -622,7 +585,6 @@ def vcf2tsv(
 
                 # Now, use pysam to look into the tBAM file(s), variant by variant from the input:
                 for ith_call, my_call in enumerate(variants_at_my_coordinate):
-
                     if is_vcf:
                         # The particular line in the input VCF file:
                         variant_id = (
@@ -630,19 +592,16 @@ def vcf2tsv(
                             my_call.refbase,
                             my_call.altbase,
                         )
-
                         ref_base = ref_bases[ith_call]
                         first_alt = alt_bases[ith_call]
                         indel_length = indel_lengths[ith_call]
                         my_identifiers = all_my_identifiers[ith_call]
-
                     else:
                         variant_id = (
                             (my_coordinate[0], my_coordinate[1]),
                             ref_base,
                             first_alt,
                         )
-
                     # Reset num_caller to 0 for each variant in the same coordinate
                     num_callers = 0
 
@@ -787,7 +746,6 @@ def vcf2tsv(
                             right_LC = math.nan
 
                         LC_adjacent = min(left_LC, right_LC)
-
                         LC_spanning_phred = genome.p2phred(1 - LC_spanning, 40)
                         LC_adjacent_phred = genome.p2phred(1 - LC_adjacent, 40)
 
@@ -795,7 +753,6 @@ def vcf2tsv(
                         my_identifiers = (
                             ";".join(my_identifiers) if my_identifiers else "."
                         )
-
                         ###
                         out_line_part_1 = out_header.format(
                             CHROM=my_coordinate[0],
