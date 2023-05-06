@@ -1,18 +1,14 @@
-#!/usr/bin/env python3
-
-import re
-
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 
-cigar_aln_match = 0
-cigar_insertion = 1
-cigar_deletion = 2
-cigar_skip = 3
-cigar_soft_clip = 4
-cigar_hard_clip = 5
-cigar_padding = 6
-cigar_seq_match = 7
-cigar_seq_mismatch = 8
+CIGAR_ALN_MATCH = 0
+CIGAR_INSERTION = 1
+CIGAR_DELETION = 2
+CIGAR_SKIP = 3
+CIGAR_SOFT_CLIP = 4
+CIGAR_HARD_CLIP = 5
+CIGAR_PADDING = 6
+CIGAR_SEQ_MATCH = 7
+CIGAR_SEQ_MISMATCH = 8
 
 nan = float("nan")
 inf = float("inf")
@@ -250,7 +246,7 @@ def rescale(x, original="fraction", rescale_to=None, max_phred=1001):
 
 
 ##### Stuff from VarDict:
-def find_MSI(vcf_object):
+def find_msi(vcf_object):
 
     msi = vcf_object.get_info_value("MSI")
     if msi:
@@ -260,7 +256,7 @@ def find_MSI(vcf_object):
     return msi
 
 
-def find_MSILEN(vcf_object):
+def find_msilen(vcf_object):
 
     msilen = vcf_object.get_info_value("MSILEN")
     if msilen:
@@ -270,7 +266,7 @@ def find_MSILEN(vcf_object):
     return msilen
 
 
-def find_SHIFT3(vcf_object):
+def find_shift3(vcf_object):
 
     shift3 = vcf_object.get_info_value("SHIFT3")
     if shift3:
@@ -297,14 +293,14 @@ def mutect2_tlod(vcf_object):
         return nan
 
 
-def mutect2_STR(vcf_object):
+def mutect2_str(vcf_object):
     if vcf_object.get_info_value("STR"):
         return 1
     else:
         return 0
 
 
-def mutect2_ECNT(vcf_object):
+def mutect2_ecnt(vcf_object):
     ecnt = vcf_object.get_info_value("ECNT")
     if ecnt:
         try:

@@ -8,7 +8,7 @@ import pysam
 import scipy.stats as stats
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 from somaticseq.genomicFileHandler.read_info_extractor import (
-    cigar_soft_clip,
+    CIGAR_SOFT_CLIP,
     dedup_test,
     mean,
     position_of_aligned_read,
@@ -118,8 +118,8 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
 
                 # Soft-clipped reads?
                 if (
-                    read_i.cigar[0][0] == cigar_soft_clip
-                    or read_i.cigar[-1][0] == cigar_soft_clip
+                    read_i.cigar[0][0] == CIGAR_SOFT_CLIP
+                    or read_i.cigar[-1][0] == CIGAR_SOFT_CLIP
                 ):
                     ref_SC_reads += 1
                 else:
@@ -185,8 +185,8 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
 
                 # Soft-clipped reads?
                 if (
-                    read_i.cigar[0][0] == cigar_soft_clip
-                    or read_i.cigar[-1][0] == cigar_soft_clip
+                    read_i.cigar[0][0] == CIGAR_SOFT_CLIP
+                    or read_i.cigar[-1][0] == CIGAR_SOFT_CLIP
                 ):
                     alt_SC_reads += 1
                 else:

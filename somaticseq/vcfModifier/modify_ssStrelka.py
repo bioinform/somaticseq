@@ -66,7 +66,7 @@ def convert(infile, snv_out, indel_out):
 
             items = line_i.split("\t")
 
-            vcf_i = genome.Vcf_line(line_i)
+            vcf_i = genome.VcfLine(line_i)
 
             if "," not in vcf_i.altbase:
 

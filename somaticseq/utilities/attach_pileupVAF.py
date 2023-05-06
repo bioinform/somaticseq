@@ -198,7 +198,7 @@ while line_i:
         raise Exception("Your VCF file has a contig that does not exist.")
 
     # my_vcf:
-    vcf_i = genome.Vcf_line(line_i)
+    vcf_i = genome.VcfLine(line_i)
 
     # Modify the FORMAT column:
     field_items = vcf_i.get_sample_variable()

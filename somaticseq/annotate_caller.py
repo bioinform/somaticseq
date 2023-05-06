@@ -2,12 +2,12 @@ import re
 
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 from somaticseq.genomicFileHandler.read_info_extractor import (
-    find_MSI,
-    find_MSILEN,
-    find_SHIFT3,
-    mutect2_ECNT,
+    find_msi,
+    find_msilen,
+    find_shift3,
+    mutect2_ecnt,
     mutect2_nlod,
-    mutect2_STR,
+    mutect2_str,
     mutect2_tlod,
 )
 
@@ -24,7 +24,7 @@ vdT, vdN = 0, 1
 
 """
 caller_variants is a dictionary, where the key is a tuple of ( (contig,
-position), ref, alt ), and value is a genome.Vcf_line object. 
+position), ref, alt ), and value is a genome.VcfLine object. 
 """
 
 
@@ -72,8 +72,8 @@ def MuTect(variant_id, mutect_variants):
         # MuTect2 has some useful information:
         nlod = mutect2_nlod(mutect_variant_i)
         tlod = mutect2_tlod(mutect_variant_i)
-        tandem = mutect2_STR(mutect_variant_i)
-        ecnt = mutect2_ECNT(mutect_variant_i)
+        tandem = mutect2_str(mutect_variant_i)
+        ecnt = mutect2_ecnt(mutect_variant_i)
     else:
         # Not called by mutect
         mutect_classification = 0
@@ -88,7 +88,7 @@ def ssMuTect(variant_id, mutect_variants):
         mutect_variant_i = mutect_variants[variant_id]
         mutect_classification = 1 if mutect_variant_i.filters == "PASS" else 0
         tlod = mutect2_tlod(mutect_variant_i)
-        ecnt = mutect2_ECNT(mutect_variant_i)
+        ecnt = mutect2_ecnt(mutect_variant_i)
     else:
         # Not called by mutect
         mutect_classification = 0
@@ -203,9 +203,9 @@ def VarDict(variant_id, vardict_variants):
             score_vardict = nan
 
         # MSI, MSILEN, and SHIFT3:
-        msi = find_MSI(vardict_variant_i)
-        msilen = find_MSILEN(vardict_variant_i)
-        shift3 = find_SHIFT3(vardict_variant_i)
+        msi = find_msi(vardict_variant_i)
+        msilen = find_msilen(vardict_variant_i)
+        shift3 = find_shift3(vardict_variant_i)
     else:
         vardict_classification = 0
         msi = msilen = shift3 = score_vardict = nan

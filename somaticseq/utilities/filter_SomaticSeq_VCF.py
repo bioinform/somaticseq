@@ -92,7 +92,7 @@ with genome.open_textfile(infile) as vcf_in, open(outfile, "w") as vcf_out:
 
     while line_i:
 
-        vcf_i = genome.Vcf_line(line_i)
+        vcf_i = genome.VcfLine(line_i)
 
         if vcf_i.filters == "PASS":
 

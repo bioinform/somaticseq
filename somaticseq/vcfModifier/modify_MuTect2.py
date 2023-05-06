@@ -89,7 +89,7 @@ def convert(infile, snv_out, indel_out, is_tnscope):
 
         while line_i:
 
-            vcf_i = genome.Vcf_line(line_i)
+            vcf_i = genome.VcfLine(line_i)
 
             if "," not in vcf_i.altbase:
 

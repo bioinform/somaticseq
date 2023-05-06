@@ -68,7 +68,7 @@ def convert(infile, snv_out, indel_out):
 
         while line_i:
 
-            vcf_i = genome.Vcf_line(line_i)
+            vcf_i = genome.VcfLine(line_i)
 
             # If "germlinerisk" is the only flag, then make it PASS since there is no matched normal
             if vcf_i.filters == "germline_risk":

@@ -53,7 +53,7 @@ with open(vcf) as vcf:
 
     while line_i:
 
-        vcf_i = genome.Vcf_line(line_i)
+        vcf_i = genome.VcfLine(line_i)
         combo_i = vcf_i.get_info_value(combo)
         tool_i = combo_i.split(",")
         tool_i = [int(i) for i in tool_i]

@@ -158,8 +158,8 @@ def catch_up(line_1, line_2, file_1, file_2, output_vcf, id_1, id_2, id_12):
 
     id_1, id_2, id_12 = id_1, id_2, id_12
 
-    vcf_1 = genome.Vcf_line(line_1)
-    vcf_2 = genome.Vcf_line(line_2)
+    vcf_1 = genome.VcfLine(line_1)
+    vcf_2 = genome.VcfLine(line_2)
 
     coord_1 = [vcf_1.chromosome, vcf_1.position]
     coord_2 = [vcf_2.chromosome, vcf_2.position]
@@ -190,7 +190,7 @@ def catch_up(line_1, line_2, file_1, file_2, output_vcf, id_1, id_2, id_12):
                 output_vcf.write(line_1 + "\n")
 
             line_1 = file_1.readline()
-            vcf_1 = genome.Vcf_line(line_1)
+            vcf_1 = genome.VcfLine(line_1)
             coord_1 = [vcf_1.chromosome, vcf_1.position]
 
         # If 2nd VCF is behind:
@@ -214,7 +214,7 @@ def catch_up(line_1, line_2, file_1, file_2, output_vcf, id_1, id_2, id_12):
             ## FI
 
             line_2 = file_2.readline()
-            vcf_2 = genome.Vcf_line(line_2)
+            vcf_2 = genome.VcfLine(line_2)
             coord_2 = [vcf_2.chromosome, vcf_2.position]
 
         is_behind = whoisbehind(coord_1, coord_2)

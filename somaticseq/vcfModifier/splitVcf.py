@@ -55,7 +55,7 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
 
         while line_i:
 
-            vcf_i = genome.Vcf_line(line_i)
+            vcf_i = genome.VcfLine(line_i)
 
             if ("," not in vcf_i.altbase) and ("/" not in vcf_i.altbase):
 
