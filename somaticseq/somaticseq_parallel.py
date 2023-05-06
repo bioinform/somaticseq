@@ -12,13 +12,10 @@ import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
 
 
 def splitRegions(nthreads, outfiles, bed=None, fai=None):
-
     assert bed or fai
     if fai and not bed:
         bed = split_bed.fai2bed(fai, outfiles)
-
     writtenBeds = split_bed.split(bed, outfiles, nthreads)
-
     return writtenBeds
 
 
@@ -74,13 +71,9 @@ def runPaired_by_region(
     features_excluded=[],
     hyperparameters=None,
 ):
-
-    # logger = logging.getLogger(runPaired_by_region.__name__)
-
     basename = inclusion.split(os.sep)[-1].split(".")[0]
     outdir_i = outdir + os.sep + basename
     os.makedirs(outdir_i, exist_ok=True)
-
     run_somaticseq.runPaired(
         outdir_i,
         ref,
@@ -132,7 +125,6 @@ def runPaired_by_region(
         iterations,
         features_excluded,
     )
-
     return outdir_i
 
 
@@ -177,13 +169,9 @@ def runSingle_by_region(
     features_excluded=[],
     hyperparameters=None,
 ):
-
-    # logger = logging.getLogger(runSingle_by_region.__name__)
-
     basename = inclusion.split(os.sep)[-1].split(".")[0]
     outdir_i = outdir + os.sep + basename
     os.makedirs(outdir_i, exist_ok=True)
-
     run_somaticseq.runSingle(
         outdir_i,
         ref,
@@ -224,7 +212,6 @@ def runSingle_by_region(
         iterations,
         features_excluded,
     )
-
     return outdir_i
 
 
@@ -241,20 +228,16 @@ def mergeSubdirVcf(dirList, filename, outdir=os.curdir):
 if __name__ == "__main__":
 
     args = run_somaticseq.run()
-
     os.makedirs(args.output_directory, exist_ok=True)
-
     bed_splitted = splitRegions(
         args.threads,
         args.output_directory + os.sep + "th.input.bed",
         args.inclusion_region,
         args.genome_reference + ".fai",
     )
-
     pool = Pool(processes=args.threads)
 
     if args.which == "paired":
-
         runPaired_by_region_i = partial(
             runPaired_by_region,
             outdir=args.output_directory,
@@ -304,12 +287,10 @@ if __name__ == "__main__":
             hyperparameters=args.extra_hyperparameters,
             keep_intermediates=args.keep_intermediates,
         )
-
         subdirs = pool.map(runPaired_by_region_i, bed_splitted)
         pool.close()
 
     elif args.which == "single":
-
         runSingle_by_region_i = partial(
             runSingle_by_region,
             outdir=args.output_directory,
@@ -348,7 +329,6 @@ if __name__ == "__main__":
             hyperparameters=args.extra_hyperparameters,
             keep_intermediates=args.keep_intermediates,
         )
-
         subdirs = pool.map(runSingle_by_region_i, bed_splitted)
         pool.close()
 
@@ -357,7 +337,6 @@ if __name__ == "__main__":
     # Merge sub-results
     mergeSubdirTsv(subdirs, "Ensemble.sSNV.tsv", args.output_directory)
     mergeSubdirTsv(subdirs, "Ensemble.sINDEL.tsv", args.output_directory)
-
     if args.classifier_snv:
         mergeSubdirTsv(subdirs, "SSeq.Classified.sSNV.tsv", args.output_directory)
         mergeSubdirVcf(subdirs, "SSeq.Classified.sSNV.vcf", args.output_directory)
@@ -372,16 +351,13 @@ if __name__ == "__main__":
 
     # If there is training, it should be done after merging the results
     if args.somaticseq_train:
-
         snv_training_file = args.output_directory + os.sep + "Ensemble.sSNV.tsv"
         indel_training_file = args.output_directory + os.sep + "Ensemble.sINDEL.tsv"
-
         num_iterations = (
             args.iterations
             if args.iterations
             else run_somaticseq.DEFAULT_XGB_BOOST_ROUNDS
         )
-
         run_somaticseq.modelTrainer(
             snv_training_file,
             args.algorithm,

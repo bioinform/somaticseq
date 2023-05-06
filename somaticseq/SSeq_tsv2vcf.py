@@ -12,7 +12,6 @@ time_string = datetime.now().isoformat(sep="_", timespec="seconds")
 
 
 def run():
-
     inputParameters = {}
 
     parser = argparse.ArgumentParser(

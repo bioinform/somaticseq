@@ -9,17 +9,9 @@ import somaticseq.combine_callers as combineCallers
 from somaticseq._version import __version__
 
 FORMAT = "%(levelname)s %(asctime)-15s %(name)-20s %(message)s"
-
-# ch = logging.StreamHandler()
-# ch.setLevel(logging.DEBUG)
-# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-# ch.setFormatter(formatter)
-
 logger = logging.getLogger("SomaticSeq")
 logger.setLevel(logging.DEBUG)
 logging.basicConfig(level=logging.INFO, format=FORMAT)
-
-# logger.addHandler(ch)
 
 DEFAULT_XGB_BOOST_ROUNDS = 500
 DEFAULT_NUM_TREES_PREDICT = 100
@@ -35,7 +27,6 @@ def modelTrainer(
     features_to_exclude=None,
     hyperparameters=None,
 ):
-
     logger = logging.getLogger(modelTrainer.__name__)
 
     if features_to_exclude is None:
@@ -85,7 +76,6 @@ def modelTrainer(
 def modelPredictor(
     input_file, output_file, algo, classifier, iterations=100, features_to_exclude=None
 ):
-
     logger = logging.getLogger(modelPredictor.__name__)
 
     if features_to_exclude is None:
@@ -96,7 +86,6 @@ def modelPredictor(
         logger.info(" ".join(command_item))
         exit_code = subprocess.call(command_item)
         assert exit_code == 0
-
         return output_file
 
     if algo == "xgboost":
@@ -109,7 +98,6 @@ def modelPredictor(
         somatic_xgboost.predictor(
             classifier, input_file, output_file, non_features, iterations
         )
-
         return output_file
 
 
@@ -179,7 +167,6 @@ def runPaired(
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
 
     files_to_delete = set()
-
     snvCallers = []
     if mutect or mutect2:
         snvCallers.append("MuTect")
@@ -270,7 +257,6 @@ def runPaired(
         if intermediateVcfs["MuTect2"]["snv"]
         else mutect
     )
-
     somatic_vcf2tsv.vcf2tsv(
         is_vcf=outSnv,
         nbam_fn=nbam,
@@ -313,11 +299,9 @@ def runPaired(
             iterations=iterations,
             features_to_exclude=features_excluded,
         )
-
         extra_header = [
             "##SomaticSeqClassifier={}".format(classifier_snv),
         ]
-
         tsv2vcf.tsv2vcf(
             classifiedSnvTsv,
             classifiedSnvVcf,
@@ -371,7 +355,6 @@ def runPaired(
         if intermediateVcfs["MuTect2"]["indel"]
         else indelocator
     )
-
     somatic_vcf2tsv.vcf2tsv(
         is_vcf=outIndel,
         nbam_fn=nbam,
@@ -396,7 +379,6 @@ def runPaired(
         p_scale=None,
         outfile=ensembleIndel,
     )
-
     # Classify INDEL calls
     if classifier_indel:
         classifiedIndelTsv = os.sep.join((outdir, classifiedOutPrefix + "sINDEL.tsv"))
@@ -411,11 +393,9 @@ def runPaired(
             iterations=iterations,
             features_to_exclude=features_excluded,
         )
-
         extra_header = [
             "##SomaticSeqClassifier={}".format(classifier_indel),
         ]
-
         tsv2vcf.tsv2vcf(
             classifiedIndelTsv,
             classifiedIndelVcf,
@@ -432,11 +412,9 @@ def runPaired(
             phred_scaled=True,
             extra_headers=extra_header,
         )
-
     else:
         # Train INDEL classifier:
         if somaticseq_train and truth_indel:
-
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
             modelTrainer(
                 ensembleIndel,
@@ -448,7 +426,6 @@ def runPaired(
                 features_to_exclude=features_excluded,
                 hyperparameters=hyperparameters,
             )
-
         consensusIndelVcf = os.sep.join((outdir, consensusOutPrefix + "sINDEL.vcf"))
         tsv2vcf.tsv2vcf(
             ensembleIndel,
@@ -462,7 +439,6 @@ def runPaired(
             tumor_sample_name=tumor_name,
             print_reject=True,
         )
-
     ## Clean up after yourself ##
     if not keep_intermediates:
         for file_i in files_to_delete:
@@ -511,7 +487,6 @@ def runSingle(
     features_excluded=None,
     hyperparameters=None,
 ):
-
     logger = logging.getLogger(runSingle.__name__)
 
     if features_excluded is None:
@@ -525,7 +500,6 @@ def runSingle(
     import somaticseq.SSeq_tsv2vcf as tsv2vcf
 
     files_to_delete = set()
-
     snvCallers = []
     if mutect or mutect2:
         snvCallers.append("MuTect")
@@ -541,7 +515,6 @@ def runSingle(
         snvCallers.append("SnvCaller_{}".format(ith_arb))
         for ith_arb, arb_snv_i in enumerate(arb_snvs)
     ]
-
     indelCallers = []
     if mutect2:
         indelCallers.append("MuTect2")
@@ -578,7 +551,6 @@ def runSingle(
         arb_indels=arb_indels,
         keep_intermediates=True,
     )
-
     files_to_delete.add(outSnv)
     files_to_delete.add(outIndel)
     [files_to_delete.add(i) for i in tempFiles]
@@ -592,7 +564,6 @@ def runSingle(
         if intermediateVcfs["MuTect2"]["snv"]
         else mutect
     )
-
     single_sample_vcf2tsv.vcf2tsv(
         is_vcf=outSnv,
         bam_fn=bam,
@@ -614,12 +585,10 @@ def runSingle(
         p_scale=None,
         outfile=ensembleSnv,
     )
-
     # Classify SNV calls
     if classifier_snv:
         classifiedSnvTsv = os.sep.join((outdir, classifiedOutPrefix + "sSNV.tsv"))
         classifiedSnvVcf = os.sep.join((outdir, classifiedOutPrefix + "sSNV.vcf"))
-
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
         modelPredictor(
             ensembleSnv,
@@ -629,11 +598,9 @@ def runSingle(
             iterations=iterations,
             features_to_exclude=features_excluded,
         )
-
         extra_header = [
             "##SomaticSeqClassifier={}".format(classifier_snv),
         ]
-
         tsv2vcf.tsv2vcf(
             classifiedSnvTsv,
             classifiedSnvVcf,
@@ -649,7 +616,6 @@ def runSingle(
             phred_scaled=True,
             extra_headers=extra_header,
         )
-
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
@@ -665,7 +631,6 @@ def runSingle(
                 features_to_exclude=features_excluded,
                 hyperparameters=hyperparameters,
             )
-
         consensusSnvVcf = os.sep.join((outdir, consensusOutPrefix + "sSNV.vcf"))
         tsv2vcf.tsv2vcf(
             ensembleSnv,
@@ -678,7 +643,6 @@ def runSingle(
             tumor_sample_name=sample_name,
             print_reject=True,
         )
-
     ###################### INDEL ######################
     single_sample_vcf2tsv.vcf2tsv(
         is_vcf=outIndel,
@@ -701,7 +665,6 @@ def runSingle(
         p_scale=None,
         outfile=ensembleIndel,
     )
-
     # Classify INDEL calls
     if classifier_indel:
         classifiedIndelTsv = os.sep.join((outdir, classifiedOutPrefix + "sINDEL.tsv"))
@@ -720,7 +683,6 @@ def runSingle(
         extra_header = [
             "##SomaticSeqClassifier={}".format(classifier_indel),
         ]
-
         tsv2vcf.tsv2vcf(
             classifiedIndelTsv,
             classifiedIndelVcf,
@@ -736,11 +698,9 @@ def runSingle(
             phred_scaled=True,
             extra_headers=extra_header,
         )
-
     else:
         # Train INDEL classifier:
         if somaticseq_train and truth_indel:
-
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
             modelTrainer(
                 ensembleIndel,
@@ -752,7 +712,6 @@ def runSingle(
                 features_to_exclude=features_excluded,
                 hyperparameters=hyperparameters,
             )
-
         consensusIndelVcf = os.sep.join((outdir, consensusOutPrefix + "sINDEL.vcf"))
         tsv2vcf.tsv2vcf(
             ensembleIndel,
@@ -765,7 +724,6 @@ def runSingle(
             tumor_sample_name=sample_name,
             print_reject=True,
         )
-
     ## Clean up after yourself ##
     if not keep_intermediates:
         for file_i in files_to_delete:
@@ -785,7 +743,6 @@ def run():
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-
     parser.add_argument(
         "-outdir", "--output-directory", type=str, help="output directory", default="."
     )
@@ -807,7 +764,6 @@ def run():
     parser.add_argument(
         "--lowqual-threshold", type=float, help="SCORE for LowQual", default=0.1
     )
-
     parser.add_argument(
         "-algo",
         "--algorithm",
@@ -830,7 +786,6 @@ def run():
         help="VAF for heterozygous",
         default=0.01,
     )
-
     parser.add_argument(
         "-minMQ",
         "--minimum-mapping-quality",
@@ -852,7 +807,6 @@ def run():
         help="Minimum number of tools to be considered",
         default=0.5,
     )
-
     parser.add_argument(
         "-dbsnp",
         "--dbsnp-vcf",
@@ -860,18 +814,15 @@ def run():
         help="dbSNP VCF",
     )
     parser.add_argument("-cosmic", "--cosmic-vcf", type=str, help="COSMIC VCF")
-
     parser.add_argument(
         "-include", "--inclusion-region", type=str, help="inclusion bed"
     )
     parser.add_argument(
         "-exclude", "--exclusion-region", type=str, help="exclusion bed"
     )
-
     parser.add_argument(
         "-nt", "--threads", type=int, help="number of threads", default=1
     )
-
     parser.add_argument(
         "-train",
         "--somaticseq-train",
@@ -909,7 +860,6 @@ def run():
         help="extra xgboost training hyperparameters in format of PARAM_1:VALUE_1 PARAM_2:VALUE_2. Will overwrite defaults and other options.",
         default=None,
     )
-
     parser.add_argument(
         "--keep-intermediates",
         action="store_true",
@@ -928,14 +878,12 @@ def run():
     parser_paired.add_argument(
         "-nbam", "--normal-bam-file", type=str, help="Normal BAM File", required=True
     )
-
     parser_paired.add_argument(
         "-tumorSM", "--tumor-sample", type=str, help="Tumor Name", default="TUMOR"
     )
     parser_paired.add_argument(
         "-normalSM", "--normal-sample", type=str, help="Normal Name", default="NORMAL"
     )
-
     parser_paired.add_argument(
         "-mutect",
         "--mutect-vcf",
@@ -1048,7 +996,6 @@ def run():
         nargs="*",
         default=[],
     )
-
     parser_paired.set_defaults(which="paired")
 
     # Single Sample mode
@@ -1127,20 +1074,15 @@ def run():
         "SomaticSeq Input Arguments: "
         + ", ".join(["{}={}".format(i, vars(args)[i]) for i in vars(args)])
     )
-
     return args
 
 
 ################################################################################################
 # Execute:
 if __name__ == "__main__":
-
     args = run()
-
     os.makedirs(args.output_directory, exist_ok=True)
-
     if args.which == "paired":
-
         runPaired(
             outdir=args.output_directory,
             ref=args.genome_reference,
@@ -1190,9 +1132,7 @@ if __name__ == "__main__":
             hyperparameters=args.extra_hyperparameters,
             keep_intermediates=args.keep_intermediates,
         )
-
     elif args.which == "single":
-
         runSingle(
             outdir=args.output_directory,
             ref=args.genome_reference,

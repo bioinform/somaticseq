@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
-
-
 def ntchange(variant_frame):
-
     GC2CG = []
     GC2TA = []
     GC2AT = []
@@ -11,7 +7,6 @@ def ntchange(variant_frame):
     TA2CG = []
 
     for ref, alt in zip(variant_frame["REF"], variant_frame["ALT"]):
-
         ref = ref.upper()
         alt = alt.upper()
 
@@ -74,5 +69,4 @@ def ntchange(variant_frame):
     new_data = variant_frame.assign(
         GC2CG=GC2CG, GC2TA=GC2CG, GC2AT=GC2CG, TA2AT=GC2CG, TA2GC=GC2CG, TA2CG=GC2CG
     )
-
     return new_data
