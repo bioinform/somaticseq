@@ -18,7 +18,9 @@ from somaticseq._version import __version__ as VERSION
 
 TMPDIR = tempfile.gettempdir()
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds"))
+timestamp = re.sub(
+    r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
+)
 
 
 DEFAULT_PARAMS = {
@@ -33,7 +35,7 @@ DEFAULT_PARAMS = {
     "extra_picard_arguments": "",
     "extra_sambamba_arguments": "",
     "threads": 1,
-    "script": "markdup.{}.cmd".format(ts),
+    "script": "markdup.{}.cmd".format(timestamp),
     "index_bam": True,
     "software": "picard",
 }
@@ -230,7 +232,7 @@ def fractional(bed, input_parameters, tech="docker"):
     outdir = str(Path(bed).absolute().parent)
 
     logdir = os.path.join(outdir, "logs")
-    outfile = os.path.join(logdir, "markdup_fractional.{}.cmd".format(ts))
+    outfile = os.path.join(logdir, "markdup_fractional.{}.cmd".format(timestamp))
     os.makedirs(logdir, exist_ok=True)
 
     sambam_line, stDict = container.container_params(
@@ -275,7 +277,7 @@ def fractional(bed, input_parameters, tech="docker"):
         fractional_parameters["output_directory"] = outdir
         fractional_parameters["in_bam"] = os.path.join(outdir, temp_split_bam)
         fractional_parameters["out_bam"] = split_deduped_bam
-        fractional_parameters["script"] = "to_be_deleted.{}.cmd".format(ts)
+        fractional_parameters["script"] = "to_be_deleted.{}.cmd".format(timestamp)
         fractional_parameters["index_bam"] = False
 
         if input_parameters["software"] == "picard":
@@ -338,7 +340,7 @@ def parallel(input_parameters, tech="docker"):
     )
 
     merging_parameters = copy(input_parameters)
-    merging_parameters["script"] = "mergeBam.{}.cmd".format(ts)
+    merging_parameters["script"] = "mergeBam.{}.cmd".format(timestamp)
 
     if input_parameters["software"] == "picard":
         merge_script = mergeBams.picard(

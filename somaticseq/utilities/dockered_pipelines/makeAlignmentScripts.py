@@ -122,7 +122,7 @@ def run():
 
 def make_workflow(args, input_parameters):
 
-    ts = re.sub(
+    timestamp = re.sub(
         r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
     )
 
@@ -154,7 +154,7 @@ def make_workflow(args, input_parameters):
                 spread_parameters["threads"] = args.threads
 
             spread_parameters["MEM"] = 2
-            spread_parameters["script"] = "spreadFastq_1.{}.cmd".format(ts)
+            spread_parameters["script"] = "spreadFastq_1.{}.cmd".format(timestamp)
 
             out_fastq_names = [uuid.uuid4().hex for i in range(args.threads)]
             out_fastq1s = [
@@ -178,7 +178,7 @@ def make_workflow(args, input_parameters):
             # Is Paired-End
             if len(args.in_fastq2s) >= 1:
 
-                spread_parameters["script"] = "spreadFastq_2.{}.cmd".format(ts)
+                spread_parameters["script"] = "spreadFastq_2.{}.cmd".format(timestamp)
 
                 out_fastq2s = [
                     os.path.join(
@@ -237,7 +237,7 @@ def make_workflow(args, input_parameters):
                 trim_parameters["out_fastq2_name"] = out_basename + "_R2.fastq.gz"
                 out_fastq_2s.append(trim_parameters["out_fastq2_name"])
 
-            trim_parameters["script"] = "trim.{}.{}.cmd".format(i, ts)
+            trim_parameters["script"] = "trim.{}.{}.cmd".format(i, timestamp)
 
             if args.trim_software == "trimmomatic":
                 trim_parameters["MEM"] = 8
@@ -284,7 +284,7 @@ def make_workflow(args, input_parameters):
 
         fq1_merge_parameters = copy(input_parameters)
 
-        fq1_merge_parameters["script"] = "mergeFastq_1.{}.cmd".format(ts)
+        fq1_merge_parameters["script"] = "mergeFastq_1.{}.cmd".format(timestamp)
         fq1_merge_script = mergeFastqs.gz(
             fastq_1s,
             merged_fq1,
@@ -300,7 +300,7 @@ def make_workflow(args, input_parameters):
 
             fq2_merge_parameters = copy(input_parameters)
 
-            fq2_merge_parameters["script"] = "mergeFastq_2.{}.cmd".format(ts)
+            fq2_merge_parameters["script"] = "mergeFastq_2.{}.cmd".format(timestamp)
             fastq_2s = [
                 os.path.join(input_parameters["output_directory"], fq_i)
                 for fq_i in out_fastq_2s
@@ -326,7 +326,7 @@ def make_workflow(args, input_parameters):
 
         bwa_parameters = copy(input_parameters)
 
-        bwa_parameters["script"] = "align.{}.cmd".format(ts)
+        bwa_parameters["script"] = "align.{}.cmd".format(timestamp)
         bwa_parameters["MEM"] = 8
 
         if args.run_mark_duplicates:
@@ -341,7 +341,7 @@ def make_workflow(args, input_parameters):
         markdup_parameters = copy(input_parameters)
 
         markdup_parameters["software"] = input_parameters["markdup_software"]
-        markdup_parameters["script"] = "markdup.{}.cmd".format(ts)
+        markdup_parameters["script"] = "markdup.{}.cmd".format(timestamp)
         markdup_parameters["MEM"] = 8
 
         if args.run_alignment:

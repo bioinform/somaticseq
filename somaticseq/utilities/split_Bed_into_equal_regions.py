@@ -70,6 +70,7 @@ def split(infile, outfiles, num):
 
     out_basename = os.path.basename(outfiles)
     out_directory = os.path.dirname(outfiles)
+    os.makedirs(out_directory, exist_ok=True)
 
     if not out_directory:
         out_directory = os.curdir

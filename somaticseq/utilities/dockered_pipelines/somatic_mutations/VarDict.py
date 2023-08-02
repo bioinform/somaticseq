@@ -8,7 +8,7 @@ from datetime import datetime
 import somaticseq.utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat())
+timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
 
 
 DEFAULT_PARAMS = {
@@ -24,7 +24,7 @@ DEFAULT_PARAMS = {
     "action": "echo",
     "vardict_arguments": "",
     "extra_docker_options": "",
-    "script": "vardict.{}.cmd".format(ts),
+    "script": "vardict.{}.cmd".format(timestamp),
     "min_MQ": 1,
     "minimum_VAF": 0.05,
     "process_bed": True,

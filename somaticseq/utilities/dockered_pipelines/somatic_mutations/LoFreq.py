@@ -8,7 +8,7 @@ from datetime import datetime
 import somaticseq.utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat())
+timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
 
 
 DEFAULT_PARAMS = {
@@ -25,7 +25,7 @@ DEFAULT_PARAMS = {
     "action": "echo",
     "lofreq_arguments": "",
     "extra_docker_options": "",
-    "script": "lofreq.{}.cmd".format(ts),
+    "script": "lofreq.{}.cmd".format(timestamp),
     "dbsnp_gz": None,
 }
 

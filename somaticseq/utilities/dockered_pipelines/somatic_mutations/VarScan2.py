@@ -8,7 +8,7 @@ from datetime import datetime
 import somaticseq.utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat())
+timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
 
 
 DEFAULT_PARAMS = {
@@ -22,7 +22,7 @@ DEFAULT_PARAMS = {
     "varscan_arguments": "",
     "varscan_pileup_arguments": "",
     "extra_docker_options": "",
-    "script": "varscan2.{}.cmd".format(ts),
+    "script": "varscan2.{}.cmd".format(timestamp),
     "min_MQ": 1,
     "min_BQ": 20,
     "minimum_VAF": 0.05,

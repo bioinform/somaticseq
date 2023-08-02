@@ -8,7 +8,7 @@ from datetime import datetime
 import somaticseq.utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat())
+timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
 
 
 DEFAULT_PARAMS = {
@@ -24,7 +24,7 @@ DEFAULT_PARAMS = {
     "action": "echo",
     "somaticsniper_arguments": "",
     "extra_docker_options": "",
-    "script": "somaticsniper.{}.cmd".format(ts),
+    "script": "somaticsniper.{}.cmd".format(timestamp),
     "min_MQ": 1,
     "min_BQ": 20,
     "prior": 0.00001,

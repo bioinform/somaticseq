@@ -7,7 +7,9 @@ import somaticseq.genomicFileHandler.concat as concat
 import somaticseq.utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds"))
+timestamp = re.sub(
+    r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
+)
 
 
 DEFAULT_PARAMS = {
@@ -15,7 +17,7 @@ DEFAULT_PARAMS = {
     "MEM": 2,
     "output_directory": os.curdir,
     "extra_docker_options": "",
-    "script": "spreadFastq.{}.cmd".format(ts),
+    "script": "spreadFastq.{}.cmd".format(timestamp),
     "action": "echo",
     "threads": 1,
 }

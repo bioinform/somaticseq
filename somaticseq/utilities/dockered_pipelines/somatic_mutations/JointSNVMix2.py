@@ -8,7 +8,7 @@ from datetime import datetime
 import somaticseq.utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat())
+timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
 
 
 DEFAULT_PARAMS = {
@@ -27,7 +27,7 @@ DEFAULT_PARAMS = {
     "jsm_train_arguments": "",
     "jsm_classify_arguments": "",
     "extra_docker_options": "",
-    "script": "jsm2.{}.cmd".format(ts),
+    "script": "jsm2.{}.cmd".format(timestamp),
 }
 
 

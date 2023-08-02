@@ -8,7 +8,7 @@ from datetime import datetime
 import somaticseq.utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat())
+timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
 
 
 DEFAULT_PARAMS = {
@@ -24,7 +24,7 @@ DEFAULT_PARAMS = {
     "scalpel_discovery_arguments": "",
     "scalpel_export_arguments": "",
     "extra_docker_options": "",
-    "script": "scalpel.{}.cmd".format(ts),
+    "script": "scalpel.{}.cmd".format(timestamp),
     "dbsnp_gz": None,
 }
 

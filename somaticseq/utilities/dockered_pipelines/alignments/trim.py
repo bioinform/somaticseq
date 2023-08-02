@@ -11,7 +11,9 @@ from pathlib import Path
 import somaticseq.utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds"))
+timestamp = re.sub(
+    r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
+)
 
 DEFAULT_PARAMS = {
     "alienTrimmerImage": "lethalfang/alientrimmer:0.4.0",
@@ -27,7 +29,7 @@ DEFAULT_PARAMS = {
     "extra_docker_options": "",
     "extra_trim_arguments": "",
     "threads": 1,
-    "script": "trim.{}.cmd".format(ts),
+    "script": "trim.{}.cmd".format(timestamp),
     "remove_untrimmed": False,
 }
 

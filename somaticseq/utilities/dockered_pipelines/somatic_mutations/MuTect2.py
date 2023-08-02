@@ -5,7 +5,7 @@ from datetime import datetime
 
 import somaticseq.utilities.dockered_pipelines.container_option as container
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat())
+timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
 
 
 DEFAULT_PARAMS = {
@@ -19,7 +19,7 @@ DEFAULT_PARAMS = {
     "mutect2_arguments": "",
     "mutect2_filter_arguments": "",
     "extra_docker_options": "",
-    "script": "mutect2.{}.cmd".format(ts),
+    "script": "mutect2.{}.cmd".format(timestamp),
 }
 
 

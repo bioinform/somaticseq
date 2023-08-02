@@ -13,7 +13,7 @@ import somaticseq.utilities.dockered_pipelines.container_option as container
 import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat())
+timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
 
 
 def run():
@@ -416,7 +416,7 @@ def merge_results(input_parameters, tech="docker"):
         "output_directory": os.curdir,
         "somaticseq_directory": "SomaticSeq",
         "action": "echo",
-        "script": "mergeResults.{}.cmd".format(ts),
+        "script": "mergeResults.{}.cmd".format(timestamp),
         "snv_classifier": None,
         "indel_classifier": None,
         "truth_snv": None,

@@ -8,7 +8,7 @@ from datetime import datetime
 import somaticseq.utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat())
+timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
 
 
 DEFAULT_PARAMS = {
@@ -22,7 +22,7 @@ DEFAULT_PARAMS = {
     "strelka_config_arguments": "",
     "strelka_run_arguments": "",
     "extra_docker_options": "",
-    "script": "strelka2.{}.cmd".format(ts),
+    "script": "strelka2.{}.cmd".format(timestamp),
     "exome": False,
 }
 

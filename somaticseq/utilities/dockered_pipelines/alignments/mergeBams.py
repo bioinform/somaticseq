@@ -10,7 +10,9 @@ import somaticseq.utilities.dockered_pipelines.container_option as container
 import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
 from somaticseq._version import __version__ as VERSION
 
-ts = re.sub(r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds"))
+timestamp = re.sub(
+    r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
+)
 
 
 DEFAULT_PARAMS = {
@@ -21,7 +23,7 @@ DEFAULT_PARAMS = {
     "extra_docker_options": "",
     "extra_picard_arguments": "",
     "output_directory": os.curdir,
-    "script": "mergeBam.{}.cmd".format(ts),
+    "script": "mergeBam.{}.cmd".format(timestamp),
     "index_bam": True,
 }
 

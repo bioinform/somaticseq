@@ -231,7 +231,7 @@ if __name__ == "__main__":
     os.makedirs(args.output_directory, exist_ok=True)
     bed_splitted = splitRegions(
         args.threads,
-        args.output_directory + os.sep + "th.input.bed",
+        os.path.join(args.output_directory, "th.input.bed"),
         args.inclusion_region,
         args.genome_reference + ".fai",
     )
