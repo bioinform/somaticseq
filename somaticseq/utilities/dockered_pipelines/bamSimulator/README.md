@@ -226,7 +226,7 @@ Synthetic mutations will then be spiked into the designated tumor to create
 -   See [our somatic mutation pipeline](..) for more details.
 
 ```
-$PATH/TO/somaticseq/utilities/dockered_pipelines/makeSomaticScripts.py paired \
+makeSomaticScripts.py paired \
 --normal-bam       /ABSOLUTE/PATH/TO/trainingSet/syntheticNormal.bam \
 --tumor-bam        /ABSOLUTE/PATH/TO/trainingSet/syntheticTumor.bam \
 --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
