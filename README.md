@@ -8,8 +8,6 @@ documentation is located in [docs/Manual.pdf](docs/Manual.pdf "User Manual").
     [Fang, L.T., Afshar, P.T., Chhibber, A. _et al_. An ensemble approach to accurately detect somatic mutations using SomaticSeq. _Genome Biol_ **16**, 197 (2015)](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, et al. Genome Biol (2015)").
 -   Feel free to report issues and/or ask questions at the
     [Issues](../../issues "Issues") page.
--   The [v2 branch](../../tree/v2) is still supported, but it's severely limited
-    comparing to the current versions.
 
 ## Training data for benchmarking and/or model building
 
@@ -50,7 +48,7 @@ The following are some of the use cases for these resources:
     <td>How to run <a href="https://precision.fda.gov/home/apps/app-G7XVKQQ02v051q5PK3yQYJKJ-1">SomaticSeq v3.6.3</a> on precisionFDA</td>
 
   </tr>
-  
+
   <tr>
     <td><a href="https://youtu.be/MnJdTQWWN6w"><img src="docs/SomaticSeqYoutube.png" width="400" /></a></td>
     <td><a href="https://youtu.be/nn0BOAONRe8"><img src="docs/workflow400.png" width="400" /></a></td>
