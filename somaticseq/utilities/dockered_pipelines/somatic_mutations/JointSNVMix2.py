@@ -1,12 +1,9 @@
-import argparse
 import os
 import re
 import subprocess
-import sys
 from datetime import datetime
 
 import somaticseq.utilities.dockered_pipelines.container_option as container
-from somaticseq._version import __version__ as VERSION
 
 timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
 
@@ -197,6 +194,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile

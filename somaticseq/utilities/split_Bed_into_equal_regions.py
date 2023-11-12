@@ -11,9 +11,9 @@ def run():
 
     # argparse Stuff
     parser = argparse.ArgumentParser(
-        description="""Given an input bed file, this program will output a number of bed files, each will have same number of total base pairs. 
-        This routine is used to parallelize SomaticSeq tasks. 
-        One limitation, however, is that some regions of the genome have much higher coverage than others. 
+        description="""Given an input bed file, this program will output a number of bed files, each will have same number of total base pairs.
+        This routine is used to parallelize SomaticSeq tasks.
+        One limitation, however, is that some regions of the genome have much higher coverage than others.
         This is the reason some regions run much slower than others.
         """,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -141,7 +141,6 @@ def split(infile, outfiles, num):
 
             # The remaining, is the end position of the original region and the previous breakpoint:
             remaining_length = end_i - breakpoint_i
-            remaining_region = (chr_i, breakpoint_i, end_i)
 
             # If the remnant of the previous region is less than the size/file requirement, simply make it "current_region" and then move on:
             if remaining_length <= size_per_file:

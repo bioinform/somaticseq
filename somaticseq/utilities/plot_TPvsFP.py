@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
-import math
-import sys
 
 import matplotlib.pyplot as pyplot
 import numpy
-import scipy.stats as scipystats
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(

@@ -5,11 +5,9 @@ import logging
 import math
 import os
 import re
-import sys
 import uuid
 from copy import copy
 from datetime import datetime
-from shutil import move
 
 FORMAT = "%(levelname)s %(asctime)-15s %(name)-20s %(message)s"
 logger = logging.getLogger("Alignment_Workflow")

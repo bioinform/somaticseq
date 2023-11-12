@@ -14,7 +14,6 @@ from shutil import move
 import somaticseq.utilities.dockered_pipelines.alignments.mergeBams as mergeBams
 import somaticseq.utilities.dockered_pipelines.container_option as container
 import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
-from somaticseq._version import __version__ as VERSION
 
 TMPDIR = tempfile.gettempdir()
 
@@ -150,7 +149,7 @@ def picard(input_parameters, tech="docker"):
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile
 
@@ -218,7 +217,7 @@ def sambamba(input_parameters, tech="docker"):
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile
 
@@ -281,11 +280,11 @@ def fractional(bed, input_parameters, tech="docker"):
         fractional_parameters["index_bam"] = False
 
         if input_parameters["software"] == "picard":
-            dedup_script = picard(fractional_parameters, tech)
+            picard(fractional_parameters, tech)
         elif input_parameters["software"] == "sambamba":
 
             fractional_parameters["threads"] = 2
-            dedup_script = sambamba(fractional_parameters, tech)
+            sambamba(fractional_parameters, tech)
 
         with open(os.path.join(logdir, fractional_parameters["script"])) as dedup:
 
@@ -303,7 +302,7 @@ def fractional(bed, input_parameters, tech="docker"):
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile, os.path.join(outdir, split_deduped_bam)
 

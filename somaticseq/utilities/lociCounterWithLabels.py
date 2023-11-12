@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-import gzip
 import re
-import sys
 from copy import copy
 from os.path import basename
 
@@ -153,7 +151,7 @@ def countIntersectedRegions(
             counter_i = None
             label_i = None
 
-        if not secondaryMore and counter_i != None:
+        if not secondaryMore and counter_i is not None:
             newCounter.append(counter_i)
             newLabel.append(label_i)
 
@@ -162,7 +160,7 @@ def countIntersectedRegions(
             newLabel.append(label_i)
 
         elif j % 2 == 1:
-            if counter_i != None:
+            if counter_i is not None:
                 newCounter.append(counter_i + 1)
                 label_i_copy = copy(label_i)
                 label_i_copy.append(new_label)

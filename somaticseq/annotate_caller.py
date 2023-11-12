@@ -24,7 +24,7 @@ vdT, vdN = 0, 1
 
 """
 caller_variants is a dictionary, where the key is a tuple of ( (contig,
-position), ref, alt ), and value is a genome.VcfLine object. 
+position), ref, alt ), and value is a genome.VcfLine object.
 """
 
 
@@ -315,7 +315,7 @@ def Strelka(variant_id, strelka_variants):
         strelka_variant_i = strelka_variants[variant_id]
         strelka_classification = 1 if "PASS" in strelka_variant_i.filters else 0
         somatic_evs = strelka_variant_i.get_info_value("SomaticEVS")
-        if somatic_evs == False:
+        if somatic_evs is False:
             somatic_evs = nan
         qss = strelka_variant_i.get_info_value("QSS")
         tqss = strelka_variant_i.get_info_value("TQSS")

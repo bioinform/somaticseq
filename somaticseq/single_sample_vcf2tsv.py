@@ -10,7 +10,7 @@ import re
 from copy import copy
 
 import pysam
-import scipy.stats as stats
+
 import somaticseq.annotate_caller as annotate_caller
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 import somaticseq.sequencing_features as sequencing_features
@@ -318,7 +318,7 @@ def vcf2tsv(
         logger.info("No position supplied. Will evaluate the whole genome.")
 
     # Re-scale output or not:
-    if p_scale == None:
+    if p_scale is None:
         logger.info("NO RE-SCALING")
     elif p_scale.lower() == "phred":
         p_scale = "phred"
@@ -330,8 +330,7 @@ def vcf2tsv(
 
     # Define NaN and Inf:
     nan = float("nan")
-    inf = float("inf")
-    pattern_chr_position = genome.pattern_chr_position
+    float("inf")
 
     ## Running
     with genome.open_textfile(mysites) as my_sites, open(outfile, "w") as outhandle:
@@ -390,9 +389,7 @@ def vcf2tsv(
 
         additional_arbi_caller_numbers = sorted(arbitrary_file_handle.keys())
         for arbi_caller_num in additional_arbi_caller_numbers:
-            header_part_1 = (
-                header_part_1 + "\t" + "if_Caller_{}".format(arbi_caller_num)
-            )
+            header_part_1 = header_part_1 + "\t" + f"if_Caller_{arbi_caller_num}"
         header_last_part = label_header.replace("{", "").replace("}", "")
         outhandle.write("\t".join((header_part_1, header_last_part)) + "\n")
         while my_line:
@@ -417,7 +414,7 @@ def vcf2tsv(
                     coordinate_j = coordinate_j.group() if coordinate_j else ""
                     if genome.whoisbehind(coordinate_i, coordinate_j, chrom_seq) == 1:
                         raise Exception(
-                            "{} does not seem to be properly sorted.".format(mysites)
+                            f"{mysites} does not seem to be properly sorted."
                         )
 
                     coordinate_i = coordinate_j
@@ -637,7 +634,7 @@ def vcf2tsv(
                     else:
                         vardict_classification = (
                             msi
-                        ) = msilen = shift3 = t_pmean = t_pstd = t_qstd = nan
+                        ) = msilen = shift3 = nan
 
                     if lofreq:
                         lofreq_classification = annotate_caller.ssLoFreq(

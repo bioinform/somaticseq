@@ -81,8 +81,8 @@ def convert(infile, snv_out, indel_out, is_tnscope):
             normal_index, tumor_index = 1, 0
 
         else:
-            normal_index = header.index(normal_name) - 9
-            tumor_index = header.index(tumor_name) - 9
+            header.index(normal_name) - 9
+            header.index(tumor_name) - 9
 
         # This will be the first variant line:
         line_i = vcf_in.readline().rstrip()
@@ -120,7 +120,7 @@ def convert(infile, snv_out, indel_out, is_tnscope):
                     split_infos = [
                         "{}={}".format(info_variable, info_value[ith_base])
                         for info_variable, info_value in zip(info_to_split, measures)
-                        if info_value != None
+                        if info_value is not None
                     ]
 
                     still_infos = [
@@ -128,7 +128,7 @@ def convert(infile, snv_out, indel_out, is_tnscope):
                         for info_variable, info_value in zip(
                             info_to_keep, still_measures
                         )
-                        if info_value != False
+                        if info_value is not False
                     ]
 
                     split_infos.extend(still_infos)

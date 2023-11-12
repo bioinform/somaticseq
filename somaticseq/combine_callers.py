@@ -35,7 +35,7 @@ def combineSingle(
     if arb_indels is None:
         arb_indels = []
 
-    hg_dict = re.sub(r"\.fa(sta)?$", ".dict", ref)
+    re.sub(r"\.fa(sta)?$", ".dict", ref)
     intermediate_files = set()
     snv_intermediates = []
     indel_intermediates = []
@@ -205,12 +205,12 @@ def combineSingle(
 
         arb_vcf_in = bed_intersector(
             arb_vcf_i,
-            os.sep.join((outdir, "intersect.snv.arb_{}.vcf".format(ith_arb))),
+            os.sep.join((outdir, f"intersect.snv.arb_{ith_arb}.vcf")),
             inclusion,
             exclusion,
         )
         intermediate_files.add(arb_vcf_in)
-        arb_vcf_out = os.sep.join((outdir, "snv.arb_{}.vcf".format(ith_arb)))
+        arb_vcf_out = os.sep.join((outdir, f"snv.arb_{ith_arb}.vcf"))
         copy_TextFile.copy(arb_vcf_in, arb_vcf_out)
         intermediate_files.add(arb_vcf_out)
         snv_intermediates.append(arb_vcf_out)
@@ -220,12 +220,12 @@ def combineSingle(
 
         arb_vcf_in = bed_intersector(
             arb_vcf_i,
-            os.sep.join((outdir, "intersect.indel.arb_{}.vcf".format(ith_arb))),
+            os.sep.join((outdir, f"intersect.indel.arb_{ith_arb}.vcf")),
             inclusion,
             exclusion,
         )
         intermediate_files.add(arb_vcf_in)
-        arb_vcf_out = os.sep.join((outdir, "indel.arb_{}.vcf".format(ith_arb)))
+        arb_vcf_out = os.sep.join((outdir, f"indel.arb_{ith_arb}.vcf"))
         copy_TextFile.copy(arb_vcf_in, arb_vcf_out)
         intermediate_files.add(arb_vcf_out)
         indel_intermediates.append(arb_vcf_out)
@@ -291,7 +291,7 @@ def combinePaired(
     if arb_indels is None:
         arb_indels = []
 
-    hg_dict = re.sub(r"\.fa(sta)?$", ".dict", ref)
+    re.sub(r"\.fa(sta)?$", ".dict", ref)
     intermediate_files = set()
     snv_intermediates = []
     indel_intermediates = []
@@ -579,12 +579,12 @@ def combinePaired(
     for ith_arb, arb_vcf_i in enumerate(arb_snvs):
         arb_vcf_in = bed_intersector(
             arb_vcf_i,
-            os.sep.join((outdir, "intersect.snv.arb_{}.vcf".format(ith_arb))),
+            os.sep.join((outdir, f"intersect.snv.arb_{ith_arb}.vcf")),
             inclusion,
             exclusion,
         )
         intermediate_files.add(arb_vcf_in)
-        arb_vcf_out = os.sep.join((outdir, "snv.arb_{}.vcf".format(ith_arb)))
+        arb_vcf_out = os.sep.join((outdir, f"snv.arb_{ith_arb}.vcf"))
         copy_TextFile.copy(arb_vcf_in, arb_vcf_out)
         intermediate_files.add(arb_vcf_out)
         snv_intermediates.append(arb_vcf_out)
@@ -593,12 +593,12 @@ def combinePaired(
     for ith_arb, arb_vcf_i in enumerate(arb_indels):
         arb_vcf_in = bed_intersector(
             arb_vcf_i,
-            os.sep.join((outdir, "intersect.indel.arb_{}.vcf".format(ith_arb))),
+            os.sep.join((outdir, f"intersect.indel.arb_{ith_arb}.vcf")),
             inclusion,
             exclusion,
         )
         intermediate_files.add(arb_vcf_in)
-        arb_vcf_out = os.sep.join((outdir, "indel.arb_{}.vcf".format(ith_arb)))
+        arb_vcf_out = os.sep.join((outdir, f"indel.arb_{ith_arb}.vcf"))
         copy_TextFile.copy(arb_vcf_in, arb_vcf_out)
         intermediate_files.add(arb_vcf_out)
         indel_intermediates.append(arb_vcf_out)

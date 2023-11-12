@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-import gzip
 import math
-import os
-import sys
 
 from somaticseq._version import vcf_header as version_line
 from somaticseq.genomicFileHandler.genomic_file_handlers import p2phred
@@ -275,11 +272,11 @@ def tsv2vcf(
             try:
                 # Non-PASS MuSE calls are made into fractions.
                 if tsv_item[MuSE_Tier] != "1":
-                    if_MuSE = "0"
+                    pass
                 else:
-                    if_MuSE = "1"
+                    pass
             except NameError:
-                if_MuSE = "."
+                pass
 
             MVJS = []
             num_tools = 0
@@ -302,7 +299,7 @@ def tsv2vcf(
             # Make backward compatible for tsv files without LC
             try:
                 seq_complexity = "%.1f" % float(tsv_item[LC])
-                info_string = info_string + ";LC={}".format(seq_complexity)
+                info_string = info_string + f";LC={seq_complexity}"
             except NameError:
                 pass
 
@@ -525,7 +522,7 @@ def tsv2vcf(
             vaf = "%.3g" % vaf
             # Add VAF to info string if and only if there is one single sample in the VCF sample
             if single_mode:
-                info_string = info_string + ";AF={}".format(vaf)
+                info_string = info_string + f";AF={vaf}"
 
             tumor_sample_string = "{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{zMQ}:{zBQ}:{MQ0}:{VAF}".format(
                 GT=gt,
@@ -633,7 +630,6 @@ def tsv2vcf(
 
 
 def run():
-    inputParameters = {}
     parser = argparse.ArgumentParser(
         description="This is a SomaticSeq subroutine SomaticSeq TSV file into VCF file.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,

@@ -134,7 +134,7 @@ def convert(infile, outfile, tbam, nbam=None):
             new_line = "\t".join(items_i)
 
             # Have to get rid of "N" in REF, because after snpSift annotation, it changes the ALT and vcf-validator will complain.
-            if not ("N" in items_i[idx_ref]):
+            if "N" not in items_i[idx_ref]:
                 vcfout.write(new_line + "\n")
 
             line_i = vcf.readline().rstrip()

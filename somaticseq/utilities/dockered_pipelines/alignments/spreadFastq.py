@@ -3,7 +3,6 @@ import re
 import subprocess
 from datetime import datetime
 
-import somaticseq.genomicFileHandler.concat as concat
 import somaticseq.utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION
 
@@ -75,6 +74,6 @@ def spread(
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile

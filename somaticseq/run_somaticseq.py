@@ -57,8 +57,7 @@ def modelTrainer(
             non_features.append(feature_i)
 
         logger.info(
-            "PARAMETER: "
-            + ", ".join(["{}={}".format(i, xgb_param[i]) for i in xgb_param])
+            "PARAMETER: " + ", ".join([f"{i}={xgb_param[i]}" for i in xgb_param])
         )
 
         xgb_model = somatic_xgboost.builder(
@@ -189,7 +188,7 @@ def runPaired(
     if platypus:
         snvCallers.append("Platypus")
     [
-        snvCallers.append("SnvCaller_{}".format(ith_arb))
+        snvCallers.append(f"SnvCaller_{ith_arb}")
         for ith_arb, arb_snv_i in enumerate(arb_snvs)
     ]
 
@@ -211,7 +210,7 @@ def runPaired(
     if platypus:
         indelCallers.append("Platypus")
     [
-        indelCallers.append("IndelCaller_{}".format(ith_arb))
+        indelCallers.append(f"IndelCaller_{ith_arb}")
         for ith_arb, arb_indel_i in enumerate(arb_indels)
     ]
 
@@ -300,7 +299,7 @@ def runPaired(
             features_to_exclude=features_excluded,
         )
         extra_header = [
-            "##SomaticSeqClassifier={}".format(classifier_snv),
+            f"##SomaticSeqClassifier={classifier_snv}",
         ]
         tsv2vcf.tsv2vcf(
             classifiedSnvTsv,
@@ -394,7 +393,7 @@ def runPaired(
             features_to_exclude=features_excluded,
         )
         extra_header = [
-            "##SomaticSeqClassifier={}".format(classifier_indel),
+            f"##SomaticSeqClassifier={classifier_indel}",
         ]
         tsv2vcf.tsv2vcf(
             classifiedIndelTsv,
@@ -443,7 +442,7 @@ def runPaired(
     if not keep_intermediates:
         for file_i in files_to_delete:
             os.remove(file_i)
-            logger.info("Removed {}".format(file_i))
+            logger.info(f"Removed {file_i}")
 
 
 def runSingle(
@@ -512,7 +511,7 @@ def runSingle(
     if strelka:
         snvCallers.append("Strelka")
     [
-        snvCallers.append("SnvCaller_{}".format(ith_arb))
+        snvCallers.append(f"SnvCaller_{ith_arb}")
         for ith_arb, arb_snv_i in enumerate(arb_snvs)
     ]
     indelCallers = []
@@ -529,7 +528,7 @@ def runSingle(
     if strelka:
         indelCallers.append("Strelka")
     [
-        indelCallers.append("IndelCaller_{}".format(ith_arb))
+        indelCallers.append(f"IndelCaller_{ith_arb}")
         for ith_arb, arb_indel_i in enumerate(arb_indels)
     ]
 
@@ -599,7 +598,7 @@ def runSingle(
             features_to_exclude=features_excluded,
         )
         extra_header = [
-            "##SomaticSeqClassifier={}".format(classifier_snv),
+            f"##SomaticSeqClassifier={classifier_snv}",
         ]
         tsv2vcf.tsv2vcf(
             classifiedSnvTsv,
@@ -681,7 +680,7 @@ def runSingle(
         )
 
         extra_header = [
-            "##SomaticSeqClassifier={}".format(classifier_indel),
+            f"##SomaticSeqClassifier={classifier_indel}",
         ]
         tsv2vcf.tsv2vcf(
             classifiedIndelTsv,
@@ -728,15 +727,15 @@ def runSingle(
     if not keep_intermediates:
         for file_i in files_to_delete:
             os.remove(file_i)
-            logger.info("Removed {}".format(file_i))
+            logger.info(f"Removed {file_i}")
 
 
 ################################################
 def run():
 
     parser = argparse.ArgumentParser(
-        description="""SomaticSeq v{}: a method to combine results from multiple somatic mutation callers, 
-        extract genomic and sequencing features for each variant call from the BAM files, 
+        description="""SomaticSeq v{}: a method to combine results from multiple somatic mutation callers,
+        extract genomic and sequencing features for each variant call from the BAM files,
         and then use machine learning to score the variants.
         Publication URL https://doi.org/10.1186/s13059-015-0758-2""".format(
             __version__
@@ -1072,7 +1071,7 @@ def run():
 
     logger.info(
         "SomaticSeq Input Arguments: "
-        + ", ".join(["{}={}".format(i, vars(args)[i]) for i in vars(args)])
+        + ", ".join([f"{i}={vars(args)[i]}" for i in vars(args)])
     )
     return args
 

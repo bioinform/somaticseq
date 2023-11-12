@@ -64,14 +64,14 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
 
                 # If the next reference position has no read position to it, it is DELETED in this read:
                 elif (
-                    aligned_pairs[i + 1][0] == None
+                    aligned_pairs[i + 1][0] is None
                     and aligned_pairs[i + 1][1] == target_position + 1
                 ):
 
                     code = 2  # Deletion
 
                     for align_j in aligned_pairs[i + 1 : :]:
-                        if align_j[0] == None:
+                        if align_j[0] is None:
                             indel_length -= 1
                         else:
                             break
@@ -80,13 +80,13 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
                 # Insertions sometimes show up wit soft-clipping at the end, if the inserted sequence is "too long" to align on a single read. In this case, the inserted length derived here is but a lower limit of the real inserted length.
                 elif (
                     aligned_pairs[i + 1][0] == seq_i + 1
-                    and aligned_pairs[i + 1][1] == None
+                    and aligned_pairs[i + 1][1] is None
                 ):
 
                     code = 3  # Insertion or soft-clipping
 
                     for align_j in aligned_pairs[i + 1 : :]:
-                        if align_j[1] == None:
+                        if align_j[1] is None:
                             indel_length += 1
                         else:
                             break
@@ -119,14 +119,14 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
             ):
                 j = right_side_start + step_right_i
 
-                if aligned_pairs[j + 1][1] == None or aligned_pairs[j + 1][0] == None:
+                if aligned_pairs[j + 1][1] is None or aligned_pairs[j + 1][0] is None:
                     right_indel_flanks = step_right_i + 1
                     break
 
             for step_left_i in range(min(win_size, left_side_start)):
                 j = left_side_start - step_left_i
 
-                if aligned_pairs[j][1] == None or aligned_pairs[j][0] == None:
+                if aligned_pairs[j][1] is None or aligned_pairs[j][0] is None:
                     left_indel_flanks = step_left_i + 1
                     break
 
@@ -231,7 +231,7 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
 
 def rescale(x, original="fraction", rescale_to=None, max_phred=1001):
 
-    if (rescale_to == None) or (original.lower() == rescale_to.lower()):
+    if (rescale_to is None) or (original.lower() == rescale_to.lower()):
         y = x if isinstance(x, int) else "%.2f" % x
 
     elif original.lower() == "fraction" and rescale_to == "phred":

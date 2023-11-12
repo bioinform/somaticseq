@@ -5,6 +5,7 @@ import os
 from multiprocessing import Pool
 
 import pysam
+
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 
 

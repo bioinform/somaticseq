@@ -144,6 +144,7 @@ class pysam_header:
     Extract BAM header using pysam.
     Only sample name (SM) so far.
     """
+
     def __init__(self, bam_file):
         bam = AlignmentFile(bam_file)
         self.bam_header = bam.header
@@ -619,7 +620,7 @@ def catchup_one_line_at_a_time(coordinate_i, line_j, filehandle_j, chrom_sequenc
     elif is_behind == 1:
         # Read one line into file_j:
         line_j_next = filehandle_j.readline().rstrip()
-        next_coord = re.match(pattern_chr_position, line_j_next)
+        re.match(pattern_chr_position, line_j_next)
         reporter = (-1, line_j_next)
 
     return reporter

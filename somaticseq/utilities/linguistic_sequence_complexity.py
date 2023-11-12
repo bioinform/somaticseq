@@ -53,7 +53,7 @@ def LC(sequence):
     # Assume 4 different nucleotides
     sequence = sequence.upper()
 
-    if not "N" in sequence:
+    if "N" not in sequence:
 
         number_of_subseqs = 0
         seq_length = len(sequence)

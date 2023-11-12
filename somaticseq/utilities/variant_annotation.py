@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse
-import gzip
-import itertools
 import logging
-import multiprocessing
 import os
-import re
 import subprocess
 import tempfile
 import uuid

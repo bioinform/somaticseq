@@ -3,9 +3,6 @@
 # Last updated: 8/29/2015
 
 import argparse
-import gzip
-import math
-import os
 import re
 import sys
 
@@ -176,7 +173,7 @@ pattern_chr_position = r_chrom + r"\t[0-9]+"
 
 
 # Figure out the order of NORMAL and TUMOR
-if idxN != None:
+if idxN is not None:
     if Npileup and idxN == 0:
         external_pileups = [[Npileup, Tpileup], [npileup_line, tpileup_line]]
     elif Npileup and idx == 1:
@@ -368,5 +365,5 @@ while line_i:
 my_vcf.close()
 Tpileup.close()
 outhandle.close()
-if Npileup != None:
+if Npileup is not None:
     Npileup.close()

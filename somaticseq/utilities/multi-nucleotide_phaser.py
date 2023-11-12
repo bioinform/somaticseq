@@ -4,12 +4,13 @@
 
 import argparse
 import itertools
-import os
-import sys
 
 import pysam
+
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
-from somaticseq.genomicFileHandler.read_info_extractor import position_of_aligned_read
+from somaticseq.genomicFileHandler.read_info_extractor import (
+    position_of_aligned_read,
+)
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(

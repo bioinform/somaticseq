@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import gzip
 import re
 import sys
 
@@ -130,7 +129,7 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
     secondaryIterator = iter(secondary_boundry)
     boundry_j = next(secondaryIterator)
     j = 0
-    counter_j = secondary_counter[j]
+    secondary_counter[j]
     secondaryMore = True
 
     for i, boundry_i in enumerate(original_boundry):
@@ -160,12 +159,12 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
         except IndexError:
             counter_i = None
 
-        if not secondaryMore and counter_i != None:
+        if not secondaryMore and counter_i is not None:
             newCounter.append(counter_i)
         elif j % 2 == 0:
             newCounter.append(counter_i)
         elif j % 2 == 1:
-            if counter_i != None:
+            if counter_i is not None:
                 newCounter.append(counter_i + 1)
 
     consolidatedBoundries, consolidatedCounters = collapseIdenticalBoundries(

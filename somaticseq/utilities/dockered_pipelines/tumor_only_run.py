@@ -4,13 +4,9 @@ import argparse
 import os
 import re
 import subprocess
-import sys
-from copy import copy
 from datetime import datetime
-from shutil import move
 
 import somaticseq.utilities.dockered_pipelines.container_option as container
-import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
 from somaticseq._version import __version__ as VERSION
 
 timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
@@ -404,7 +400,7 @@ def run_SomaticSeq(input_parameters, tech="docker"):
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile
 
@@ -705,6 +701,6 @@ def merge_results(input_parameters, tech="docker"):
         out.write('\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n')
 
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile

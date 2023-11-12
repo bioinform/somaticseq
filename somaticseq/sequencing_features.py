@@ -1,9 +1,6 @@
-import os
-import re
-import sys
 
-import pysam
 import scipy.stats as stats
+
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 from somaticseq.genomicFileHandler.read_info_extractor import (
     CIGAR_SOFT_CLIP,
@@ -118,7 +115,7 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
                     ref_notSC_reads += 1
 
                 # Distance from the end of the read:
-                if ith_base != None:
+                if ith_base is not None:
                     ref_pos_from_end.append(
                         min(ith_base, read_i.query_length - ith_base)
                     )
@@ -184,7 +181,7 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
                     alt_notSC_reads += 1
 
                 # Distance from the end of the read:
-                if ith_base != None:
+                if ith_base is not None:
                     alt_pos_from_end.append(
                         min(ith_base, read_i.query_length - ith_base)
                     )
@@ -202,61 +199,61 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
                 noise_read_count += 1
 
     # Done extracting info from tumor BAM. Now tally them:
-    ref_mq = mean(ref_read_mq)
-    alt_mq = mean(alt_read_mq)
+    mean(ref_read_mq)
+    mean(alt_read_mq)
     try:
-        p_mannwhitneyu_mq = stats.mannwhitneyu(
+        stats.mannwhitneyu(
             alt_read_mq, ref_read_mq, use_continuity=True, alternative="less"
         )[1]
     except ValueError:
         if len(alt_read_mq) > 0 and len(ref_read_mq) > 0:
-            p_mannwhitneyu_mq = 0.5
+            pass
         else:
-            p_mannwhitneyu_mq = nan
+            pass
 
-    ref_bq = mean(ref_read_bq)
-    alt_bq = mean(alt_read_bq)
+    mean(ref_read_bq)
+    mean(alt_read_bq)
     try:
-        p_mannwhitneyu_bq = stats.mannwhitneyu(
+        stats.mannwhitneyu(
             alt_read_bq, ref_read_bq, use_continuity=True, alternative="less"
         )[1]
 
     except ValueError:
         if len(alt_read_bq) > 0 and len(ref_read_bq) > 0:
-            p_mannwhitneyu_bq = 0.5
+            pass
         else:
-            p_mannwhitneyu_bq = nan
+            pass
 
     ref_NM = mean(ref_edit_distance)
     alt_NM = mean(alt_edit_distance)
-    NM_Diff = alt_NM - ref_NM - abs(indel_length)
-    concordance_fet = stats.fisher_exact(
+    alt_NM - ref_NM - abs(indel_length)
+    stats.fisher_exact(
         (
             (ref_concordant_reads, alt_concordant_reads),
             (ref_discordant_reads, alt_discordant_reads),
         )
     )[1]
-    strandbias_fet = stats.fisher_exact(((ref_for, alt_for), (ref_rev, alt_rev)))[1]
-    clipping_fet = stats.fisher_exact(
+    stats.fisher_exact(((ref_for, alt_for), (ref_rev, alt_rev)))[1]
+    stats.fisher_exact(
         ((ref_notSC_reads, alt_notSC_reads), (ref_SC_reads, alt_SC_reads))
     )[1]
 
     try:
-        p_mannwhitneyu_endpos = stats.mannwhitneyu(
+        stats.mannwhitneyu(
             alt_pos_from_end, ref_pos_from_end, use_continuity=True, alternative="less"
         )[1]
     except ValueError:
         if len(alt_pos_from_end) > 0 and len(ref_pos_from_end) > 0:
-            p_mannwhitneyu_endpos = 0.5
+            pass
         else:
-            p_mannwhitneyu_endpos = nan
+            pass
 
     ref_indel_1bp = ref_flanking_indel.count(1)
     ref_indel_2bp = ref_flanking_indel.count(2) + ref_indel_1bp
-    ref_indel_3bp = ref_flanking_indel.count(3) + ref_indel_2bp
+    ref_flanking_indel.count(3) + ref_indel_2bp
     alt_indel_1bp = alt_flanking_indel.count(1)
     alt_indel_2bp = alt_flanking_indel.count(2) + alt_indel_1bp
-    alt_indel_3bp = alt_flanking_indel.count(3) + alt_indel_2bp
+    alt_flanking_indel.count(3) + alt_indel_2bp
     consistent_mates = inconsistent_mates = 0
     for pairs_i in qname_collector:
         # Both are alternative calls:
@@ -370,7 +367,7 @@ def LC(sequence):
     # Assume 4 different nucleotides
     sequence = sequence.upper()
 
-    if not "N" in sequence:
+    if "N" not in sequence:
         number_of_subseqs = 0
         seq_length = len(sequence)
         max_number_of_subseqs = max_vocabularies(seq_length)
@@ -420,14 +417,14 @@ def subLC(sequence, max_substring_length=20):
     # https://doi.org/10.1093/bioinformatics/18.5.679
     # Cut off substring at a fixed length
     sequence = sequence.upper()
-    if not "N" in sequence:
+    if "N" not in sequence:
         number_of_subseqs = 0
         seq_length = len(sequence)
         max_number_of_subseqs = max_sub_vocabularies(seq_length, max_substring_length)
         set_of_seq_n = set()
         for i in range(1, min(max_substring_length + 1, seq_length + 1)):
             set_of_seq_n.update(
-                (sequence[n : n + i] for n in range(len(sequence) - i + 1))
+                sequence[n : n + i] for n in range(len(sequence) - i + 1)
             )
         number_of_subseqs = len(set_of_seq_n)
         lc = number_of_subseqs / max_number_of_subseqs

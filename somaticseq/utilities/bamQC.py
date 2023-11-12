@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import gzip
-import re
-import sys
-import time
-from os import sep
 
 import pysam
 

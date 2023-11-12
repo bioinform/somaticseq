@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import logging
 import os
 from functools import partial
 from multiprocessing import Pool
@@ -216,12 +215,12 @@ def runSingle_by_region(
 
 
 def mergeSubdirTsv(dirList, filename, outdir=os.curdir):
-    fileList = ["{}/{}".format(dir_i, filename) for dir_i in dirList]
+    fileList = [f"{dir_i}/{filename}" for dir_i in dirList]
     concat.tsv(fileList, outdir + os.sep + filename)
 
 
 def mergeSubdirVcf(dirList, filename, outdir=os.curdir):
-    fileList = ["{}/{}".format(dir_i, filename) for dir_i in dirList]
+    fileList = [f"{dir_i}/{filename}" for dir_i in dirList]
     concat.vcf(fileList, outdir + os.sep + filename)
 
 
@@ -383,10 +382,10 @@ if __name__ == "__main__":
     if not args.keep_intermediates:
         for bed_i in bed_splitted:
             os.remove(bed_i)
-            run_somaticseq.logger.info("Removed: {}".format(bed_i))
+            run_somaticseq.logger.info(f"Removed: {bed_i}")
 
         for dir_i in subdirs:
             rmtree(dir_i)
-            run_somaticseq.logger.info("Removed sub-directory: {}".format(dir_i))
+            run_somaticseq.logger.info(f"Removed sub-directory: {dir_i}")
 
     run_somaticseq.logger.info("Done.")

@@ -9,6 +9,7 @@ from copy import copy
 
 import pysam
 import scipy.stats as stats
+
 import somaticseq.annotate_caller as annotate_caller
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 import somaticseq.sequencing_features as sequencing_features
@@ -362,7 +363,7 @@ def vcf2tsv(
         logger.info("No position supplied. Will evaluate the whole genome.")
 
     # Re-scale output or not:
-    if p_scale == None:
+    if p_scale is None:
         logger.info("NO RE-SCALING")
     elif p_scale.lower() == "phred":
         p_scale = "phred"
@@ -462,9 +463,7 @@ def vcf2tsv(
 
         additional_arbi_caller_numbers = sorted(arbitrary_file_handle.keys())
         for arbi_caller_num in additional_arbi_caller_numbers:
-            header_part_1 = (
-                header_part_1 + "\t" + "if_Caller_{}".format(arbi_caller_num)
-            )
+            header_part_1 = header_part_1 + "\t" + f"if_Caller_{arbi_caller_num}"
 
         header_last_part = label_header.replace("{", "").replace("}", "")
 
@@ -499,7 +498,7 @@ def vcf2tsv(
 
                     if genome.whoisbehind(coordinate_i, coordinate_j, chrom_seq) == 1:
                         raise Exception(
-                            "{} does not seem to be properly sorted.".format(mysites)
+                            f"{mysites} does not seem to be properly sorted."
                         )
 
                     coordinate_i = coordinate_j

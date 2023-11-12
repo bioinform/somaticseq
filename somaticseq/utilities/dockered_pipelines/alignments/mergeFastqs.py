@@ -3,13 +3,13 @@
 import os
 import re
 import subprocess
-import uuid
 from datetime import datetime
 
 import somaticseq.utilities.dockered_pipelines.container_option as container
-from somaticseq._version import __version__ as VERSION
 
-timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds"))
+timestamp = re.sub(
+    r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
+)
 
 
 DEFAULT_PARAMS = {
@@ -19,7 +19,6 @@ DEFAULT_PARAMS = {
     "action": "echo",
     "extra_docker_options": "",
     "script": "mergeFastqs.{}.cmd".format(timestamp),
-    "action": "echo",
     "threads": 1,
 }
 
@@ -68,6 +67,6 @@ def gz(
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile

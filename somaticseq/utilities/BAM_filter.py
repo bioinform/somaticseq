@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-import gzip
-import re
-import sys
-import time
-from os import sep
 
-import numpy
 import pysam
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)

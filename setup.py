@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from setuptools import find_packages, setup
+
 from somaticseq._version import __version__
 
 print(__version__)

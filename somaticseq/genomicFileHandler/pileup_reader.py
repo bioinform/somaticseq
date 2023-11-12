@@ -1,10 +1,6 @@
 # This class will be deprecated
 
-import gzip
-import math
-import os
 import re
-import sys
 
 nan = float("nan")
 inf = float("inf")

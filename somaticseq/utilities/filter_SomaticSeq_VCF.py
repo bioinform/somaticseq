@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import gzip
-import os
-import re
 import sys
 
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome

@@ -1,12 +1,9 @@
-import argparse
 import os
 import re
 import subprocess
-import sys
 from datetime import datetime
 
 import somaticseq.utilities.dockered_pipelines.container_option as container
-from somaticseq._version import __version__ as VERSION
 
 timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
 
@@ -68,11 +65,11 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = fileDict[input_parameters["genome_reference"]][
+    fileDict[input_parameters["genome_reference"]][
         "mount_path"
     ]
-    mounted_tumor_bam = fileDict[input_parameters["tumor_bam"]]["mount_path"]
-    mounted_normal_bam = fileDict[input_parameters["normal_bam"]]["mount_path"]
+    fileDict[input_parameters["tumor_bam"]]["mount_path"]
+    fileDict[input_parameters["normal_bam"]]["mount_path"]
     mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
 
     # Mounted paths for mpileup dockers
@@ -89,7 +86,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         selector_text = ""
 
     if input_parameters["minimum_VAF"]:
-        minVAF = input_parameters["minimum_VAF"]
+        input_parameters["minimum_VAF"]
 
     outname = re.sub(r"\.[a-zA-Z]+$", "", input_parameters["outfile"])
 
@@ -179,7 +176,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile
 
@@ -221,10 +218,10 @@ def tumor_only(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = fileDict[input_parameters["genome_reference"]][
+    fileDict[input_parameters["genome_reference"]][
         "mount_path"
     ]
-    mounted_tumor_bam = fileDict[input_parameters["bam"]]["mount_path"]
+    fileDict[input_parameters["bam"]]["mount_path"]
     mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
 
     # Mounted paths for mpileup dockers
@@ -240,9 +237,9 @@ def tumor_only(input_parameters, tech="docker"):
         selector_text = ""
 
     if input_parameters["minimum_VAF"]:
-        minVAF = input_parameters["minimum_VAF"]
+        input_parameters["minimum_VAF"]
 
-    outname = re.sub(r"\.[a-zA-Z]+$", "", input_parameters["outfile"])
+    re.sub(r"\.[a-zA-Z]+$", "", input_parameters["outfile"])
 
     with open(outfile, "w") as out:
 
@@ -290,6 +287,6 @@ def tumor_only(input_parameters, tech="docker"):
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile

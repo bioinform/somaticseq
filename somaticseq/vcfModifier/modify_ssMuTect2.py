@@ -51,17 +51,17 @@ def convert(infile, snv_out, indel_out):
             indel_out.write(line_i + "\n")
 
             if line_i.startswith("##normal_sample="):
-                normal_name = line_i.split("=")[1]
+                line_i.split("=")[1]
 
             if line_i.startswith("##tumor_sample="):
-                tumor_name = line_i.split("=")[1]
+                line_i.split("=")[1]
 
             line_i = vcf_in.readline().rstrip()
             snv_out.write(line_i + "\n")
             indel_out.write(line_i + "\n")
 
         # This line will be #CHROM:
-        header = line_i.split("\t")
+        line_i.split("\t")
 
         # This will be the first variant line:
         line_i = vcf_in.readline().rstrip()
@@ -109,7 +109,7 @@ def convert(infile, snv_out, indel_out):
                     split_infos = [
                         "{}={}".format(info_variable, info_value[ith_base])
                         for info_variable, info_value in zip(info_to_split, measures)
-                        if info_value != None
+                        if info_value is not None
                     ]
 
                     still_infos = [
@@ -117,7 +117,7 @@ def convert(infile, snv_out, indel_out):
                         for info_variable, info_value in zip(
                             info_to_keep, still_measures
                         )
-                        if info_value != False
+                        if info_value is not False
                     ]
 
                     split_infos.extend(still_infos)

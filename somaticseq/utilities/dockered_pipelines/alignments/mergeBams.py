@@ -3,12 +3,9 @@
 import os
 import re
 import subprocess
-import tempfile
 from datetime import datetime
 
 import somaticseq.utilities.dockered_pipelines.container_option as container
-import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
-from somaticseq._version import __version__ as VERSION
 
 timestamp = re.sub(
     r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
@@ -95,7 +92,7 @@ def picard(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=Fal
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile
 
@@ -150,6 +147,6 @@ def sambamba(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=F
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile

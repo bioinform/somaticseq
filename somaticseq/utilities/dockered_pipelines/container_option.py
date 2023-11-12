@@ -2,7 +2,6 @@ import os
 import uuid
 from pathlib import Path
 
-import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
 from somaticseq._version import __version__ as VERSION
 
 DOCKER_IMAGES = {
@@ -20,8 +19,6 @@ DOCKER_IMAGES = {
     "sambamba_image": "lethalfang/sambamba:0.7.1",
     "samtools_image": "lethalfang/samtools:1.10",
     "tabix_image": "lethalfang/tabix:1.10",
-    "picard_image": "lethalfang/picard:2.22.7",
-    "sambamba_image": "lethalfang/sambamba:0.7.1",
 }
 
 

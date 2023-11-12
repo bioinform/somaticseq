@@ -57,14 +57,14 @@ def convert(infile, snv_out, indel_out):
             line_i = vcf_in.readline().rstrip()
 
         # This is the #CHROM line:
-        headers = line_i.split("\t")
+        line_i.split("\t")
         snv_out.write(line_i + "\n")
         indel_out.write(line_i + "\n")
 
         line_i = vcf_in.readline().rstrip()
         while line_i:
 
-            items = line_i.split("\t")
+            line_i.split("\t")
 
             vcf_i = genome.VcfLine(line_i)
 
@@ -97,7 +97,7 @@ def convert(infile, snv_out, indel_out):
                     split_infos = [
                         "{}={}".format(info_variable, info_value[ith_base])
                         for info_variable, info_value in zip(info_to_split, measures)
-                        if info_value != None
+                        if info_value is not None
                     ]
 
                     still_infos = [
@@ -105,7 +105,7 @@ def convert(infile, snv_out, indel_out):
                         for info_variable, info_value in zip(
                             info_to_keep, still_measures
                         )
-                        if info_value != False
+                        if info_value is not False
                     ]
 
                     split_infos.extend(still_infos)

@@ -5,12 +5,9 @@ import math
 import os
 import re
 import subprocess
-import uuid
 from datetime import datetime
-from pathlib import Path
 
 import somaticseq.utilities.dockered_pipelines.container_option as container
-from somaticseq._version import __version__ as VERSION
 
 timestamp = re.sub(
     r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
@@ -69,7 +66,6 @@ def bwa(input_parameters, tech="docker"):
     mounted_fq1 = fileDict[input_parameters["in_fastq1"]]["mount_path"]
     mounted_fq2 = fileDict[input_parameters["in_fastq2"]]["mount_path"]
 
-    temporary_files = []
     with open(outfile, "w") as out:
 
         out.write("#!/bin/bash\n\n")
@@ -122,7 +118,7 @@ def bwa(input_parameters, tech="docker"):
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
-    returnCode = subprocess.call(command_line, shell=True)
+    subprocess.call(command_line, shell=True)
 
     return outfile
 

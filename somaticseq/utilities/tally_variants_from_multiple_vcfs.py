@@ -10,6 +10,7 @@ import uuid
 from warnings import warn
 
 import pysam
+
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 import somaticseq.genomicFileHandler.read_info_extractor as read_info_extractor
 import somaticseq.utilities.split_Bed_into_equal_regions as split_regions
@@ -47,7 +48,7 @@ def extract_snpEff(vcf_line):
             ann_item = ann_i.split("|")
             gene_i = ann_item[3]
             feature_i = ann_item[6]
-            ntchange_i = ann_item[9]
+            ann_item[9]
             aaChange_i = ann_item[10]
 
             if gene_i and aaChange_i:
@@ -157,14 +158,14 @@ def vcfs2variants(vcf_files, bam_files, sample_names):
 
             while line_i:
 
-                vcf_obj = genome.VcfLine(line_i)
+                genome.VcfLine(line_i)
                 item = line_i.split("\t")
 
                 contig_i = item[0]
                 pos_i = int(item[1])
                 refbase = item[3]
                 altbase = item[4]
-                ID_field = item[2].split(";")
+                item[2].split(";")
                 filter_i = item[6].split(";")
 
                 genes, amino_acid_changes, txn_ids = extract_snpEff(line_i)

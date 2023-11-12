@@ -293,7 +293,7 @@ def tsv2vcf(
 
         # Create vcf headers:
         vcf.write("##fileformat=VCFv4.1\n")
-        vcf.write("{}__{}\n".format(version_line, time_string))
+        vcf.write(f"{version_line}__{time_string}\n")
 
         for header_line_i in extra_headers:
             vcf.write(header_line_i + "\n")
@@ -409,11 +409,11 @@ def tsv2vcf(
             try:
                 # Non-PASS MuSE calls are made into fractions.
                 if (tsv_item[MuSE_Tier] != "1") or ("1.0" in tsv_item[MuSE_Tier]):
-                    if_MuSE = "0"
+                    pass
                 else:
-                    if_MuSE = "1"
+                    pass
             except NameError:
-                if_MuSE = "."
+                pass
 
             tool_combo_values = []
             num_tools = 0
@@ -454,7 +454,7 @@ def tsv2vcf(
                 seq_complexity = (
                     "%.1f" % float(tsv_item[LC]) if tsv_item[LC] != "nan" else "."
                 )
-                info_string = info_string + ";LC={}".format(seq_complexity)
+                info_string = info_string + f";LC={seq_complexity}"
             except NameError:
                 pass
 
@@ -646,7 +646,7 @@ def tsv2vcf(
 
             # Add VAF to info string if and only if there is one single sample in the VCF sample
             if single_mode:
-                info_string = info_string + ";AF={}".format(vaf)
+                info_string = info_string + f";AF={vaf}"
 
             tumor_sample_string = "{GT}:{DP4}:{CD4}:{refMQ}:{altMQ}:{refBQ}:{altBQ}:{refNM}:{altNM}:{fetSB}:{fetCD}:{uMQ}:{uBQ}:{MQ0}:{VAF}".format(
                 GT=gt,

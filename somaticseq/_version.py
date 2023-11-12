@@ -1,2 +1,2 @@
 __version__ = "3.7.4"
-vcf_header = "##SomaticSeq=v{}".format(__version__)
+vcf_header = f"##SomaticSeq=v{__version__}"

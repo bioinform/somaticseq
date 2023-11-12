@@ -66,7 +66,7 @@ def run_workflows(list_of_ListOfTasks, threads=1, shell="bash"):
 
     for list_of_tasks in list_of_ListOfTasks:
         bash_async = pool.map_async(run_script_i, list_of_tasks)
-        outputs = bash_async.get()
+        bash_async.get()
 
     pool.close()
 

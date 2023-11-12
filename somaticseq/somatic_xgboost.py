@@ -5,8 +5,9 @@ import logging
 from copy import copy
 
 import pandas as pd
-import somaticseq.ntchange_type as ntchange
 import xgboost as xgb
+
+import somaticseq.ntchange_type as ntchange
 from somaticseq._version import __version__
 
 FORMAT = "%(levelname)s %(asctime)-15s %(name)-20s %(message)s"
@@ -102,13 +103,11 @@ def builder(
     logger = logging.getLogger("xgboost_" + builder.__name__)
     logger.info("TRAINING {} for XGBOOST".format(",".join(input_tsvs)))
     logger.info("Columns removed before training: {}".format(", ".join(non_feature)))
-    logger.info("Number of boosting rounds = {}".format(num_rounds))
-    logger.info(
-        "Hyperparameters: " + ", ".join(["{}={}".format(i, param[i]) for i in param])
-    )
+    logger.info(f"Number of boosting rounds = {num_rounds}")
+    logger.info("Hyperparameters: " + ", ".join([f"{i}={param[i]}" for i in param]))
 
     if not model:
-        model = input_tsvs[0] + ".xgb.v{}.classifier".format(__version__)
+        model = input_tsvs[0] + f".xgb.v{__version__}.classifier"
 
     input_data = pd.concat(
         [
@@ -150,7 +149,7 @@ def predictor(
 
     logger = logging.getLogger("xgboost_" + predictor.__name__)
     logger.info("Columns removed for prediction: {}".format(",".join(non_feature)))
-    logger.info("Number of trees to use = {}".format(iterations))
+    logger.info(f"Number of trees to use = {iterations}")
 
     xgb_model = xgb.Booster()
     xgb_model.load_model(model)
