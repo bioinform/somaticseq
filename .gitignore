@@ -12,3 +12,5 @@ Manual.synctex.gz
 dist
 build
 .vscode/
+.made
+Makefile
