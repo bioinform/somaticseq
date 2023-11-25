@@ -70,11 +70,9 @@ min_varDP = args.min_varDP
 
 
 with genome.open_textfile(infile) as vcf_in, open(outfile, "w") as vcf_out:
-
     line_i = vcf_in.readline().rstrip()
 
     while line_i.startswith("##"):
-
         vcf_out.write(line_i + "\n")
         line_i = vcf_in.readline().rstrip()
 
@@ -88,11 +86,9 @@ with genome.open_textfile(infile) as vcf_in, open(outfile, "w") as vcf_out:
     line_i = vcf_in.readline().rstrip()
 
     while line_i:
-
         vcf_i = genome.VcfLine(line_i)
 
         if vcf_i.filters == "PASS":
-
             refMQ = float(vcf_i.get_sample_value("refMQ", sample_index))
             altMQ = float(vcf_i.get_sample_value("altMQ", sample_index))
             refBQ = float(vcf_i.get_sample_value("refBQ", sample_index))

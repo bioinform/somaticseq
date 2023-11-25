@@ -8,7 +8,6 @@ import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 
 
 def run():
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -30,14 +29,11 @@ def run():
 
 
 def convert(infile, outfile):
-
     with genome.open_textfile(infile) as vcf, open(outfile, "w") as vcfout:
-
         line_i = vcf.readline().rstrip()
 
         # Skip headers from now on:
         while line_i.startswith("#"):
-
             if line_i.startswith("##FORMAT=<ID=DP4,"):
                 line_i = '##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">'
 
@@ -50,7 +46,6 @@ def convert(infile, outfile):
 
         # Doing the work here:
         while line_i:
-
             vcf_i = genome.VcfLine(line_i)
 
             num_samples = len(vcf_i.samples)
@@ -86,7 +81,6 @@ def convert(infile, outfile):
                 alt_item = vcf_i.altbase.split(",")
 
                 if vcf_i.refbase in alt_item:
-
                     bad_idx = alt_item.index(vcf_i.refbase)
                     alt_item.pop(bad_idx)
                     vcf_i.altbase = ",".join(alt_item)
@@ -95,14 +89,12 @@ def convert(infile, outfile):
                 # Could not parse the allele(s) [GTC], first base does not match the reference
                 for n1, alt_i in enumerate(alt_item[1::]):
                     if not alt_i.startswith(vcf_i.refbase):
-
                         alt_item.pop(n1 + 1)
                         vcf_i.altbase = ",".join(alt_item)
 
             # Combine AD:RD into AD:
             format_items = vcf_i.get_sample_variable()
             if "AD" in format_items and "RD" in format_items:
-
                 rd_sm1 = vcf_i.get_sample_value("RD", 0)
                 ad_sm1 = vcf_i.get_sample_value("AD", 0)
 
@@ -118,14 +110,13 @@ def convert(infile, outfile):
                 vcf_i.field = ":".join(format_items)
 
                 item_normal = vcf_i.samples[0].split(":")
-                item_normal[idx_ad] = "{},{}".format(rd_sm1, ad_sm1)
+                item_normal[idx_ad] = f"{rd_sm1},{ad_sm1}"
                 item_normal.pop(idx_rd)
                 vcf_i.samples[0] = ":".join(item_normal)
 
                 if paired:
-
                     item_tumor = vcf_i.samples[1].split(":")
-                    item_tumor[idx_ad] = "{},{}".format(rd_sm2, ad_sm2)
+                    item_tumor[idx_ad] = f"{rd_sm2},{ad_sm2}"
                     item_tumor.pop(idx_rd)
                     vcf_i.samples[1] = ":".join(item_tumor)
 
@@ -141,7 +132,7 @@ def convert(infile, outfile):
                     vcf_i.filters,
                     vcf_i.info,
                     vcf_i.field,
-                    "\t".join((vcf_i.samples)),
+                    "\t".join(vcf_i.samples),
                 )
             )
 

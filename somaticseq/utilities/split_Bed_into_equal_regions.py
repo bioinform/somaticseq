@@ -8,7 +8,6 @@ import sys
 
 
 def run():
-
     # argparse Stuff
     parser = argparse.ArgumentParser(
         description="""Given an input bed file, this program will output a number of bed files, each will have same number of total base pairs.
@@ -51,9 +50,7 @@ def run():
 
 
 def fai2bed(fai, bedout):
-
     with open(fai) as fai, open(bedout, "w") as bed:
-
         fai_i = fai.readline().rstrip()
 
         while fai_i:
@@ -65,7 +62,6 @@ def fai2bed(fai, bedout):
 
 
 def split(infile, outfiles, num):
-
     outfilesWritten = []
 
     out_basename = os.path.basename(outfiles)
@@ -76,7 +72,6 @@ def split(infile, outfiles, num):
         out_directory = os.curdir
 
     with open(infile) as bedin:
-
         line_i = bedin.readline().rstrip()
 
         while re.match(r"track|browser|#", line_i):
@@ -85,7 +80,6 @@ def split(infile, outfiles, num):
         total_region_size = 0
         original_regions = []
         while line_i:
-
             items = line_i.split("\t")
 
             chr_i = items[0]
@@ -105,37 +99,32 @@ def split(infile, outfiles, num):
     current_region = []
     ith_split = 1
     for region_i in original_regions:
-
         chr_i = region_i[0]
         start_i = region_i[1]
         end_i = region_i[2]
 
         # If the "now size" is still less than size/file requirement
         if current_size + (end_i - start_i) <= size_per_file:
-
             # Need to collect more to fulfill the size/file requirement, so append to current_region list
-            current_region.append("{}\t{}\t{}\n".format(chr_i, start_i, end_i))
+            current_region.append(f"{chr_i}\t{start_i}\t{end_i}\n")
             current_size = current_size + (end_i - start_i)
 
         # If the "now size" exceeds the size/file requirement, need to start splitting:
         elif current_size + (end_i - start_i) > size_per_file:
-
             # Split a big region into a smaller regino, such that the size of "current_region" is equal to the size/file requirement:
             breakpoint_i = size_per_file + start_i - current_size
 
             # Write these regions out, , reset "current_region," then add 1 to ith_split afterward to keep track:
-            outfilesWritten.append(
-                "{}{}{}.{}".format(out_directory, os.sep, ith_split, out_basename)
-            )
+            outfilesWritten.append(f"{out_directory}{os.sep}{ith_split}.{out_basename}")
             with open(
-                "{}{}{}.{}".format(out_directory, os.sep, ith_split, out_basename), "w"
+                f"{out_directory}{os.sep}{ith_split}.{out_basename}", "w"
             ) as ith_out:
                 for line_i in current_region:
                     ith_out.write(line_i)
 
                 # Make sure it doesn't write a 0-bp region:
                 if breakpoint_i > start_i:
-                    ith_out.write("{}\t{}\t{}\n".format(chr_i, start_i, breakpoint_i))
+                    ith_out.write(f"{chr_i}\t{start_i}\t{breakpoint_i}\n")
             ith_split += 1
             current_region = []
 
@@ -144,15 +133,13 @@ def split(infile, outfiles, num):
 
             # If the remnant of the previous region is less than the size/file requirement, simply make it "current_region" and then move on:
             if remaining_length <= size_per_file:
-                current_region.append("{}\t{}\t{}\n".format(chr_i, breakpoint_i, end_i))
+                current_region.append(f"{chr_i}\t{breakpoint_i}\t{end_i}\n")
                 current_size = remaining_length
 
             # If the renmant of the previuos region exceed the size/file requirement, it needs to be properly split until it's small enough:
             elif remaining_length > size_per_file:
-
                 # Each sub-region, if large enough, will have its own file output:
                 while (end_i - breakpoint_i) > size_per_file:
-
                     end_j = breakpoint_i + size_per_file
 
                     outfilesWritten.append(
@@ -166,21 +153,18 @@ def split(infile, outfiles, num):
                         ),
                         "w",
                     ) as ith_out:
-
                         if end_j > breakpoint_i:
-                            ith_out.write(
-                                "{}\t{}\t{}\n".format(chr_i, breakpoint_i, end_j)
-                            )
+                            ith_out.write(f"{chr_i}\t{breakpoint_i}\t{end_j}\n")
                     ith_split += 1
 
                     breakpoint_i = end_j
 
                 # After every sub-region has its own bed file, the remnant is added to "current_region" to deal with the next line of the "original_regions"
-                current_region.append("{}\t{}\t{}\n".format(chr_i, breakpoint_i, end_i))
+                current_region.append(f"{chr_i}\t{breakpoint_i}\t{end_i}\n")
                 current_size = end_i - breakpoint_i
 
     # The final region to write out:
-    ithOutName = "{}{}{}.{}".format(out_directory, os.sep, ith_split, out_basename)
+    ithOutName = f"{out_directory}{os.sep}{ith_split}.{out_basename}"
     outfilesWritten.append(ithOutName)
     with open(ithOutName, "w") as ith_out:
         for line_i in current_region:
@@ -190,7 +174,6 @@ def split(infile, outfiles, num):
 
 
 def split_vcf_file(vcf_file, work_dir=os.curdir, num=1):
-
     num_lines = 0
     with open_textfile(vcf_file) as vcf:
         line_i = vcf.readline()
@@ -205,7 +188,6 @@ def split_vcf_file(vcf_file, work_dir=os.curdir, num=1):
     lines_per_file = math.ceil(float(num_lines) / num)
 
     with open_textfile(vcf_file) as vcf:
-
         outnames = [
             os.curdir
             + os.sep
@@ -224,11 +206,9 @@ def split_vcf_file(vcf_file, work_dir=os.curdir, num=1):
             line_i = vcf.readline()
 
         while line_i:
-
             i = 0
             n = 0
             while line_i:
-
                 outhandles[n].write(line_i)
                 i += 1
 

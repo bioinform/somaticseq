@@ -74,7 +74,6 @@ class VcfLine:
     """Each instance of this object is a line from the vcf file (no header)."""
 
     def __init__(self, vcf_line):
-
         """Argument is a line in pileup file."""
         self.vcf_line = vcf_line.rstrip("\n")
 
@@ -111,7 +110,7 @@ class VcfLine:
         return self.info.split(";")
 
     def get_info_value(self, variable):
-        key_item = re.search(r"\b{}=([^;\s]+)([;\W]|$)".format(variable), self.vcf_line)
+        key_item = re.search(rf"\b{variable}=([^;\s]+)([;\W]|$)", self.vcf_line)
         # The key has a value attached to it, e.g., VAR=1,2,3
         if key_item:
             return key_item.groups()[0]
@@ -179,7 +178,6 @@ def faiordict2contigorder(file_name, file_format):
 
     contig_sequence = []
     with open(file_name) as gfile:
-
         for line_i in gfile:
             if file_format == "fai":
                 contig_match = re.match(r"([^\t]+)\t", line_i)
@@ -201,7 +199,6 @@ def faiordict2contigorder(file_name, file_format):
 
 
 def open_textfile(file_name):
-
     # See if the input file is a .gz file:
     if str(file_name).lower().endswith(".gz"):
         return gzip.open(file_name, "rt")
@@ -211,7 +208,6 @@ def open_textfile(file_name):
 
 
 def open_bam_file(file_name):
-
     try:
         return AlignmentFile(file_name, "rb")
     except ValueError:
@@ -269,7 +265,6 @@ def findall_index_regex(mylist, pattern):
 
 
 def count_repeating_bases(sequence):
-
     """For a string, count the number of characters that appears in a row.
     E.g., for string "ABBCCCDDDDAAAAAAA", the function returns 1, 2, 3, 4, 7, because there is 1 A, 2 B's, 3 C's, 4 D's, and then 7 A's.
     """
@@ -277,7 +272,6 @@ def count_repeating_bases(sequence):
     previous_base = None
 
     for current_base in sequence:
-
         if current_base == previous_base:
             counters[-1] += 1
         else:
@@ -291,7 +285,6 @@ def count_repeating_bases(sequence):
 
 
 def numeric_id(chr_i, pos_i, contig_seq):
-
     chr_i = contig_seq[chr_i]
     numeric_chr_i = float(chr_i) * 1000000000000
     numeric_pos_i = float(pos_i)
@@ -363,9 +356,9 @@ def whoisbehind(coord_0, coord_1, chrom_sequence):
 
 
 def vcf_header_modifier(infile_handle, addons=[], getlost=" "):
-
     """addons = A list of INFO, FORMAT, ID, or Filter lines you want to add.
-    getlost = a regex expression for the ID of INFO/FORMAT/FILTER that you want to get rid of."""
+    getlost = a regex expression for the ID of INFO/FORMAT/FILTER that you want to get rid of.
+    """
 
     line_i = infile_handle.readline().rstrip()
 
@@ -380,7 +373,7 @@ def vcf_header_modifier(infile_handle, addons=[], getlost=" "):
         if re.match(r"##fileformat=", line_i):
             vcffileformat = line_i
         elif re.match(r"##(INFO|FORMAT|FILTER)", line_i):
-            if not re.match(r"##(INFO|FORMAT|FILTER)=<ID={},".format(getlost), line_i):
+            if not re.match(rf"##(INFO|FORMAT|FILTER)=<ID={getlost},", line_i):
                 vcfheader_info_format_filter.append(line_i)
         elif re.match(r"##", line_i):
             vcfheader_misc.append(line_i)
@@ -418,10 +411,8 @@ def catchup(coordinate_i, line_j, filehandle_j, chrom_sequence):
 
     # If file_j is behind, then needs to catch up:
     elif is_behind == 1:
-
         # Keep at it until line_j is no longer behind:
         while is_behind == 1:
-
             # Catch up
             line_j = filehandle_j.readline().rstrip()
             next_coord = re.match(pattern_chr_position, line_j)
@@ -445,7 +436,6 @@ def catchup(coordinate_i, line_j, filehandle_j, chrom_sequence):
 
 
 def catchup_multilines(coordinate_i, line_j, filehandle_j, chrom_sequence):
-
     """
     Keep reading the j_th vcf file until it hits (or goes past) the i_th coordinate, then
         1) Create a list to store information for this coordinate in the j_th vcf file
@@ -472,7 +462,6 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, chrom_sequence):
 
     # The two coordinates are the same, return the same line_j, but tag it "True"
     elif is_behind == 10:
-
         # Create a list, initiated with the current line:
         lines_of_coordinate_i = [line_j]
 
@@ -503,10 +492,8 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, chrom_sequence):
     # If file_j is behind, then needs to catch up:
     # This is an opportunity to check if the vcf_j file is properly sorted, by asserting current line cannot be "behind" a subsequent line
     elif is_behind == 1:
-
         # Keep at it until line_j is no longer behind:
         while is_behind == 1:
-
             # Catch up
             line_j = filehandle_j.readline().rstrip()
             next_coord = re.match(pattern_chr_position, line_j)
@@ -569,7 +556,6 @@ def find_vcf_at_coordinate(my_coordinate, latest_vcf_line, vcf_file_handle, chro
 
     vcf_variants = {}
     if latest_vcf_run[0]:
-
         for vcf_line_i in latest_vcf_here:
             vcf_i = VcfLine(vcf_line_i)
 

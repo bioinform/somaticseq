@@ -93,22 +93,18 @@ if length <= overlap:
 
 
 if turn_me_off:
-
     shutil.copyfile(infile, outfile)
 
 
 else:
     # merged region created by mergeBed
     with open(infile) as bedin, open(outfile, "w") as bedout:
-
         line_i = bedin.readline().rstrip()
 
         while re.match(r"track|browser|#", line_i):
-
             line_i = bedin.readline().rstrip()
 
         while line_i:
-
             item_i = line_i.split()
 
             contig_i = item_i[0]
@@ -131,10 +127,9 @@ else:
 
             k = 1
             while True:
+                label = f"{contig_i}_{i}_{k}"
 
-                label = "{}_{}_{}".format(contig_i, i, k)
-
-                bedout.write("{}\t{}\t{}\t{}\n".format(contig_i, i, j, label))
+                bedout.write(f"{contig_i}\t{i}\t{j}\t{label}\n")
 
                 # Break from the loop j has reached the end
                 if j >= end_i + right_flank:

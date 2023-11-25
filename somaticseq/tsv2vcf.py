@@ -281,7 +281,6 @@ def tsv2vcf(
             MVJS = []
             num_tools = 0
             for tool_i in mvjsdu:
-
                 if_Tool = tsv_item[toolcode2index[tool_i]]
                 if if_Tool == "1":
                     if_Tool = "1"
@@ -549,7 +548,6 @@ def tsv2vcf(
             if score >= pass_score or (
                 score is nan and num_tools > 0.5 * total_num_tools
             ):
-
                 vcf_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
                     tsv_item[CHROM],
                     tsv_item[POS],

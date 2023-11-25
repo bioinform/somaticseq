@@ -23,7 +23,6 @@ def remove_vcf_illegal_lines(invcf, outvcf):
             line_i = vcf.readline().rstrip()
 
         while line_i:
-
             vcf_i = genome.VcfLine(line_i)
 
             if re.match(r"<\w+>", vcf_i.altbase) and (not vcf_i.get_info_value("END")):
@@ -34,14 +33,12 @@ def remove_vcf_illegal_lines(invcf, outvcf):
 
     if hasIllegalLine:
         with genome.open_textfile(invcf) as vcf, open(outvcf, "w") as out:
-
             line_i = vcf.readline().rstrip()
             while line_i.startswith("#"):
                 out.write(line_i + "\n")
                 line_i = vcf.readline().rstrip()
 
             while line_i:
-
                 vcf_i = genome.VcfLine(line_i)
 
                 if not (
@@ -59,11 +56,9 @@ def remove_vcf_illegal_lines(invcf, outvcf):
 
 
 def bed_include(infile, inclusion_region, outfile):
-
     assert infile != outfile
 
     if inclusion_region:
-
         cmd_line = "bedtools intersect -header -a {} -b {} | uniq > {}".format(
             infile, inclusion_region, outfile
         )
@@ -76,7 +71,6 @@ def bed_include(infile, inclusion_region, outfile):
 
 
 def bed_exclude(infile, exclusion_region, outfile):
-
     assert infile != outfile
 
     if exclusion_region:
@@ -92,7 +86,6 @@ def bed_exclude(infile, exclusion_region, outfile):
 
 
 def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=None):
-
     assert infile != outfile
     from shutil import copyfile
 
@@ -103,7 +96,6 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
     temp_files = []
 
     if inclusion_region:
-
         included_temp_file = infile_noext + uuid.uuid4().hex + file_ext
 
         cmd_line = "bedtools intersect -header -a {} -b {} | uniq > {}".format(
@@ -115,7 +107,6 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
         temp_files.append(included_temp_file)
 
     if exclusion_region:
-
         cmd_line = "bedtools intersect -header -a {} -b {} -v | uniq > {}".format(
             infile, exclusion_region, outfile
         )
@@ -126,8 +117,7 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
 
     elif not (inclusion_region or exclusion_region):
         if infile.endswith(".gz"):
-
-            cmd_line = "gunzip -c {} > {}".format(infile, outfile)
+            cmd_line = f"gunzip -c {infile} > {outfile}"
             subprocess.check_call(cmd_line, shell=True)
 
         else:
@@ -141,7 +131,6 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
 
 # Use somaticseq/somaticseq/utilities/vcfsorter.pl fa.dict unsorted.vcf > sorted.vcf
 def vcfsorter(ref, vcfin, vcfout):
-
     fai = ref + ".fai"
-    cmd_line = "bedtools sort -faidx {} -header -i {} > {}".format(fai, vcfin, vcfout)
+    cmd_line = f"bedtools sort -faidx {fai} -header -i {vcfin} > {vcfout}"
     subprocess.check_call(cmd_line, shell=True)

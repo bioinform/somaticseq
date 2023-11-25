@@ -38,7 +38,6 @@ for i in range(1, len(tool_code) + 1):
 
 
 with open(vcf) as vcf:
-
     line_i = vcf.readline().rstrip()
 
     while line_i.startswith("#"):
@@ -47,7 +46,6 @@ with open(vcf) as vcf:
     print("#ToolCombo\tTruePositiveCalls\tAllCalls")
 
     while line_i:
-
         vcf_i = genome.VcfLine(line_i)
         combo_i = vcf_i.get_info_value(combo)
         tool_i = combo_i.split(",")

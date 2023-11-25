@@ -225,7 +225,6 @@ def mergeSubdirVcf(dirList, filename, outdir=os.curdir):
 
 
 if __name__ == "__main__":
-
     args = run_somaticseq.run()
     os.makedirs(args.output_directory, exist_ok=True)
     bed_splitted = splitRegions(

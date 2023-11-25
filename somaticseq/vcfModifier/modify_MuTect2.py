@@ -45,18 +45,15 @@ def run():
 
 
 def convert(infile, snv_out, indel_out, is_tnscope):
-
     info_to_split = "NLOD", "TLOD"
     info_to_keep = "STR", "ECNT"
 
     with genome.open_textfile(infile) as vcf_in, open(snv_out, "w") as snv_out, open(
         indel_out, "w"
     ) as indel_out:
-
         line_i = vcf_in.readline().rstrip()
 
         while line_i.startswith("##"):
-
             if line_i.startswith("##normal_sample="):
                 normal_name = line_i.split("=")[1]
 
@@ -88,11 +85,9 @@ def convert(infile, snv_out, indel_out, is_tnscope):
         line_i = vcf_in.readline().rstrip()
 
         while line_i:
-
             vcf_i = genome.VcfLine(line_i)
 
             if "," not in vcf_i.altbase:
-
                 if len(vcf_i.refbase) == 1 and len(vcf_i.altbase) == 1:
                     snv_out.write(line_i + "\n")
                 elif len(vcf_i.refbase) == 1 or len(vcf_i.altbase) == 1:
@@ -116,15 +111,14 @@ def convert(infile, snv_out, indel_out, is_tnscope):
                         still_measures.append(None)
 
                 for ith_base, altbase_i in enumerate(alt_bases):
-
                     split_infos = [
-                        "{}={}".format(info_variable, info_value[ith_base])
+                        f"{info_variable}={info_value[ith_base]}"
                         for info_variable, info_value in zip(info_to_split, measures)
                         if info_value is not None
                     ]
 
                     still_infos = [
-                        "{}={}".format(info_variable, info_value)
+                        f"{info_variable}={info_value}"
                         for info_variable, info_value in zip(
                             info_to_keep, still_measures
                         )

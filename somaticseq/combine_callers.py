@@ -166,7 +166,6 @@ def combineSingle(
         intermediate_vcfs["LoFreq"]["indel"] = indel_lofreq_out
 
     if scalpel:
-
         scalpel_in = bed_intersector(
             scalpel,
             os.sep.join((outdir, "intersect.scalpel.vcf")),
@@ -202,7 +201,6 @@ def combineSingle(
         intermediate_vcfs["Strelka"]["indel"] = indel_strelka_out
 
     for ith_arb, arb_vcf_i in enumerate(arb_snvs):
-
         arb_vcf_in = bed_intersector(
             arb_vcf_i,
             os.sep.join((outdir, f"intersect.snv.arb_{ith_arb}.vcf")),
@@ -217,7 +215,6 @@ def combineSingle(
         intermediate_vcfs["Arbitrary"]["snv"].append(arb_vcf_out)
 
     for ith_arb, arb_vcf_i in enumerate(arb_indels):
-
         arb_vcf_in = bed_intersector(
             arb_vcf_i,
             os.sep.join((outdir, f"intersect.indel.arb_{ith_arb}.vcf")),
@@ -285,7 +282,6 @@ def combinePaired(
     arb_indels=None,
     keep_intermediates=False,
 ):
-
     if arb_snvs is None:
         arb_snvs = []
     if arb_indels is None:
@@ -356,7 +352,6 @@ def combinePaired(
         intermediate_vcfs["MuTect2"]["indel"] = indel_mutect_out
 
     if varscan_snv or varscan_indel:
-
         import somaticseq.vcfModifier.modify_VarScan2 as mod_varscan2
 
         if varscan_snv:
@@ -449,7 +444,6 @@ def combinePaired(
         intermediate_vcfs["VarDict"]["indel"] = sorted_indel_vardict_out
 
     if muse:
-
         muse_in = bed_intersector(
             muse, os.sep.join((outdir, "intersect.muse.vcf")), inclusion, exclusion
         )
@@ -473,7 +467,6 @@ def combinePaired(
         snv_intermediates.append(snv_lofreq_out)
 
     if lofreq_indel:
-
         lofreq_in = bed_intersector(
             lofreq_indel,
             os.sep.join((outdir, "intersect.lofreq.indel.vcf")),
@@ -487,7 +480,6 @@ def combinePaired(
         indel_intermediates.append(indel_lofreq_out)
 
     if scalpel:
-
         scalpel_in = bed_intersector(
             scalpel,
             os.sep.join((outdir, "intersect.scalpel.vcf")),
@@ -501,7 +493,6 @@ def combinePaired(
         indel_intermediates.append(scalpel_out)
 
     if strelka_snv or strelka_indel:
-
         import somaticseq.vcfModifier.modify_Strelka as mod_strelka
 
         if strelka_snv:
@@ -518,7 +509,6 @@ def combinePaired(
             snv_intermediates.append(snv_strelka_out)
 
         if strelka_indel:
-
             strelka_in = bed_intersector(
                 strelka_indel,
                 os.sep.join((outdir, "intersect.strelka.indel.vcf")),

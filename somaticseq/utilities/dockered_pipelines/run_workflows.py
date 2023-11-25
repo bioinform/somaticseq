@@ -9,7 +9,6 @@ from multiprocessing import Pool
 
 
 def seconds_to_readable(second_i):
-
     days = second_i // 86400
     hours = second_i // 3600 % 24
     minutes = second_i // 60 % 60
@@ -25,16 +24,15 @@ def seconds_to_readable(second_i):
     out_line = ""
     for item_i in ("days", "hours", "minutes", "seconds"):
         if out_time[item_i] > 0:
-            out_line = out_line + " {} {}".format(out_time[item_i], str(item_i))
+            out_line = out_line + f" {out_time[item_i]} {str(item_i)}"
 
     return out_line.lstrip(" ")
 
 
 def run_script(bash_script, shell="bash"):
-
     logger = logging.getLogger(run_script.__name__)
 
-    cmd_line = "{} {}".format(shell, bash_script)
+    cmd_line = f"{shell} {bash_script}"
     logger.info(cmd_line)
 
     start_time = datetime.now()
@@ -106,7 +104,6 @@ def partition_list_to_lists(super_list, num_in_each_list):
 
 
 def run():
-
     parser = argparse.ArgumentParser(
         description="This module has two use cases:\n1) the first use case is simple, e.g., run the 4 scripts using 2 threads in parallel: run_workflows.py --scripts 1.sh 2.sh 3.sh 4.sh -nt 2.\n2) the second use case is more complex, e.g., with -nt 3 threads, the following 10 scripts have to be completed in the following orders: the first 3 need to complete first, and then the next 4 need to complete, and then finally the next 3 will need to complete: run_workflows.py -scripts 1.sh 2.sh 3.sh 4.sh 5.sh 6.sh 7.sh 8.sh 9.sh 10.sh -parts 3 4 3 -nt 3",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -124,7 +121,6 @@ def run():
 
 
 if __name__ == "__main__":
-
     FORMAT = "%(levelname)s %(asctime)-15s %(name)-20s %(message)s"
     logger = logging.getLogger("run_workflow.py")
 

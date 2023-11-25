@@ -66,16 +66,13 @@ filter_clip = args.no_clipping
 with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
     bam_out, "wb", template=bam
 ) as bamout:
-
     reads = bam.fetch()
 
     for read_i in reads:
-
         if (
             read_i.mapping_quality >= minMQ
             and (read_i.has_tag("NM") and read_i.get_tag("NM") <= maxNM)
             and (read_i.is_proper_pair or not filter_discordant)
             and ("S" not in read_i.cigarstring or not filter_clip)
         ):
-
             bamout.write(read_i)

@@ -39,33 +39,27 @@ def run():
 
 
 def split_into_snv_and_indel(infile, snv_out, indel_out):
-
     with genome.open_textfile(infile) as vcf_in, open(snv_out, "w") as snv_out, open(
         indel_out, "w"
     ) as indel_out:
-
         line_i = vcf_in.readline().rstrip()
 
         while line_i.startswith("#"):
-
             snv_out.write(line_i + "\n")
             indel_out.write(line_i + "\n")
 
             line_i = vcf_in.readline().rstrip()
 
         while line_i:
-
             vcf_i = genome.VcfLine(line_i)
 
             if ("," not in vcf_i.altbase) and ("/" not in vcf_i.altbase):
-
                 if len(vcf_i.refbase) == 1 and len(vcf_i.altbase) == 1:
                     snv_out.write(line_i + "\n")
                 elif len(vcf_i.refbase) == 1 or len(vcf_i.altbase) == 1:
                     indel_out.write(line_i + "\n")
 
             else:
-
                 item = line_i.split("\t")
 
                 if "," in vcf_i.altbase:
@@ -73,10 +67,9 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
                 elif "/" in vcf_i.altbase:
                     alt_bases = vcf_i.altbase.split("/")
                 else:
-                    raise Exception("Check the line: {}".format(line_i))
+                    raise Exception(f"Check the line: {line_i}")
 
                 for ith_base, altbase_i in enumerate(alt_bases):
-
                     if len(vcf_i.refbase) == 1 and len(altbase_i) == 1:
                         item_j = copy(item)
                         item_j[4] = altbase_i
@@ -102,7 +95,6 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
                             if new_ref[0] == new_alt[0] and (
                                 len(new_ref) == 1 or len(new_alt) == 1
                             ):
-
                                 item_j = copy(item)
                                 item_j[3] = new_ref
                                 item_j[4] = new_alt

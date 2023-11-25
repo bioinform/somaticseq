@@ -18,7 +18,6 @@ import somaticseq.vcfModifier.vcfIntersector as vcfIntersector
 
 
 def intersect_multiple_vcf_files(inVcfList_and_BedFile):
-
     vcf_files, bed_file = inVcfList_and_BedFile
     dirname = tempfile.gettempdir()
 
@@ -32,7 +31,6 @@ def intersect_multiple_vcf_files(inVcfList_and_BedFile):
 
 
 def extract_snpEff(vcf_line):
-
     annGenes = []
     annAAs = []
     annTxns = []
@@ -44,7 +42,6 @@ def extract_snpEff(vcf_line):
         ann_items = snpeff_ann.split(",")
 
         for ann_i in ann_items:
-
             ann_item = ann_i.split("|")
             gene_i = ann_item[3]
             feature_i = ann_item[6]
@@ -52,12 +49,10 @@ def extract_snpEff(vcf_line):
             aaChange_i = ann_item[10]
 
             if gene_i and aaChange_i:
-
                 # Only do non-syn variants
                 aa = re.search(r"p\.([a-zA-Z]+)[0-9]+([a-zA-Z]+)", aaChange_i)
 
                 if aa and (aa.groups()[0] != aa.groups()[1]):
-
                     annGenes.append(gene_i)
                     annAAs.append(aaChange_i)
                     annTxns.append(feature_i)
@@ -84,7 +79,6 @@ def vaf_from_bam(
     first_alt,
     min_mq=1,
 ):
-
     """
     bam is the opened file handle of bam file
     my_coordiate is a list or tuple of 0-based (contig, position)
@@ -104,7 +98,6 @@ def vaf_from_bam(
             and read_info_extractor.dedup_test(read_i)
             and read_i.mapping_quality >= min_mq
         ):
-
             dp += 1
 
             (
@@ -128,7 +121,6 @@ def vaf_from_bam(
                 or (indel_length < 0 and code_i == 2 and indel_length == indel_length_i)
                 or (indel_length > 0 and code_i == 3)
             ):
-
                 var_calls += 1
 
             # Inconsistent read or 2nd alternate calls:
@@ -139,7 +131,6 @@ def vaf_from_bam(
 
 
 def vcfs2variants(vcf_files, bam_files, sample_names):
-
     assert len(vcf_files) == len(sample_names) == len(bam_files)
 
     variantDict = {}
@@ -147,17 +138,14 @@ def vcfs2variants(vcf_files, bam_files, sample_names):
     for vcf_file_i, bam_file_i, sample_name_i in zip(
         vcf_files, bam_files, sample_names
     ):
-
         with genome.open_textfile(vcf_file_i) as vcf, pysam.AlignmentFile(
             bam_file_i
         ) as bam:
-
             line_i = vcf.readline().rstrip()
             while line_i.startswith("#"):
                 line_i = vcf.readline().rstrip()
 
             while line_i:
-
                 genome.VcfLine(line_i)
                 item = line_i.split("\t")
 
@@ -209,7 +197,6 @@ def vcfs2variants(vcf_files, bam_files, sample_names):
 
 
 def fills_missing_vafs(variantDict, bam_files, sample_names):
-
     assert len(sample_names) == len(bam_files)
 
     bamDict = {}
@@ -217,11 +204,8 @@ def fills_missing_vafs(variantDict, bam_files, sample_names):
         bamDict[sample_i] = pysam.AlignmentFile(bam_i)
 
     for variant_i in variantDict:
-
         for sample_i in sample_names:
-
             if sample_i not in variantDict[variant_i]:
-
                 vdp, rdp, odp, totaldp = vaf_from_bam(
                     bamDict[sample_i],
                     (variant_i[0], variant_i[1]),
@@ -263,7 +247,6 @@ def make_variant_dict(inputListofLists):
 def make_variant_dict_parallel(
     vcf_files, bam_files, sample_names, bed_region, nthreads
 ):
-
     dirname = tempfile.gettempdir()  # os.curdir
     partial_regions = split_regions.split(
         bed_region, os.path.join(dirname, uuid.uuid4().hex + ".bed"), nthreads
@@ -302,13 +285,11 @@ def print_variantDict(
     min_number=1,
     print_header=True,
 ):
-
     if print_header:
         line_out = "CHROM\tPOS\tREF\tALT\tID\tAAChange\tNUM\t" + "\t".join(sample_names)
         print(line_out)
 
     for variant_i in variantDict:
-
         if variantDict[variant_i]["DATABASE"]:
             id_column = ",".join(variantDict[variant_i]["DATABASE"])
         else:
@@ -325,9 +306,7 @@ def print_variantDict(
         num_intersected_filters = 0
         data_text = []
         for sample_i in sample_names:
-
             if set(variantDict[variant_i][sample_i]["FILTER"]) & set(filter_labels):
-
                 num_intersected_filters += 1
 
             text_i = "%s:%i/%i=%g" % (
@@ -339,7 +318,6 @@ def print_variantDict(
             data_text.append(text_i)
 
         if num_intersected_filters >= min_number:
-
             line_out = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
                 variant_i[0],
                 variant_i[1],
@@ -414,11 +392,9 @@ def run():
 
 
 if __name__ == "__main__":
-
     args = run()
 
     if args.num_threads > 1 and args.bed_inclusion:
-
         partitioned_variant_dicts = make_variant_dict_parallel(
             args.vcf_files,
             args.bam_files,
@@ -442,7 +418,6 @@ if __name__ == "__main__":
             )
 
     else:
-
         if args.num_threads > 1:
             warn("This module is unable parallelize this task without bed file input.")
 

@@ -22,7 +22,7 @@ DEFAULT_PARAMS = {
     "action": "echo",
     "vardict_arguments": "",
     "extra_docker_options": "",
-    "script": "vardict.{}.cmd".format(timestamp),
+    "script": f"vardict.{timestamp}.cmd",
     "min_MQ": 1,
     "minimum_VAF": 0.05,
     "process_bed": True,
@@ -30,7 +30,6 @@ DEFAULT_PARAMS = {
 
 
 def tumor_normal(input_parameters, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -67,7 +66,6 @@ def tumor_normal(input_parameters, tech="docker"):
     num_lines = 0
 
     if input_parameters["inclusion_region"]:
-
         bed_file = input_parameters["inclusion_region"]
 
         with open(bed_file) as bed:
@@ -81,13 +79,11 @@ def tumor_normal(input_parameters, tech="docker"):
                 line_i = bed.readline().rstrip()
 
     else:
-
         fai_file = input_parameters["genome_reference"] + ".fai"
         bed_file = os.path.join(input_parameters["output_directory"], "genome.bed")
 
         with open(fai_file) as fai, open(bed_file, "w") as wgs_bed:
             for line_i in fai:
-
                 item = line_i.split("\t")
 
                 total_bases += int(item[1])
@@ -97,7 +93,7 @@ def tumor_normal(input_parameters, tech="docker"):
 
     # However the "bed_file" is defined here, create a dockered line and mount dictionary for it:
     bed_split_line, bedDict = container.container_params(
-        "lethalfang/somaticseq:{}".format(VERSION),
+        f"lethalfang/somaticseq:{VERSION}",
         tech,
         (bed_file, input_parameters["output_directory"]),
     )
@@ -112,7 +108,6 @@ def tumor_normal(input_parameters, tech="docker"):
     mounted_bed = bedDict[bed_file]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -134,7 +129,7 @@ def tumor_normal(input_parameters, tech="docker"):
                 )
             )
 
-            bed_file = "{}/split_regions.bed".format(mounted_outdir)
+            bed_file = f"{mounted_outdir}/split_regions.bed"
 
         out.write(f"{container_line} bash -c \\\n")
         out.write('"/opt/VarDict-1.7.0/bin/VarDict \\\n')
@@ -142,11 +137,11 @@ def tumor_normal(input_parameters, tech="docker"):
         if input_parameters["vardict_arguments"]:
             out.write("{} \\\n".format(input_parameters["vardict_arguments"]))
 
-        out.write("-G {} \\\n".format(mounted_genome_reference))
-        out.write("-f {} -h \\\n".format(minVAF))
-        out.write("-b '{}|{}' \\\n".format(mounted_tumor_bam, mounted_normal_bam))
-        out.write("-Q 1 -c 1 -S 2 -E 3 -g 4 {} \\\n".format(bed_file))
-        out.write('> {}/vardict.var"\n\n'.format(mounted_outdir))
+        out.write(f"-G {mounted_genome_reference} \\\n")
+        out.write(f"-f {minVAF} -h \\\n")
+        out.write(f"-b '{mounted_tumor_bam}|{mounted_normal_bam}' \\\n")
+        out.write(f"-Q 1 -c 1 -S 2 -E 3 -g 4 {bed_file} \\\n")
+        out.write(f'> {mounted_outdir}/vardict.var"\n\n')
 
         out.write("\n")
 
@@ -168,7 +163,6 @@ def tumor_normal(input_parameters, tech="docker"):
 
 
 def tumor_only(input_parameters, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -203,7 +197,6 @@ def tumor_only(input_parameters, tech="docker"):
     num_lines = 0
 
     if input_parameters["inclusion_region"]:
-
         bed_file = input_parameters["inclusion_region"]
 
         with open(bed_file) as bed:
@@ -217,13 +210,11 @@ def tumor_only(input_parameters, tech="docker"):
                 line_i = bed.readline().rstrip()
 
     else:
-
         fai_file = input_parameters["genome_reference"] + ".fai"
         bed_file = os.path.join(input_parameters["output_directory"], "genome.bed")
 
         with open(fai_file) as fai, open(bed_file, "w") as wgs_bed:
             for line_i in fai:
-
                 item = line_i.split("\t")
 
                 total_bases += int(item[1])
@@ -233,7 +224,7 @@ def tumor_only(input_parameters, tech="docker"):
 
     # However the "bed_file" is defined here, create a dockered line and mount dictionary for it:
     bed_split_line, bedDict = container.container_params(
-        "lethalfang/somaticseq:{}".format(VERSION),
+        f"lethalfang/somaticseq:{VERSION}",
         tech,
         (bed_file, input_parameters["output_directory"]),
     )
@@ -247,7 +238,6 @@ def tumor_only(input_parameters, tech="docker"):
     mounted_bed = bedDict[bed_file]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -269,7 +259,7 @@ def tumor_only(input_parameters, tech="docker"):
                 )
             )
 
-            bed_file = "{}/split_regions.bed".format(mounted_outdir)
+            bed_file = f"{mounted_outdir}/split_regions.bed"
 
         out.write(f"{container_line} bash -c \\\n")
         out.write('"/opt/VarDict-1.7.0/bin/VarDict \\\n')
@@ -277,11 +267,11 @@ def tumor_only(input_parameters, tech="docker"):
         if input_parameters["vardict_arguments"]:
             out.write("{} \\\n".format(input_parameters["vardict_arguments"]))
 
-        out.write("-G {} \\\n".format(mounted_genome_reference))
-        out.write("-f {} -h \\\n".format(minVAF))
-        out.write("-b '{}' \\\n".format(mounted_tumor_bam))
-        out.write("-Q 1 -c 1 -S 2 -E 3 -g 4 {} \\\n".format(bed_file))
-        out.write('> {}/vardict.var"\n\n'.format(mounted_outdir))
+        out.write(f"-G {mounted_genome_reference} \\\n")
+        out.write(f"-f {minVAF} -h \\\n")
+        out.write(f"-b '{mounted_tumor_bam}' \\\n")
+        out.write(f"-Q 1 -c 1 -S 2 -E 3 -g 4 {bed_file} \\\n")
+        out.write(f'> {mounted_outdir}/vardict.var"\n\n')
 
         out.write(f"{container_line} \\\n")
         out.write(

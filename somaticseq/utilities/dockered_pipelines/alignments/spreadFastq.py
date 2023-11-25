@@ -12,11 +12,11 @@ timestamp = re.sub(
 
 
 DEFAULT_PARAMS = {
-    "somaticseq_image": "lethalfang/somaticseq:{}".format(VERSION),
+    "somaticseq_image": f"lethalfang/somaticseq:{VERSION}",
     "MEM": 2,
     "output_directory": os.curdir,
     "extra_docker_options": "",
-    "script": "spreadFastq.{}.cmd".format(timestamp),
+    "script": f"spreadFastq.{timestamp}.cmd",
     "action": "echo",
     "threads": 1,
 }
@@ -25,7 +25,6 @@ DEFAULT_PARAMS = {
 def spread(
     in_fastqs, out_fastqs, tech="docker", input_parameters={}, remove_infiles=False
 ):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -47,7 +46,6 @@ def spread(
     )
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")

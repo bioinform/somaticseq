@@ -36,7 +36,6 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
     aligned_pairs = read_i.get_aligned_pairs()
 
     for i, align_i in enumerate(aligned_pairs):
-
         # If find a match:
         if align_i[1] == target_position:
             seq_i = align_i[0]
@@ -52,14 +51,12 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
             # If the match (i.e., i, seq_i) is the final alignment, then you cannot know if it's an indel
             # if "i" is NOT the final alignment:
             if i != len(aligned_pairs) - 1:
-
                 indel_length = 0
                 # If the next alignment is the next sequenced base, then the target is either a reference read of a SNP/SNV:
                 if (
                     aligned_pairs[i + 1][0] == seq_i + 1
                     and aligned_pairs[i + 1][1] == target_position + 1
                 ):
-
                     code = 1  # Reference read for mismatch
 
                 # If the next reference position has no read position to it, it is DELETED in this read:
@@ -67,7 +64,6 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
                     aligned_pairs[i + 1][0] is None
                     and aligned_pairs[i + 1][1] == target_position + 1
                 ):
-
                     code = 2  # Deletion
 
                     for align_j in aligned_pairs[i + 1 : :]:
@@ -82,7 +78,6 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
                     aligned_pairs[i + 1][0] == seq_i + 1
                     and aligned_pairs[i + 1][1] is None
                 ):
-
                     code = 3  # Insertion or soft-clipping
 
                     for align_j in aligned_pairs[i + 1 : :]:
@@ -184,14 +179,11 @@ def pileup_indel_DP4(pileup_object, indel_pattern):
 
 
 def pileup_DP4(pileup_object, ref_base, variant_call):
-
     base_calls = pileup_object.base_reads()
 
     if base_calls:
-
         # SNV
         if len(variant_call) == len(ref_base):
-
             ref_for, ref_rev, alt_for, alt_rev = (
                 base_calls[0],
                 base_calls[1],
@@ -201,7 +193,6 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
 
         # Insertion:
         elif len(variant_call) > len(ref_base):
-
             inserted_sequence = variant_call[len(ref_base) : :]
 
             ref_for, ref_rev, alt_for, alt_rev = (
@@ -213,7 +204,6 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
 
         # Deletion:
         elif len(variant_call) < len(ref_base):
-
             deleted_sequence = ref_base[len(variant_call) : :]
 
             ref_for, ref_rev, alt_for, alt_rev = (
@@ -230,7 +220,6 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
 
 
 def rescale(x, original="fraction", rescale_to=None, max_phred=1001):
-
     if (rescale_to is None) or (original.lower() == rescale_to.lower()):
         y = x if isinstance(x, int) else "%.2f" % x
 
@@ -247,7 +236,6 @@ def rescale(x, original="fraction", rescale_to=None, max_phred=1001):
 
 ##### Stuff from VarDict:
 def find_msi(vcf_object):
-
     msi = vcf_object.get_info_value("MSI")
     if msi:
         msi = float(msi)
@@ -257,7 +245,6 @@ def find_msi(vcf_object):
 
 
 def find_msilen(vcf_object):
-
     msilen = vcf_object.get_info_value("MSILEN")
     if msilen:
         msilen = float(msilen)
@@ -267,7 +254,6 @@ def find_msilen(vcf_object):
 
 
 def find_shift3(vcf_object):
-
     shift3 = vcf_object.get_info_value("SHIFT3")
     if shift3:
         shift3 = float(shift3)

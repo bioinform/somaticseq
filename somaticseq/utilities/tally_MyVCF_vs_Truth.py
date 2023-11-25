@@ -116,7 +116,6 @@ def whoisbehind(coord_0, coord_1):
         return 1
 
     else:
-
         chrom0, position0 = coord_0[0], coord_0[1]
         chrom1, position1 = coord_1[0], coord_1[1]
 
@@ -128,7 +127,6 @@ def whoisbehind(coord_0, coord_1):
 
         # Must be in the same chromosome
         else:
-
             if position0 < position1:
                 return 0
 
@@ -153,7 +151,6 @@ def only_care(nth_col, itsays, string_input):
 
 
 def catch_up(line_1, line_2, file_1, file_2, output_vcf, id_1, id_2, id_12):
-
     id_1, id_2, id_12 = id_1, id_2, id_12
 
     vcf_1 = genome.VcfLine(line_1)
@@ -168,15 +165,12 @@ def catch_up(line_1, line_2, file_1, file_2, output_vcf, id_1, id_2, id_12):
 
     # As long as the coordinates are not the same, and both files are not finished:
     while is_behind != 10:
-
         # If 1st VCF is behind:
         if is_behind == 0:
-
             item_1 = line_1.rstrip("\n").split("\t")
 
             # Write, unless...
             if item_1[idx_filter] != "PrintEmALL":
-
                 # item_1[idx_id] = id_1
                 id_item = item_1[idx_id].split(";")
                 id_item.append(id_1)
@@ -193,7 +187,6 @@ def catch_up(line_1, line_2, file_1, file_2, output_vcf, id_1, id_2, id_12):
 
         # If 2nd VCF is behind:
         elif is_behind == 1:
-
             item_2 = line_2.rstrip("\n").split("\t")
 
             # Write, unless...
@@ -221,7 +214,6 @@ def catch_up(line_1, line_2, file_1, file_2, output_vcf, id_1, id_2, id_12):
     if coord_1[0] == coord_2[0] == "":
         result = 42
     else:
-
         item_1 = line_1.rstrip("\n").split("\t")
         item_2 = line_2.rstrip("\n").split("\t")
 
@@ -244,7 +236,6 @@ def catch_up(line_1, line_2, file_1, file_2, output_vcf, id_1, id_2, id_12):
 
 
 def open_my_vcf(file_name):
-
     # See if the input file is a .gz file:
     if file_name.lower().endswith(".gz"):
         return gzip.open(file_name, "rt")
@@ -257,12 +248,10 @@ def open_my_vcf(file_name):
 with open_my_vcf(args.my_vcf) as myvcf, open_my_vcf(args.truth_vcf) as truthvcf, open(
     args.output_file, "w"
 ) as vcfout:
-
     # For both VCF files, read until it hits data:
     double_palm_collector = []
     my_line = myvcf.readline()
     while my_line.startswith("#"):
-
         if re.match(r"##fileformat=", my_line):
             header0 = my_line
 
@@ -276,9 +265,7 @@ with open_my_vcf(args.my_vcf) as myvcf, open_my_vcf(args.truth_vcf) as truthvcf,
 
     truth_line = truthvcf.readline()
     while truth_line.startswith("#"):
-
         if re.match(r"##(INFO|FORMAT)", truth_line):
-
             double_palm_collector.append(truth_line)
 
         truth_line = truthvcf.readline()

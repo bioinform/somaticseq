@@ -40,7 +40,6 @@ def countPASS(variant_id, generic_variants):
 
 
 def countSOMATICPASS(variant_id, generic_variants):
-
     # 1 if PASS in FILTER and SOMATIC in INFO, 0 everything else
     if variant_id in generic_variants:
         variant_i = generic_variants[variant_id]
@@ -83,7 +82,6 @@ def MuTect(variant_id, mutect_variants):
 
 
 def ssMuTect(variant_id, mutect_variants):
-
     if variant_id in mutect_variants:
         mutect_variant_i = mutect_variants[variant_id]
         mutect_classification = 1 if mutect_variant_i.filters == "PASS" else 0
@@ -98,7 +96,6 @@ def ssMuTect(variant_id, mutect_variants):
 
 
 def VarScan(variant_id, varscan_variants):
-
     if variant_id in varscan_variants:
         varscan_variant_i = varscan_variants[variant_id]
         varscan_classification = 1 if varscan_variant_i.get_info_value("SOMATIC") else 0
@@ -121,7 +118,6 @@ def ssVarScan(variant_id, varscan_variants):
 
 
 def JSM(variant_id, jsm_variants):
-
     if variant_id in jsm_variants:
         jsm_variant_i = jsm_variants[variant_id]
         jointsnvmix2_classification = 1
@@ -214,7 +210,6 @@ def VarDict(variant_id, vardict_variants):
 
 
 def ssVarDict(variant_id, vardict_variants):
-
     if variant_id in vardict_variants:
         vardict_variant_i = vardict_variants[variant_id]
         vardict_classification = 1 if vardict_variant_i.filters == "PASS" else 0
@@ -263,9 +258,7 @@ def MuSE(variant_id, muse_variants):
 
 
 def LoFreq(variant_id, lofreq_variants):
-
     if variant_id in lofreq_variants:
-
         lofreq_variant_i = lofreq_variants[variant_id]
         lofreq_classification = 1 if lofreq_variant_i.filters == "PASS" else 0
 

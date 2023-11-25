@@ -24,12 +24,11 @@ DEFAULT_PARAMS = {
     "jsm_train_arguments": "",
     "jsm_classify_arguments": "",
     "extra_docker_options": "",
-    "script": "jsm2.{}.cmd".format(timestamp),
+    "script": f"jsm2.{timestamp}.cmd",
 }
 
 
 def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -71,7 +70,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
     mounted_reference_dict = fileDict[input_parameters["reference_dict"]]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -97,12 +95,12 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if input_parameters["jsm_train_arguments"]:
             out.write("{} \\\n".format(input_parameters["jsm_train_arguments"]))
 
-        out.write("{} \\\n".format(mounted_genome_reference))
-        out.write("{} \\\n".format(mounted_normal_bam))
-        out.write("{} \\\n".format(mounted_tumor_bam))
+        out.write(f"{mounted_genome_reference} \\\n")
+        out.write(f"{mounted_normal_bam} \\\n")
+        out.write(f"{mounted_tumor_bam} \\\n")
         out.write("/opt/JointSNVMix-0.7.5/config/joint_priors.cfg \\\n")
         out.write("/opt/JointSNVMix-0.7.5/config/joint_params.cfg \\\n")
-        out.write("{}/jsm.parameter.cfg\n".format(mounted_outdir))
+        out.write(f"{mounted_outdir}/jsm.parameter.cfg\n")
         out.write("\n")
 
         out.write(
@@ -150,10 +148,10 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if input_parameters["jsm_classify_arguments"]:
             out.write("{} \\\n".format(input_parameters["jsm_classify_arguments"]))
 
-        out.write("{} \\\n".format(mounted_genome_reference))
-        out.write("{} \\\n".format(mounted_normal_bam))
-        out.write("{} \\\n".format(mounted_tumor_bam))
-        out.write("{}/jsm.parameter.cfg \\\n".format(mounted_outdir))
+        out.write(f"{mounted_genome_reference} \\\n")
+        out.write(f"{mounted_normal_bam} \\\n")
+        out.write(f"{mounted_tumor_bam} \\\n")
+        out.write(f"{mounted_outdir}/jsm.parameter.cfg \\\n")
         out.write(
             "/dev/stdout | awk -F '\\t' 'NR!=1 && \\$4!=\\\"N\\\" && \\$10+\\$11>=0.95' | \\\n"
         )
@@ -167,7 +165,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         )
 
         if input_parameters["threads"] > 1:
-
             bedtool_line, outdir_i = container.container_params(
                 "lethalfang/bedtools:2.26.0",
                 tech,

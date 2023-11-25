@@ -19,7 +19,7 @@ DEFAULT_PARAMS = {
     "varscan_arguments": "",
     "varscan_pileup_arguments": "",
     "extra_docker_options": "",
-    "script": "varscan2.{}.cmd".format(timestamp),
+    "script": f"varscan2.{timestamp}.cmd",
     "min_MQ": 1,
     "min_BQ": 20,
     "minimum_VAF": 0.05,
@@ -27,7 +27,6 @@ DEFAULT_PARAMS = {
 
 
 def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -65,9 +64,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    fileDict[input_parameters["genome_reference"]][
-        "mount_path"
-    ]
+    fileDict[input_parameters["genome_reference"]]["mount_path"]
     fileDict[input_parameters["tumor_bam"]]["mount_path"]
     fileDict[input_parameters["normal_bam"]]["mount_path"]
     mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
@@ -91,7 +88,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
     outname = re.sub(r"\.[a-zA-Z]+$", "", input_parameters["outfile"])
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -112,9 +108,9 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
                 selector_text=selector_text,
             )
         )
-        out.write("{} \\\n".format(pl_genome_reference))
-        out.write("{} \\\n".format(pl_normal_bam))
-        out.write('> {}/normal.pileup"\n\n'.format(pl_outdir))
+        out.write(f"{pl_genome_reference} \\\n")
+        out.write(f"{pl_normal_bam} \\\n")
+        out.write(f'> {pl_outdir}/normal.pileup"\n\n')
 
         out.write(f"{mpileine_line} bash -c \\\n")
         out.write('"samtools mpileup \\\n')
@@ -126,9 +122,9 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
                 selector_text=selector_text,
             )
         )
-        out.write("{} \\\n".format(pl_genome_reference))
-        out.write("{} \\\n".format(pl_tumor_bam))
-        out.write('> {}/tumor.pileup"\n\n'.format(pl_outdir))
+        out.write(f"{pl_genome_reference} \\\n")
+        out.write(f"{pl_tumor_bam} \\\n")
+        out.write(f'> {pl_outdir}/tumor.pileup"\n\n')
 
         out.write(f"{container_line} \\\n")
         out.write(
@@ -136,8 +132,8 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
                 input_parameters["MEM"]
             )
         )
-        out.write("{}/normal.pileup \\\n".format(mounted_outdir))
-        out.write("{}/tumor.pileup \\\n".format(mounted_outdir))
+        out.write(f"{mounted_outdir}/normal.pileup \\\n")
+        out.write(f"{mounted_outdir}/tumor.pileup \\\n")
         out.write(
             "{}/{} {} --output-vcf 1 --min-var-freq {}\n\n".format(
                 mounted_outdir,
@@ -153,7 +149,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
                 input_parameters["MEM"]
             )
         )
-        out.write("{}/{}.snp.vcf\n\n".format(mounted_outdir, outname))
+        out.write(f"{mounted_outdir}/{outname}.snp.vcf\n\n")
 
         out.write(f"{container_line} \\\n")
         out.write(
@@ -161,8 +157,8 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
                 input_parameters["MEM"]
             )
         )
-        out.write("{}/{}.snp.Somatic.hc.vcf \\\n".format(mounted_outdir, outname))
-        out.write("-indel-file {}/{}.indel.vcf \\\n".format(mounted_outdir, outname))
+        out.write(f"{mounted_outdir}/{outname}.snp.Somatic.hc.vcf \\\n")
+        out.write(f"-indel-file {mounted_outdir}/{outname}.indel.vcf \\\n")
         out.write(
             "-output-file {}/{}.snp.Somatic.hc.filter.vcf\n\n".format(
                 mounted_outdir, outname
@@ -182,7 +178,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
 
 
 def tumor_only(input_parameters, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -218,9 +213,7 @@ def tumor_only(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    fileDict[input_parameters["genome_reference"]][
-        "mount_path"
-    ]
+    fileDict[input_parameters["genome_reference"]]["mount_path"]
     fileDict[input_parameters["bam"]]["mount_path"]
     mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
 
@@ -242,7 +235,6 @@ def tumor_only(input_parameters, tech="docker"):
     re.sub(r"\.[a-zA-Z]+$", "", input_parameters["outfile"])
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -263,9 +255,9 @@ def tumor_only(input_parameters, tech="docker"):
                 selector_text=selector_text,
             )
         )
-        out.write("{} \\\n".format(pl_genome_reference))
-        out.write("{} \\\n".format(pl_tumor_bam))
-        out.write('> {}/tumor.pileup"\n\n'.format(pl_outdir))
+        out.write(f"{pl_genome_reference} \\\n")
+        out.write(f"{pl_tumor_bam} \\\n")
+        out.write(f'> {pl_outdir}/tumor.pileup"\n\n')
 
         out.write(f"{container_line} bash -c \\\n")
         out.write(
@@ -273,7 +265,7 @@ def tumor_only(input_parameters, tech="docker"):
                 input_parameters["MEM"]
             )
         )
-        out.write("{}/tumor.pileup \\\n".format(mounted_outdir))
+        out.write(f"{mounted_outdir}/tumor.pileup \\\n")
         out.write(
             "--variants {} --min-var-freq {} --output-vcf 1 \\\n".format(
                 input_parameters["varscan_arguments"], input_parameters["minimum_VAF"]

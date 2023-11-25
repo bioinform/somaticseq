@@ -6,7 +6,6 @@ import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 
 
 def run():
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -28,7 +27,6 @@ def run():
 
 
 def copy(infile, outfile):
-
     with genome.open_textfile(infile) as filein, open(outfile, "w") as fileout:
         line_i = filein.readline()
         while line_i:

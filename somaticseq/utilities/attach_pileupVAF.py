@@ -186,7 +186,6 @@ else:
 
 line_i = my_vcf.readline().rstrip("\n")
 while line_i:
-
     my_coordinate = re.search(pattern_chr_position, line_i)
     if my_coordinate:
         my_coordinate = my_coordinate.group()
@@ -207,7 +206,6 @@ while line_i:
     # Line up the order of reading the two files the same order as the sample columns in my_vcf:
     samples_collect = []
     for SM_idx, current_vcf in enumerate(external_pileups[0]):
-
         latest_pileup_run = genome.catchup(
             my_coordinate, external_pileups[1][SM_idx], current_vcf, chrom_seq
         )
@@ -217,7 +215,6 @@ while line_i:
 
         # If the position exists in this samtools generated vcf file:
         if latest_pileup_run[0]:
-
             assert vcf_i.position == latest_sample.position
 
             # Figure out alternate pattern:
@@ -228,7 +225,6 @@ while line_i:
             if base_calls:
                 # SNV
                 if len(first_alt_call) == len(vcf_i.refbase):
-
                     ref_for, ref_rev, alt_for, alt_rev = (
                         base_calls[0],
                         base_calls[1],
@@ -238,7 +234,6 @@ while line_i:
 
                 # Insertion:
                 elif len(first_alt_call) > len(vcf_i.refbase):
-
                     inserted = first_alt_call[len(vcf_i.refbase) : :]
 
                     ref_for, ref_rev, alt_for, alt_rev = (
@@ -250,7 +245,6 @@ while line_i:
 
                 # Deletion:
                 elif len(first_alt_call) < len(vcf_i.refbase):
-
                     deleted = vcf_i.refbase[len(first_alt_call) : :]
 
                     ref_for, ref_rev, alt_for, alt_rev = (
@@ -266,13 +260,11 @@ while line_i:
             ### Pre-defined material ###
             ### If user wants DP4 ###
             if args.pileup_DP4:
-
-                pl_DP4 = "{},{},{},{}".format(ref_for, ref_rev, alt_for, alt_rev)
+                pl_DP4 = f"{ref_for},{ref_rev},{alt_for},{alt_rev}"
                 sample_append.append(pl_DP4)
 
             ### If user wants VAF ###
             if args.pileup_variant_allele_frequency:
-
                 try:
                     pl_vaf = (alt_for + alt_rev) / (
                         alt_for + alt_rev + ref_for + ref_rev
@@ -296,7 +288,6 @@ while line_i:
 
         # If the position does not exist in pileup file:
         else:
-
             sample_items = list(vcf_i.get_sample_item(idx=SM_idx, out_type="l")[1])
             sample_append = ["." if i != "plDP4" else ".,.,.,." for i in format_append]
             sample_items.extend(sample_append)
@@ -309,7 +300,6 @@ while line_i:
     ### Write out will have a few different possible situations ###
     # If NORMAL and TUMOR both exist in the designated VCF file:
     if vcf_idxT and vcf_idxN:
-
         # But the Nvcf is not supplied, modified the NORMAL column to reflect change in FORMAT column:
         if not Npileup:
             normal_items = list(vcf_i.get_sample_item(idx=idxN, out_type="l")[1])
@@ -339,7 +329,6 @@ while line_i:
 
     # Only TUMOR exists in the designated VCF file:
     if not vcf_idxN:
-
         # Write out:
         out_i = "\t".join(
             (

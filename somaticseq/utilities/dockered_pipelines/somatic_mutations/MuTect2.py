@@ -19,12 +19,11 @@ DEFAULT_PARAMS = {
     "mutect2_arguments": "",
     "mutect2_filter_arguments": "",
     "extra_docker_options": "",
-    "script": "mutect2.{}.cmd".format(timestamp),
+    "script": f"mutect2.{timestamp}.cmd",
 }
 
 
 def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -73,7 +72,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         mounted_inclusion = fileDict[input_parameters["inclusion_region"]]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -103,14 +101,14 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write(f"--reference {mounted_genome_reference} \\\n")
 
         if input_parameters["inclusion_region"]:
-            out.write("--intervals {} \\\n".format(mounted_inclusion))
+            out.write(f"--intervals {mounted_inclusion} \\\n")
 
-        out.write("--input {} \\\n".format(mounted_tumor_bam))
-        out.write("--input {} \\\n".format(mounted_normal_bam))
+        out.write(f"--input {mounted_tumor_bam} \\\n")
+        out.write(f"--input {mounted_normal_bam} \\\n")
 
         out.write("--normal-sample ${normal_name} \\\n")
         out.write("--tumor-sample ${tumor_name} \\\n")
-        out.write("--native-pair-hmm-threads {} \\\n".format(1))
+        out.write(f"--native-pair-hmm-threads {1} \\\n")
 
         if input_parameters["mutect2_arguments"]:
             out.write("{} \\\n".format(input_parameters["mutect2_arguments"]))
@@ -151,7 +149,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
 
 
 def tumor_only(input_parameters, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -194,7 +191,6 @@ def tumor_only(input_parameters, tech="docker"):
         mounted_inclusion = fileDict[input_parameters["inclusion_region"]]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -218,11 +214,11 @@ def tumor_only(input_parameters, tech="docker"):
         out.write(f"--reference {mounted_genome_reference} \\\n")
 
         if input_parameters["inclusion_region"]:
-            out.write("--intervals {} \\\n".format(mounted_inclusion))
+            out.write(f"--intervals {mounted_inclusion} \\\n")
 
-        out.write("--input {} \\\n".format(mounted_tumor_bam))
+        out.write(f"--input {mounted_tumor_bam} \\\n")
         out.write("--tumor-sample ${tumor_name} \\\n")
-        out.write("--native-pair-hmm-threads {} \\\n".format(1))
+        out.write(f"--native-pair-hmm-threads {1} \\\n")
 
         if input_parameters["mutect2_arguments"]:
             out.write("{} \\\n".format(input_parameters["mutect2_arguments"]))

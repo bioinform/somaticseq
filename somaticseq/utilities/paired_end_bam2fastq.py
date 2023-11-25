@@ -32,19 +32,15 @@ def text_open_write(filename):
 
 
 def bam2fq(bam_file, fastq1, fastq2):
-
     with pysam.AlignmentFile(bam_file) as bam, text_open_write(
         fastq1
     ) as fq1, text_open_write(fastq2) as fq2:
-
         reads1 = {}
         reads2 = {}
 
         reads = bam.fetch()
         for read_i in reads:
-
             if not read_i.is_secondary:
-
                 seq_i = (
                     reverse_complement(read_i.query_sequence)
                     if read_i.is_reverse
@@ -53,10 +49,8 @@ def bam2fq(bam_file, fastq1, fastq2):
                 qual_i = read_i.qual[::-1] if read_i.is_reverse else read_i.qual
 
                 if read_i.is_read1:
-
                     if read_i.query_name in reads2:
-
-                        fq1.write("@{}/1\n".format(read_i.query_name))
+                        fq1.write(f"@{read_i.query_name}/1\n")
                         fq1.write(seq_i + "\n")
                         fq1.write("+\n")
                         fq1.write(qual_i + "\n")
@@ -75,9 +69,7 @@ def bam2fq(bam_file, fastq1, fastq2):
                         reads1[read_i.query_name]["bq"] = qual_i
 
                 elif read_i.is_read2:
-
                     if read_i.query_name in reads1:
-
                         read_1 = reads1.pop(read_i.query_name)
 
                         fq1.write("@{}/1\n".format(read_1["qname"]))
@@ -85,7 +77,7 @@ def bam2fq(bam_file, fastq1, fastq2):
                         fq1.write("+\n")
                         fq1.write(read_1["bq"] + "\n")
 
-                        fq2.write("@{}/2\n".format(read_i.query_name))
+                        fq2.write(f"@{read_i.query_name}/2\n")
                         fq2.write(seq_i + "\n")
                         fq2.write("+\n")
                         fq2.write(qual_i + "\n")
@@ -100,7 +92,6 @@ def bam2fq(bam_file, fastq1, fastq2):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
         description="Convert paired-end BAM to FASTQ1 and 2",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,

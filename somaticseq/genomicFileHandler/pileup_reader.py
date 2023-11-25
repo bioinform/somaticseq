@@ -7,15 +7,12 @@ inf = float("inf")
 
 
 def seq(reads):
-
     """A function to convert a string into a character generator."""
-    for read_i in reads:
-        yield read_i
+    yield from reads
 
 
 class Pileup_line:
     def __init__(self, pileup_line):
-
         """Argument is a line in pileup file."""
         self.pileup_line = pileup_line.rstrip("\n")
 
@@ -32,7 +29,6 @@ class Pileup_line:
             self.dp = int(self.dp)
 
         except ValueError:
-
             try:
                 (
                     self.chromosome,
@@ -55,7 +51,6 @@ class Pileup_line:
         return total_count
 
     def base_reads(self):
-
         # Make the base_calls into a generator:
         base_calls = seq(self.reads)
 
@@ -69,10 +64,8 @@ class Pileup_line:
         n_count = N_count = 0
 
         for base_i in base_calls:
-
             # Indicate beginning of a read:
             if base_i == "^":
-
                 # Skip the MQ ascii:
                 next(base_calls)
 
@@ -98,7 +91,6 @@ class Pileup_line:
 
             # Deletion
             elif base_i == "-":
-
                 num = ""
                 base_i = next(base_calls)
 
@@ -171,7 +163,6 @@ class Pileup_line:
 
 class Base_calls(Pileup_line):
     def __init__(self, pileup_line):
-
         Pileup_line.__init__(self, pileup_line)
 
         # Make the base_calls into a generator:
@@ -189,10 +180,8 @@ class Base_calls(Pileup_line):
         ins_reverse = []
 
         for base_i in base_calls:
-
             # Indicate beginning of a read:
             if base_i == "^":
-
                 # Skip the MQ ascii:
                 next(base_calls)
 
@@ -230,7 +219,6 @@ class Base_calls(Pileup_line):
 
             # Deletion
             elif base_i == "-":
-
                 num = ""
                 base_i = next(base_calls)
 

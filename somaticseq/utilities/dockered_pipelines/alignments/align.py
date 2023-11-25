@@ -24,12 +24,11 @@ DEFAULT_PARAMS = {
     "extra_docker_options": "",
     "extra_bwa_arguments": "",
     "threads": 1,
-    "script": "align.{}.cmd".format(timestamp),
+    "script": f"align.{timestamp}.cmd",
 }
 
 
 def bwa(input_parameters, tech="docker"):
-
     if input_parameters["in_fastq2"]:
         paired_end = True
     else:
@@ -67,7 +66,6 @@ def bwa(input_parameters, tech="docker"):
     mounted_fq2 = fileDict[input_parameters["in_fastq2"]]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -90,11 +88,11 @@ def bwa(input_parameters, tech="docker"):
                 input_parameters["extra_bwa_arguments"], input_parameters["threads"]
             )
         )
-        out.write("{} \\\n".format(mounted_reference))
-        out.write("{} \\\n".format(mounted_fq1))
+        out.write(f"{mounted_reference} \\\n")
+        out.write(f"{mounted_fq1} \\\n")
 
         if paired_end:
-            out.write("{} \\\n".format(mounted_fq2))
+            out.write(f"{mounted_fq2} \\\n")
 
         out.write("| samtools view -Sbh - \\\n")
         out.write(
@@ -124,7 +122,6 @@ def bwa(input_parameters, tech="docker"):
 
 
 def run():
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -163,7 +160,6 @@ def run():
 
 
 if __name__ == "__main__":
-
     args, input_parameters = run()
 
     bwa(input_parameters, args.container_tech)

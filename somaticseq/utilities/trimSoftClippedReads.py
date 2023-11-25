@@ -30,20 +30,16 @@ bam_out = args.bam_file_out
 with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
     bam_out, "wb", template=bam
 ) as bamout:
-
     reads = bam.fetch()
 
     total_trimmed_bases = 0
 
     for read_i in reads:
-
         if read_i.cigarstring and "S" in read_i.cigarstring:
-
             front_clipped = re.search(r"^([0-9]+)S", read_i.cigarstring)
             back_clipped = re.search(r"([0-9]+)S$", read_i.cigarstring)
 
             if front_clipped and back_clipped:
-
                 front_num = int(front_clipped.groups()[0])
                 back_num = int(back_clipped.groups()[0])
                 read_i.cigarstring = re.sub(
@@ -75,7 +71,6 @@ with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
                 total_trimmed_bases += back_num
 
             elif front_clipped:
-
                 num_bases = int(front_clipped.groups()[0])
                 read_i.cigarstring = re.sub(r"^([0-9]+)S", "", read_i.cigarstring)
 
@@ -103,7 +98,6 @@ with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
                 total_trimmed_bases += num_bases
 
             elif back_clipped:
-
                 num_bases = int(back_clipped.groups()[0])
                 read_i.cigarstring = re.sub("[0-9]+S$", "", read_i.cigarstring)
 
@@ -139,4 +133,4 @@ with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
 
         bamout.write(read_i)
 
-print("A total of {} bases trimmed.".format(total_trimmed_bases))
+print(f"A total of {total_trimmed_bases} bases trimmed.")

@@ -6,7 +6,6 @@ import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 
 
 def run():
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -28,7 +27,6 @@ def run():
 
 
 def convert(infile, outfile):
-
     (
         idx_chrom,
         idx_pos,
@@ -44,12 +42,10 @@ def convert(infile, outfile):
     ) = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 
     with genome.open_textfile(infile) as vcf, open(outfile, "w") as vcfout:
-
         line_i = vcf.readline().rstrip()
 
         # VCF header
         while line_i.startswith("#"):
-
             if line_i.startswith("##FORMAT=<ID=AD,"):
                 line_i = '##FORMAT=<ID=AD,Number=.,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">'
 
@@ -58,12 +54,10 @@ def convert(infile, outfile):
             line_i = vcf.readline().rstrip()
 
         while line_i:
-
             item = line_i.split("\t")
 
             format_items = item[idx_format].split(":")
             if "AD" in format_items and "RD" in format_items:
-
                 # NORMAL
                 idx_ad = format_items.index("AD")
                 idx_rd = format_items.index("RD")

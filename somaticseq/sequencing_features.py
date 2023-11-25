@@ -1,4 +1,3 @@
-
 import scipy.stats as stats
 
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
@@ -13,7 +12,6 @@ nan = float("nan")
 
 
 def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
-
     """
     bam is the opened file handle of bam file
     my_coordiate is a list or tuple of 0-based (contig, position)
@@ -268,7 +266,6 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
 
 
 def from_genome_reference(ref_fa, my_coordinate, ref_base, first_alt):
-
     """
     ref_fa is the opened reference fasta file handle
     my_coordiate is a list or tuple of 0-based (contig, position)
@@ -376,7 +373,6 @@ def LC(sequence):
             # max_vocab_2 = seq_length - i + 1
             set_of_seq_n = set()
             for n, nth_base in enumerate(sequence):
-
                 if n + i <= len(sequence):
                     sub_seq = sequence[n : n + i]
                     set_of_seq_n.add(sub_seq)
@@ -396,7 +392,6 @@ def max_sub_vocabularies(seq_length, max_subseq_length):
     counts = 0
     k = 1
     while k <= max_subseq_length:
-
         if 4**k < (seq_length - k + 1):
             counts = counts + 4**k
         else:

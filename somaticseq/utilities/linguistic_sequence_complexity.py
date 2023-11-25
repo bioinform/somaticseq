@@ -10,15 +10,12 @@ eps = float_info.epsilon
 
 
 def all_possible_dna_sequences(seq_length):
-
     seqs = ["G", "C", "T", "A"]
 
     for _ in range(seq_length - 1):
-
         seqs_i = copy(seqs)
         seqs = []
         for sub_seq in seqs_i:
-
             for i in "TCGA":
                 extended_seq = sub_seq + i
                 seqs.append(extended_seq)
@@ -33,7 +30,6 @@ def max_vocabularies(seq_length):
     counts = 0
     k = 1
     while k <= seq_length:
-
         if 4**k < (seq_length - k + 1):
             counts = counts + 4**k
         else:
@@ -54,19 +50,16 @@ def LC(sequence):
     sequence = sequence.upper()
 
     if "N" not in sequence:
-
         number_of_subseqs = 0
         seq_length = len(sequence)
         max_number_of_subseqs = max_vocabularies(seq_length)
 
         for i in range(1, seq_length + 1):
-
             # max_vocab_1 = 4**i
             # max_vocab_2 = seq_length - i + 1
             set_of_seq_n = set()
 
             for n, nth_base in enumerate(sequence):
-
                 if n + i <= len(sequence):
                     sub_seq = sequence[n : n + i]
                     set_of_seq_n.add(sub_seq)
@@ -83,7 +76,6 @@ def LC(sequence):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
         description="Calculate linguistic sequence complexity according to DOI:10.1093/bioinformatics/18.5.679",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,

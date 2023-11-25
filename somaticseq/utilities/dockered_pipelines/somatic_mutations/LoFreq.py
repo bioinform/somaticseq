@@ -22,13 +22,12 @@ DEFAULT_PARAMS = {
     "action": "echo",
     "lofreq_arguments": "",
     "extra_docker_options": "",
-    "script": "lofreq.{}.cmd".format(timestamp),
+    "script": f"lofreq.{timestamp}.cmd",
     "dbsnp_gz": None,
 }
 
 
 def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -73,7 +72,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
     mounted_dbsnp_gz = fileDict[input_parameters["dbsnp_gz"]]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -86,11 +84,11 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
 
         out.write(f"{container_line} \\\n")
         out.write("lofreq somatic \\\n")
-        out.write("-t {} \\\n".format(mounted_tumor_bam))
-        out.write("-n {} \\\n".format(mounted_normal_bam))
+        out.write(f"-t {mounted_tumor_bam} \\\n")
+        out.write(f"-n {mounted_normal_bam} \\\n")
         out.write("--call-indels \\\n")
-        out.write("-l {} \\\n".format(mounted_inclusion))
-        out.write("-f {} \\\n".format(mounted_genome_reference))
+        out.write(f"-l {mounted_inclusion} \\\n")
+        out.write(f"-f {mounted_genome_reference} \\\n")
         out.write(
             "-o {}/{} \\\n".format(mounted_outdir, input_parameters["out_prefix"])
         )
@@ -98,7 +96,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if input_parameters["lofreq_arguments"]:
             out.write("{} \\\n".format(input_parameters["lofreq_arguments"]))
 
-        out.write("-d {}\n".format(mounted_dbsnp_gz))
+        out.write(f"-d {mounted_dbsnp_gz}\n")
 
         out.write('\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n')
 
@@ -110,7 +108,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
 
 
 def tumor_only(input_parameters, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -152,7 +149,6 @@ def tumor_only(input_parameters, tech="docker"):
     mounted_dbsnp_gz = fileDict[input_parameters["dbsnp_gz"]]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write("#!/bin/bash\n\n")
@@ -168,15 +164,15 @@ def tumor_only(input_parameters, tech="docker"):
         out.write(f"{container_line} \\\n")
         out.write("lofreq call \\\n")
         out.write("--call-indels \\\n")
-        out.write("-l {} \\\n".format(mounted_inclusion))
-        out.write("-f {} \\\n".format(mounted_genome_reference))
+        out.write(f"-l {mounted_inclusion} \\\n")
+        out.write(f"-f {mounted_genome_reference} \\\n")
         out.write("-o {}/{} \\\n".format(mounted_outdir, input_parameters["outfile"]))
-        out.write("-d {} \\\n".format(mounted_dbsnp_gz))
+        out.write(f"-d {mounted_dbsnp_gz} \\\n")
 
         if input_parameters["lofreq_arguments"]:
             out.write("{} \\\n".format(input_parameters["lofreq_arguments"]))
 
-        out.write("{}\n".format(mounted_tumor_bam))
+        out.write(f"{mounted_tumor_bam}\n")
 
         out.write('\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n')
 

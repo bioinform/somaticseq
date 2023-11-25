@@ -95,7 +95,6 @@ label_header = "{TrueVariant_or_False}"
 
 
 def run():
-
     inputParameters = {}
     parser = argparse.ArgumentParser(
         description="This is a SomaticSeq subroutine to convert a VCF file into a TSV file with all the SomaticSeq features for tumor-only modes. Any VCF file can be used as the main input. The output will have the same variants. Also required is the BAM files, with additional optional inputs.",
@@ -298,7 +297,6 @@ def vcf2tsv(
     p_scale=None,
     outfile=None,
 ):
-
     if arbitrary_vcfs is None:
         arbitrary_vcfs = []
 
@@ -334,7 +332,6 @@ def vcf2tsv(
 
     ## Running
     with genome.open_textfile(mysites) as my_sites, open(outfile, "w") as outhandle:
-
         my_line = my_sites.readline().rstrip()
         bam = pysam.AlignmentFile(bam_fn, reference_filename=ref_fa)
         ref_fa = pysam.FastaFile(ref_fa)
@@ -422,7 +419,6 @@ def vcf2tsv(
                     if my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
                         alt_bases = my_vcf.altbase.split(",")
                         for alt_i in alt_bases:
-
                             vcf_i = copy(my_vcf)
                             vcf_i.altbase = alt_i
                             variants_at_my_coordinate.append(vcf_i)
@@ -632,9 +628,7 @@ def vcf2tsv(
                         ) = annotate_caller.ssVarDict(variant_id, vardict_variants)
                         num_callers += vardict_classification
                     else:
-                        vardict_classification = (
-                            msi
-                        ) = msilen = shift3 = nan
+                        vardict_classification = msi = msilen = shift3 = nan
 
                     if lofreq:
                         lofreq_classification = annotate_caller.ssLoFreq(
@@ -670,7 +664,6 @@ def vcf2tsv(
 
                     # Potentially write the output only if it meets this threshold:
                     if num_callers >= min_caller:
-
                         ########## Ground truth file ##########
                         if truth:
                             if variant_id in truth_variants.keys():

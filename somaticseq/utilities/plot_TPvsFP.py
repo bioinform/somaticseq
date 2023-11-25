@@ -70,7 +70,6 @@ extra_text = args.extra_title_text
 
 
 def namestr(obj, namespace=globals()):
-
     collection = [name for name in namespace if namespace[name] is obj]
 
     new_collection = []
@@ -82,7 +81,6 @@ def namestr(obj, namespace=globals()):
 
 
 def plot_2hist(false_values, true_values, hist_bins=None, labels=None, hist_title=None):
-
     if not hist_bins:
         try:
             hist_bins = (
@@ -183,7 +181,6 @@ print(
 
 ##### 20-->5
 for i in range(var1_index, len(header)):
-
     print(header[i], end="\t")
 
     is_nan = numpy.isnan(data[:, i])
@@ -225,7 +222,6 @@ for i in range(var1_index, len(header)):
 
 
 for fig_n, var_i in enumerate(header[var1_index::]):
-
     pyplot.figure(fig_n + 1)
 
     try:
@@ -253,12 +249,10 @@ TA2CG = [0, 0]
 
 # Seperate procedure to plot nucleotide changes:
 with open(fn) as f:
-
     line_i = f.readline().rstrip()
     line_i = f.readline().rstrip()
 
     while line_i:
-
         item_i = line_i.split("\t")
 
         ref, alt = item_i[i_ref], item_i[i_alt]

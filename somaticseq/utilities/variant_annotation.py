@@ -16,7 +16,6 @@ DBSNP_STRING = (
 
 
 def snpsift_snp(snpsift_jar, input_vcf, dbsnp_vcf, output_vcf, info_string):
-
     logger = logging.getLogger(snpsift_snp.__name__)
     sift_command = "java -Xmx8g -jar {} annotate -info {} {} {} > {}".format(
         snpsift_jar, info_string, dbsnp_vcf, input_vcf, output_vcf
@@ -28,7 +27,6 @@ def snpsift_snp(snpsift_jar, input_vcf, dbsnp_vcf, output_vcf, info_string):
 
 
 def snpsift_cosmic(snpsift_jar, input_vcf, cosmic_vcf, output_vcf, info_string):
-
     logger = logging.getLogger(snpsift_cosmic.__name__)
     sift_command = "java -Xmx8g -jar {} annotate -info {} {} {} > {}".format(
         snpsift_jar, info_string, cosmic_vcf, input_vcf, output_vcf
@@ -40,7 +38,6 @@ def snpsift_cosmic(snpsift_jar, input_vcf, cosmic_vcf, output_vcf, info_string):
 
 
 def snpeff_annotate(snpeff_jar, input_vcf, output_vcf, db):
-
     logger = logging.getLogger(snpeff_annotate.__name__)
     eff_command = "java -Xmx8g -jar {} -noStats {} {} > {}".format(
         snpeff_jar, db, input_vcf, output_vcf
@@ -62,7 +59,6 @@ def annotate_small_variants(
     cosmic_string,
     eff_db,
 ):
-
     dirname = tempfile.gettempdir()
 
     dbsnp_annotated = snpsift_snp(
@@ -90,7 +86,6 @@ def annotate_small_variants(
 
 
 if __name__ == "__main__":
-
     FORMAT = "%(levelname)s %(asctime)-15s %(name)-20s %(message)s"
     logging.basicConfig(level=logging.INFO, format=FORMAT)
 

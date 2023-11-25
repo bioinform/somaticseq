@@ -6,7 +6,7 @@ from somaticseq._version import __version__
 
 print(__version__)
 
-with open("README.md", "r") as fn:
+with open("README.md") as fn:
     long_description = fn.read()
 
 
@@ -21,6 +21,7 @@ setup(
     url="https://github.com/bioinform/somaticseq",
     packages=find_packages(),
     package_data={"": ["*.R"]},
+    python_requires='>=3.6.0',
     install_requires=["pysam", "numpy", "scipy", "pandas", "xgboost"],
     scripts=[
         "somaticseq/somaticseq_parallel.py",

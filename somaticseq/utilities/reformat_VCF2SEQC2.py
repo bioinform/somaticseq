@@ -42,16 +42,14 @@ tumor = args.tumor_sample_name
 somaticseq_trained = args.somaticseq_trained
 
 with genome.open_textfile(vcf_in_fn) as vcfin, open(vcf_out_fn, "w") as vcfout:
-
     line_in = vcfin.readline().rstrip("\n")
 
     while line_in.startswith("##"):
-
         if line_in.startswith("##SomaticSeq="):
             line_out = line_in + "-SEQC2"
 
         elif line_in.startswith("##INFO=<ID=NUM_TOOLS") or line_in.startswith(
-            "##INFO=<ID={COMBO}".format(COMBO=caller_string)
+            f"##INFO=<ID={caller_string}"
         ):
             line_out = re.sub("##INFO=", "##FORMAT=", line_in)
 
@@ -77,7 +75,6 @@ with genome.open_textfile(vcf_in_fn) as vcfin, open(vcf_out_fn, "w") as vcfout:
 
     # Move COMBO and NUM_TOOLS from INFO to Tumor Sample, and move QUAL to the Tumor Sample as well
     while line_in:
-
         vcf_line_in = genome.VcfLine(line_in)
 
         # New INFO
@@ -100,7 +97,7 @@ with genome.open_textfile(vcf_in_fn) as vcfin, open(vcf_out_fn, "w") as vcfout:
                 caller_string
             )
         else:
-            new_format_field = vcf_line_in.field + ":{}:NUM_TOOLS".format(caller_string)
+            new_format_field = vcf_line_in.field + f":{caller_string}:NUM_TOOLS"
 
         caller_classification = vcf_line_in.get_info_value(caller_string)
         num_tools = vcf_line_in.get_info_value("NUM_TOOLS")

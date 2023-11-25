@@ -7,7 +7,6 @@ import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 
 
 def run():
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -29,7 +28,6 @@ def run():
 
 
 def convert(infile, outfile):
-
     (
         idx_chrom,
         idx_pos,
@@ -45,17 +43,14 @@ def convert(infile, outfile):
     ) = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 
     with genome.open_textfile(infile) as vcf, open(outfile, "w") as vcfout:
-
         line_i = vcf.readline().rstrip()
 
         # VCF header
         while line_i.startswith("#"):
-
             vcfout.write(line_i + "\n")
             line_i = vcf.readline().rstrip()
 
         while line_i:
-
             # Print "SomaticSniper" into the INFO field if it is called so, otherwise never mind.
             item = line_i.split("\t")
 

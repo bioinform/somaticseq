@@ -21,7 +21,7 @@ DEFAULT_PARAMS = {
     "action": "echo",
     "somaticsniper_arguments": "",
     "extra_docker_options": "",
-    "script": "somaticsniper.{}.cmd".format(timestamp),
+    "script": f"somaticsniper.{timestamp}.cmd",
     "min_MQ": 1,
     "min_BQ": 20,
     "prior": 0.00001,
@@ -30,7 +30,6 @@ DEFAULT_PARAMS = {
 
 
 def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -73,7 +72,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         fileDict[input_parameters["inclusion_region"]]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -94,13 +92,12 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
                 input_parameters["somaticsniper_arguments"],
             )
         )
-        out.write("-f {} \\\n".format(mounted_genome_reference))
-        out.write("{} \\\n".format(mounted_tumor_bam))
-        out.write("{} \\\n".format(mounted_normal_bam))
+        out.write(f"-f {mounted_genome_reference} \\\n")
+        out.write(f"{mounted_tumor_bam} \\\n")
+        out.write(f"{mounted_normal_bam} \\\n")
         out.write("{}/{}\n".format(mounted_outdir, input_parameters["outfile"]))
 
         if input_parameters["threads"] > 1:
-
             bedtool_line, outdir_i = container.container_params(
                 "lethalfang/bedtools:2.26.0",
                 tech,

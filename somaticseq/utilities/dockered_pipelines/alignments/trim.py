@@ -27,13 +27,12 @@ DEFAULT_PARAMS = {
     "extra_docker_options": "",
     "extra_trim_arguments": "",
     "threads": 1,
-    "script": "trim.{}.cmd".format(timestamp),
+    "script": f"trim.{timestamp}.cmd",
     "remove_untrimmed": False,
 }
 
 
 def alienTrimmer(input_parameters, tech="docker"):
-
     if input_parameters["in_fastq2"]:
         paired_end = True
     else:
@@ -68,7 +67,6 @@ def alienTrimmer(input_parameters, tech="docker"):
 
     temporary_files = []
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -81,7 +79,6 @@ def alienTrimmer(input_parameters, tech="docker"):
 
         # AlienTrimmer does not do bgzipped fastq files, unfortunately:
         if input_parameters["in_fastq1"].endswith(".gz"):
-
             out_fastq_1 = uuid.uuid4().hex + ".fastq"
             out_fastq_2 = uuid.uuid4().hex + ".fastq"
 
@@ -144,13 +141,13 @@ def alienTrimmer(input_parameters, tech="docker"):
             trimmed_fq2 = uuid.uuid4().hex + ".fastq"
             singleton = uuid.uuid4().hex + ".fastq"
 
-            out.write("-if {} -ir {} \\\n".format(mounted_fq1, mounted_fq2))
+            out.write(f"-if {mounted_fq1} -ir {mounted_fq2} \\\n")
             out.write(
                 "-of {}/{} -or {}/{} \\\n".format(
                     mounted_outdir, trimmed_fq1, mounted_outdir, trimmed_fq2
                 )
             )
-            out.write("-os {}/{} \\\n".format(mounted_outdir, singleton))
+            out.write(f"-os {mounted_outdir}/{singleton} \\\n")
 
             temporary_files.extend([trimmed_fq1, trimmed_fq2, singleton])
 
@@ -224,7 +221,6 @@ def alienTrimmer(input_parameters, tech="docker"):
 
 
 def trimmomatic(input_parameters, tech="docker"):
-
     if input_parameters["in_fastq2"]:
         paired_end = True
     else:
@@ -260,7 +256,6 @@ def trimmomatic(input_parameters, tech="docker"):
     mounted_fq2 = fileDict[input_parameters["in_fastq2"]]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -331,7 +326,6 @@ def trimmomatic(input_parameters, tech="docker"):
 
 
 def run():
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -374,7 +368,6 @@ def run():
 
 
 if __name__ == "__main__":
-
     args, input_parameters = run()
 
     if args.trimming_algorithm == "alientrimmer":

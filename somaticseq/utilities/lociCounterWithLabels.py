@@ -7,7 +7,6 @@ from os.path import basename
 
 
 def fai2bed(file_name):
-
     with open(file_name) as gfile:
         line_i = gfile.readline().rstrip("\n")
 
@@ -17,11 +16,9 @@ def fai2bed(file_name):
         orderedContig = []
 
         while line_i:
-
             contig_match = re.match(r"([^\t]+)\t", line_i)
 
             if contig_match:
-
                 contig_i = contig_match.groups()[0].split(" ")[
                     0
                 ]  # some .fai files have space after the contig for descriptions.
@@ -47,11 +44,9 @@ def fai2bed(file_name):
 
 
 def bed2regions(bed_file):
-
     regions = {}
 
     with open(bed_file) as gfile:
-
         line_i = gfile.readline().rstrip("\n")
 
         while line_i:
@@ -73,7 +68,6 @@ def bed2regions(bed_file):
 
 
 def collapseIdenticalBoundries(boundries, counters, labels):
-
     assert len(boundries) == len(counters) + 1 == len(labels) + 1
 
     outBoundries = []
@@ -99,7 +93,6 @@ def collapseIdenticalBoundries(boundries, counters, labels):
 def countIntersectedRegions(
     original_boundry, original_counter, additional_regions, original_label, new_label
 ):
-
     secondary_boundry = []
 
     for region_i in additional_regions:
@@ -116,14 +109,11 @@ def countIntersectedRegions(
     secondaryMore = True
 
     for i, boundry_i in enumerate(original_boundry):
-
         if secondaryMore:
             while boundry_j < boundry_i:
-
                 newBoundry.append(boundry_j)
 
                 if j % 2 == 0:
-
                     newCounter.append(counter_i + 1)
 
                     label_i_copy = copy(label_i)
@@ -177,13 +167,11 @@ def countIntersectedRegions(
 
 ## Print out results:
 def run(fai_file, bed_files, bed_labels, bed_out):
-
     # Start routine:
     contigBoundries, contigCounters, contigLabels, orderedContigs = fai2bed(fai_file)
 
     # Look at BED files
     for i, bed_file_i in enumerate(bed_files):
-
         bedRegions = bed2regions(bed_file_i)
         label_i = bed_labels[i]
 
@@ -201,13 +189,9 @@ def run(fai_file, bed_files, bed_labels, bed_out):
             )
 
     with open(bed_out, "w") as bed_out:
-
         for contig_i in orderedContigs:
-
             if contigCounters[contig_i] != [0]:
-
                 for i, count_i in enumerate(contigCounters[contig_i]):
-
                     label_string = (
                         ",".join(contigLabels[contig_i][i])
                         if contigLabels[contig_i][i]
@@ -228,7 +212,6 @@ def run(fai_file, bed_files, bed_labels, bed_out):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
         description="This is a program to tally and count the overlapping regions when given multiple input bed files. A CRITICAL REQUIREMENT is that each input bed file is sorted and non-overlapping, which could be achived with bedtools merge before they are used as input to this program.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,

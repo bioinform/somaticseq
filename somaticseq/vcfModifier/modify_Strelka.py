@@ -8,7 +8,6 @@ import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 
 
 def run():
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -31,11 +30,9 @@ def run():
 
 def convert(infile, outfile):
     with genome.open_textfile(infile) as vcf_in, open(outfile, "w") as vcf_out:
-
         line_i = vcf_in.readline().rstrip()
 
         while line_i.startswith("##"):
-
             vcf_out.write(line_i + "\n")
             line_i = vcf_in.readline().rstrip()
 
@@ -46,7 +43,6 @@ def convert(infile, outfile):
 
         line_i = vcf_in.readline().rstrip()
         while line_i:
-
             items = line_i.split("\t")
 
             items[8] = "GT:" + items[8]

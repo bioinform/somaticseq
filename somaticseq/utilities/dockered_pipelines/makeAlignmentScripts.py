@@ -17,7 +17,6 @@ logging.basicConfig(level=logging.INFO, format=FORMAT)
 
 
 def run():
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -119,7 +118,6 @@ def run():
 
 
 def make_workflow(args, input_parameters):
-
     timestamp = re.sub(
         r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
     )
@@ -152,7 +150,7 @@ def make_workflow(args, input_parameters):
                 spread_parameters["threads"] = args.threads
 
             spread_parameters["MEM"] = 2
-            spread_parameters["script"] = "spreadFastq_1.{}.cmd".format(timestamp)
+            spread_parameters["script"] = f"spreadFastq_1.{timestamp}.cmd"
 
             out_fastq_names = [uuid.uuid4().hex for i in range(args.threads)]
             out_fastq1s = [
@@ -175,8 +173,7 @@ def make_workflow(args, input_parameters):
 
             # Is Paired-End
             if len(args.in_fastq2s) >= 1:
-
-                spread_parameters["script"] = "spreadFastq_2.{}.cmd".format(timestamp)
+                spread_parameters["script"] = f"spreadFastq_2.{timestamp}.cmd"
 
                 out_fastq2s = [
                     os.path.join(
@@ -208,7 +205,6 @@ def make_workflow(args, input_parameters):
         out_fastq_2s = []
 
         for i, fastq_1 in enumerate(in_fastq1s):
-
             trim_parameters = copy(input_parameters)
 
             trim_parameters["threads"] = max(
@@ -235,7 +231,7 @@ def make_workflow(args, input_parameters):
                 trim_parameters["out_fastq2_name"] = out_basename + "_R2.fastq.gz"
                 out_fastq_2s.append(trim_parameters["out_fastq2_name"])
 
-            trim_parameters["script"] = "trim.{}.{}.cmd".format(i, timestamp)
+            trim_parameters["script"] = f"trim.{i}.{timestamp}.cmd"
 
             if args.trim_software == "trimmomatic":
                 trim_parameters["MEM"] = 8
@@ -269,7 +265,6 @@ def make_workflow(args, input_parameters):
     remove_in_fqs = True if (args.run_trimming or args.split_input_fastqs) else False
 
     if len(out_fastq_1s) > 1:
-
         import somaticseq.utilities.dockered_pipelines.alignments.mergeFastqs as mergeFastqs
 
         fastq_1s = [
@@ -282,7 +277,7 @@ def make_workflow(args, input_parameters):
 
         fq1_merge_parameters = copy(input_parameters)
 
-        fq1_merge_parameters["script"] = "mergeFastq_1.{}.cmd".format(timestamp)
+        fq1_merge_parameters["script"] = f"mergeFastq_1.{timestamp}.cmd"
         fq1_merge_script = mergeFastqs.gz(
             fastq_1s,
             merged_fq1,
@@ -295,10 +290,9 @@ def make_workflow(args, input_parameters):
         input_parameters["in_fastq1"] = merged_fq1
 
         if len(input_parameters["in_fastq2s"]) >= 1:
-
             fq2_merge_parameters = copy(input_parameters)
 
-            fq2_merge_parameters["script"] = "mergeFastq_2.{}.cmd".format(timestamp)
+            fq2_merge_parameters["script"] = f"mergeFastq_2.{timestamp}.cmd"
             fastq_2s = [
                 os.path.join(input_parameters["output_directory"], fq_i)
                 for fq_i in out_fastq_2s
@@ -324,7 +318,7 @@ def make_workflow(args, input_parameters):
 
         bwa_parameters = copy(input_parameters)
 
-        bwa_parameters["script"] = "align.{}.cmd".format(timestamp)
+        bwa_parameters["script"] = f"align.{timestamp}.cmd"
         bwa_parameters["MEM"] = 8
 
         if args.run_mark_duplicates:
@@ -339,7 +333,7 @@ def make_workflow(args, input_parameters):
         markdup_parameters = copy(input_parameters)
 
         markdup_parameters["software"] = input_parameters["markdup_software"]
-        markdup_parameters["script"] = "markdup.{}.cmd".format(timestamp)
+        markdup_parameters["script"] = f"markdup.{timestamp}.cmd"
         markdup_parameters["MEM"] = 8
 
         if args.run_alignment:
@@ -348,7 +342,6 @@ def make_workflow(args, input_parameters):
             )
 
         if args.parallelize_markdup:
-
             markdup_parameters["threads"] = max(
                 1, math.ceil(input_parameters["threads"] / 2)
             )
@@ -397,6 +390,5 @@ def make_workflow(args, input_parameters):
 
 
 if __name__ == "__main__":
-
     args, input_parameters = run()
     make_workflow(args, input_parameters)

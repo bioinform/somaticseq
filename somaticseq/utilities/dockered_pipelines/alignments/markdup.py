@@ -34,14 +34,13 @@ DEFAULT_PARAMS = {
     "extra_picard_arguments": "",
     "extra_sambamba_arguments": "",
     "threads": 1,
-    "script": "markdup.{}.cmd".format(timestamp),
+    "script": f"markdup.{timestamp}.cmd",
     "index_bam": True,
     "software": "picard",
 }
 
 
 def splitRegions(input_parameters):
-
     fai = input_parameters["genome_reference"] + ".fai"
 
     tempdir = os.path.join(TMPDIR, uuid.uuid4().hex)
@@ -57,7 +56,6 @@ def splitRegions(input_parameters):
 
 
 def picard(input_parameters, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -92,7 +90,6 @@ def picard(input_parameters, tech="docker"):
 
     tempdir = uuid.uuid4().hex
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -115,7 +112,7 @@ def picard(input_parameters, tech="docker"):
                 input_parameters["MEM"]
             )
         )
-        out.write("I={} \\\n".format(mounted_inbam))
+        out.write(f"I={mounted_inbam} \\\n")
         out.write(
             "M={}/{} \\\n".format(
                 mounted_outdir,
@@ -127,7 +124,7 @@ def picard(input_parameters, tech="docker"):
             )
         )
         out.write("ASSUME_SORT_ORDER=coordinate \\\n")
-        out.write("TMP_DIR={}/{} \\\n".format(mounted_outdir, tempdir))
+        out.write(f"TMP_DIR={mounted_outdir}/{tempdir} \\\n")
         out.write("MINIMUM_DISTANCE=1000 \\\n")
         out.write("O={}/{}\n\n".format(mounted_outdir, input_parameters["out_bam"]))
 
@@ -155,7 +152,6 @@ def picard(input_parameters, tech="docker"):
 
 
 def sambamba(input_parameters, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -182,7 +178,6 @@ def sambamba(input_parameters, tech="docker"):
 
     tempdir = uuid.uuid4().hex
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -223,7 +218,6 @@ def sambamba(input_parameters, tech="docker"):
 
 
 def fractional(bed, input_parameters, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -231,7 +225,7 @@ def fractional(bed, input_parameters, tech="docker"):
     outdir = str(Path(bed).absolute().parent)
 
     logdir = os.path.join(outdir, "logs")
-    outfile = os.path.join(logdir, "markdup_fractional.{}.cmd".format(timestamp))
+    outfile = os.path.join(logdir, f"markdup_fractional.{timestamp}.cmd")
     os.makedirs(logdir, exist_ok=True)
 
     sambam_line, stDict = container.container_params(
@@ -251,7 +245,6 @@ def fractional(bed, input_parameters, tech="docker"):
     temp_split_bam = uuid.uuid4().hex + ".bam"
     split_deduped_bam = uuid.uuid4().hex + ".bam"
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -276,18 +269,16 @@ def fractional(bed, input_parameters, tech="docker"):
         fractional_parameters["output_directory"] = outdir
         fractional_parameters["in_bam"] = os.path.join(outdir, temp_split_bam)
         fractional_parameters["out_bam"] = split_deduped_bam
-        fractional_parameters["script"] = "to_be_deleted.{}.cmd".format(timestamp)
+        fractional_parameters["script"] = f"to_be_deleted.{timestamp}.cmd"
         fractional_parameters["index_bam"] = False
 
         if input_parameters["software"] == "picard":
             picard(fractional_parameters, tech)
         elif input_parameters["software"] == "sambamba":
-
             fractional_parameters["threads"] = 2
             sambamba(fractional_parameters, tech)
 
         with open(os.path.join(logdir, fractional_parameters["script"])) as dedup:
-
             line_i = dedup.readline()
 
             while not line_i.startswith('echo -e "Start'):
@@ -297,7 +288,7 @@ def fractional(bed, input_parameters, tech="docker"):
                 out.write(line_i)
                 line_i = dedup.readline()
 
-        out.write("rm {}\n".format(os.path.join(outdir, temp_split_bam)))
+        out.write(f"rm {os.path.join(outdir, temp_split_bam)}\n")
         out.write('\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n')
 
     # "Run" the script that was generated
@@ -308,7 +299,6 @@ def fractional(bed, input_parameters, tech="docker"):
 
 
 def parallel(input_parameters, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -339,7 +329,7 @@ def parallel(input_parameters, tech="docker"):
     )
 
     merging_parameters = copy(input_parameters)
-    merging_parameters["script"] = "mergeBam.{}.cmd".format(timestamp)
+    merging_parameters["script"] = f"mergeBam.{timestamp}.cmd"
 
     if input_parameters["software"] == "picard":
         merge_script = mergeBams.picard(
@@ -362,7 +352,6 @@ def parallel(input_parameters, tech="docker"):
 
 
 def run():
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -399,7 +388,6 @@ def run():
 
 
 if __name__ == "__main__":
-
     args, input_parameters = run()
 
     parallel(input_parameters, args.container_tech)

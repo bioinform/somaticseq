@@ -165,7 +165,6 @@ def tsv2vcf(
     phred_scaled=True,
     extra_headers=[],
 ):
-
     tools_code = {
         "CGA": "M",
         "MuTect": "M",
@@ -198,7 +197,6 @@ def tsv2vcf(
     tool_string = ", ".join(tools)
 
     with open(tsv_fn) as tsv, open(vcf_fn, "w") as vcf:
-
         # First line is a header:
         tsv_i = tsv.readline().rstrip()
 
@@ -207,7 +205,6 @@ def tsv2vcf(
         # Make the header items into indices (single/paired have different tool names)
         toolcode2index = {}
         for n, item in enumerate(tsv_header):
-
             if "if_MuTect" == item:
                 toolcode2index["M"] = n
             elif "if_VarScan2" == item:
@@ -394,7 +391,6 @@ def tsv2vcf(
         tsv_i = tsv.readline().rstrip()
 
         while tsv_i:
-
             tsv_item = tsv_i.split("\t")
             try:
                 score = float(tsv_item[SCORE])
@@ -418,7 +414,6 @@ def tsv2vcf(
             tool_combo_values = []
             num_tools = 0
             for tool_i in tool_combo_list:  # for tool_i in tool_combo_key:
-
                 if_Tool = tsv_item[toolcode2index[tool_i]]
 
                 if (if_Tool == "1") or ("1.0" in if_Tool):
@@ -675,7 +670,6 @@ def tsv2vcf(
             if score >= pass_score or (
                 score is nan and num_tools > 0.5 * total_num_tools
             ):
-
                 vcf_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
                     tsv_item[CHROM],
                     tsv_item[POS],
@@ -705,7 +699,6 @@ def tsv2vcf(
             elif score >= lowqual_score or (
                 score is nan and num_tools >= 1 and num_tools >= 0.33 * total_num_tools
             ):
-
                 vcf_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
                     tsv_item[CHROM],
                     tsv_item[POS],
@@ -733,7 +726,6 @@ def tsv2vcf(
 
             # REJECT
             elif print_reject:
-
                 vcf_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
                     tsv_item[CHROM],
                     tsv_item[POS],

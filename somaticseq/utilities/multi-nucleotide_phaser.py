@@ -48,7 +48,6 @@ threshold = args.phasing_threshold
 with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, open(
     outfile, "w"
 ) as outfile, pysam.FastaFile(ref_fa) as ref_fa:
-
     my_line = infile.readline().rstrip()
 
     while my_line.startswith("##"):
@@ -83,7 +82,6 @@ with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, op
         while (my_coordinates[-1][0] == my_vcf.chromosome) and (
             my_vcf.position - my_coordinates[-1][1] <= threshold
         ):
-
             my_line = infile.readline().rstrip()
             my_vcf = genome.VcfLine(my_line)
 
@@ -175,7 +173,7 @@ with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, op
             else:
                 filters_i = "REJECT"
 
-            info_line = "PDP={}".format(pdp)
+            info_line = f"PDP={pdp}"
             mnp_line = "{CHR}\t{POS}\t.\t{REF}\t{ALT}\t.\t{FILTER}\t{INFO}\t{FORMAT}\t{SAMPLE}".format(
                 CHR=my_coordinates[0][0],
                 POS=my_coordinates[0][1],

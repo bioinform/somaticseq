@@ -11,7 +11,6 @@ import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 
 
 def run():
-
     # argparse Stuff
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -53,7 +52,6 @@ def run():
 
 
 def convert(infile, outfile, tbam, nbam=None):
-
     paired_mode = True if nbam else False
 
     # Get tumor and normal sample names from the bam files:
@@ -91,11 +89,9 @@ def convert(infile, outfile, tbam, nbam=None):
     idx_SM1, idx_SM2 = 9, 10
 
     with genome.open_textfile(infile) as vcf, open(outfile, "w") as vcfout:
-
         line_i = vcf.readline().rstrip()
 
         while line_i.startswith("#"):
-
             if line_i.startswith("##"):
                 vcfout.write(line_i + "\n")
 
@@ -110,7 +106,6 @@ def convert(infile, outfile, tbam, nbam=None):
                     header_items[idx_SM2] = "TUMOR"
 
                 else:
-
                     # Keep up to the first sample column, then make sure it's labeled the TUMOR sample name
                     header_items = header_items[: idx_SM1 + 1]
                     header_items[idx_SM1] = "TUMOR"
@@ -121,7 +116,6 @@ def convert(infile, outfile, tbam, nbam=None):
             line_i = vcf.readline().rstrip()
 
         while line_i:
-
             items_i = line_i.split("\t")
 
             if paired_mode:

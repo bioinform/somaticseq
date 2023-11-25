@@ -8,7 +8,6 @@ import re
 
 
 def open_textfile(file_name):
-
     # See if the input file is a .gz file:
     if file_name.lower().endswith(".gz"):
         return gzip.open(file_name, "rt")
@@ -18,7 +17,6 @@ def open_textfile(file_name):
 
 
 def run():
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -44,20 +42,16 @@ def run():
 
 
 def combine(infiles, outfile):
-
     variant_positions = set()
 
     for file_i in infiles:
-
         with open_textfile(file_i) as vcf:
-
             line_i = vcf.readline().rstrip()
 
             while line_i.startswith("#"):
                 line_i = vcf.readline().rstrip()
 
             while line_i:
-
                 item = line_i.split("\t")
 
                 chromosome = item[0]
@@ -75,7 +69,6 @@ def combine(infiles, outfile):
         vcf_out.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
 
         for variant_position_i in sorted(variant_positions):
-
             vcf_out.write(
                 "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
                     variant_position_i[0],

@@ -35,18 +35,15 @@ def run():
 
 
 def convert(infile, snv_out, indel_out):
-
     info_to_split = "NLOD", "TLOD"
     info_to_keep = "STR", "ECNT"
 
     with genome.open_textfile(infile) as vcf_in, open(snv_out, "w") as snv_out, open(
         indel_out, "w"
     ) as indel_out:
-
         line_i = vcf_in.readline().rstrip()
 
         while line_i.startswith("##"):
-
             snv_out.write(line_i + "\n")
             indel_out.write(line_i + "\n")
 
@@ -67,7 +64,6 @@ def convert(infile, snv_out, indel_out):
         line_i = vcf_in.readline().rstrip()
 
         while line_i:
-
             vcf_i = genome.VcfLine(line_i)
 
             # If "germlinerisk" is the only flag, then make it PASS since there is no matched normal
@@ -75,7 +71,6 @@ def convert(infile, snv_out, indel_out):
                 vcf_i.filters = "PASS"
 
             if "," not in vcf_i.altbase:
-
                 item = line_i.split("\t")
                 if item[6] == "germline_risk":
                     item[6] = "PASS"
@@ -105,15 +100,14 @@ def convert(infile, snv_out, indel_out):
                         still_measures.append(None)
 
                 for ith_base, altbase_i in enumerate(alt_bases):
-
                     split_infos = [
-                        "{}={}".format(info_variable, info_value[ith_base])
+                        f"{info_variable}={info_value[ith_base]}"
                         for info_variable, info_value in zip(info_to_split, measures)
                         if info_value is not None
                     ]
 
                     still_infos = [
-                        "{}={}".format(info_variable, info_value)
+                        f"{info_variable}={info_value}"
                         for info_variable, info_value in zip(
                             info_to_keep, still_measures
                         )

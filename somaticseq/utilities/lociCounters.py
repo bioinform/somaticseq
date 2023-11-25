@@ -34,7 +34,6 @@ bed_out = args.bed_out
 
 
 def fai2bed(file_name):
-
     with open(file_name) as gfile:
         line_i = gfile.readline().rstrip("\n")
 
@@ -42,11 +41,9 @@ def fai2bed(file_name):
         callableLociCounters = {}
         orderedContig = []
         while line_i:
-
             contig_match = re.match(r"([^\t]+)\t", line_i)
 
             if contig_match:
-
                 contig_i = contig_match.groups()[0].split(" ")[
                     0
                 ]  # some .fai files have space after the contig for descriptions.
@@ -66,11 +63,9 @@ def fai2bed(file_name):
 
 
 def bed2regions(bed_file):
-
     regions = {}
 
     with open(bed_file) as gfile:
-
         line_i = gfile.readline().rstrip("\n")
 
         while line_i:
@@ -92,7 +87,6 @@ def bed2regions(bed_file):
 
 
 def collapseIdenticalBoundries(boundries, counters):
-
     assert len(boundries) == len(counters) + 1
 
     outBoundries = []
@@ -114,7 +108,6 @@ def collapseIdenticalBoundries(boundries, counters):
 
 
 def countIntersectedRegions(original_boundry, original_counter, additional_regions):
-
     secondary_boundry = []
     secondary_counter = []
     for region_i in additional_regions:
@@ -133,10 +126,8 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
     secondaryMore = True
 
     for i, boundry_i in enumerate(original_boundry):
-
         if secondaryMore:
             while boundry_j < boundry_i:
-
                 newBoundry.append(boundry_j)
 
                 if j % 2 == 0:
@@ -179,7 +170,6 @@ contigBoundries, contigCounters, orderedContigs = fai2bed(fai_file)
 
 # Look at BED files
 for bed_file_i in bed_files:
-
     bedRegions = bed2regions(bed_file_i)
 
     for chrom in bedRegions:
@@ -189,11 +179,8 @@ for bed_file_i in bed_files:
 
 
 for contig_i in orderedContigs:
-
     if contigCounters[contig_i] != [0]:
-
         for i, count_i in enumerate(contigCounters[contig_i]):
-
             out_string = "{}\t{}\t{}\t{}".format(
                 contig_i,
                 contigBoundries[contig_i][i],

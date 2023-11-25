@@ -52,7 +52,6 @@ def open_textfile(file_name):
 
 
 def items_to_make_nan(callers_to_subtract):
-
     out_items = []
 
     for caller_i in callers_to_subtract:
@@ -83,7 +82,6 @@ def items_to_make_nan(callers_to_subtract):
 
 
 with open_textfile(args.infile) as infile, open(args.outfile, "w") as outfile:
-
     line_in = infile.readline().rstrip()
     item_in = line_in.split("\t")
 
@@ -99,7 +97,6 @@ with open_textfile(args.infile) as infile, open(args.outfile, "w") as outfile:
     line_in = infile.readline().rstrip()
 
     while line_in:
-
         item_in = line_in.split("\t")
 
         other_callers = 0

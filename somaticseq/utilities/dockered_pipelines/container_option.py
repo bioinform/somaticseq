@@ -5,7 +5,7 @@ from pathlib import Path
 from somaticseq._version import __version__ as VERSION
 
 DOCKER_IMAGES = {
-    "somaticseq_image": "lethalfang/somaticseq:{}".format(VERSION),
+    "somaticseq_image": f"lethalfang/somaticseq:{VERSION}",
     "scalpel_image": "lethalfang/scalpel:0.5.4",
     "mutect2_image": "broadinstitute/gatk:4.0.5.2",
     "muse_image": "marghoob/muse:1.0rc_c",
@@ -29,7 +29,6 @@ def container_params(
     extra_args="",
     singularity_image_loc="docker://",
 ):
-
     file_Paths = [Path(i) for i in files]
     file_names = [i.name for i in file_Paths]
     file_dirs = [i.parent for i in file_Paths]
@@ -51,7 +50,6 @@ def container_params(
         }
 
     if tech == "docker":
-
         MOUNT_STRING = ""
         for file_i in fileDict:
             sys_dir = fileDict[file_i]["abs_dir"]
@@ -61,7 +59,6 @@ def container_params(
         container_string = f"docker run {MOUNT_STRING} -u $(id -u):$(id -g) --rm {extra_args} {container_image}"
 
     elif tech == "singularity":
-
         MOUNT_STRING = ""
         for file_i in fileDict:
             sys_dir = fileDict[file_i]["abs_dir"]

@@ -31,7 +31,6 @@ bam_file = args.bam_file_in
 max_length = args.max_length
 
 with pysam.AlignmentFile(bam_file) as bam:
-
     reads = bam.fetch()
 
     clipped_and_discordant = (
@@ -44,9 +43,7 @@ with pysam.AlignmentFile(bam_file) as bam:
     MQs = {}
 
     for read_i in reads:
-
         if read_i.is_proper_pair:
-
             concordant_reads += 1
             frag_length = abs(read_i.template_length)
 
@@ -77,7 +74,6 @@ with pysam.AlignmentFile(bam_file) as bam:
             MQs[mq] = 1
 
         if not read_i.is_unmapped:
-
             if (not read_i.is_proper_pair) and ("S" in read_i.cigarstring):
                 clipped_and_discordant += 1
             elif not read_i.is_proper_pair:
@@ -89,7 +85,6 @@ with pysam.AlignmentFile(bam_file) as bam:
                 mq0 += 1
 
         else:
-
             unmapped += 1
 
         total_reads += 1
@@ -97,7 +92,6 @@ with pysam.AlignmentFile(bam_file) as bam:
     # Find fragment length median:
     n_reads_processed = 0
     for frag_i in sorted(frag_lengths):
-
         n_reads_processed += frag_lengths[frag_i]
 
         if n_reads_processed >= concordant_reads / 2:
@@ -108,7 +102,6 @@ with pysam.AlignmentFile(bam_file) as bam:
     total_length = 0
     total_reads_processed = 0
     for frag_i in frag_lengths:
-
         if 0 < frag_i < max_length:
             total_length += frag_i * frag_lengths[frag_i]
             total_reads_processed += frag_lengths[frag_i]
@@ -118,7 +111,6 @@ with pysam.AlignmentFile(bam_file) as bam:
     # Calculate standard deviation of fragment length
     sum_of_square_of_x_minus_mean = 0
     for frag_i in frag_lengths:
-
         if 0 < frag_i < max_length:
             square_of_x_minus_mean = (frag_i - mean_length) ** 2
             sum_of_square_of_x_minus_mean += (
@@ -134,19 +126,19 @@ with pysam.AlignmentFile(bam_file) as bam:
             duplicated_reads, duplicated_reads / total_reads
         )
     )
-    print("soft-clipped and discordant reads: {}".format(clipped_and_discordant))
-    print("soft-clipped and concordant reads: {}".format(clipped_only))
-    print("discordant and not-clipped reads: {}".format(discordant_only))
-    print("MQ0 reads: {}".format(mq0))
-    print("unmapped reads: {}".format(unmapped))
-    print("Total reads: {}".format(total_reads))
-    print("Mean fragment length: {}".format(mean_length))
-    print("fragment length standard deviation: {}".format(frag_length_std_dev))
-    print("median fragment length: {}".format(median_frag_length))
+    print(f"soft-clipped and discordant reads: {clipped_and_discordant}")
+    print(f"soft-clipped and concordant reads: {clipped_only}")
+    print(f"discordant and not-clipped reads: {discordant_only}")
+    print(f"MQ0 reads: {mq0}")
+    print(f"unmapped reads: {unmapped}")
+    print(f"Total reads: {total_reads}")
+    print(f"Mean fragment length: {mean_length}")
+    print(f"fragment length standard deviation: {frag_length_std_dev}")
+    print(f"median fragment length: {median_frag_length}")
 
     print("###---\nMQ: Number, Fraction")
     for mq_i in sorted(MQs):
-        print("MQ={}: {}, {}".format(mq_i, MQs[mq_i], MQs[mq_i] / total_reads))
+        print(f"MQ={mq_i}: {MQs[mq_i]}, {MQs[mq_i] / total_reads}")
 
     print("###---\nFrag length distribution:")
     for frag_i in sorted(frag_lengths):

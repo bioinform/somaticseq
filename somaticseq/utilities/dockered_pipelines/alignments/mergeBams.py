@@ -20,13 +20,12 @@ DEFAULT_PARAMS = {
     "extra_docker_options": "",
     "extra_picard_arguments": "",
     "output_directory": os.curdir,
-    "script": "mergeBam.{}.cmd".format(timestamp),
+    "script": f"mergeBam.{timestamp}.cmd",
     "index_bam": True,
 }
 
 
 def picard(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=False):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -57,10 +56,9 @@ def picard(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=Fal
     elif outbam.endswith(".cram"):
         samtools_index_file = outbam + ".crai"
     else:
-        raise Exception("Output file {} seems wrong.".format(outbam))
+        raise Exception(f"Output file {outbam} seems wrong.")
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -86,7 +84,7 @@ def picard(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=Fal
         if remove_inbams:
             out.write("rm {}\n\n".format(" ".join(inbams)))
 
-        out.write("mv {} {}\n\n".format(picard_index_file, samtools_index_file))
+        out.write(f"mv {picard_index_file} {samtools_index_file}\n\n")
 
         out.write('\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n')
 
@@ -98,7 +96,6 @@ def picard(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=Fal
 
 
 def sambamba(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=False):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -120,7 +117,6 @@ def sambamba(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=F
     infile_string = " ".join([fileDict[file_i]["mount_path"] for file_i in inbams])
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")

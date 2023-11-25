@@ -141,7 +141,6 @@ label_header = "{TrueVariant_or_False}"
 
 
 def run():
-
     inputParameters = {}
 
     parser = argparse.ArgumentParser(
@@ -346,7 +345,6 @@ def vcf2tsv(
     p_scale=None,
     outfile=None,
 ):
-
     # Convert contig_sequence to chrom_seq dict:
     fai_file = ref_fa + ".fai"
     chrom_seq = genome.faiordict2contigorder(fai_file, "fai")
@@ -378,7 +376,6 @@ def vcf2tsv(
 
     ## Running
     with genome.open_textfile(mysites) as my_sites, open(outfile, "w") as outhandle:
-
         my_line = my_sites.readline().rstrip()
 
         nbam = pysam.AlignmentFile(nbam_fn, reference_filename=ref_fa)
@@ -470,10 +467,8 @@ def vcf2tsv(
         outhandle.write("\t".join((header_part_1, header_last_part)) + "\n")
 
         while my_line:
-
             # If VCF, get all the variants with the same coordinate into a list:
             if is_vcf:
-
                 my_vcf = genome.VcfLine(my_line)
 
                 my_coordinates = [(my_vcf.chromosome, my_vcf.position)]
@@ -488,7 +483,6 @@ def vcf2tsv(
 
                 # As long as the "coordinate" stays the same, it will keep reading until it's different.
                 while my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
-
                     my_line = my_sites.readline().rstrip()
                     my_vcf = genome.VcfLine(my_line)
 
@@ -505,10 +499,8 @@ def vcf2tsv(
                     ###################################################################################
 
                     if my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
-
                         alt_bases = my_vcf.altbase.split(",")
                         for alt_i in alt_bases:
-
                             vcf_i = copy(my_vcf)
                             vcf_i.altbase = alt_i
                             variants_at_my_coordinate.append(vcf_i)
@@ -531,17 +523,14 @@ def vcf2tsv(
 
             ##### ##### ##### ##### ##### #####
             for my_coordinate in my_coordinates:
-
                 ######## If VCF, can get ref base, variant base, as well as other identifying information ########
                 if is_vcf:
-
                     ref_bases = []
                     alt_bases = []
                     indel_lengths = []
                     all_my_identifiers = []
 
                     for variant_i in variants_at_my_coordinate:
-
                         ref_base = variant_i.refbase
                         first_alt = variant_i.altbase.split(",")[0]
                         indel_length = len(first_alt) - len(ref_base)
@@ -709,7 +698,6 @@ def vcf2tsv(
 
                 # Now, use pysam to look into the BAM file(s), variant by variant from the input:
                 for ith_call, my_call in enumerate(variants_at_my_coordinate):
-
                     if is_vcf:
                         # The particular line in the input VCF file:
                         variant_id = (
@@ -847,7 +835,6 @@ def vcf2tsv(
 
                     # Potentially write the output only if it meets this threshold:
                     if num_callers >= min_caller:
-
                         ########## Ground truth file ##########
                         if truth:
                             if variant_id in truth_variants:

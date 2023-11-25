@@ -18,7 +18,7 @@ DEFAULT_PARAMS = {
     "output_directory": os.curdir,
     "action": "echo",
     "extra_docker_options": "",
-    "script": "mergeFastqs.{}.cmd".format(timestamp),
+    "script": f"mergeFastqs.{timestamp}.cmd",
     "threads": 1,
 }
 

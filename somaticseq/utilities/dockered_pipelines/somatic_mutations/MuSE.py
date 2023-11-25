@@ -21,13 +21,12 @@ DEFAULT_PARAMS = {
     "muse_arguments": "",
     "extra_docker_options": "",
     "exome": False,
-    "script": "muse.{}.cmd".format(timestamp),
+    "script": f"muse.{timestamp}.cmd",
     "dbsnp_gz": None,
 }
 
 
 def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -71,7 +70,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
     mounted_dbsnp_gz = fileDict[input_parameters["dbsnp_gz"]]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -91,15 +89,15 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
 
         out.write(f"{container_line} \\\n")
         out.write("MuSEv1.0rc_submission_c039ffa call \\\n")
-        out.write("-O {}/MuSE \\\n".format(mounted_outdir))
-        out.write("-l {}/bed_3columns.bed \\\n".format(mounted_outdir))
-        out.write("-f {} \\\n".format(mounted_genome_reference))
-        out.write("{} \\\n".format(mounted_tumor_bam))
-        out.write("{}\n\n".format(mounted_normal_bam))
+        out.write(f"-O {mounted_outdir}/MuSE \\\n")
+        out.write(f"-l {mounted_outdir}/bed_3columns.bed \\\n")
+        out.write(f"-f {mounted_genome_reference} \\\n")
+        out.write(f"{mounted_tumor_bam} \\\n")
+        out.write(f"{mounted_normal_bam}\n\n")
 
         out.write(f"{container_line} \\\n")
         out.write("MuSEv1.0rc_submission_c039ffa sump \\\n")
-        out.write("-I {}/MuSE.MuSE.txt \\\n".format(mounted_outdir))
+        out.write(f"-I {mounted_outdir}/MuSE.MuSE.txt \\\n")
 
         if input_parameters["exome"]:
             out.write("-E \\\n")
@@ -110,7 +108,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
             out.write("{} \\\n".format())
 
         out.write("-O {}/{} \\\n".format(mounted_outdir, input_parameters["outfile"]))
-        out.write("-D {}\n".format(mounted_dbsnp_gz))
+        out.write(f"-D {mounted_dbsnp_gz}\n")
 
         out.write('\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n')
 

@@ -19,13 +19,12 @@ DEFAULT_PARAMS = {
     "strelka_config_arguments": "",
     "strelka_run_arguments": "",
     "extra_docker_options": "",
-    "script": "strelka2.{}.cmd".format(timestamp),
+    "script": f"strelka2.{timestamp}.cmd",
     "exome": False,
 }
 
 
 def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -69,7 +68,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         bed_gz = fileDict[input_parameters["inclusion_region"]]["filename"] + ".gz"
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -103,15 +101,15 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
 
         out.write(f"{container_line} \\\n")
         out.write("/opt/strelka/bin/configureStrelkaSomaticWorkflow.py \\\n")
-        out.write("--tumorBam={} \\\n".format(mounted_tumor_bam))
-        out.write("--normalBam={} \\\n".format(mounted_normal_bam))
-        out.write("--referenceFasta={} \\\n".format(mounted_genome_reference))
+        out.write(f"--tumorBam={mounted_tumor_bam} \\\n")
+        out.write(f"--normalBam={mounted_normal_bam} \\\n")
+        out.write(f"--referenceFasta={mounted_genome_reference} \\\n")
         out.write(
             "--callMemMb={} \\\n".format(
                 eval(input_parameters["MEM"].rstrip("G")) * 1024
             )
         )
-        out.write("--callRegions={}/{} \\\n".format(mounted_outdir, bed_gz))
+        out.write(f"--callRegions={mounted_outdir}/{bed_gz} \\\n")
 
         if input_parameters["exome"]:
             out.write("--exome \\\n")
@@ -142,7 +140,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
 
 
 def tumor_only(input_parameters=DEFAULT_PARAMS, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -183,7 +180,6 @@ def tumor_only(input_parameters=DEFAULT_PARAMS, tech="docker"):
         bed_gz = fileDict[input_parameters["inclusion_region"]]["filename"] + ".gz"
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -217,14 +213,14 @@ def tumor_only(input_parameters=DEFAULT_PARAMS, tech="docker"):
 
         out.write(f"{container_line} \\\n")
         out.write("/opt/strelka/bin/configureStrelkaGermlineWorkflow.py \\\n")
-        out.write("--bam={} \\\n".format(mounted_tumor_bam))
-        out.write("--referenceFasta={} \\\n".format(mounted_genome_reference))
+        out.write(f"--bam={mounted_tumor_bam} \\\n")
+        out.write(f"--referenceFasta={mounted_genome_reference} \\\n")
         out.write(
             "--callMemMb={} \\\n".format(
                 eval(input_parameters["MEM"].rstrip("G")) * 1024
             )
         )
-        out.write("--callRegions={}/{} \\\n".format(mounted_outdir, bed_gz))
+        out.write(f"--callRegions={mounted_outdir}/{bed_gz} \\\n")
 
         if input_parameters["exome"]:
             out.write("--exome \\\n")

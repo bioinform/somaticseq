@@ -41,7 +41,6 @@ def modelTrainer(
         return input_file + ".ada.Classifier.RData"
 
     if algo == "xgboost":
-
         import somaticseq.somatic_xgboost as somatic_xgboost
 
         xgb_param = somatic_xgboost.DEFAULT_PARAM
@@ -152,7 +151,6 @@ def runPaired(
     features_excluded=None,
     hyperparameters=None,
 ):
-
     logger = logging.getLogger(runPaired.__name__)
 
     if features_excluded is None:
@@ -321,7 +319,6 @@ def runPaired(
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
-
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
             modelTrainer(
                 ensembleSnv,
@@ -618,7 +615,6 @@ def runSingle(
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
-
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
             modelTrainer(
                 ensembleSnv,
@@ -732,7 +728,6 @@ def runSingle(
 
 ################################################
 def run():
-
     parser = argparse.ArgumentParser(
         description="""SomaticSeq v{}: a method to combine results from multiple somatic mutation callers,
         extract genomic and sequencing features for each variant call from the BAM files,

@@ -2,7 +2,6 @@
 
 
 def translate(refbase, altbase):
-
     offset = 0
 
     if len(refbase) == len(altbase):

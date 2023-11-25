@@ -21,13 +21,12 @@ DEFAULT_PARAMS = {
     "scalpel_discovery_arguments": "",
     "scalpel_export_arguments": "",
     "extra_docker_options": "",
-    "script": "scalpel.{}.cmd".format(timestamp),
+    "script": f"scalpel.{timestamp}.cmd",
     "dbsnp_gz": None,
 }
 
 
 def tumor_normal(input_parameters, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -71,7 +70,6 @@ def tumor_normal(input_parameters, tech="docker"):
     mounted_inclusion = fileDict[input_parameters["inclusion_region"]]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -84,28 +82,25 @@ def tumor_normal(input_parameters, tech="docker"):
 
         out.write(f"{container_line} bash -c \\\n")
         out.write('"/opt/scalpel/scalpel-discovery --somatic \\\n')
-        out.write("--ref {} \\\n".format(mounted_genome_reference))
-        out.write("--bed {} \\\n".format(mounted_inclusion))
-        out.write("--normal {} \\\n".format(mounted_normal_bam))
-        out.write("--tumor {} \\\n".format(mounted_tumor_bam))
+        out.write(f"--ref {mounted_genome_reference} \\\n")
+        out.write(f"--bed {mounted_inclusion} \\\n")
+        out.write(f"--normal {mounted_normal_bam} \\\n")
+        out.write(f"--tumor {mounted_tumor_bam} \\\n")
         out.write("--window 600 \\\n")
 
         if input_parameters["scalpel_two_pass"]:
             out.write("--two-pass \\\n")
 
         if input_parameters["scalpel_discovery_arguments"]:
-            out.write(
-                "{} \\\n".format(
-                    )
-            )
+            out.write("{} \\\n".format())
 
-        out.write("--dir {}/scalpel && \\\n".format(mounted_outdir))
+        out.write(f"--dir {mounted_outdir}/scalpel && \\\n")
         out.write("/opt/scalpel/scalpel-export --somatic \\\n")
-        out.write("--db {}/scalpel/main/somatic.db.dir \\\n".format(mounted_outdir))
-        out.write("--ref {} \\\n".format(mounted_genome_reference))
-        out.write("--bed {} \\\n".format(mounted_inclusion))
+        out.write(f"--db {mounted_outdir}/scalpel/main/somatic.db.dir \\\n")
+        out.write(f"--ref {mounted_genome_reference} \\\n")
+        out.write(f"--bed {mounted_inclusion} \\\n")
         out.write("{} \\\n".format(input_parameters["scalpel_export_arguments"]))
-        out.write('> {}/scalpel/scalpel.vcf"\n\n'.format(mounted_outdir))
+        out.write(f'> {mounted_outdir}/scalpel/scalpel.vcf"\n\n')
 
         out.write(f"{container_line} bash -c \\\n")
         out.write(
@@ -125,7 +120,6 @@ def tumor_normal(input_parameters, tech="docker"):
 
 
 def tumor_only(input_parameters, tech="docker"):
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -166,7 +160,6 @@ def tumor_only(input_parameters, tech="docker"):
     mounted_inclusion = fileDict[input_parameters["inclusion_region"]]["mount_path"]
 
     with open(outfile, "w") as out:
-
         out.write("#!/bin/bash\n\n")
 
         out.write(f"#$ -o {logdir}\n")
@@ -179,21 +172,21 @@ def tumor_only(input_parameters, tech="docker"):
 
         out.write(f"{container_line} bash -c \\\n")
         out.write('"/opt/scalpel/scalpel-discovery --single \\\n')
-        out.write("--ref {} \\\n".format(mounted_genome_reference))
-        out.write("--bed {} \\\n".format(mounted_inclusion))
-        out.write("--bam {} \\\n".format(mounted_tumor_bam))
+        out.write(f"--ref {mounted_genome_reference} \\\n")
+        out.write(f"--bed {mounted_inclusion} \\\n")
+        out.write(f"--bam {mounted_tumor_bam} \\\n")
         out.write("--window 600 \\\n")
 
         if input_parameters["scalpel_discovery_arguments"]:
             out.write("{} \\\n".format(input_parameters["scalpel_discovery_arguments"]))
 
-        out.write("--dir {}/scalpel && \\\n".format(mounted_outdir))
+        out.write(f"--dir {mounted_outdir}/scalpel && \\\n")
         out.write("/opt/scalpel/scalpel-export --single \\\n")
-        out.write("--db {}/scalpel/variants.db.dir \\\n".format(mounted_outdir))
-        out.write("--ref {} \\\n".format(mounted_genome_reference))
-        out.write("--bed {} \\\n".format(mounted_inclusion))
+        out.write(f"--db {mounted_outdir}/scalpel/variants.db.dir \\\n")
+        out.write(f"--ref {mounted_genome_reference} \\\n")
+        out.write(f"--bed {mounted_inclusion} \\\n")
         out.write("{} \\\n".format(input_parameters["scalpel_export_arguments"]))
-        out.write('> {}/scalpel/scalpel.vcf"\n\n'.format(mounted_outdir))
+        out.write(f'> {mounted_outdir}/scalpel/scalpel.vcf"\n\n')
 
         out.write(f"{container_line} bash -c \\\n")
         out.write(

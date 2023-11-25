@@ -4,7 +4,6 @@ import os
 
 
 def leftAlign(infile, outfile, ref, gatk3):
-
     assert infile != outfile
 
     exit_code = os.system(

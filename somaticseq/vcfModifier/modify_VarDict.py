@@ -34,15 +34,12 @@ def run():
 
 
 def convert(infile, snv_out, indel_out):
-
     with genome.open_textfile(infile) as vcf, open(snv_out, "w") as snpout, open(
         indel_out, "w"
     ) as indelout:
-
         line_i = vcf.readline().rstrip()
 
         while line_i.startswith("##"):
-
             if re.match(r"^##INFO=<ID=(LSEQ|RSEQ),", line_i):
                 line_i = line_i.replace("Number=G", "Number=1")
 
@@ -107,12 +104,10 @@ def convert(infile, snv_out, indel_out):
 
         line_i = vcf.readline().rstrip()
         while line_i:
-
             vcfcall = genome.VcfLine(line_i)
 
             # Fix the occasional error where ALT and REF are the same:
             if vcfcall.refbase != vcfcall.altbase:
-
                 # In the REF/ALT field, non-GCTA characters should be changed to N to fit the VCF standard:
                 vcfcall.refbase = re.sub(r"[^GCTA]", "N", vcfcall.refbase, flags=re.I)
                 vcfcall.altbase = re.sub(r"[^GCTA]", "N", vcfcall.altbase, flags=re.I)
@@ -207,7 +202,6 @@ def convert(infile, snv_out, indel_out):
                     i = 0
 
                     for ref_i, alt_i in zip(vcfcall.refbase, vcfcall.altbase):
-
                         if ref_i != alt_i:
                             if paired:
                                 line_i = "\t".join(
