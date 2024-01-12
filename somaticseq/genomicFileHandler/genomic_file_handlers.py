@@ -3,10 +3,12 @@
 import gzip
 import math
 import re
+from typing import Literal
 
 from pysam import AlignmentFile
 
-# The regular expression pattern for "chrXX 1234567" in both VarScan2 Output and VCF files:
+# The regular expression pattern for "chrXX 1234567" in both VarScan2 Output and
+# VCF files:
 CONTIG_POSITION_PATTERN = re.compile(
     r"^(?:chr)?(?:[1-9]|1[0-9]|2[0-2]|[XY]|MT?)\t[0-9]+\b"
 )
@@ -17,8 +19,7 @@ pattern_chrom = re.compile(r"(?:chr)?([1-9]|1[0-9]|2[0-2]|[XY]|MT?)\W")
 
 
 # Valid Phred+33 quality strings:
-valid_q = set()
-[valid_q.add(chr(33 + i)) for i in range(42)]
+valid_q = [chr(33 + i) for i in range(42)]
 
 nan = float("nan")
 inf = float("inf")
@@ -69,18 +70,27 @@ AA_1to3 = {
 }
 
 
-### ### ### ### ### MAJOR CLASSES ### ### ### ### ###
 class VcfLine:
     """Each instance of this object is a line from the vcf file (no header)."""
 
-    def __init__(self, vcf_line):
+    def __init__(self, vcf_line: str) -> None:
         """Argument is a line in pileup file."""
-        self.vcf_line = vcf_line.rstrip("\n")
+        self.chromosome: str
+        self.position: int | None
+        self.identifier: str
+        self.refbase: str
+        self.altbase: str
+        self.qual: str
+        self.filters: str
+        self.info: str
+        self.field: str
+        self.samples: str | list[str]
 
+        self.vcf_line = vcf_line.rstrip("\n")
         try:
             (
                 self.chromosome,
-                self.position,
+                position_string,
                 self.identifier,
                 self.refbase,
                 self.altbase,
@@ -89,7 +99,7 @@ class VcfLine:
                 self.info,
                 *self.has_samples,
             ) = vcf_line.rstrip("\n").split("\t")
-            self.position = int(self.position)
+            self.position = int(position_string)
 
             try:
                 self.field, *self.samples = self.has_samples
@@ -97,20 +107,24 @@ class VcfLine:
                 self.field = self.samples = ""
 
         except ValueError:
-            self.chromosome = (
-                self.identifier
-            ) = (
-                self.refbase
-            ) = (
-                self.altbase
-            ) = self.qual = self.filters = self.info = self.field = self.samples = ""
+            self.chromosome = ""
             self.position = None
+            self.identifier = ""
+            self.refbase = ""
+            self.altbase = ""
+            self.qual = ""
+            self.filters = ""
+            self.info = ""
+            self.field = ""
+            self.samples = ""
 
-    def get_info_items(self):
+    def get_info_items(self) -> list[str]:
         return self.info.split(";")
 
-    def get_info_value(self, variable):
-        key_item = re.search(rf"\b{variable}=([^;\s]+)([;\W]|$)", self.vcf_line)
+    def get_info_value(self, variable: str):
+        key_item = re.search(
+            rf"\b{variable}=([^;\s]+)([;\W]|$)", self.vcf_line
+        )
         # The key has a value attached to it, e.g., VAR=1,2,3
         if key_item:
             return key_item.groups()[0]
@@ -158,12 +172,6 @@ class pysam_header:
         return sample_name
 
 
-### ### ### ### ### MAJOR CLASSES OVER ### ### ### ### ###
-
-
-### ### ### ### ### FUNCTIONS OF CONVENIENCE ### ### ### ### ###
-
-
 def skip_vcf_header(opened_file):
     line_i = opened_file.readline().rstrip()
     while line_i.startswith("#"):
@@ -171,10 +179,14 @@ def skip_vcf_header(opened_file):
     return line_i
 
 
-def faiordict2contigorder(file_name, file_format):
-    """Takes either a .fai or .dict file, and return a contig order dictionary, i.e., chrom_seq['chr1'] == 0"""
+def faiordict2contigorder(
+        file_name: str, file_format: Literal["fai", "dict"]
+) -> dict[str, int]:
+    """Takes either a .fai or .dict file, and return a contig order dictionary,
+    i.e., chrom_seq['chr1'] == 0"""
 
-    assert file_format in ("fai", "dict")
+    if file_format not in ("fai", "dict"):
+        raise TypeError("file_format has to be either fai or dict.")
 
     contig_sequence = []
     with open(file_name) as gfile:
@@ -188,7 +200,7 @@ def faiordict2contigorder(file_name, file_format):
             if contig_match:
                 contig_i = contig_match.groups()[0].split(" ")[
                     0
-                ]  # some .fai files have space after the contig for descriptions.
+                ]  # some .fai files have space after the contig.
                 contig_sequence.append(contig_i)
 
     chrom_seq = {}
