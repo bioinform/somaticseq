@@ -1,5 +1,9 @@
-import scipy.stats as stats
+import os
+import re
+import sys
 
+import pysam
+import scipy.stats as stats
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 from somaticseq.genomicFileHandler.read_info_extractor import (
     CIGAR_SOFT_CLIP,
@@ -12,6 +16,7 @@ nan = float("nan")
 
 
 def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
+
     """
     bam is the opened file handle of bam file
     my_coordiate is a list or tuple of 0-based (contig, position)
@@ -113,7 +118,7 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
                     ref_notSC_reads += 1
 
                 # Distance from the end of the read:
-                if ith_base is not None:
+                if ith_base != None:
                     ref_pos_from_end.append(
                         min(ith_base, read_i.query_length - ith_base)
                     )
@@ -179,7 +184,7 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
                     alt_notSC_reads += 1
 
                 # Distance from the end of the read:
-                if ith_base is not None:
+                if ith_base != None:
                     alt_pos_from_end.append(
                         min(ith_base, read_i.query_length - ith_base)
                     )
@@ -197,61 +202,61 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
                 noise_read_count += 1
 
     # Done extracting info from tumor BAM. Now tally them:
-    mean(ref_read_mq)
-    mean(alt_read_mq)
+    ref_mq = mean(ref_read_mq)
+    alt_mq = mean(alt_read_mq)
     try:
-        stats.mannwhitneyu(
+        p_mannwhitneyu_mq = stats.mannwhitneyu(
             alt_read_mq, ref_read_mq, use_continuity=True, alternative="less"
         )[1]
     except ValueError:
         if len(alt_read_mq) > 0 and len(ref_read_mq) > 0:
-            pass
+            p_mannwhitneyu_mq = 0.5
         else:
-            pass
+            p_mannwhitneyu_mq = nan
 
-    mean(ref_read_bq)
-    mean(alt_read_bq)
+    ref_bq = mean(ref_read_bq)
+    alt_bq = mean(alt_read_bq)
     try:
-        stats.mannwhitneyu(
+        p_mannwhitneyu_bq = stats.mannwhitneyu(
             alt_read_bq, ref_read_bq, use_continuity=True, alternative="less"
         )[1]
 
     except ValueError:
         if len(alt_read_bq) > 0 and len(ref_read_bq) > 0:
-            pass
+            p_mannwhitneyu_bq = 0.5
         else:
-            pass
+            p_mannwhitneyu_bq = nan
 
     ref_NM = mean(ref_edit_distance)
     alt_NM = mean(alt_edit_distance)
-    alt_NM - ref_NM - abs(indel_length)
-    stats.fisher_exact(
+    NM_Diff = alt_NM - ref_NM - abs(indel_length)
+    concordance_fet = stats.fisher_exact(
         (
             (ref_concordant_reads, alt_concordant_reads),
             (ref_discordant_reads, alt_discordant_reads),
         )
     )[1]
-    stats.fisher_exact(((ref_for, alt_for), (ref_rev, alt_rev)))[1]
-    stats.fisher_exact(
+    strandbias_fet = stats.fisher_exact(((ref_for, alt_for), (ref_rev, alt_rev)))[1]
+    clipping_fet = stats.fisher_exact(
         ((ref_notSC_reads, alt_notSC_reads), (ref_SC_reads, alt_SC_reads))
     )[1]
 
     try:
-        stats.mannwhitneyu(
+        p_mannwhitneyu_endpos = stats.mannwhitneyu(
             alt_pos_from_end, ref_pos_from_end, use_continuity=True, alternative="less"
         )[1]
     except ValueError:
         if len(alt_pos_from_end) > 0 and len(ref_pos_from_end) > 0:
-            pass
+            p_mannwhitneyu_endpos = 0.5
         else:
-            pass
+            p_mannwhitneyu_endpos = nan
 
     ref_indel_1bp = ref_flanking_indel.count(1)
     ref_indel_2bp = ref_flanking_indel.count(2) + ref_indel_1bp
-    ref_flanking_indel.count(3) + ref_indel_2bp
+    ref_indel_3bp = ref_flanking_indel.count(3) + ref_indel_2bp
     alt_indel_1bp = alt_flanking_indel.count(1)
     alt_indel_2bp = alt_flanking_indel.count(2) + alt_indel_1bp
-    alt_flanking_indel.count(3) + alt_indel_2bp
+    alt_indel_3bp = alt_flanking_indel.count(3) + alt_indel_2bp
     consistent_mates = inconsistent_mates = 0
     for pairs_i in qname_collector:
         # Both are alternative calls:
@@ -266,6 +271,7 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
 
 
 def from_genome_reference(ref_fa, my_coordinate, ref_base, first_alt):
+
     """
     ref_fa is the opened reference fasta file handle
     my_coordiate is a list or tuple of 0-based (contig, position)
@@ -364,7 +370,7 @@ def LC(sequence):
     # Assume 4 different nucleotides
     sequence = sequence.upper()
 
-    if "N" not in sequence:
+    if not "N" in sequence:
         number_of_subseqs = 0
         seq_length = len(sequence)
         max_number_of_subseqs = max_vocabularies(seq_length)
@@ -373,6 +379,7 @@ def LC(sequence):
             # max_vocab_2 = seq_length - i + 1
             set_of_seq_n = set()
             for n, nth_base in enumerate(sequence):
+
                 if n + i <= len(sequence):
                     sub_seq = sequence[n : n + i]
                     set_of_seq_n.add(sub_seq)
@@ -392,6 +399,7 @@ def max_sub_vocabularies(seq_length, max_subseq_length):
     counts = 0
     k = 1
     while k <= max_subseq_length:
+
         if 4**k < (seq_length - k + 1):
             counts = counts + 4**k
         else:
@@ -412,14 +420,14 @@ def subLC(sequence, max_substring_length=20):
     # https://doi.org/10.1093/bioinformatics/18.5.679
     # Cut off substring at a fixed length
     sequence = sequence.upper()
-    if "N" not in sequence:
+    if not "N" in sequence:
         number_of_subseqs = 0
         seq_length = len(sequence)
         max_number_of_subseqs = max_sub_vocabularies(seq_length, max_substring_length)
         set_of_seq_n = set()
         for i in range(1, min(max_substring_length + 1, seq_length + 1)):
             set_of_seq_n.update(
-                sequence[n : n + i] for n in range(len(sequence) - i + 1)
+                (sequence[n : n + i] for n in range(len(sequence) - i + 1))
             )
         number_of_subseqs = len(set_of_seq_n)
         lc = number_of_subseqs / max_number_of_subseqs
