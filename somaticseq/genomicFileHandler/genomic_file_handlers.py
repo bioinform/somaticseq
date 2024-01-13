@@ -3,7 +3,7 @@
 import gzip
 import math
 import re
-from typing import Literal
+from typing import Any, Literal
 
 from pysam import AlignmentFile
 
@@ -121,7 +121,8 @@ class VcfLine:
     def get_info_items(self) -> list[str]:
         return self.info.split(";")
 
-    def get_info_value(self, variable: str):
+    def get_info_value(self, variable: str) -> str | bool:
+        key_item: Any
         key_item = re.search(
             rf"\b{variable}=([^;\s]+)([;\W]|$)", self.vcf_line
         )
@@ -140,12 +141,16 @@ class VcfLine:
     def get_sample_item(self, idx=0, out_type="d"):
         """d to output a dictionary. l to output a tuple of lists"""
         if out_type.lower() == "d":
-            return dict(zip(self.get_sample_variable(), self.samples[idx].split(":")))
+            return dict(
+                zip(self.get_sample_variable(), self.samples[idx].split(":"))
+            )
         elif out_type.lower() == "l":
             return (self.get_sample_variable(), self.samples[idx].split(":"))
 
     def get_sample_value(self, variable, idx=0):
-        var2value = dict(zip(self.field.split(":"), self.samples[idx].split(":")))
+        var2value = dict(
+            zip(self.field.split(":"), self.samples[idx].split(":"))
+        )
         try:
             return var2value[variable]
         except KeyError:
