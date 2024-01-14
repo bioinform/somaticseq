@@ -61,7 +61,6 @@ class BamFeatures(BaseModel):
         min_mq: int = 1,
         min_bq: int = 10,
     ) -> BaseModel:
-        
         indel_length = len(first_alt) - len(ref_base)
 
         reads = bam_fh.fetch(my_coordinate[0], my_coordinate[1] - 1, my_coordinate[1])
@@ -155,8 +154,8 @@ class BamFeatures(BaseModel):
 
                     # Soft-clipped reads?
                     if (
-                        read.cigar[0][0] == CIGAR_SOFT_CLIP
-                        or read.cigar[-1][0] == CIGAR_SOFT_CLIP
+                        read.cigartuples[0][0] == CIGAR_SOFT_CLIP
+                        or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP
                     ):
                         ref_SC_reads += 1
                     else:
@@ -225,15 +224,15 @@ class BamFeatures(BaseModel):
 
                     # Soft-clipped reads?
                     if (
-                        read.cigar[0][0] == CIGAR_SOFT_CLIP
-                        or read.cigar[-1][0] == CIGAR_SOFT_CLIP
+                        read.cigartuples[0][0] == CIGAR_SOFT_CLIP
+                        or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP
                     ):
                         alt_SC_reads += 1
                     else:
                         alt_notSC_reads += 1
 
                     # Distance from the end of the read:
-                    if ith_base != None:
+                    if ith_base is not None:
                         alt_pos_from_end.append(
                             min(ith_base, read.query_length - ith_base)
                         )
@@ -310,13 +309,13 @@ class BamFeatures(BaseModel):
         alt_indel_2bp = alt_flanking_indel.count(2) + alt_indel_1bp
         alt_indel_3bp = alt_flanking_indel.count(3) + alt_indel_2bp
         consistent_mates = inconsistent_mates = 0
-        for pairs_i in qname_collector:
+        for rp in qname_collector:
             # Both are alternative calls:
-            if qname_collector[pairs_i] == [1, 1]:
+            if qname_collector[rp] == [1, 1]:
                 consistent_mates += 1
 
             # One is alternate call but the other one is not:
-            elif len(qname_collector[pairs_i]) == 2 and 1 in qname_collector[pairs_i]:
+            elif len(qname_collector[rp]) == 2 and 1 in qname_collector[rp]:
                 inconsistent_mates += 1
 
         return cls(
