@@ -123,9 +123,7 @@ class VcfLine:
 
     def get_info_value(self, variable: str) -> str | bool:
         key_item: Any
-        key_item = re.search(
-            rf"\b{variable}=([^;\s]+)([;\W]|$)", self.vcf_line
-        )
+        key_item = re.search(rf"\b{variable}=([^;\s]+)([;\W]|$)", self.vcf_line)
         # The key has a value attached to it, e.g., VAR=1,2,3
         if key_item:
             return key_item.groups()[0]
@@ -141,16 +139,12 @@ class VcfLine:
     def get_sample_item(self, idx=0, out_type="d"):
         """d to output a dictionary. l to output a tuple of lists"""
         if out_type.lower() == "d":
-            return dict(
-                zip(self.get_sample_variable(), self.samples[idx].split(":"))
-            )
+            return dict(zip(self.get_sample_variable(), self.samples[idx].split(":")))
         elif out_type.lower() == "l":
             return (self.get_sample_variable(), self.samples[idx].split(":"))
 
     def get_sample_value(self, variable, idx=0):
-        var2value = dict(
-            zip(self.field.split(":"), self.samples[idx].split(":"))
-        )
+        var2value = dict(zip(self.field.split(":"), self.samples[idx].split(":")))
         try:
             return var2value[variable]
         except KeyError:
@@ -185,7 +179,7 @@ def skip_vcf_header(opened_file):
 
 
 def faiordict2contigorder(
-        file_name: str, file_format: Literal["fai", "dict"]
+    file_name: str, file_format: Literal["fai", "dict"]
 ) -> dict[str, int]:
     """Takes either a .fai or .dict file, and return a contig order dictionary,
     i.e., chrom_seq['chr1'] == 0"""

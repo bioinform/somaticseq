@@ -1,6 +1,7 @@
 import pysam
 import scipy.stats as stats
 from pydantic import BaseModel
+
 from somaticseq.genomicFileHandler.read_info_extractor import (
     CIGAR_SOFT_CLIP,
     dedup_test,
@@ -12,7 +13,6 @@ nan = float("nan")
 
 
 class BamFeatures(BaseModel):
-
     dp: int
     ref_call_forward: int
     ref_call_reverse: int
@@ -60,7 +60,6 @@ class BamFeatures(BaseModel):
         min_mq: int = 1,
         min_bq: int = 10,
     ) -> BaseModel:
-        
         indel_length = len(first_alt) - len(ref_base)
         reads = bam_fh.fetch(my_coordinate[0], my_coordinate[1] - 1, my_coordinate[1])
 
@@ -169,7 +168,11 @@ class BamFeatures(BaseModel):
                 # SNV, or Deletion, or Insertion where I do not check for matching indel length
                 elif (
                     (indel_length == 0 and code_i == 1 and base_call_i == first_alt)
-                    or (indel_length < 0 and code_i == 2 and indel_length == indel_length_i)
+                    or (
+                        indel_length < 0
+                        and code_i == 2
+                        and indel_length == indel_length_i
+                    )
                     or (indel_length > 0 and code_i == 3)
                 ):
                     try:
@@ -282,7 +285,10 @@ class BamFeatures(BaseModel):
 
         try:
             p_mannwhitneyu_endpos = stats.mannwhitneyu(
-                alt_pos_from_end, ref_pos_from_end, use_continuity=True, alternative="less"
+                alt_pos_from_end,
+                ref_pos_from_end,
+                use_continuity=True,
+                alternative="less",
             )[1]
         except ValueError:
             if len(alt_pos_from_end) > 0 and len(ref_pos_from_end) > 0:
@@ -344,4 +350,3 @@ class BamFeatures(BaseModel):
             alt_indel_1bp=alt_indel_1bp,
             indel_length=indel_length,
         )
-

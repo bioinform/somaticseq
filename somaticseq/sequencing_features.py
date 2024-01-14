@@ -1,9 +1,5 @@
-import os
-import re
-import sys
-
-import pysam
 import scipy.stats as stats
+
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 from somaticseq.genomicFileHandler.read_info_extractor import (
     CIGAR_SOFT_CLIP,
@@ -16,7 +12,6 @@ nan = float("nan")
 
 
 def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
-
     """
     bam is the opened file handle of bam file
     my_coordiate is a list or tuple of 0-based (contig, position)
@@ -271,7 +266,6 @@ def from_bam(bam, my_coordinate, ref_base, first_alt, min_mq=1, min_bq=10):
 
 
 def from_genome_reference(ref_fa, my_coordinate, ref_base, first_alt):
-
     """
     ref_fa is the opened reference fasta file handle
     my_coordiate is a list or tuple of 0-based (contig, position)
@@ -370,7 +364,7 @@ def LC(sequence):
     # Assume 4 different nucleotides
     sequence = sequence.upper()
 
-    if not "N" in sequence:
+    if "N" not in sequence:
         number_of_subseqs = 0
         seq_length = len(sequence)
         max_number_of_subseqs = max_vocabularies(seq_length)
@@ -379,7 +373,6 @@ def LC(sequence):
             # max_vocab_2 = seq_length - i + 1
             set_of_seq_n = set()
             for n, nth_base in enumerate(sequence):
-
                 if n + i <= len(sequence):
                     sub_seq = sequence[n : n + i]
                     set_of_seq_n.add(sub_seq)
@@ -399,7 +392,6 @@ def max_sub_vocabularies(seq_length, max_subseq_length):
     counts = 0
     k = 1
     while k <= max_subseq_length:
-
         if 4**k < (seq_length - k + 1):
             counts = counts + 4**k
         else:
@@ -420,14 +412,14 @@ def subLC(sequence, max_substring_length=20):
     # https://doi.org/10.1093/bioinformatics/18.5.679
     # Cut off substring at a fixed length
     sequence = sequence.upper()
-    if not "N" in sequence:
+    if "N" not in sequence:
         number_of_subseqs = 0
         seq_length = len(sequence)
         max_number_of_subseqs = max_sub_vocabularies(seq_length, max_substring_length)
         set_of_seq_n = set()
         for i in range(1, min(max_substring_length + 1, seq_length + 1)):
             set_of_seq_n.update(
-                (sequence[n : n + i] for n in range(len(sequence) - i + 1))
+                sequence[n : n + i] for n in range(len(sequence) - i + 1)
             )
         number_of_subseqs = len(set_of_seq_n)
         lc = number_of_subseqs / max_number_of_subseqs
