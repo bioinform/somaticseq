@@ -1,6 +1,5 @@
 import pysam
 import scipy.stats as stats
-from functools import cached_property
 from pydantic import BaseModel
 
 from somaticseq.genomicFileHandler.read_info_extractor import (
