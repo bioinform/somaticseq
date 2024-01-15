@@ -12,7 +12,9 @@ from somaticseq.genomicFileHandler.read_info_extractor import (
 )
 
 nan = float("nan")
-_Self = TypeVar("_Self", bound="BamFeatures")
+
+# typing.Self was added in Python 3.11
+BamFeaturesType = TypeVar("BamFeaturesType", bound="BamFeatures")
 
 
 class BamFeatures(BaseModel):
@@ -62,7 +64,7 @@ class BamFeatures(BaseModel):
         first_alt: str,
         min_mq: int = 1,
         min_bq: int = 10,
-    ) -> _Self:
+    ) -> BamFeaturesType:
         indel_length = len(first_alt) - len(ref_base)
 
         reads = bam_fh.fetch(my_coordinate[0], my_coordinate[1] - 1, my_coordinate[1])
