@@ -134,7 +134,7 @@ class VCFVariantRecord(BaseModel):
             *has_samples,
         ) = item
         position = int(pos)
-        if qual_str != "."
+        if qual_str != ".":
             qual = float(qual_str)
         else:
             qual = nan
