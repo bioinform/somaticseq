@@ -27,9 +27,9 @@ class BamFeatures(BaseModel):
     ref_bq: float = nan
     alt_bq: float = nan
     p_mannwhitneyu_bq: float = nan
-    ref_edit_distance: int = 0
-    alt_edit_distance: int = 0
-    edit_distance_difference: int = 0
+    ref_edit_distance: float = 0
+    alt_edit_distance: float = 0
+    edit_distance_difference: float = 0
     ref_concordant_reads: int = 0
     ref_discordant_reads: int = 0
     alt_concordant_reads: int = 0
