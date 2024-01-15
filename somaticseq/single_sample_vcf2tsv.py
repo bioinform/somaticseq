@@ -14,6 +14,7 @@ import pysam
 import somaticseq.annotate_caller as annotate_caller
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 import somaticseq.sequencing_features as sequencing_features
+from somaticseq.bam_features import BamFeatures
 from somaticseq.genomicFileHandler.read_info_extractor import (
     genomic_coordinates,
     rescale,
@@ -693,10 +694,14 @@ def vcf2tsv(
 
                         ########## ######### INFO EXTRACTION FROM BAM FILES ########## #########
                         # Tumor tBAM file:
-                        tbam_feature = sequencing_features.from_bam(
-                            bam, my_coordinate, ref_base, first_alt, min_mq, min_bq
+                        tbam_feature = BamFeatures.from_alignment_file(
+                            bam_fh=bam,
+                            my_coordinate=my_coordinate,
+                            ref_base=ref_base,
+                            first_alt=first_alt,
+                            min_mq=min_mq,
+                            min_bq=min_bq,
                         )
-
                         # Homopolymer eval:
                         (
                             homopolymer_length,
@@ -769,8 +774,8 @@ def vcf2tsv(
                             COMMON=if_common,
                             if_COSMIC=if_cosmic,
                             COSMIC_CNT=num_cases,
-                            Consistent_Mates=tbam_feature["consistent_mates"],
-                            Inconsistent_Mates=tbam_feature["inconsistent_mates"],
+                            Consistent_Mates=tbam_feature.consistent_mates,
+                            Inconsistent_Mates=tbam_feature.inconsistent_mates,
                             Seq_Complexity_Span=LC_spanning_phred,
                             Seq_Complexity_Adj=LC_adjacent_phred,
                             M2_TLOD=tlod,
@@ -780,54 +785,54 @@ def vcf2tsv(
                             SHIFT3=shift3,
                             MaxHomopolymer_Length=homopolymer_length,
                             SiteHomopolymer_Length=site_homopolymer_length,
-                            T_DP=tbam_feature["dp"],
-                            tBAM_REF_MQ="%g" % tbam_feature["ref_mq"],
-                            tBAM_ALT_MQ="%g" % tbam_feature["alt_mq"],
+                            T_DP=tbam_feature.dp,
+                            tBAM_REF_MQ="%g" % tbam_feature.ref_mq,
+                            tBAM_ALT_MQ="%g" % tbam_feature.alt_mq,
                             tBAM_p_MannWhitneyU_MQ="%g"
-                            % tbam_feature["p_mannwhitneyu_mq"],
-                            tBAM_REF_BQ="%g" % tbam_feature["ref_bq"],
-                            tBAM_ALT_BQ="%g" % tbam_feature["alt_bq"],
+                            % tbam_feature.p_mannwhitneyu_mq,
+                            tBAM_REF_BQ="%g" % tbam_feature.ref_bq,
+                            tBAM_ALT_BQ="%g" % tbam_feature.alt_bq,
                             tBAM_p_MannWhitneyU_BQ="%g"
-                            % tbam_feature["p_mannwhitneyu_bq"],
-                            tBAM_REF_NM="%g" % tbam_feature["ref_NM"],
-                            tBAM_ALT_NM="%g" % tbam_feature["alt_NM"],
-                            tBAM_NM_Diff="%g" % tbam_feature["NM_Diff"],
-                            tBAM_REF_Concordant=tbam_feature["ref_concordant_reads"],
-                            tBAM_REF_Discordant=tbam_feature["ref_discordant_reads"],
-                            tBAM_ALT_Concordant=tbam_feature["alt_concordant_reads"],
-                            tBAM_ALT_Discordant=tbam_feature["alt_discordant_reads"],
+                            % tbam_feature.p_mannwhitneyu_bq,
+                            tBAM_REF_NM="%g" % tbam_feature.ref_edit_distance,
+                            tBAM_ALT_NM="%g" % tbam_feature.alt_edit_distance,
+                            tBAM_NM_Diff="%g" % tbam_feature.edit_distance_difference,
+                            tBAM_REF_Concordant=tbam_feature.ref_concordant_reads,
+                            tBAM_REF_Discordant=tbam_feature.ref_discordant_reads,
+                            tBAM_ALT_Concordant=tbam_feature.alt_concordant_reads,
+                            tBAM_ALT_Discordant=tbam_feature.alt_discordant_reads,
                             tBAM_Concordance_FET=rescale(
-                                tbam_feature["concordance_fet"],
+                                tbam_feature.concordance_fet,
                                 "fraction",
                                 p_scale,
                                 1001,
                             ),
-                            T_REF_FOR=tbam_feature["ref_for"],
-                            T_REF_REV=tbam_feature["ref_rev"],
-                            T_ALT_FOR=tbam_feature["alt_for"],
-                            T_ALT_REV=tbam_feature["alt_rev"],
+                            T_REF_FOR=tbam_feature.ref_call_forward,
+                            T_REF_REV=tbam_feature.ref_call_reverse,
+                            T_ALT_FOR=tbam_feature.alt_call_forward,
+                            T_ALT_REV=tbam_feature.alt_call_reverse,
                             tBAM_StrandBias_FET=rescale(
-                                tbam_feature["strandbias_fet"],
+                                tbam_feature.strandbias_fet,
                                 "fraction",
                                 p_scale,
                                 1001,
                             ),
                             tBAM_p_MannWhitneyU_EndPos="%g"
-                            % tbam_feature["p_mannwhitneyu_endpos"],
-                            tBAM_REF_Clipped_Reads=tbam_feature["ref_SC_reads"],
-                            tBAM_ALT_Clipped_Reads=tbam_feature["alt_SC_reads"],
+                            % tbam_feature.p_mannwhitneyu_endpos,
+                            tBAM_REF_Clipped_Reads=tbam_feature.ref_soft_clipped_reads,
+                            tBAM_ALT_Clipped_Reads=tbam_feature.alt_soft_clipped_reads,
                             tBAM_Clipping_FET=rescale(
-                                tbam_feature["clipping_fet"], "fraction", p_scale, 1001
+                                tbam_feature.clipping_fet, "fraction", p_scale, 1001
                             ),
-                            tBAM_MQ0=tbam_feature["MQ0"],
-                            tBAM_Other_Reads=tbam_feature["noise_read_count"],
-                            tBAM_Poor_Reads=tbam_feature["poor_read_count"],
-                            tBAM_REF_InDel_3bp=tbam_feature["ref_indel_3bp"],
-                            tBAM_REF_InDel_2bp=tbam_feature["ref_indel_2bp"],
-                            tBAM_REF_InDel_1bp=tbam_feature["ref_indel_1bp"],
-                            tBAM_ALT_InDel_3bp=tbam_feature["alt_indel_3bp"],
-                            tBAM_ALT_InDel_2bp=tbam_feature["alt_indel_2bp"],
-                            tBAM_ALT_InDel_1bp=tbam_feature["alt_indel_1bp"],
+                            tBAM_MQ0=tbam_feature.mq0_reads,
+                            tBAM_Other_Reads=tbam_feature.noise_read_count,
+                            tBAM_Poor_Reads=tbam_feature.poor_read_count,
+                            tBAM_REF_InDel_3bp=tbam_feature.ref_indel_3bp,
+                            tBAM_REF_InDel_2bp=tbam_feature.ref_indel_2bp,
+                            tBAM_REF_InDel_1bp=tbam_feature.ref_indel_1bp,
+                            tBAM_ALT_InDel_3bp=tbam_feature.alt_indel_3bp,
+                            tBAM_ALT_InDel_2bp=tbam_feature.alt_indel_2bp,
+                            tBAM_ALT_InDel_1bp=tbam_feature.alt_indel_1bp,
                             InDel_Length=indel_length,
                         )
 
