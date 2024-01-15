@@ -35,7 +35,7 @@ def extract_snpEff(vcf_line):
     annAAs = []
     annTxns = []
 
-    vcf_obj = genome.VcfLine(vcf_line)
+    vcf_obj = genome.VCFVariantRecord.from_vcf_line(vcf_line)
     snpeff_ann = vcf_obj.get_info_value("ANN")
 
     if snpeff_ann:
@@ -146,7 +146,7 @@ def vcfs2variants(vcf_files, bam_files, sample_names):
                 line_i = vcf.readline().rstrip()
 
             while line_i:
-                genome.VcfLine(line_i)
+                genome.VCFVariantRecord.from_vcf_line(line_i)
                 item = line_i.split("\t")
 
                 contig_i = item[0]

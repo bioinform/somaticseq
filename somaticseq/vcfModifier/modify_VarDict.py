@@ -104,7 +104,7 @@ def convert(infile, snv_out, indel_out):
 
         line_i = vcf.readline().rstrip()
         while line_i:
-            vcfcall = genome.VcfLine(line_i)
+            vcfcall = genome.VCFVariantRecord.from_vcf_line(line_i)
 
             # Fix the occasional error where ALT and REF are the same:
             if vcfcall.refbase != vcfcall.altbase:

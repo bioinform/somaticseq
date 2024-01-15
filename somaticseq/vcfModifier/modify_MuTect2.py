@@ -85,7 +85,7 @@ def convert(infile, snv_out, indel_out, is_tnscope):
         line_i = vcf_in.readline().rstrip()
 
         while line_i:
-            vcf_i = genome.VcfLine(line_i)
+            vcf_i = genome.VCFVariantRecord.from_vcf_line(line_i)
 
             if "," not in vcf_i.altbase:
                 if len(vcf_i.refbase) == 1 and len(vcf_i.altbase) == 1:

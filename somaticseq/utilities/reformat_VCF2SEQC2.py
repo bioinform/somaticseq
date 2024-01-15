@@ -75,7 +75,7 @@ with genome.open_textfile(vcf_in_fn) as vcfin, open(vcf_out_fn, "w") as vcfout:
 
     # Move COMBO and NUM_TOOLS from INFO to Tumor Sample, and move QUAL to the Tumor Sample as well
     while line_in:
-        vcf_line_in = genome.VcfLine(line_in)
+        vcf_line_in = genome.VCFVariantRecord.from_vcf_line(line_in)
 
         # New INFO
         new_info = []

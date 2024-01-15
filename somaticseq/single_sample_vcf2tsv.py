@@ -393,7 +393,7 @@ def vcf2tsv(
         while my_line:
             # If VCF, get all the variants with the same coordinate into a list:
             if is_vcf:
-                my_vcf = genome.VcfLine(my_line)
+                my_vcf = genome.VCFVariantRecord.from_vcf_line(my_line)
                 my_coordinates = [(my_vcf.chromosome, my_vcf.position)]
                 variants_at_my_coordinate = []
                 alt_bases = my_vcf.altbase.split(",")
@@ -405,7 +405,7 @@ def vcf2tsv(
                 # As long as the "coordinate" stays the same, it will keep reading until it's different.
                 while my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
                     my_line = my_sites.readline().rstrip()
-                    my_vcf = genome.VcfLine(my_line)
+                    my_vcf = genome.VCFVariantRecord.from_vcf_line(my_line)
 
                     ########## This block is code is to ensure the input VCF file is properly sorted ##
                     coordinate_j = re.match(genome.PATTERN_CHR_POSITION, my_line)

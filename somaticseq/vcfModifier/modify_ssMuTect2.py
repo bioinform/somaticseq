@@ -64,7 +64,7 @@ def convert(infile, snv_out, indel_out):
         line_i = vcf_in.readline().rstrip()
 
         while line_i:
-            vcf_i = genome.VcfLine(line_i)
+            vcf_i = genome.VCFVariantRecord.from_vcf_line(line_i)
 
             # If "germlinerisk" is the only flag, then make it PASS since there is no matched normal
             if vcf_i.filters == "germline_risk":

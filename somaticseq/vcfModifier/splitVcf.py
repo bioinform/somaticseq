@@ -51,7 +51,7 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
             line_i = vcf_in.readline().rstrip()
 
         while line_i:
-            vcf_i = genome.VcfLine(line_i)
+            vcf_i = genome.VCFVariantRecord.from_vcf_line(line_i)
 
             if ("," not in vcf_i.altbase) and ("/" not in vcf_i.altbase):
                 if len(vcf_i.refbase) == 1 and len(vcf_i.altbase) == 1:

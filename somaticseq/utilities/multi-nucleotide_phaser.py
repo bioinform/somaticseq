@@ -67,7 +67,7 @@ with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, op
 
     # Get into the bulk of the VCF file
     while my_line:
-        my_vcf = genome.VcfLine(my_line)
+        my_vcf = genome.VCFVariantRecord.from_vcf_line(my_line)
 
         if len(my_vcf.refbase) == 1:
             my_coordinates = [(my_vcf.chromosome, my_vcf.position)]
@@ -83,7 +83,7 @@ with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, op
             my_vcf.position - my_coordinates[-1][1] <= threshold
         ):
             my_line = infile.readline().rstrip()
-            my_vcf = genome.VcfLine(my_line)
+            my_vcf = genome.VCFVariantRecord.from_vcf_line(my_line)
 
             # If the next vcf line is the same coordinate
             if (my_coordinates[-1][0] == my_vcf.chromosome) and (

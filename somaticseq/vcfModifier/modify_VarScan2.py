@@ -46,7 +46,7 @@ def convert(infile, outfile):
 
         # Doing the work here:
         while line_i:
-            vcf_i = genome.VcfLine(line_i)
+            vcf_i = genome.VCFVariantRecord.from_vcf_line(line_i)
 
             num_samples = len(vcf_i.samples)
             if num_samples == 1:

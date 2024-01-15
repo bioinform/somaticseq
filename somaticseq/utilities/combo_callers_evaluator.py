@@ -46,7 +46,7 @@ with open(vcf) as vcf:
     print("#ToolCombo\tTruePositiveCalls\tAllCalls")
 
     while line_i:
-        vcf_i = genome.VcfLine(line_i)
+        vcf_i = genome.VCFVariantRecord.from_vcf_line(line_i)
         combo_i = vcf_i.get_info_value(combo)
         tool_i = combo_i.split(",")
         tool_i = [int(i) for i in tool_i]
