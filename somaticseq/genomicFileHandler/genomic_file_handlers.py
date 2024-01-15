@@ -134,7 +134,10 @@ class VCFVariantRecord(BaseModel):
             *has_samples,
         ) = item
         position = int(pos)
-        qual = float(qual_str)
+        if qual_str != "."
+            qual = float(qual_str)
+        else:
+            qual = nan
         try:
             field, *samples = has_samples
         except ValueError:
