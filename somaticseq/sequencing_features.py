@@ -19,8 +19,8 @@ def from_genome_reference(ref_fa, my_coordinate, ref_base, first_alt):
         my_coordinate[1] + 1,
         min(ref_fa.get_reference_length(my_coordinate[0]) + 1, my_coordinate[1] + 21),
     )
-
-    # This is to get around buy in old version of pysam that reads the reference sequence in bytes instead of strings
+    # This is to get around buy in old version of pysam that reads the reference
+    # sequence in bytes instead of strings
     lseq = lseq.decode() if isinstance(lseq, bytes) else lseq
     rseq = rseq.decode() if isinstance(rseq, bytes) else rseq
     seq41_ref = lseq + ref_base + rseq
@@ -77,7 +77,7 @@ def somaticOddRatio(n_ref, n_alt, t_ref, t_alt, max_value=100):
     return sor
 
 
-def max_vocabularies(seq_length):
+def max_vocabularies(seq_length: int) -> int:
     # According to:
     # https://doi.org/10.1093/bioinformatics/18.5.679
     # Assume 4 different nucleotides
@@ -87,7 +87,7 @@ def max_vocabularies(seq_length):
         if 4**k < (seq_length - k + 1):
             counts = counts + 4**k
         else:
-            counts = (
+            counts = int(
                 counts + (seq_length - k + 1 + 1) * (seq_length - k + 1 - 1 + 1) / 2
             )
             break
@@ -101,28 +101,27 @@ def LC(sequence):
     # https://doi.org/10.1093/bioinformatics/18.5.679
     # Assume 4 different nucleotides
     sequence = sequence.upper()
+    if "N" in sequence:
+        return float("nan")
 
-    if "N" not in sequence:
-        number_of_subseqs = 0
-        seq_length = len(sequence)
-        max_number_of_subseqs = max_vocabularies(seq_length)
-        for i in range(1, seq_length + 1):
-            # max_vocab_1 = 4**i
-            # max_vocab_2 = seq_length - i + 1
-            set_of_seq_n = set()
-            for n, nth_base in enumerate(sequence):
-                if n + i <= len(sequence):
-                    sub_seq = sequence[n : n + i]
-                    set_of_seq_n.add(sub_seq)
-            num_uniq_subseqs = len(set_of_seq_n)
-            number_of_subseqs = number_of_subseqs + num_uniq_subseqs
-        lc = number_of_subseqs / max_number_of_subseqs
-    else:
-        lc = float("nan")
+    number_of_subseqs = 0
+    seq_length = len(sequence)
+    max_number_of_subseqs = max_vocabularies(seq_length)
+    for i in range(1, seq_length + 1):
+        # max_vocab_1 = 4**i
+        # max_vocab_2 = seq_length - i + 1
+        set_of_seq_n = set()
+        for n, nth_base in enumerate(sequence):
+            if n + i <= len(sequence):
+                sub_seq = sequence[n : n + i]
+                set_of_seq_n.add(sub_seq)
+        num_uniq_subseqs = len(set_of_seq_n)
+        number_of_subseqs = number_of_subseqs + num_uniq_subseqs
+    lc = number_of_subseqs / max_number_of_subseqs
     return lc
 
 
-def max_sub_vocabularies(seq_length, max_subseq_length):
+def max_sub_vocabularies(seq_length: int, max_subseq_length: int) -> int:
     # According to:
     # https://doi.org/10.1093/bioinformatics/18.5.679
     # capping the length of sub_string as an input parameter
@@ -133,7 +132,7 @@ def max_sub_vocabularies(seq_length, max_subseq_length):
         if 4**k < (seq_length - k + 1):
             counts = counts + 4**k
         else:
-            counts = (
+            counts = int(
                 counts
                 + (2 * seq_length - k - max_subseq_length + 2)
                 * (max_subseq_length - k + 1)
@@ -145,24 +144,22 @@ def max_sub_vocabularies(seq_length, max_subseq_length):
     return counts
 
 
-def ling_seq_complexity_with_max_vocab_length(sequence, max_substring_length=20):
+def ling_seq_complexity_with_max_vocab_length(
+    sequence: str, max_substring_length: int = 20
+) -> float:
     # Calculate linguistic sequence complexity according to
     # https://doi.org/10.1093/bioinformatics/18.5.679
     # Cut off substring at a fixed length
     sequence = sequence.upper()
-    if "N" not in sequence:
-        number_of_subseqs = 0
-        seq_length = len(sequence)
-        max_number_of_subseqs = max_sub_vocabularies(seq_length, max_substring_length)
-        set_of_seq_n = set()
-        for i in range(1, min(max_substring_length + 1, seq_length + 1)):
-            set_of_seq_n.update(
-                sequence[n : n + i] for n in range(len(sequence) - i + 1)
-            )
-        number_of_subseqs = len(set_of_seq_n)
-        lc = number_of_subseqs / max_number_of_subseqs
+    if "N" in sequence:
+        return float("nan")
 
-    else:
-        lc = float("nan")
-
+    number_of_subseqs = 0
+    seq_length = len(sequence)
+    max_number_of_subseqs = max_sub_vocabularies(seq_length, max_substring_length)
+    set_of_seq_n = set()
+    for i in range(1, min(max_substring_length + 1, seq_length + 1)):
+        set_of_seq_n.update(sequence[n : n + i] for n in range(len(sequence) - i + 1))
+    number_of_subseqs = len(set_of_seq_n)
+    lc = number_of_subseqs / max_number_of_subseqs
     return lc
