@@ -1,5 +1,6 @@
-import pysam
 from collections import defaultdict
+
+import pysam
 import scipy.stats as stats
 from pydantic import BaseModel
 
