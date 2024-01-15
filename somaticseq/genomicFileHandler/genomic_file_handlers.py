@@ -5,7 +5,7 @@ import math
 import re
 from functools import cached_property
 from pydantic import BaseModel
-from typing import Any, Literal, Self
+from typing import Any, Literal, TypeVar
 from pysam import AlignmentFile
 
 # The regular expression pattern for "chrXX 1234567" in both VarScan2 Output and
@@ -19,6 +19,8 @@ PATTERN_CHROM = re.compile(r"(?:chr)?([1-9]|1[0-9]|2[0-2]|[XY]|MT?)\W")
 
 # Valid Phred+33 quality strings:
 VALID_QUALITY_CHARS = [chr(33 + i) for i in range(42)]
+
+_Self = TypeVar("_Self", bound="VCFVariantRecord")
 
 nan = float("nan")
 inf = float("inf")
@@ -117,7 +119,7 @@ class VCFVariantRecord(BaseModel):
         return var2value[variable]
 
     @classmethod
-    def from_vcf_line(cls, vcf_line: str) -> Self:
+    def from_vcf_line(cls, vcf_line: str) -> _Self:
         vcf_line = vcf_line.rstrip("\n")
         if not vcf_line:
             return cls()
