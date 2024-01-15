@@ -407,7 +407,7 @@ def max_sub_vocabularies(seq_length, max_subseq_length):
     return counts
 
 
-def subLC(sequence, max_substring_length=20):
+def ling_seq_complexity_with_max_vocab_length(sequence, max_substring_length=20):
     # Calculate linguistic sequence complexity according to
     # https://doi.org/10.1093/bioinformatics/18.5.679
     # Cut off substring at a fixed length

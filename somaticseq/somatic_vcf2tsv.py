@@ -913,17 +913,23 @@ def vcf2tsv(
                         )
 
                         if len(seq_span_80bp) > 20:
-                            LC_spanning = sequencing_features.subLC(seq_span_80bp, 20)
+                            LC_spanning = sequencing_features.ling_seq_complexity_with_max_vocab_length(
+                                seq_span_80bp, 20
+                            )
                         else:
                             LC_spanning = math.nan
 
                         if len(seq_left_80bp) > 20:
-                            left_LC = sequencing_features.subLC(seq_left_80bp, 20)
+                            left_LC = sequencing_features.ling_seq_complexity_with_max_vocab_length(
+                                seq_left_80bp, 20
+                            )
                         else:
                             left_LC = math.nan
 
                         if len(seq_right_80bp) > 20:
-                            right_LC = sequencing_features.subLC(seq_right_80bp, 20)
+                            right_LC = sequencing_features.ling_seq_complexity_with_max_vocab_length(
+                                seq_right_80bp, 20
+                            )
                         else:
                             right_LC = math.nan
 

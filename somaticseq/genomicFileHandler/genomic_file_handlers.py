@@ -277,32 +277,18 @@ def findall_index_regex(mylist, pattern):
 
 def count_repeating_bases(sequence):
     """For a string, count the number of characters that appears in a row.
-    E.g., for string "ABBCCCDDDDAAAAAAA", the function returns 1, 2, 3, 4, 7, because there is 1 A, 2 B's, 3 C's, 4 D's, and then 7 A's.
+    E.g., for string "ABBCCCDDDDAAAAAAA", the function returns 1, 2, 3, 4, 7,
+    because there is 1 A, 2 B's, 3 C's, 4 D's, and then 7 A's.
     """
     counters = []
     previous_base = None
-
     for current_base in sequence:
         if current_base == previous_base:
             counters[-1] += 1
         else:
             counters.append(1)
-
         previous_base = current_base
-
-    counters
-
     return counters
-
-
-def numeric_id(chr_i, pos_i, contig_seq):
-    chr_i = contig_seq[chr_i]
-    numeric_chr_i = float(chr_i) * 1000000000000
-    numeric_pos_i = float(pos_i)
-
-    numeric_i = numeric_chr_i + numeric_pos_i
-
-    return numeric_i
 
 
 # Define which chromosome coordinate is ahead for the following function:
@@ -318,8 +304,9 @@ for n, contig_i in enumerate(chrom_sequence):
 
 def whoisbehind(coord_0, coord_1, chrom_sequence):
     """
-    coord_0 and coord_1 are two strings or two lists, specifying the chromosome, a (typically) tab, and then the location.
-    Return the index where the coordinate is behind. Return 10 if they are the same position.
+    coord_0 and coord_1 are two strings or two lists, specifying the chromosome,
+    a (typically) tab, and then the location. Return the index where the
+    coordinate is behind. Return 10 if they are the same position.
     """
 
     end_of_0 = end_of_1 = False
@@ -368,7 +355,8 @@ def whoisbehind(coord_0, coord_1, chrom_sequence):
 
 def vcf_header_modifier(infile_handle, addons=[], getlost=" "):
     """addons = A list of INFO, FORMAT, ID, or Filter lines you want to add.
-    getlost = a regex expression for the ID of INFO/FORMAT/FILTER that you want to get rid of.
+    getlost = a regex expression for the ID of INFO/FORMAT/FILTER that you want
+    to get rid of.
     """
 
     line_i = infile_handle.readline().rstrip()
@@ -376,7 +364,6 @@ def vcf_header_modifier(infile_handle, addons=[], getlost=" "):
     # First, write into the INFO and FORMAT what I want to add:
     vcfheader_info_format_filter = []
     vcfheader_misc = []
-
     for additions in addons:
         vcfheader_info_format_filter.append(additions)
 
@@ -399,9 +386,13 @@ def vcf_header_modifier(infile_handle, addons=[], getlost=" "):
 
 def catchup(coordinate_i, line_j, filehandle_j, chrom_sequence):
     """
-    Keep reading the j_th vcf file until it hits (or goes past) the i_th coordinate, at which time the function stops reading and you can do stuff.
-    Returns (True, Vcf_line_j)  if the j_th vcf file contains an entry that matches the i_th coordinate.
-    Returns (False, Vcf_line_j) if the j_th vcf file does not contain such an entry, and therefore the function has run past the i_th coordinate, by which time the programmer can decide to move into the next i_th coordiate.
+    Keep reading the j_th vcf file until it hits (or goes past) the i_th
+    coordinate, at which time the function stops reading and you can do stuff.
+    Returns (True, Vcf_line_j)  if the j_th vcf file contains an entry that
+    matches the i_th coordinate. Returns (False, Vcf_line_j) if the j_th vcf
+    file does not contain such an entry, and therefore the function has run past
+    the i_th coordinate, by which time the programmer can decide to move into
+    the next i_th coordiate.
     """
     coordinate_j = re.match(pattern_chr_position, line_j)
     if coordinate_j:
@@ -427,12 +418,10 @@ def catchup(coordinate_i, line_j, filehandle_j, chrom_sequence):
             # Catch up
             line_j = filehandle_j.readline().rstrip()
             next_coord = re.match(pattern_chr_position, line_j)
-
             if next_coord:
                 coordinate_j = next_coord.group()
             else:
                 coordinate_j = ""
-
             is_behind = whoisbehind(coordinate_i, coordinate_j, chrom_sequence)
 
         # If file_j has caught up exactly to the position of coordinate_i:

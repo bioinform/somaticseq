@@ -13,25 +13,25 @@ CIGAR_SEQ_MISMATCH = 8
 nan = float("nan")
 inf = float("inf")
 
-## Define functions:
 
-
-### PYSAM ###
 def position_of_aligned_read(read_i, target_position, win_size=3):
     """
-    Return the base call of the target position, and if it's a start of insertion/deletion.
-    This target position follows pysam convension, i.e., 0-based.
-    In VCF files, deletions/insertions occur AFTER the position.
+    Return the base call of the target position, and if it's a start of
+    insertion/deletion. This target position follows pysam convension, i.e.,
+    0-based. In VCF files, deletions/insertions occur AFTER the position.
 
-    Return (Code, seq_i, base_at_target, indel_length, nearest insertion/deletion)
+    Return (Code, seq_i, base_at_target, indel_length, nearest
+    insertion/deletion)
 
-    The first number in result is a codeMatch to reference on CIGAR, which is either a reference read or a SNV (substitution counts as M in CIGAR) to reference, which is either a reference read or a SNV/SNP
+    The first number in result is a codeMatch to reference on CIGAR, which is
+    either a reference read or a SNV (substitution counts as M in CIGAR) to
+    reference, which is either a reference read or a SNV/SNP
         2: Deletion after the target position
         3: Insertion after the target position
-        0: The target position does not match to reference, and may be discarded for "reference/alternate" read count purposes, but can be kept for "inconsistent read" metrics.
+        0: The target position does not match to reference, and may be discarded
+        for "reference/alternate" read count purposes, but can be kept for
+        "inconsistent read" metrics.
     """
-
-    flanking_deletion, flanking_insertion = nan, nan
 
     aligned_pairs = read_i.get_aligned_pairs()
 
@@ -47,19 +47,22 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
         if seq_i is not None:
             base_at_target = read_i.seq[seq_i]
 
-            # Whether if it's a Deletion/Insertion depends on what happens after this position:
-            # If the match (i.e., i, seq_i) is the final alignment, then you cannot know if it's an indel
-            # if "i" is NOT the final alignment:
+            # Whether if it's a Deletion/Insertion depends on what happens after
+            # this position: If the match (i.e., i, seq_i) is the final
+            # alignment, then you cannot know if it's an indel if "i" is NOT the
+            # final alignment:
             if i != len(aligned_pairs) - 1:
                 indel_length = 0
-                # If the next alignment is the next sequenced base, then the target is either a reference read of a SNP/SNV:
+                # If the next alignment is the next sequenced base, then the
+                # target is either a reference read of a SNP/SNV:
                 if (
                     aligned_pairs[i + 1][0] == seq_i + 1
                     and aligned_pairs[i + 1][1] == target_position + 1
                 ):
                     code = 1  # Reference read for mismatch
 
-                # If the next reference position has no read position to it, it is DELETED in this read:
+                # If the next reference position has no read position to it, it
+                # is DELETED in this read:
                 elif (
                     aligned_pairs[i + 1][0] is None
                     and aligned_pairs[i + 1][1] == target_position + 1
@@ -72,8 +75,12 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
                         else:
                             break
 
-                # Opposite of deletion, if the read position cannot be aligned to the reference, it can be an INSERTION.
-                # Insertions sometimes show up wit soft-clipping at the end, if the inserted sequence is "too long" to align on a single read. In this case, the inserted length derived here is but a lower limit of the real inserted length.
+                # Opposite of deletion, if the read position cannot be aligned
+                # to the reference, it can be an INSERTION. Insertions sometimes
+                # show up wit soft-clipping at the end, if the inserted sequence
+                # is "too long" to align on a single read. In this case, the
+                # inserted length derived here is but a lower limit of the real
+                # inserted length.
                 elif (
                     aligned_pairs[i + 1][0] == seq_i + 1
                     and aligned_pairs[i + 1][1] is None
@@ -89,11 +96,11 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
             # If "i" is the final alignment, cannt exam for indel:
             else:
                 code = 1  # Assuming no indel
-                indel_length = (
-                    nan  # Would be zero if certain no indel, but uncertain here
-                )
+                # Would be zero if certain no indel, but uncertain here
+                indel_length = nan
 
-        # If the target position is deleted from the sequencing read (i.e., the deletion in this read occurs before the target position):
+        # If the target position is deleted from the sequencing read (i.e., the
+        # deletion in this read occurs before the target position):
         else:
             code = 0
             base_at_target, indel_length, flanking_indel = None, None, None
@@ -106,9 +113,11 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
             left_side_start = idx_aligned_pair - 1
             right_side_start = idx_aligned_pair + abs(indel_length) + 1
 
-            # (i, None) = Insertion (or Soft-clips), i.e., means the i_th base in the query is not aligned to a reference
-            # (None, coordinate) = Deletion, i.e., there is no base in it that aligns to this coordinate.
-            # If those two scenarios occur right after an aligned base, that base position is counted as an indel.
+            # (i, None) = Insertion (or Soft-clips), i.e., means the i_th base
+            # in the query is not aligned to a reference (None, coordinate) =
+            # Deletion, i.e., there is no base in it that aligns to this
+            # coordinate. If those two scenarios occur right after an aligned
+            # base, that base position is counted as an indel.
             for step_right_i in range(
                 min(win_size, len(aligned_pairs) - right_side_start - 1)
             ):
@@ -140,16 +149,14 @@ def position_of_aligned_read(read_i, target_position, win_size=3):
 ## Dedup test for BAM file
 def dedup_test(read_i, remove_dup_or_not=True):
     """
-    Return False (i.e., remove the read) if the read is a duplicate and if the user specify that duplicates should be removed.
-    Else return True (i.e, keep the read)
+    Return False (i.e., remove the read) if the read is a duplicate and if the
+    user specify that duplicates should be removed. Else return True (i.e, keep
+    the read)
     """
     if read_i.is_duplicate and remove_dup_or_not:
         return False
     else:
         return True
-
-
-### END OF PYSAM ###
 
 
 # Useful to make BED region into an iterator of coordinates
@@ -162,7 +169,7 @@ def mean(stuff):
     return sum(stuff) / len(stuff) if stuff else nan
 
 
-##### Extract Indel DP4 info from pileup files:
+# Extract Indel DP4 info from pileup files:
 def pileup_indel_DP4(pileup_object, indel_pattern):
     if pileup_object.reads:
         ref_for = pileup_object.reads.count(".")
@@ -190,7 +197,6 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
                 base_calls[2].count(variant_call.upper()),
                 base_calls[3].count(variant_call.lower()),
             )
-
         # Insertion:
         elif len(variant_call) > len(ref_base):
             inserted_sequence = variant_call[len(ref_base) : :]
@@ -201,7 +207,6 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
                 base_calls[6].count(inserted_sequence.upper()),
                 base_calls[7].count(inserted_sequence.lower()),
             )
-
         # Deletion:
         elif len(variant_call) < len(ref_base):
             deleted_sequence = ref_base[len(variant_call) : :]
@@ -212,7 +217,6 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
                 base_calls[4].count(deleted_sequence.upper()),
                 base_calls[5].count(deleted_sequence.lower()),
             )
-
     else:
         ref_for = ref_rev = alt_for = alt_rev = 0
 
@@ -234,7 +238,7 @@ def rescale(x, original="fraction", rescale_to=None, max_phred=1001):
     return y
 
 
-##### Stuff from VarDict:
+# Stuff from VarDict:
 def find_msi(vcf_object):
     msi = vcf_object.get_info_value("MSI")
     if msi:

@@ -96,4 +96,4 @@ if __name__ == "__main__":
         length = len(args.sequence)
 
     # This one adds up sub-strings up to a length
-    print(seq_features.subLC(args.sequence, length))
+    print(seq_features.ling_seq_complexity_with_max_vocab_length(args.sequence, length))
