@@ -137,7 +137,7 @@ class VCFVariantRecord(BaseModel):
         if qual_str != ".":
             qual = float(qual_str)
         else:
-            qual = nan
+            qual = None
         try:
             field, *samples = has_samples
         except ValueError:
