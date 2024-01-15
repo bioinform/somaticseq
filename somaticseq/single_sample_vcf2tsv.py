@@ -379,7 +379,7 @@ def vcf2tsv(
             my_line = my_sites.readline().rstrip()
 
         # First coordinate, for later purpose of making sure the input is sorted properly
-        coordinate_i = re.match(genome.pattern_chr_position, my_line)
+        coordinate_i = re.match(genome.PATTERN_CHR_POSITION, my_line)
         coordinate_i = coordinate_i.group() if coordinate_i else ""
 
         # First line:
@@ -408,7 +408,7 @@ def vcf2tsv(
                     my_vcf = genome.VcfLine(my_line)
 
                     ########## This block is code is to ensure the input VCF file is properly sorted ##
-                    coordinate_j = re.match(genome.pattern_chr_position, my_line)
+                    coordinate_j = re.match(genome.PATTERN_CHR_POSITION, my_line)
                     coordinate_j = coordinate_j.group() if coordinate_j else ""
                     if genome.whoisbehind(coordinate_i, coordinate_j, chrom_seq) == 1:
                         raise Exception(

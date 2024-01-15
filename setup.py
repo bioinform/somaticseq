@@ -28,7 +28,7 @@ setup(
         "scipy",
         "pandas",
         "xgboost",
-        "pydantic>=2.5.0",
+        "pydantic>=2.0.0",
     ],
     scripts=[
         "somaticseq/somaticseq_parallel.py",

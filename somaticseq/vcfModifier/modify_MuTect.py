@@ -55,8 +55,8 @@ def convert(infile, outfile, tbam, nbam=None):
     paired_mode = True if nbam else False
 
     # Get tumor and normal sample names from the bam files:
-    nbam_header = genome.pysam_header(nbam) if nbam else None
-    tbam_header = genome.pysam_header(tbam)
+    nbam_header = genome.PysamHeader(nbam) if nbam else None
+    tbam_header = genome.PysamHeader(tbam)
 
     # When MuTect is run in a "single sample mode," the "normal" will be named "none."
     n_samplename = nbam_header.SM() if nbam else ["none"]

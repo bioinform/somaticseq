@@ -167,9 +167,9 @@ else:
     )
 
 
-pattern_chrom = r"|".join(chrom_seq)
-r_chrom = r"(" + pattern_chrom + r")"
-pattern_chr_position = r_chrom + r"\t[0-9]+"
+PATTERN_CHROM = r"|".join(chrom_seq)
+r_chrom = r"(" + PATTERN_CHROM + r")"
+PATTERN_CHR_POSITION = r_chrom + r"\t[0-9]+"
 
 
 # Figure out the order of NORMAL and TUMOR
@@ -186,7 +186,7 @@ else:
 
 line_i = my_vcf.readline().rstrip("\n")
 while line_i:
-    my_coordinate = re.search(pattern_chr_position, line_i)
+    my_coordinate = re.search(PATTERN_CHR_POSITION, line_i)
     if my_coordinate:
         my_coordinate = my_coordinate.group()
     else:
