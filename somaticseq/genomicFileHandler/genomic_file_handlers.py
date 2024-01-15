@@ -120,7 +120,7 @@ class VCFVariantRecord(BaseModel):
         return var2value[variable]
 
     @classmethod
-    def from_vcf_line(cls, vcf_line: str) -> VCFVariantRecord:
+    def from_vcf_line(cls, vcf_line: str) -> VCFVariantRecordType:
         vcf_line = vcf_line.rstrip("\n")
         if not vcf_line:
             return cls()
