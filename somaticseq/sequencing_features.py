@@ -1,9 +1,15 @@
+import pysam
 import somaticseq.genomicFileHandler.genomic_file_handlers as genome
 
 nan = float("nan")
 
 
-def from_genome_reference(ref_fa, my_coordinate, ref_base, first_alt):
+def get_homopolymer_lengths(
+    ref_fa: pysam.FastaFile,
+    my_coordinate: tuple[str, int, int],
+    ref_base: str,
+    first_alt: str,
+) -> tuple[int, int]:
     """
     ref_fa is the opened reference fasta file handle
     my_coordiate is a list or tuple of 0-based (contig, position)
@@ -61,7 +67,9 @@ def from_genome_reference(ref_fa, my_coordinate, ref_base, first_alt):
     return homopolymer_length, site_homopolymer_length
 
 
-def somaticOddRatio(n_ref, n_alt, t_ref, t_alt, max_value=100):
+def somaticOddRatio(
+    n_ref: int, n_alt: int, t_ref: int, t_alt: int, max_value: float = 100
+) -> float:
     # Odds Ratio just like VarDict's output
     sor_numerator = n_alt * t_ref
     sor_denominator = n_ref * t_alt
@@ -73,7 +81,6 @@ def somaticOddRatio(n_ref, n_alt, t_ref, t_alt, max_value=100):
         sor = sor_numerator / sor_denominator
         if sor >= max_value:
             sor = max_value
-
     return sor
 
 
@@ -96,7 +103,7 @@ def max_vocabularies(seq_length: int) -> int:
     return counts
 
 
-def LC(sequence):
+def linguistic_sequence_complexity(sequence: str) -> float:
     # Calculate linguistic sequence complexity according to
     # https://doi.org/10.1093/bioinformatics/18.5.679
     # Assume 4 different nucleotides

@@ -706,7 +706,7 @@ def vcf2tsv(
                         (
                             homopolymer_length,
                             site_homopolymer_length,
-                        ) = sequencing_features.from_genome_reference(
+                        ) = sequencing_features.get_homopolymer_lengths(
                             ref_fa, my_coordinate, ref_base, first_alt
                         )
 
