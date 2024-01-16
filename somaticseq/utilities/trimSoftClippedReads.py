@@ -31,26 +31,20 @@ with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
     bam_out, "wb", template=bam
 ) as bamout:
     reads = bam.fetch()
-
     total_trimmed_bases = 0
-
     for read_i in reads:
         if read_i.cigarstring and "S" in read_i.cigarstring:
             front_clipped = re.search(r"^([0-9]+)S", read_i.cigarstring)
             back_clipped = re.search(r"([0-9]+)S$", read_i.cigarstring)
-
             if front_clipped and back_clipped:
                 front_num = int(front_clipped.groups()[0])
                 back_num = int(back_clipped.groups()[0])
                 read_i.cigarstring = re.sub(
                     r"^[0-9]+S|[0-9]+S$", "", read_i.cigarstring
                 )
-
-                qual_i = read_i.qual[front_num::][:-back_num]
-
-                read_i.seq = read_i.seq[front_num::][:-back_num]
-                read_i.qual = qual_i
-
+                qual_i = read_i.query_qualities[front_num::][:-back_num]
+                read_i.query_sequence = read_i.query_sequence[front_num::][:-back_num]
+                read_i.query_qualities = qual_i
                 if read_i.has_tag("BI"):
                     read_i.set_tag(
                         tag="BI",
@@ -58,7 +52,6 @@ with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
                         value_type="Z",
                         replace=True,
                     )
-
                 if read_i.has_tag("BD"):
                     read_i.set_tag(
                         tag="BD",
@@ -66,19 +59,15 @@ with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
                         value_type="Z",
                         replace=True,
                     )
-
                 total_trimmed_bases += front_num
                 total_trimmed_bases += back_num
 
             elif front_clipped:
                 num_bases = int(front_clipped.groups()[0])
                 read_i.cigarstring = re.sub(r"^([0-9]+)S", "", read_i.cigarstring)
-
-                qual_i = read_i.qual[num_bases::]
-
-                read_i.seq = read_i.seq[num_bases::]
-                read_i.qual = qual_i
-
+                qual_i = read_i.query_qualities[num_bases::]
+                read_i.query_sequence = read_i.query_sequence[num_bases::]
+                read_i.query_qualities = qual_i
                 if read_i.has_tag("BI"):
                     read_i.set_tag(
                         tag="BI",
@@ -86,7 +75,6 @@ with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
                         value_type="Z",
                         replace=True,
                     )
-
                 if read_i.has_tag("BD"):
                     read_i.set_tag(
                         tag="BD",
@@ -94,18 +82,14 @@ with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
                         value_type="Z",
                         replace=True,
                     )
-
                 total_trimmed_bases += num_bases
 
             elif back_clipped:
                 num_bases = int(back_clipped.groups()[0])
                 read_i.cigarstring = re.sub("[0-9]+S$", "", read_i.cigarstring)
-
-                qual_i = read_i.qual[:-num_bases]
-
-                read_i.seq = read_i.seq[:-num_bases]
-                read_i.qual = qual_i
-
+                qual_i = read_i.query_qualities[:-num_bases]
+                read_i.query_sequence = read_i.query_sequence[:-num_bases]
+                read_i.query_qualities = qual_i
                 if read_i.has_tag("BI"):
                     read_i.set_tag(
                         tag="BI",
@@ -113,7 +97,6 @@ with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
                         value_type="Z",
                         replace=True,
                     )
-
                 if read_i.has_tag("BD"):
                     read_i.set_tag(
                         tag="BD",
@@ -121,7 +104,6 @@ with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
                         value_type="Z",
                         replace=True,
                     )
-
                 total_trimmed_bases += num_bases
 
         # Mate CIGAR

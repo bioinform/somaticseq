@@ -128,7 +128,7 @@ def convert(infile, outfile):
                     vcf_i.identifier,
                     vcf_i.refbase,
                     vcf_i.altbase,
-                    str(vcf_i.qual or "."),,
+                    str(vcf_i.qual or "."),
                     vcf_i.filters,
                     vcf_i.info,
                     vcf_i.field,
