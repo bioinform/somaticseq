@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-# For single-sample mode, remove the "none" column from the VCF file to be consistent with VCF files from other single-sample tools.
-# Keep Broad's convention for AD, i.e., allelic depths for the ref and alt alleles in the order listed
-# 4/12/2015
+# For single-sample mode, remove the "none" column from the VCF file to be
+# consistent with VCF files from other single-sample tools. Keep Broad's
+# convention for AD, i.e., allelic depths for the ref and alt alleles in the
+# order listed 4/12/2015
 
 import argparse
 import sys
