@@ -148,7 +148,7 @@ def convert(infile, snv_out, indel_out, is_tnscope):
                             vcf_i.identifier,
                             vcf_i.refbase,
                             altbase_i,
-                            vcf_i.qual,
+                            str(vcf_i.qual or "."),
                             vcf_i.filters,
                             info_string,
                             vcf_i.field,
