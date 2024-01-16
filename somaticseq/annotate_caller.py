@@ -24,7 +24,7 @@ vdT, vdN = 0, 1
 
 """
 caller_variants is a dictionary, where the key is a tuple of ( (contig,
-position), ref, alt ), and value is a genome.VcfLine object.
+position), ref, alt ), and value is a genome.VCFVariantRecord.
 """
 
 

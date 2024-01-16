@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import gzip
+import io
 import math
 import re
 from functools import cached_property
@@ -157,98 +158,16 @@ class VCFVariantRecord(BaseModel):
         )
 
 
-class VcfLine:
-    """Each instance of this object is a line from the vcf file (no header)."""
-
-    def __init__(self, vcf_line: str) -> None:
-        """Argument is a line in pileup file."""
-        self.chromosome: str
-        self.position: int | None
-        self.identifier: str
-        self.refbase: str
-        self.altbase: str
-        self.qual: str
-        self.filters: str
-        self.info: str
-        self.field: str
-        self.samples: str | list[str]
-
-        self.vcf_line = vcf_line.rstrip("\n")
-        try:
-            (
-                self.chromosome,
-                position_string,
-                self.identifier,
-                self.refbase,
-                self.altbase,
-                self.qual,
-                self.filters,
-                self.info,
-                *self.has_samples,
-            ) = vcf_line.rstrip("\n").split("\t")
-            self.position = int(position_string)
-
-            try:
-                self.field, *self.samples = self.has_samples
-            except ValueError:
-                self.field = self.samples = ""
-
-        except ValueError:
-            self.chromosome = ""
-            self.position = None
-            self.identifier = ""
-            self.refbase = ""
-            self.altbase = ""
-            self.qual = ""
-            self.filters = ""
-            self.info = ""
-            self.field = ""
-            self.samples = ""
-
-    def get_info_items(self) -> list[str]:
-        return self.info.split(";")
-
-    def get_info_value(self, variable: str) -> str | bool:
-        key_item: Any
-        key_item = re.search(rf"\b{variable}=([^;\s]+)([;\W]|$)", self.vcf_line)
-        # The key has a value attached to it, e.g., VAR=1,2,3
-        if key_item:
-            return key_item.groups()[0]
-
-        # Perhaps it's simply a flag without "="
-        else:
-            key_item = self.info.split(";")
-            return True if variable in key_item else False
-
-    def get_sample_variable(self):
-        return self.field.split(":")
-
-    def get_sample_item(self, idx=0, out_type="d"):
-        """d to output a dictionary. l to output a tuple of lists"""
-        if out_type.lower() == "d":
-            return dict(zip(self.get_sample_variable(), self.samples[idx].split(":")))
-        elif out_type.lower() == "l":
-            return (self.get_sample_variable(), self.samples[idx].split(":"))
-
-    def get_sample_value(self, variable, idx=0):
-        var2value = dict(zip(self.field.split(":"), self.samples[idx].split(":")))
-        try:
-            return var2value[variable]
-        except KeyError:
-            return None
-
-
 class PysamHeader(BaseModel):
     bam_file: str
 
     @cached_property
     def bam_header(self) -> dict[str, Any]:
         bam = AlignmentFile(self.bam_file)
-        return bam.header
+        return bam.header.to_dict()
 
     @cached_property
     def sample_name(self) -> tuple[str]:
-        """Sample Name"""
         name_set = set()
         for header_i in self.bam_header["RG"]:
             name_set.add(header_i["SM"])
@@ -294,7 +213,7 @@ def faiordict2contigorder(
     return chrom_seq
 
 
-def open_textfile(file_name):
+def open_textfile(file_name: str) -> io.TextIOWrapper:
     # See if the input file is a .gz file:
     if str(file_name).lower().endswith(".gz"):
         return gzip.open(file_name, "rt")
@@ -303,38 +222,38 @@ def open_textfile(file_name):
         return open(file_name)
 
 
-def open_bam_file(file_name):
+def open_bam_file(file_name: str) -> AlignmentFile | io.TextIOWrapper:
     try:
         return AlignmentFile(file_name, "rb")
     except ValueError:
         return open(file_name)
 
 
-def ascii2phred33(x):
+def ascii2phred33(x: str) -> int:
     """Put in an ASCII string, return a Phred+33 score."""
+    if len(x) != 1:
+        raise ValueError("Input is a single character.")
     return ord(x) - 33
 
 
-def phred33toascii(x):
+def phred33toascii(x: int) -> str:
     """Put in a Phred33 score, return the character."""
     return chr(x + 33)
 
 
 def p2phred(p, max_phred=inf):
     """Convert p-value to Phred-scale quality score."""
-
+    if p < 0 or p > 1:
+        raise ValueError("p-value must be between 0 and 1.")
     if p == 0:
+        return max_phred
+    if math.isnan(p):
+        return nan
+    if p == 1:
+        return 0
+    Q = -10 * math.log10(p)
+    if Q > max_phred:
         Q = max_phred
-    elif p == 1:
-        Q = 0
-    elif p < 0 or p > 1:
-        Q = nan
-    elif p > 0:
-        Q = -10 * math.log10(p)
-        if Q > max_phred:
-            Q = max_phred
-    elif math.isnan(p):
-        Q = nan
     return Q
 
 
@@ -649,7 +568,7 @@ def find_vcf_at_coordinate(my_coordinate, latest_vcf_line, vcf_file_handle, chro
     vcf_variants = {}
     if latest_vcf_run[0]:
         for vcf_line_i in latest_vcf_here:
-            vcf_i = VcfLine(vcf_line_i)
+            vcf_i = VCFVariantRecord.from_vcf_line(vcf_line_i)
 
             # Some VCF files wrongly uses "/" to separate different ALT's
             altbases = re.split(r"[,/]", vcf_i.altbase)
