@@ -21,7 +21,7 @@ setup(
     url="https://github.com/bioinform/somaticseq",
     packages=find_packages(),
     package_data={"": ["*.R"]},
-    python_requires=">=3.6.0",
+    python_requires=">=3.10.0",
     install_requires=[
         "pysam",
         "numpy",
