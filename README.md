@@ -70,7 +70,7 @@ The following are some of the use cases for these resources:
 
 ## Dependencies
 
-This [dockerfile](Dockerfiles/somaticseq.base-1.4.dockerfile) reveals the
+This [dockerfile](Dockerfiles/somaticseq.base-1.6.dockerfile) reveals the
 dependencies
 
 -   Python 3, plus pysam, numpy, scipy, pandas, and xgboost libraries.
