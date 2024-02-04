@@ -27,7 +27,7 @@ setup(
         "numpy",
         "scipy",
         "pandas",
-        "xgboost",
+        "xgboost>=1.4",
         "pydantic>=2.0.0",
     ],
     scripts=[

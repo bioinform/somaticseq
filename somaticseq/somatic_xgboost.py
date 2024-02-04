@@ -162,7 +162,7 @@ def predictor(
                 test_data.drop(non_feature_i, axis=1, inplace=True)
 
         dtest = xgb.DMatrix(test_data)
-        scores = xgb_model.predict(dtest, ntree_limit=iterations)
+        scores = xgb_model.predict(dtest, iteration_range=(0, iterations))
         predicted = input_data.assign(SCORE=scores)
 
         predicted.to_csv(
