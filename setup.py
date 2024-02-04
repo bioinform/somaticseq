@@ -20,7 +20,7 @@ setup(
     url="https://github.com/bioinform/somaticseq",
     packages=find_packages(),
     package_data={"": ["*.R"]},
-    install_requires=["pysam", "numpy", "scipy", "pandas", "xgboost"],
+    install_requires=["pysam", "numpy", "scipy", "pandas", "xgboost>=1.4"],
     scripts=[
         "somaticseq/somaticseq_parallel.py",
         "somaticseq/run_somaticseq.py",

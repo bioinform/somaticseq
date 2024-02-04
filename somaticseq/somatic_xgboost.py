@@ -61,7 +61,6 @@ def param_list_to_dict(param_list, existing_param_dict=DEFAULT_PARAM):
 
 
 def save_feature_importance_to_file(xgb_model, filename):
-
     feature_gain = xgb_model.get_score(importance_type="gain")
     feature_weight = xgb_model.get_score(importance_type="weight")
     feature_cover = xgb_model.get_score(importance_type="cover")
@@ -73,11 +72,9 @@ def save_feature_importance_to_file(xgb_model, filename):
     )
 
     with open(filename, "w") as fout:
-
         fout.write(line_i)
 
         for feature_i in sorted(feature_gain):
-
             line_i = "{}\t{}\t{}\t{}\t{}\t{}\n".format(
                 feature_i,
                 feature_gain[feature_i],
@@ -98,7 +95,6 @@ def builder(
     num_rounds=DEFAULT_XGB_BOOST_ROUNDS,
     model=None,
 ):
-
     logger = logging.getLogger("xgboost_" + builder.__name__)
     logger.info("TRAINING {} for XGBOOST".format(",".join(input_tsvs)))
     logger.info("Columns removed before training: {}".format(", ".join(non_feature)))
@@ -147,7 +143,6 @@ def predictor(
     non_feature=NON_FEATURE,
     iterations=DEFAULT_NUM_TREES_PREDICT,
 ):
-
     logger = logging.getLogger("xgboost_" + predictor.__name__)
     logger.info("Columns removed for prediction: {}".format(",".join(non_feature)))
     logger.info("Number of trees to use = {}".format(iterations))
@@ -162,14 +157,13 @@ def predictor(
     for input_data in pd.read_csv(
         input_tsv, sep="\t", chunksize=chunksize, low_memory=False
     ):
-
         test_data = ntchange.ntchange(input_data)
         for non_feature_i in non_feature:
             if non_feature_i in test_data:
                 test_data.drop(non_feature_i, axis=1, inplace=True)
 
         dtest = xgb.DMatrix(test_data)
-        scores = xgb_model.predict(dtest, ntree_limit=iterations)
+        scores = xgb_model.predict(dtest, iteration_range=(0, iterations))
         predicted = input_data.assign(SCORE=scores)
 
         predicted.to_csv(
@@ -189,7 +183,6 @@ def predictor(
 ################################################################################################
 # Execute:
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
         description="Run XGBoost",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -274,7 +267,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.which == "train":
-
         PARAM = copy(DEFAULT_PARAM)
 
         if args.num_threads:
@@ -306,7 +298,6 @@ if __name__ == "__main__":
         )
 
     elif args.which == "predict":
-
         for feature_i in args.features_excluded:
             NON_FEATURE.append(feature_i)
 
