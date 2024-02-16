@@ -96,11 +96,8 @@ if __name__ == "__main__":
         description="Convert paired-end BAM to FASTQ1 and 2",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-
     parser.add_argument("-bam", "--bam", type=str, help="bam file in")
     parser.add_argument("-fq1", "--fastq1", type=str, help="fastq1 out")
     parser.add_argument("-fq2", "--fastq2", type=str, help="fastq2 out")
-
     args = parser.parse_args()
-
     bam2fq(args.bam, args.fastq1, args.fastq2)
