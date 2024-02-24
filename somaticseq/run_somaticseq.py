@@ -4,8 +4,12 @@ import argparse
 import logging
 import os
 import subprocess
-
+from typing import Literal
+import somaticseq.SSeq_tsv2vcf as tsv2vcf
 import somaticseq.combine_callers as combineCallers
+import somaticseq.single_sample_vcf2tsv as single_sample_vcf2tsv
+import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
+import somaticseq.somatic_xgboost as somatic_xgboost
 from somaticseq._version import __version__
 
 FORMAT = "%(levelname)s %(asctime)-15s %(name)-20s %(message)s"
@@ -18,14 +22,14 @@ DEFAULT_NUM_TREES_PREDICT = 100
 
 
 def modelTrainer(
-    input_file,
-    algo,
-    threads=1,
-    seed=0,
-    max_depth=12,
-    iterations=200,
-    features_to_exclude=None,
-    hyperparameters=None,
+    input_file: str,
+    algo: Literal["xgboost", "ada", "ada.R"],
+    threads: int = 1,
+    seed: int = 0,
+    max_depth: int = 12,
+    iterations: int = 200,
+    features_to_exclude: list[str] | None = None,
+    hyperparameters: list[str] | None = None,
 ):
     logger = logging.getLogger(modelTrainer.__name__)
 
@@ -37,17 +41,13 @@ def modelTrainer(
         logger.info(" ".join(command_item))
         exit_code = subprocess.call(command_item)
         assert exit_code == 0
-
         return input_file + ".ada.Classifier.RData"
 
     if algo == "xgboost":
-        import somaticseq.somatic_xgboost as somatic_xgboost
-
         xgb_param = somatic_xgboost.DEFAULT_PARAM
         xgb_param["nthread"] = threads
         xgb_param["max_depth"] = max_depth
         xgb_param["seed"] = seed
-
         if hyperparameters:
             xgb_param = somatic_xgboost.param_list_to_dict(hyperparameters, xgb_param)
 
@@ -58,7 +58,6 @@ def modelTrainer(
         logger.info(
             "PARAMETER: " + ", ".join([f"{i}={xgb_param[i]}" for i in xgb_param])
         )
-
         xgb_model = somatic_xgboost.builder(
             [
                 input_file,
@@ -67,12 +66,16 @@ def modelTrainer(
             non_feature=non_features,
             num_rounds=iterations,
         )
-
         return xgb_model
 
 
 def modelPredictor(
-    input_file, output_file, algo, classifier, iterations=100, features_to_exclude=None
+    input_file: str,
+    output_file: str,
+    algo: Literal["xgboost", "ada", "ada.R"],
+    classifier: str,
+    iterations: int = 100,
+    features_to_exclude: list[str] | None = None,
 ):
     logger = logging.getLogger(modelPredictor.__name__)
 
@@ -87,8 +90,6 @@ def modelPredictor(
         return output_file
 
     if algo == "xgboost":
-        import somaticseq.somatic_xgboost as somatic_xgboost
-
         non_features = somatic_xgboost.NON_FEATURE
         for feature_i in features_to_exclude:
             non_features.append(feature_i)
@@ -143,7 +144,7 @@ def runPaired(
     ensembleOutPrefix="Ensemble.",
     consensusOutPrefix="Consensus.",
     classifiedOutPrefix="SSeq.Classified.",
-    algo="ada",
+    algo="xgboost",
     keep_intermediates=False,
     train_seed=0,
     tree_depth=12,
@@ -159,9 +160,6 @@ def runPaired(
         arb_snvs = []
     if arb_indels is None:
         arb_indels = []
-
-    import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
-    import somaticseq.SSeq_tsv2vcf as tsv2vcf
 
     files_to_delete = set()
     snvCallers = []
@@ -248,7 +246,7 @@ def runPaired(
     ensembleSnv = os.sep.join((outdir, ensembleOutPrefix + "sSNV.tsv"))
     ensembleIndel = os.sep.join((outdir, ensembleOutPrefix + "sINDEL.tsv"))
 
-    ######################  SNV  ######################
+    # SNV
     mutect_infile = (
         intermediateVcfs["MuTect2"]["snv"]
         if intermediateVcfs["MuTect2"]["snv"]
@@ -315,7 +313,6 @@ def runPaired(
             phred_scaled=True,
             extra_headers=extra_header,
         )
-
     else:
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
@@ -344,8 +341,7 @@ def runPaired(
             tumor_sample_name=tumor_name,
             print_reject=True,
         )
-
-    ###################### INDEL ######################
+    # INDEL
     mutect_infile = (
         intermediateVcfs["MuTect2"]["indel"]
         if intermediateVcfs["MuTect2"]["indel"]
@@ -435,7 +431,7 @@ def runPaired(
             tumor_sample_name=tumor_name,
             print_reject=True,
         )
-    ## Clean up after yourself ##
+    # Clean up after yourself ##
     if not keep_intermediates:
         for file_i in files_to_delete:
             os.remove(file_i)
@@ -475,7 +471,7 @@ def runSingle(
     ensembleOutPrefix="Ensemble.",
     consensusOutPrefix="Consensus.",
     classifiedOutPrefix="SSeq.Classified.",
-    algo="ada",
+    algo="xgboost",
     keep_intermediates=False,
     train_seed=0,
     tree_depth=12,
@@ -491,9 +487,6 @@ def runSingle(
         arb_snvs = []
     if arb_indels is None:
         arb_indels = []
-
-    import somaticseq.single_sample_vcf2tsv as single_sample_vcf2tsv
-    import somaticseq.SSeq_tsv2vcf as tsv2vcf
 
     files_to_delete = set()
     snvCallers = []
@@ -554,7 +547,7 @@ def runSingle(
     ensembleSnv = os.sep.join((outdir, ensembleOutPrefix + "sSNV.tsv"))
     ensembleIndel = os.sep.join((outdir, ensembleOutPrefix + "sINDEL.tsv"))
 
-    ######################  SNV  ######################
+    # SNV
     mutect_infile = (
         intermediateVcfs["MuTect2"]["snv"]
         if intermediateVcfs["MuTect2"]["snv"]
@@ -638,7 +631,7 @@ def runSingle(
             tumor_sample_name=sample_name,
             print_reject=True,
         )
-    ###################### INDEL ######################
+    # INDEL
     single_sample_vcf2tsv.vcf2tsv(
         is_vcf=outIndel,
         bam_fn=bam,
@@ -674,7 +667,6 @@ def runSingle(
             iterations=iterations,
             features_to_exclude=features_excluded,
         )
-
         extra_header = [
             f"##SomaticSeqClassifier={classifier_indel}",
         ]
@@ -719,14 +711,13 @@ def runSingle(
             tumor_sample_name=sample_name,
             print_reject=True,
         )
-    ## Clean up after yourself ##
+    # Clean up after yourself ##
     if not keep_intermediates:
         for file_i in files_to_delete:
             os.remove(file_i)
             logger.info(f"Removed {file_i}")
 
 
-################################################
 def run():
     parser = argparse.ArgumentParser(
         description="""SomaticSeq v{}: a method to combine results from multiple somatic mutation callers,
@@ -747,7 +738,6 @@ def run():
         help=".fasta.fai file to get the contigs",
         required=True,
     )
-
     parser.add_argument("--truth-snv", type=str, help="VCF of true hits")
     parser.add_argument("--truth-indel", type=str, help="VCF of true hits")
     parser.add_argument("--classifier-snv", type=str, help="RData for SNV")
@@ -1071,7 +1061,6 @@ def run():
     return args
 
 
-################################################################################################
 # Execute:
 if __name__ == "__main__":
     args = run()

@@ -184,7 +184,10 @@ def run():
         default="",
     )
     parser.add_argument(
-        "--somaticseq-algorithm", type=str, help="either ada or xgboost", default="ada"
+        "--somaticseq-algorithm",
+        type=str,
+        help="either ada or xgboost",
+        default="xgboost",
     )
 
     parser.add_argument(
