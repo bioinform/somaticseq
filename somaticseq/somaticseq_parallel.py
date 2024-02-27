@@ -62,7 +62,7 @@ def runPaired_by_region(
     ensembleOutPrefix="Ensemble.",
     consensusOutPrefix="Consensus.",
     classifiedOutPrefix="SSeq.Classified.",
-    algo="ada",
+    algo="xgboost",
     keep_intermediates=False,
     train_seed=0,
     tree_depth=12,
