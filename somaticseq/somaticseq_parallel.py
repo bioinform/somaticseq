@@ -75,7 +75,7 @@ def runPaired_by_region(
     tnscope: str | None = None,
     platypus: str | None = None,
     arb_snvs: list[str] = [],
-    arb_indels: str[str] = [],
+    arb_indels: list[str] = [],
     min_mq: float = 1,
     min_bq: float = 5,
     min_caller: float = 0.5,
