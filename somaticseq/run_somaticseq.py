@@ -101,57 +101,57 @@ def model_predictor(
 
 
 def run_paired_mode(
-    outdir,
-    ref,
-    tbam,
-    nbam,
-    tumor_name="TUMOR",
-    normal_name="NORMAL",
-    truth_snv=None,
-    truth_indel=None,
-    classifier_snv=None,
-    classifier_indel=None,
-    pass_threshold=0.5,
-    lowqual_threshold=0.1,
-    hom_threshold=0.85,
-    het_threshold=0.01,
-    dbsnp=None,
-    cosmic=None,
-    inclusion=None,
-    exclusion=None,
-    mutect=None,
-    indelocator=None,
-    mutect2=None,
-    varscan_snv=None,
-    varscan_indel=None,
-    jsm=None,
-    sniper=None,
-    vardict=None,
-    muse=None,
-    lofreq_snv=None,
-    lofreq_indel=None,
-    scalpel=None,
-    strelka_snv=None,
-    strelka_indel=None,
-    tnscope=None,
-    platypus=None,
-    arb_snvs=None,
-    arb_indels=None,
-    min_mq=1,
-    min_bq=5,
-    min_caller=0.5,
-    somaticseq_train=False,
-    ensemble_outfile_prefix="Ensemble.",
-    consensus_outfile_prefix="Consensus.",
-    classified_outfile_prefix="SSeq.Classified.",
-    algo="xgboost",
-    keep_intermediates=False,
-    train_seed=0,
-    tree_depth=12,
-    iterations=None,
-    features_excluded=None,
-    hyperparameters=None,
-):
+    outdir: str,
+    ref: str,
+    tbam: str,
+    nbam: str,
+    tumor_name: str = "TUMOR",
+    normal_name: str = "NORMAL",
+    truth_snv: str | None = None,
+    truth_indel: str | None = None,
+    classifier_snv: str | None = None,
+    classifier_indel: str | None = None,
+    pass_threshold: float = 0.5,
+    lowqual_threshold: float = 0.1,
+    hom_threshold: float = 0.85,
+    het_threshold: float = 0.01,
+    dbsnp: str | None = None,
+    cosmic: str | None = None,
+    inclusion: str | None = None,
+    exclusion: str | None = None,
+    mutect: str | None = None,
+    indelocator: str | None = None,
+    mutect2: str | None = None,
+    varscan_snv: str | None = None,
+    varscan_indel: str | None = None,
+    jsm: str | None = None,
+    sniper: str | None = None,
+    vardict: str | None = None,
+    muse: str | None = None,
+    lofreq_snv: str | None = None,
+    lofreq_indel: str | None = None,
+    scalpel: str | None = None,
+    strelka_snv: str | None = None,
+    strelka_indel: str | None = None,
+    tnscope: str | None = None,
+    platypus: str | None = None,
+    arb_snvs: list[str] | None = None,
+    arb_indels: list[str] | None = None,
+    min_mq: float | int = 1,
+    min_bq: float | int = 5,
+    min_caller: float | int = 0.5,
+    somaticseq_train: bool = False,
+    ensemble_outfile_prefix: str = "Ensemble.",
+    consensus_outfile_prefix: str = "Consensus.",
+    classified_outfile_prefix: str = "SSeq.Classified.",
+    algo: Literal["xgboost", "ada", "ada.R"] = "xgboost",
+    keep_intermediates: bool = False,
+    train_seed: int = 0,
+    tree_depth: int = 12,
+    iterations: int | None = None,
+    features_excluded: list[str] | None = None,
+    hyperparameters: list[str] | None = None,
+) -> None:
     logger = logging.getLogger(run_paired_mode.__name__)
 
     if features_excluded is None:
@@ -162,53 +162,49 @@ def run_paired_mode(
         arb_indels = []
 
     files_to_delete = set()
-    snvCallers = []
+    snv_callers = []
     if mutect or mutect2:
-        snvCallers.append("MuTect")
+        snv_callers.append("MuTect")
     if varscan_snv:
-        snvCallers.append("VarScan2")
+        snv_callers.append("VarScan2")
     if jsm:
-        snvCallers.append("JointSNVMix2")
+        snv_callers.append("JointSNVMix2")
     if sniper:
-        snvCallers.append("SomaticSniper")
+        snv_callers.append("SomaticSniper")
     if vardict:
-        snvCallers.append("VarDict")
+        snv_callers.append("VarDict")
     if muse:
-        snvCallers.append("MuSE")
+        snv_callers.append("MuSE")
     if lofreq_snv:
-        snvCallers.append("LoFreq")
+        snv_callers.append("LoFreq")
     if strelka_snv:
-        snvCallers.append("Strelka")
+        snv_callers.append("Strelka")
     if tnscope:
-        snvCallers.append("TNscope")
+        snv_callers.append("TNscope")
     if platypus:
-        snvCallers.append("Platypus")
-    [
-        snvCallers.append(f"SnvCaller_{ith_arb}")
-        for ith_arb, arb_snv_i in enumerate(arb_snvs)
-    ]
+        snv_callers.append("Platypus")
+    for ith_arb, arb_snv_i in enumerate(arb_snvs):
+        snv_callers.append(f"SnvCaller_{ith_arb}")
 
-    indelCallers = []
+    indel_callers = []
     if indelocator or mutect2:
-        indelCallers.append("MuTect")
+        indel_callers.append("MuTect")
     if varscan_indel:
-        indelCallers.append("VarScan2")
+        indel_callers.append("VarScan2")
     if vardict:
-        indelCallers.append("VarDict")
+        indel_callers.append("VarDict")
     if lofreq_indel:
-        indelCallers.append("LoFreq")
+        indel_callers.append("LoFreq")
     if scalpel:
-        indelCallers.append("Scalpel")
+        indel_callers.append("Scalpel")
     if strelka_indel:
-        indelCallers.append("Strelka")
+        indel_callers.append("Strelka")
     if tnscope:
-        indelCallers.append("TNscope")
+        indel_callers.append("TNscope")
     if platypus:
-        indelCallers.append("Platypus")
-    [
-        indelCallers.append(f"IndelCaller_{ith_arb}")
-        for ith_arb, arb_indel_i in enumerate(arb_indels)
-    ]
+        indel_callers.append("Platypus")
+    for ith_arb, arb_indel_i in enumerate(arb_indels):
+        indel_callers.append(f"IndelCaller_{ith_arb}")
 
     # Function to combine individual VCFs into a simple VCF list of variants:
     out_snv, out_indel, intermediate_vcfs, tmp_files = (
@@ -242,11 +238,11 @@ def run_paired_mode(
     )
     files_to_delete.add(out_snv)
     files_to_delete.add(out_indel)
-    [files_to_delete.add(i) for i in tmp_files]
+    for i in tmp_files:
+        files_to_delete.add(i)
 
     ensemble_snv = os.sep.join((outdir, ensemble_outfile_prefix + "sSNV.tsv"))
     ensemble_indel = os.sep.join((outdir, ensemble_outfile_prefix + "sINDEL.tsv"))
-
     # SNV
     mutect_infile = (
         intermediate_vcfs["MuTect2"]["snv"]
@@ -304,7 +300,7 @@ def run_paired_mode(
         tsv2vcf.tsv2vcf(
             classified_snv_tsv,
             classified_snv_vcf,
-            snvCallers,
+            snv_callers,
             pass_score=pass_threshold,
             lowqual_score=lowqual_threshold,
             hom_threshold=hom_threshold,
@@ -336,7 +332,7 @@ def run_paired_mode(
         tsv2vcf.tsv2vcf(
             ensemble_snv,
             consensus_snv_vcf,
-            snvCallers,
+            snv_callers,
             hom_threshold=hom_threshold,
             het_threshold=het_threshold,
             single_mode=False,
@@ -398,7 +394,7 @@ def run_paired_mode(
         tsv2vcf.tsv2vcf(
             consensus_indel_tsv,
             consensus_indel_vcf,
-            indelCallers,
+            indel_callers,
             pass_score=pass_threshold,
             lowqual_score=lowqual_threshold,
             hom_threshold=hom_threshold,
@@ -431,7 +427,7 @@ def run_paired_mode(
         tsv2vcf.tsv2vcf(
             ensemble_indel,
             consensus_indel_vcf,
-            indelCallers,
+            indel_callers,
             hom_threshold=hom_threshold,
             het_threshold=het_threshold,
             single_mode=False,
@@ -448,45 +444,45 @@ def run_paired_mode(
 
 
 def run_single_mode(
-    outdir,
-    ref,
-    bam,
-    sample_name="TUMOR",
-    truth_snv=None,
-    truth_indel=None,
-    classifier_snv=None,
-    classifier_indel=None,
-    pass_threshold=0.5,
-    lowqual_threshold=0.1,
-    hom_threshold=0.85,
-    het_threshold=0.01,
-    dbsnp=None,
-    cosmic=None,
-    inclusion=None,
-    exclusion=None,
-    mutect=None,
-    mutect2=None,
-    varscan=None,
-    vardict=None,
-    lofreq=None,
-    scalpel=None,
-    strelka=None,
-    arb_snvs=None,
-    arb_indels=None,
-    min_mq=1,
-    min_bq=5,
-    min_caller=0.5,
-    somaticseq_train=False,
-    ensemble_outfile_prefix="Ensemble.",
-    consensus_outfile_prefix="Consensus.",
-    classified_outfile_prefix="SSeq.Classified.",
-    algo="xgboost",
-    keep_intermediates=False,
-    train_seed=0,
-    tree_depth=12,
-    iterations=None,
-    features_excluded=None,
-    hyperparameters=None,
+    outdir: str,
+    ref: str,
+    bam: str,
+    sample_name: str = "TUMOR",
+    truth_snv: str | None = None,
+    truth_indel: str | None = None,
+    classifier_snv: str | None = None,
+    classifier_indel: str | None = None,
+    pass_threshold: float = 0.5,
+    lowqual_threshold: float = 0.1,
+    hom_threshold: float = 0.85,
+    het_threshold: float = 0.01,
+    dbsnp: str | None = None,
+    cosmic: str | None = None,
+    inclusion: str | None = None,
+    exclusion: str | None = None,
+    mutect: str | None = None,
+    mutect2: str | None = None,
+    varscan: str | None = None,
+    vardict: str | None = None,
+    lofreq: str | None = None,
+    scalpel: str | None = None,
+    strelka: str | None = None,
+    arb_snvs: list[str] | None = None,
+    arb_indels: list[str] | None = None,
+    min_mq: float | int = 1,
+    min_bq: float | int = 5,
+    min_caller: float | int = 0.5,
+    somaticseq_train: bool = False,
+    ensemble_outfile_prefix: str = "Ensemble.",
+    consensus_outfile_prefix: str = "Consensus.",
+    classified_outfile_prefix: str = "SSeq.Classified.",
+    algo: Literal["xgboost", "ada"] = "xgboost",
+    keep_intermediates: bool = False,
+    train_seed: int = 0,
+    tree_depth: int = 12,
+    iterations: int | None = None,
+    features_excluded: list[str] | None = None,
+    hyperparameters: list[str] | None = None,
 ):
     logger = logging.getLogger(run_single_mode.__name__)
 
@@ -498,38 +494,35 @@ def run_single_mode(
         arb_indels = []
 
     files_to_delete = set()
-    snvCallers = []
+    snv_callers = []
     if mutect or mutect2:
-        snvCallers.append("MuTect")
+        snv_callers.append("MuTect")
     if varscan:
-        snvCallers.append("VarScan2")
+        snv_callers.append("VarScan2")
     if vardict:
-        snvCallers.append("VarDict")
+        snv_callers.append("VarDict")
     if lofreq:
-        snvCallers.append("LoFreq")
+        snv_callers.append("LoFreq")
     if strelka:
-        snvCallers.append("Strelka")
-    [
-        snvCallers.append(f"SnvCaller_{ith_arb}")
-        for ith_arb, arb_snv_i in enumerate(arb_snvs)
-    ]
-    indelCallers = []
+        snv_callers.append("Strelka")
+    for ith_arb, arb_snv_i in enumerate(arb_snvs):
+        snv_callers.append(f"SnvCaller_{ith_arb}")
+
+    indel_callers = []
     if mutect2:
-        indelCallers.append("MuTect2")
+        indel_callers.append("MuTect2")
     if varscan:
-        indelCallers.append("VarScan2")
+        indel_callers.append("VarScan2")
     if vardict:
-        indelCallers.append("VarDict")
+        indel_callers.append("VarDict")
     if lofreq:
-        indelCallers.append("LoFreq")
+        indel_callers.append("LoFreq")
     if scalpel:
-        indelCallers.append("Scalpel")
+        indel_callers.append("Scalpel")
     if strelka:
-        indelCallers.append("Strelka")
-    [
-        indelCallers.append(f"IndelCaller_{ith_arb}")
-        for ith_arb, arb_indel_i in enumerate(arb_indels)
-    ]
+        indel_callers.append("Strelka")
+    for ith_arb, arb_indel_i in enumerate(arb_indels):
+        indel_callers.append(f"IndelCaller_{ith_arb}")
 
     # Function to combine individual VCFs into a simple VCF list of variants:
     out_snv, out_indel, intermediate_vcfs, tmp_files = combineCallers.combineSingle(
@@ -551,7 +544,8 @@ def run_single_mode(
     )
     files_to_delete.add(out_snv)
     files_to_delete.add(out_indel)
-    [files_to_delete.add(i) for i in tmp_files]
+    for i in tmp_files:
+        files_to_delete.add(i)
 
     ensemble_snv = os.sep.join((outdir, ensemble_outfile_prefix + "sSNV.tsv"))
     ensemble_indel = os.sep.join((outdir, ensemble_outfile_prefix + "sINDEL.tsv"))
@@ -606,7 +600,7 @@ def run_single_mode(
         tsv2vcf.tsv2vcf(
             classified_snv_tsv,
             classified_snv_vcf,
-            snvCallers,
+            snv_callers,
             pass_score=pass_threshold,
             lowqual_score=lowqual_threshold,
             hom_threshold=hom_threshold,
@@ -636,7 +630,7 @@ def run_single_mode(
         tsv2vcf.tsv2vcf(
             ensemble_snv,
             consensus_snv_vcf,
-            snvCallers,
+            snv_callers,
             hom_threshold=hom_threshold,
             het_threshold=het_threshold,
             single_mode=True,
@@ -689,7 +683,7 @@ def run_single_mode(
         tsv2vcf.tsv2vcf(
             consensus_indel_tsv,
             consensus_indel_vcf,
-            indelCallers,
+            indel_callers,
             pass_score=pass_threshold,
             lowqual_score=lowqual_threshold,
             hom_threshold=hom_threshold,
@@ -721,7 +715,7 @@ def run_single_mode(
         tsv2vcf.tsv2vcf(
             ensemble_indel,
             consensus_indel_vcf,
-            indelCallers,
+            indel_callers,
             hom_threshold=hom_threshold,
             het_threshold=het_threshold,
             single_mode=True,
@@ -868,7 +862,6 @@ def run():
         help="Keep intermediate files",
         default=False,
     )
-
     # Modes:
     sample_parsers = parser.add_subparsers(title="sample_mode")
 
@@ -1066,12 +1059,8 @@ def run():
         nargs="*",
         default=[],
     )
-
     parser_single.set_defaults(which="single")
-
     args = parser.parse_args()
-    # inputParameters = vars(args)
-
     logger.info(
         "SomaticSeq Input Arguments: "
         + ", ".join([f"{i}={vars(args)[i]}" for i in vars(args)])
