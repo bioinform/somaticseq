@@ -277,7 +277,7 @@ def run():
         type=str,
         help="either ada or xgboost",
         default="xgboost",
-        choices=("ada", "xgboost", "ada.R"),
+        choices=("ada", "xgboost"),
     )
     parser_paired.add_argument(
         "-nt",
@@ -486,7 +486,7 @@ def run():
         type=str,
         help="either ada or xgboost",
         default="xgboost",
-        choices=("ada", "xgboost", "ada.R"),
+        choices=("ada", "xgboost"),
     )
     parser_single.add_argument(
         "-exome",
@@ -516,14 +516,14 @@ def run():
 
     # Parse the arguments:
     args = parser.parse_args()
-    workflowArguments = vars(args)
-    workflowArguments["reference_dict"] = (
-        re.sub(r"\.[a-zA-Z]+$", "", workflowArguments["genome_reference"]) + ".dict"
+    wf_arg_dict = vars(args)
+    wf_arg_dict["reference_dict"] = (
+        re.sub(r"\.[a-zA-Z]+$", "", wf_arg_dict["genome_reference"]) + ".dict"
     )
-    return args, workflowArguments
+    return args, wf_arg_dict
 
 
-def make_workflow(args, workflowArguments):
+def make_workflow(args, wf_arg_dict):
     logger.info(
         "Create SomaticSeq Workflow Scripts: "
         + ", ".join([f"{i}={vars(args)[i]}" for i in vars(args)])
@@ -532,43 +532,42 @@ def make_workflow(args, workflowArguments):
         r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
     )
     workflow_tasks = {"caller_jobs": [], "somaticseq_jobs": [], "merging_jobs": []}
-    os.makedirs(workflowArguments["output_directory"], exist_ok=True)
+    os.makedirs(wf_arg_dict["output_directory"], exist_ok=True)
 
-    ################# TUMOR-NORMAL RUNS #################
-    if workflowArguments["which"] == "paired":
-        if workflowArguments["inclusion_region"]:
-            bed_file = workflowArguments["inclusion_region"]
+    # TUMOR-NORMAL RUNS
+    if wf_arg_dict["which"] == "paired":
+        if wf_arg_dict["inclusion_region"]:
+            bed_file = wf_arg_dict["inclusion_region"]
         else:
             split_bed.fai2bed(
-                workflowArguments["genome_reference"] + ".fai",
-                workflowArguments["output_directory"] + os.sep + "genome.bed",
+                wf_arg_dict["genome_reference"] + ".fai",
+                wf_arg_dict["output_directory"] + os.sep + "genome.bed",
             )
-            bed_file = workflowArguments["output_directory"] + os.sep + "genome.bed"
+            bed_file = wf_arg_dict["output_directory"] + os.sep + "genome.bed"
 
         split_bed.split(
             bed_file,
-            workflowArguments["output_directory"] + os.sep + "bed",
-            workflowArguments["threads"],
+            wf_arg_dict["output_directory"] + os.sep + "bed",
+            wf_arg_dict["threads"],
         )
         os.makedirs(
-            os.path.join(workflowArguments["output_directory"], "logs"), exist_ok=True
+            os.path.join(wf_arg_dict["output_directory"], "logs"), exist_ok=True
         )
-
         # Unparallelizables
-        if workflowArguments["run_jointsnvmix2"]:
+        if wf_arg_dict["run_jointsnvmix2"]:
             import somaticseq.utilities.dockered_pipelines.somatic_mutations.JointSNVMix2 as JointSNVMix2
 
-            input_arguments = copy(workflowArguments)
+            input_arguments = copy(wf_arg_dict)
             input_arguments["script"] = f"jsm2.{timestamp}.cmd"
             jointsnvmix2_job = JointSNVMix2.tumor_normal(
                 input_arguments, args.container_tech
             )
             workflow_tasks["caller_jobs"].append(jointsnvmix2_job)
 
-        if workflowArguments["run_somaticsniper"]:
+        if wf_arg_dict["run_somaticsniper"]:
             import somaticseq.utilities.dockered_pipelines.somatic_mutations.SomaticSniper as SomaticSniper
 
-            input_arguments = copy(workflowArguments)
+            input_arguments = copy(wf_arg_dict)
             input_arguments["script"] = f"somaticsniper.{timestamp}.cmd"
             somaticsniper_job = SomaticSniper.tumor_normal(
                 input_arguments, args.container_tech
@@ -585,34 +584,31 @@ def make_workflow(args, workflowArguments):
         scalpel_jobs = []
         strelka_jobs = []
         jobs_by_threads = []
-        for thread_i in range(1, workflowArguments["threads"] + 1):
-            if workflowArguments["threads"] > 1:
-                perThreadParameter = copy(workflowArguments)
+        for thread_i in range(1, wf_arg_dict["threads"] + 1):
+            if wf_arg_dict["threads"] > 1:
+                per_thread_params = copy(wf_arg_dict)
 
                 # Add OUTDIR/thread_i for each thread
-                perThreadParameter["output_directory"] = (
-                    workflowArguments["output_directory"] + os.sep + str(thread_i)
+                per_thread_params["output_directory"] = (
+                    wf_arg_dict["output_directory"] + os.sep + str(thread_i)
                 )
-                perThreadParameter["inclusion_region"] = "{}/{}.bed".format(
-                    perThreadParameter["output_directory"], str(thread_i)
+                per_thread_params["inclusion_region"] = "{}/{}.bed".format(
+                    per_thread_params["output_directory"], str(thread_i)
                 )
                 os.makedirs(
-                    os.path.join(perThreadParameter["output_directory"], "logs"),
+                    os.path.join(per_thread_params["output_directory"], "logs"),
                     exist_ok=True,
                 )
                 # Move 1.bed, 2.bed, ..., n.bed to each thread's subdirectory
                 move(
+                    os.path.join(wf_arg_dict["output_directory"], f"{thread_i}.bed"),
                     os.path.join(
-                        workflowArguments["output_directory"], f"{thread_i}.bed"
-                    ),
-                    os.path.join(
-                        perThreadParameter["output_directory"], f"{thread_i}.bed"
+                        per_thread_params["output_directory"], f"{thread_i}.bed"
                     ),
                 )
-
                 # Results combiner
                 if to_create_merging_script:
-                    input_arguments = copy(workflowArguments)
+                    input_arguments = copy(wf_arg_dict)
                     input_arguments["script"] = f"mergeResults.{timestamp}.cmd"
                     merging_job = tumor_normal.merge_results(
                         input_arguments, args.container_tech
@@ -620,41 +616,41 @@ def make_workflow(args, workflowArguments):
                     workflow_tasks["merging_jobs"].append(merging_job)
                     to_create_merging_script = False
             else:
-                perThreadParameter = copy(workflowArguments)
-                perThreadParameter["inclusion_region"] = bed_file
+                per_thread_params = copy(wf_arg_dict)
+                per_thread_params["inclusion_region"] = bed_file
 
             # Invoke parallelizable callers one by one:
-            if workflowArguments["run_mutect2"]:
+            if wf_arg_dict["run_mutect2"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.MuTect2 as MuTect2
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"mutect2.{timestamp}.cmd"
                 mutect2_job = MuTect2.tumor_normal(input_arguments, args.container_tech)
                 mutect_jobs.append(mutect2_job)
                 jobs_by_threads.append(mutect2_job)
 
-            if workflowArguments["run_scalpel"]:
+            if wf_arg_dict["run_scalpel"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.Scalpel as Scalpel
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"scalpel.{timestamp}.cmd"
                 scalpel_job = Scalpel.tumor_normal(input_arguments, args.container_tech)
                 scalpel_jobs.append(scalpel_job)
                 jobs_by_threads.append(scalpel_job)
 
-            if workflowArguments["run_vardict"]:
+            if wf_arg_dict["run_vardict"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.VarDict as VarDict
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"vardict.{timestamp}.cmd"
                 vardict_job = VarDict.tumor_normal(input_arguments, args.container_tech)
                 vardict_jobs.append(vardict_job)
                 jobs_by_threads.append(vardict_job)
 
-            if workflowArguments["run_varscan2"]:
+            if wf_arg_dict["run_varscan2"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.VarScan2 as VarScan2
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"varscan2.{timestamp}.cmd"
                 varscan2_job = VarScan2.tumor_normal(
                     input_arguments, args.container_tech
@@ -662,10 +658,10 @@ def make_workflow(args, workflowArguments):
                 varscan_jobs.append(varscan2_job)
                 jobs_by_threads.append(varscan2_job)
 
-            if workflowArguments["run_lofreq"]:
+            if wf_arg_dict["run_lofreq"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.LoFreq as LoFreq
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"lofreq.{timestamp}.cmd"
 
                 if input_arguments["dbsnp_vcf"].endswith(".vcf.gz"):
@@ -681,10 +677,10 @@ def make_workflow(args, workflowArguments):
                 lofreq_jobs.append(lofreq_job)
                 jobs_by_threads.append(lofreq_job)
 
-            if workflowArguments["run_muse"]:
+            if wf_arg_dict["run_muse"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.MuSE as MuSE
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"muse.{timestamp}.cmd"
 
                 if input_arguments["dbsnp_vcf"].endswith(".vcf.gz"):
@@ -700,10 +696,10 @@ def make_workflow(args, workflowArguments):
                 muse_jobs.append(muse_job)
                 jobs_by_threads.append(muse_job)
 
-            if workflowArguments["run_strelka2"]:
+            if wf_arg_dict["run_strelka2"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.Strelka2 as Strelka2
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"strelka.{timestamp}.cmd"
                 strelka2_job = Strelka2.tumor_normal(
                     input_arguments, args.container_tech
@@ -711,8 +707,8 @@ def make_workflow(args, workflowArguments):
                 strelka_jobs.append(strelka2_job)
                 jobs_by_threads.append(strelka2_job)
 
-            if workflowArguments["run_somaticseq"]:
-                input_arguments = copy(perThreadParameter)
+            if wf_arg_dict["run_somaticseq"]:
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"somaticSeq.{timestamp}.cmd"
                 somaticseq_job = tumor_normal.run_SomaticSeq(
                     input_arguments, args.container_tech
@@ -735,27 +731,24 @@ def make_workflow(args, workflowArguments):
                 workflow_tasks["caller_jobs"] + jobs_by_threads
             )
 
-    ###################################################
-    ################# TUMOR-ONLY RUNS #################
-    elif workflowArguments["which"] == "single":
-        if workflowArguments["inclusion_region"]:
-            bed_file = workflowArguments["inclusion_region"]
+    # TUMOR-ONLY RUNS
+    elif wf_arg_dict["which"] == "single":
+        if wf_arg_dict["inclusion_region"]:
+            bed_file = wf_arg_dict["inclusion_region"]
 
         else:
             split_bed.fai2bed(
-                workflowArguments["genome_reference"] + ".fai",
-                workflowArguments["output_directory"] + os.sep + "genome.bed",
+                wf_arg_dict["genome_reference"] + ".fai",
+                wf_arg_dict["output_directory"] + os.sep + "genome.bed",
             )
-            bed_file = workflowArguments["output_directory"] + os.sep + "genome.bed"
+            bed_file = wf_arg_dict["output_directory"] + os.sep + "genome.bed"
 
         split_bed.split(
             bed_file,
-            workflowArguments["output_directory"] + os.sep + "bed",
-            workflowArguments["threads"],
+            wf_arg_dict["output_directory"] + os.sep + "bed",
+            wf_arg_dict["threads"],
         )
-        os.makedirs(
-            workflowArguments["output_directory"] + os.sep + "logs", exist_ok=True
-        )
+        os.makedirs(wf_arg_dict["output_directory"] + os.sep + "logs", exist_ok=True)
         # Parallelizables
         to_create_merging_script = True
         mutect_jobs = []
@@ -765,33 +758,31 @@ def make_workflow(args, workflowArguments):
         scalpel_jobs = []
         strelka_jobs = []
         jobs_by_threads = []
-        for thread_i in range(1, workflowArguments["threads"] + 1):
-            if workflowArguments["threads"] > 1:
-                perThreadParameter = copy(workflowArguments)
+        for thread_i in range(1, wf_arg_dict["threads"] + 1):
+            if wf_arg_dict["threads"] > 1:
+                per_thread_params = copy(wf_arg_dict)
 
                 # Add OUTDIR/thread_i for each thread
-                perThreadParameter["output_directory"] = (
-                    workflowArguments["output_directory"] + os.sep + str(thread_i)
+                per_thread_params["output_directory"] = (
+                    wf_arg_dict["output_directory"] + os.sep + str(thread_i)
                 )
-                perThreadParameter["inclusion_region"] = "{}/{}.bed".format(
-                    perThreadParameter["output_directory"], str(thread_i)
+                per_thread_params["inclusion_region"] = "{}/{}.bed".format(
+                    per_thread_params["output_directory"], str(thread_i)
                 )
                 os.makedirs(
-                    os.path.join(perThreadParameter["output_directory"], "logs"),
+                    os.path.join(per_thread_params["output_directory"], "logs"),
                     exist_ok=True,
                 )
                 # Move 1.bed, 2.bed, ..., n.bed to each thread's subdirectory
                 move(
+                    os.path.join(wf_arg_dict["output_directory"], f"{thread_i}.bed"),
                     os.path.join(
-                        workflowArguments["output_directory"], f"{thread_i}.bed"
-                    ),
-                    os.path.join(
-                        perThreadParameter["output_directory"], f"{thread_i}.bed"
+                        per_thread_params["output_directory"], f"{thread_i}.bed"
                     ),
                 )
                 # Results combiner
                 if to_create_merging_script:
-                    input_arguments = copy(workflowArguments)
+                    input_arguments = copy(wf_arg_dict)
                     input_arguments["script"] = f"mergeResults.{timestamp}.cmd"
                     merging_job = tumor_only.merge_results(
                         input_arguments, args.container_tech
@@ -800,50 +791,50 @@ def make_workflow(args, workflowArguments):
                     to_create_merging_script = False
 
             else:
-                perThreadParameter = copy(workflowArguments)
-                perThreadParameter["inclusion_region"] = bed_file
+                per_thread_params = copy(wf_arg_dict)
+                per_thread_params["inclusion_region"] = bed_file
 
             # Invoke parallelizable callers one by one:
-            if workflowArguments["run_mutect2"]:
+            if wf_arg_dict["run_mutect2"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.MuTect2 as MuTect2
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"mutect2.{timestamp}.cmd"
                 mutect2_job = MuTect2.tumor_only(input_arguments, args.container_tech)
                 mutect_jobs.append(mutect2_job)
                 jobs_by_threads.append(mutect2_job)
 
-            if workflowArguments["run_scalpel"]:
+            if wf_arg_dict["run_scalpel"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.Scalpel as Scalpel
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"scalpel.{timestamp}.cmd"
                 scalpel_job = Scalpel.tumor_only(input_arguments, args.container_tech)
                 scalpel_jobs.append(scalpel_job)
                 jobs_by_threads.append(scalpel_job)
 
-            if workflowArguments["run_vardict"]:
+            if wf_arg_dict["run_vardict"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.VarDict as VarDict
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"vardict.{timestamp}.cmd"
                 vardict_job = VarDict.tumor_only(input_arguments, args.container_tech)
                 vardict_jobs.append(vardict_job)
                 jobs_by_threads.append(vardict_job)
 
-            if workflowArguments["run_varscan2"]:
+            if wf_arg_dict["run_varscan2"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.VarScan2 as VarScan2
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"varscan2.{timestamp}.cmd"
                 varscan2_job = VarScan2.tumor_only(input_arguments, args.container_tech)
                 varscan_jobs.append(varscan2_job)
                 jobs_by_threads.append(varscan2_job)
 
-            if workflowArguments["run_lofreq"]:
+            if wf_arg_dict["run_lofreq"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.LoFreq as LoFreq
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"lofreq.{timestamp}.cmd"
 
                 if input_arguments["dbsnp_vcf"].endswith(".vcf.gz"):
@@ -859,17 +850,17 @@ def make_workflow(args, workflowArguments):
                 lofreq_jobs.append(lofreq_job)
                 jobs_by_threads.append(lofreq_job)
 
-            if workflowArguments["run_strelka2"]:
+            if wf_arg_dict["run_strelka2"]:
                 import somaticseq.utilities.dockered_pipelines.somatic_mutations.Strelka2 as Strelka2
 
-                input_arguments = copy(perThreadParameter)
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"strelka.{timestamp}.cmd"
                 strelka2_job = Strelka2.tumor_only(input_arguments, args.container_tech)
                 strelka_jobs.append(strelka2_job)
                 jobs_by_threads.append(strelka2_job)
 
-            if workflowArguments["run_somaticseq"]:
-                input_arguments = copy(perThreadParameter)
+            if wf_arg_dict["run_somaticseq"]:
+                input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"somaticSeq.{timestamp}.cmd"
                 somaticseq_job = tumor_only.run_SomaticSeq(
                     input_arguments, args.container_tech
@@ -891,8 +882,7 @@ def make_workflow(args, workflowArguments):
                 workflow_tasks["caller_jobs"] + jobs_by_threads
             )
 
-    ##############################################
-    ########## Log the scripts created ###########
+    # Log the scripts created
     for script_type in workflow_tasks:
         line_i = "{} {} scripts created: ".format(
             len(workflow_tasks[script_type]), script_type
@@ -905,7 +895,7 @@ def make_workflow(args, workflowArguments):
             logger.info(line_j)
             i += 1
 
-    ########## Execute the workflow ##########
+    # Execute the workflow
     if args.run_workflow:
         import somaticseq.utilities.dockered_pipelines.run_workflows as run_workflows
 
@@ -924,5 +914,5 @@ def make_workflow(args, workflowArguments):
 
 
 if __name__ == "__main__":
-    args, workflowArguments = run()
-    make_workflow(args, workflowArguments)
+    args, wf_arg_dict = run()
+    make_workflow(args, wf_arg_dict)

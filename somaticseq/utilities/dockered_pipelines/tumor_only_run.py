@@ -199,12 +199,12 @@ def run():
         default=1,
     )
     args = parser.parse_args()
-    workflowArguments = vars(args)
+    wf_arg_dict = vars(args)
 
-    workflowArguments["reference_dict"] = (
-        re.sub(r"\.[a-zA-Z]+$", "", workflowArguments["genome_reference"]) + ".dict"
+    wf_arg_dict["reference_dict"] = (
+        re.sub(r"\.[a-zA-Z]+$", "", wf_arg_dict["genome_reference"]) + ".dict"
     )
-    return args, workflowArguments
+    return args, wf_arg_dict
 
 
 def run_SomaticSeq(

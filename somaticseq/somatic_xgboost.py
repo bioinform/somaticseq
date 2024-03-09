@@ -179,7 +179,6 @@ def predictor(
     return output_tsv
 
 
-################################################################################################
 # Execute:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

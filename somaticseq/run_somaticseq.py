@@ -23,7 +23,7 @@ DEFAULT_NUM_TREES_PREDICT = 100
 
 def model_trainer(
     input_file: str,
-    algo: Literal["xgboost", "ada", "ada.R"],
+    algo: Literal["xgboost", "ada"],
     threads: int = 1,
     seed: int = 0,
     max_depth: int = 12,
@@ -36,7 +36,7 @@ def model_trainer(
     if features_to_exclude is None:
         features_to_exclude = []
 
-    if algo == "ada" or algo == "ada.R":
+    if algo == "ada":
         command_item = ("ada_model_builder_ntChange.R", input_file)
         logger.info(" ".join(command_item))
         exit_code = subprocess.call(command_item)
@@ -72,7 +72,7 @@ def model_trainer(
 def model_predictor(
     input_file: str,
     output_file: str,
-    algo: Literal["xgboost", "ada", "ada.R"],
+    algo: Literal["xgboost", "ada"],
     classifier: str,
     iterations: int = 100,
     features_to_exclude: list[str] | None = None,
@@ -82,7 +82,7 @@ def model_predictor(
     if features_to_exclude is None:
         features_to_exclude = []
 
-    if algo == "ada" or algo == "ada.R":
+    if algo == "ada":
         command_item = ("ada_model_predictor.R", classifier, input_file, output_file)
         logger.info(" ".join(command_item))
         exit_code = subprocess.call(command_item)
@@ -144,7 +144,7 @@ def run_paired_mode(
     ensemble_outfile_prefix: str = "Ensemble.",
     consensus_outfile_prefix: str = "Consensus.",
     classified_outfile_prefix: str = "SSeq.Classified.",
-    algo: Literal["xgboost", "ada", "ada.R"] = "xgboost",
+    algo: Literal["xgboost", "ada"] = "xgboost",
     keep_intermediates: bool = False,
     train_seed: int = 0,
     tree_depth: int = 12,
@@ -766,7 +766,7 @@ def run():
         type=str,
         help="ada or xgboost",
         default="xgboost",
-        choices=("ada", "xgboost", "ada.R"),
+        choices=("ada", "xgboost"),
     )
     parser.add_argument(
         "-hom",

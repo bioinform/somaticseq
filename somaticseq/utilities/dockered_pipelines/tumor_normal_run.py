@@ -106,7 +106,7 @@ def run():
         type=str,
         help="docker or singularity",
         default="docker",
-        choices=("ada", "xgboost", "ada.R"),
+        choices=("ada", "xgboost"),
     )
     parser.add_argument(
         "-dockerargs",
@@ -145,8 +145,7 @@ def run():
     parser.add_argument(
         "-somaticseq", "--run-somaticseq", action="store_true", help="Run SomaticSeq"
     )
-
-    ## SomaticSeq Train or Classify
+    # SomaticSeq Train or Classify
     parser.add_argument(
         "-train",
         "--train-somaticseq",
@@ -166,7 +165,6 @@ def run():
         type=str,
         help="action for each somaticseq.cmd",
     )
-
     # EXTRA ARGUMENTS TO PASS ONTO TOOLS
     parser.add_argument(
         "-exome",
@@ -174,7 +172,6 @@ def run():
         action="store_true",
         help="Invokes exome setting in Strelka2 and MuSE",
     )
-
     parser.add_argument(
         "--mutect2-arguments", type=str, help="extra parameters for Mutect2", default=""
     )
@@ -184,7 +181,6 @@ def run():
         help="extra parameters for FilterMutectCalls step",
         default="",
     )
-
     parser.add_argument(
         "--varscan-arguments",
         type=str,
@@ -197,7 +193,6 @@ def run():
         help="extra parameters for mpileup used for VarScan2",
         default="",
     )
-
     parser.add_argument(
         "--jsm-train-arguments",
         type=str,
@@ -210,26 +205,21 @@ def run():
         help="extra parameters for JointSNVMix2 classify",
         default="",
     )
-
     parser.add_argument(
         "--somaticsniper-arguments",
         type=str,
         help="extra parameters for SomaticSniper",
         default="",
     )
-
     parser.add_argument(
         "--vardict-arguments", type=str, help="extra parameters for VarDict", default=""
     )
-
     parser.add_argument(
         "--muse-arguments", type=str, help="extra parameters", default=""
     )
-
     parser.add_argument(
         "--lofreq-arguments", type=str, help="extra parameters for LoFreq", default=""
     )
-
     parser.add_argument(
         "--scalpel-discovery-arguments",
         type=str,
@@ -247,7 +237,6 @@ def run():
         action="store_true",
         help="Invokes two-pass setting in scalpel",
     )
-
     parser.add_argument(
         "--strelka-config-arguments",
         type=str,
@@ -260,7 +249,6 @@ def run():
         help="extra parameters for Strelka2 run",
         default="",
     )
-
     parser.add_argument(
         "--somaticseq-arguments",
         type=str,
@@ -273,7 +261,6 @@ def run():
         help="either ada or xgboost",
         default="xgboost",
     )
-
     parser.add_argument(
         "-nt",
         "--threads",
@@ -281,16 +268,13 @@ def run():
         help="Split the input regions into this many threads",
         default=1,
     )
-
     # Parse the arguments:
     args = parser.parse_args()
-    workflowArguments = vars(args)
-
-    workflowArguments["reference_dict"] = (
-        re.sub(r"\.[a-zA-Z]+$", "", workflowArguments["genome_reference"]) + ".dict"
+    wf_arg_dict = vars(args)
+    wf_arg_dict["reference_dict"] = (
+        re.sub(r"\.[a-zA-Z]+$", "", wf_arg_dict["genome_reference"]) + ".dict"
     )
-
-    return args, workflowArguments
+    return args, wf_arg_dict
 
 
 def run_SomaticSeq(input_parameters, tech="docker"):
@@ -372,31 +356,23 @@ def run_SomaticSeq(input_parameters, tech="docker"):
     strelka_indel = "{}/Strelka/results/variants/somatic.indels.vcf.gz".format(
         mounted_outdir
     )
-
     os.makedirs(logdir, exist_ok=True)
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
-
         out.write(f"#$ -o {logdir}\n")
         out.write(f"#$ -e {logdir}\n")
         out.write("#$ -S /bin/bash\n")
         out.write("#$ -l h_vmem={}\n".format(input_parameters["MEM"]))
         out.write("set -e\n\n")
-
         out.write('echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n')
-
-        # out.write( 'docker pull lethalfang/somaticseq:{} \n\n'.format(VERSION) )
-
         out.write(f"{container_line} \\\n")
         out.write("run_somaticseq.py \\\n")
-
         if input_parameters["train_somaticseq"] and input_parameters["threads"] == 1:
             out.write(
                 "--somaticseq-train --algorithm {} \\\n".format(
                     input_parameters["somaticseq_algorithm"]
                 )
             )
-
         out.write(
             "--output-directory {} \\\n".format(
                 os.path.join(mounted_outdir, input_parameters["somaticseq_directory"])
@@ -428,40 +404,34 @@ def run_SomaticSeq(input_parameters, tech="docker"):
             out.write(
                 "--algorithm {} \\\n".format(input_parameters["somaticseq_algorithm"])
             )
-
             if input_parameters["snv_classifier"]:
                 out.write(
                     "--classifier-snv {} \\\n".format(
                         fileDict[input_parameters["snv_classifier"]]["mount_path"]
                     )
                 )
-
             if input_parameters["indel_classifier"]:
                 out.write(
                     "--classifier-indel {} \\\n".format(
                         fileDict[input_parameters["indel_classifier"]]["mount_path"]
                     )
                 )
-
         if input_parameters["truth_snv"]:
             out.write(
                 "--truth-snv {} \\\n".format(
                     fileDict[input_parameters["truth_snv"]]["mount_path"]
                 )
             )
-
         if input_parameters["truth_indel"]:
             out.write(
                 "--truth-indel {} \\\n".format(
                     fileDict[input_parameters["truth_indel"]]["mount_path"]
                 )
             )
-
         if input_parameters["somaticseq_algorithm"]:
             out.write(
                 "--algorithm {} \\\n".format(input_parameters["somaticseq_algorithm"])
             )
-
         if input_parameters["somaticseq_arguments"]:
             out.write("{} \\\n".format(input_parameters["somaticseq_arguments"]))
 
@@ -545,7 +515,6 @@ def merge_results(input_parameters, tech="docker"):
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
-
     # Mounted paths for all the input files and output directory:
     mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
     prjdir = input_parameters["output_directory"]
@@ -670,7 +639,7 @@ def merge_results(input_parameters, tech="docker"):
             out.write("\\\n")
             out.write(f"-outfile {mounted_outdir}/Strelka.indel.vcf\n\n")
 
-        ###### SomaticSeq #####
+        # SomaticSeq
         if input_parameters["run_somaticseq"]:
             # Ensemble.sSNV.tsv
             out.write(f"{container_line} \\\n")
@@ -723,7 +692,6 @@ def merge_results(input_parameters, tech="docker"):
                             input_parameters["threads"], mounted_outdir
                         )
                     )
-
             # If in prediction mode, combine SSeq.Classified.sSNV.vcf, else Consensus.sSNV.vcf
             if input_parameters["snv_classifier"]:
                 out.write(f"{container_line} \\\n")
@@ -736,7 +704,6 @@ def merge_results(input_parameters, tech="docker"):
                         )
                         + " "
                     )
-
                 out.write("\\\n")
                 out.write(f"-outfile {mounted_outdir}/SSeq.Classified.sSNV.vcf\n\n")
                 # SSeq.Classified.sSNV.tsv
