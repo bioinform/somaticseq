@@ -11,7 +11,7 @@ import somaticseq.run_somaticseq as run_somaticseq
 import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
 
 
-def splitRegions(
+def split_regions(
     nthreads: int, outfiles: str, bed: str | None = None, fai: str | None = None
 ) -> list[str]:
     """
@@ -35,11 +35,11 @@ def splitRegions(
         )
     if fai and not bed:
         bed = split_bed.fai2bed(fai, outfiles)
-    writtenBeds = split_bed.split(bed, outfiles, nthreads)
-    return writtenBeds
+    output_bedfiles = split_bed.split(bed, outfiles, nthreads)
+    return output_bedfiles
 
 
-def runPaired_by_region(
+def run_paired_mode_by_region(
     inclusion: str,
     outdir: str,
     ref: str,
@@ -76,20 +76,20 @@ def runPaired_by_region(
     platypus: str | None = None,
     arb_snvs: list[str] = [],
     arb_indels: list[str] = [],
-    min_mq: float = 1,
-    min_bq: float = 5,
-    min_caller: float = 0.5,
+    min_mq: float | int = 1,
+    min_bq: float | int = 5,
+    min_caller: float | int = 0.5,
     somaticseq_train: bool = False,
     ensembleOutPrefix: str = "Ensemble.",
     consensusOutPrefix: str = "Consensus.",
     classifiedOutPrefix: str = "SSeq.Classified.",
-    algo=Literal["xgboost", "ada", "ada.R"],
+    algo: Literal["xgboost", "ada", "ada.R"] = "xgboost",
     keep_intermediates: bool = False,
     train_seed: int = 0,
     tree_depth: int = 12,
     iterations: int = 200,
     features_excluded: list[str] = [],
-):
+) -> str:
     """
     Args:
         inclusion: bed file of inclusion regions
@@ -103,11 +103,14 @@ def runPaired_by_region(
         truth_indel: ground truth vcf file for indels
         classifier_snv: trained classifier for snvs
         classifier_indel: trained classifier for indels
-        pass_threshold: probability threshold above which variants are labeled PASS
-        lowqual_threshold: probability threshold above which variants are labeled LowQual
+        pass_threshold: probability threshold above which variants are labeled
+            PASS
+        lowqual_threshold: probability threshold above which variants are
+            labeled LowQual
         hom_threshold: VAF threshold above which variants are labeled as
             homozygous in vcf (i.e., 1/1)
-        het_threshold: VAF threshold above which variants are labeled as heterozygous in vcf(i.e., 1/0)
+        het_threshold: VAF threshold above which variants are labeled as
+            heterozygous in vcf(i.e., 1/0)
         dbsnp: dbsnp vcf file
         cosmic: cosmic vcf file
         exclusion: bed file to exclude regions
@@ -140,7 +143,8 @@ def runPaired_by_region(
         consensusOutPrefix: prefix for consensus voting output
         classifiedOutPrefix: prefix for machine learning classified output
         algo: xgboost or ada are implemented
-        keep_intermediates: whether to keep intermediate files for debugging purposes
+        keep_intermediates: whether to keep intermediate files for debugging
+            purposes
         train_seed: seed for training
         tree_depth: tree depth for model building
         iterations: number of trees to build for classifier
@@ -148,161 +152,164 @@ def runPaired_by_region(
     basename = inclusion.split(os.sep)[-1].split(".")[0]
     outdir_i = os.path.join(outdir, basename)
     os.makedirs(outdir_i, exist_ok=True)
-    run_somaticseq.runPaired(
-        outdir_i,
-        ref,
-        tbam,
-        nbam,
-        tumor_name,
-        normal_name,
-        truth_snv,
-        truth_indel,
-        classifier_snv,
-        classifier_indel,
-        pass_threshold,
-        lowqual_threshold,
-        hom_threshold,
-        het_threshold,
-        dbsnp,
-        cosmic,
-        inclusion,
-        exclusion,
-        mutect,
-        indelocator,
-        mutect2,
-        varscan_snv,
-        varscan_indel,
-        jsm,
-        sniper,
-        vardict,
-        muse,
-        lofreq_snv,
-        lofreq_indel,
-        scalpel,
-        strelka_snv,
-        strelka_indel,
-        tnscope,
-        platypus,
-        arb_snvs,
-        arb_indels,
-        min_mq,
-        min_bq,
-        min_caller,
-        somaticseq_train,
-        ensembleOutPrefix,
-        consensusOutPrefix,
-        classifiedOutPrefix,
-        algo,
-        keep_intermediates,
-        train_seed,
-        tree_depth,
-        iterations,
-        features_excluded,
+    run_somaticseq.run_paired_mode(
+        outdir=outdir_i,
+        ref=ref,
+        tbam=tbam,
+        nbam=nbam,
+        tumor_name=tumor_name,
+        normal_name=normal_name,
+        truth_snv=truth_snv,
+        truth_indel=truth_indel,
+        classifier_snv=classifier_snv,
+        classifier_indel=classifier_indel,
+        pass_threshold=pass_threshold,
+        lowqual_threshold=lowqual_threshold,
+        hom_threshold=hom_threshold,
+        het_threshold=het_threshold,
+        dbsnp=dbsnp,
+        cosmic=cosmic,
+        inclusion=inclusion,
+        exclusion=exclusion,
+        mutect=mutect,
+        indelocator=indelocator,
+        mutect2=mutect2,
+        varscan_snv=varscan_snv,
+        varscan_indel=varscan_indel,
+        jsm=jsm,
+        sniper=sniper,
+        vardict=vardict,
+        muse=muse,
+        lofreq_snv=lofreq_snv,
+        lofreq_indel=lofreq_indel,
+        scalpel=scalpel,
+        strelka_snv=strelka_snv,
+        strelka_indel=strelka_indel,
+        tnscope=tnscope,
+        platypus=platypus,
+        arb_snvs=arb_snvs,
+        arb_indels=arb_indels,
+        min_mq=min_mq,
+        min_bq=min_bq,
+        min_caller=min_caller,
+        somaticseq_train=somaticseq_train,
+        ensembleOutPrefix=ensembleOutPrefix,
+        consensusOutPrefix=consensusOutPrefix,
+        classifiedOutPrefix=classifiedOutPrefix,
+        algo=algo,
+        keep_intermediates=keep_intermediates,
+        train_seed=train_seed,
+        tree_depth=tree_depth,
+        iterations=iterations,
+        features_excluded=features_excluded,
     )
     return outdir_i
 
 
-def runSingle_by_region(
-    inclusion,
-    outdir,
-    ref,
-    bam,
-    sample_name="TUMOR",
-    truth_snv=None,
-    truth_indel=None,
-    classifier_snv=None,
-    classifier_indel=None,
-    pass_threshold=0.5,
-    lowqual_threshold=0.1,
-    hom_threshold=0.85,
-    het_threshold=0.01,
-    dbsnp=None,
-    cosmic=None,
-    exclusion=None,
-    mutect=None,
-    mutect2=None,
-    varscan=None,
-    vardict=None,
-    lofreq=None,
-    scalpel=None,
-    strelka=None,
-    arb_snvs=[],
-    arb_indels=[],
-    min_mq=1,
-    min_bq=5,
-    min_caller=0.5,
-    somaticseq_train=False,
-    ensembleOutPrefix="Ensemble.",
-    consensusOutPrefix="Consensus.",
-    classifiedOutPrefix="SSeq.Classified.",
-    algo="ada",
-    keep_intermediates=False,
-    train_seed=0,
-    tree_depth=12,
-    iterations=200,
-    features_excluded=[],
-    hyperparameters=None,
-):
+def run_single_mode_by_region(
+    inclusion: str,
+    outdir: str,
+    ref: str,
+    bam: str,
+    sample_name: str = "TUMOR",
+    truth_snv: str | None = None,
+    truth_indel: str | None = None,
+    classifier_snv: str | None = None,
+    classifier_indel: str | None = None,
+    pass_threshold: float = 0.5,
+    lowqual_threshold: float = 0.1,
+    hom_threshold: float = 0.85,
+    het_threshold: float = 0.01,
+    dbsnp: str | None = None,
+    cosmic: str | None = None,
+    exclusion: str | None = None,
+    mutect: str | None = None,
+    mutect2: str | None = None,
+    varscan: str | None = None,
+    vardict: str | None = None,
+    lofreq: str | None = None,
+    scalpel: str | None = None,
+    strelka: str | None = None,
+    arb_snvs: list[str] = [],
+    arb_indels: list[str] = [],
+    min_mq: float | int = 1,
+    min_bq: float | int = 5,
+    min_caller: float | int = 0.5,
+    somaticseq_train: bool = False,
+    ensembleOutPrefix: str = "Ensemble.",
+    consensusOutPrefix: str = "Consensus.",
+    classifiedOutPrefix: str = "SSeq.Classified.",
+    algo: Literal["xgboost", "ada", "ada.R"] = "xgboost",
+    keep_intermediates: bool = False,
+    train_seed: int = 0,
+    tree_depth: int = 12,
+    iterations: int = 200,
+    features_excluded: list[str] = [],
+) -> str:
     basename = inclusion.split(os.sep)[-1].split(".")[0]
     outdir_i = outdir + os.sep + basename
     os.makedirs(outdir_i, exist_ok=True)
-    run_somaticseq.runSingle(
-        outdir_i,
-        ref,
-        bam,
-        sample_name,
-        truth_snv,
-        truth_indel,
-        classifier_snv,
-        classifier_indel,
-        pass_threshold,
-        lowqual_threshold,
-        hom_threshold,
-        het_threshold,
-        dbsnp,
-        cosmic,
-        inclusion,
-        exclusion,
-        mutect,
-        mutect2,
-        varscan,
-        vardict,
-        lofreq,
-        scalpel,
-        strelka,
-        arb_snvs,
-        arb_indels,
-        min_mq,
-        min_bq,
-        min_caller,
-        somaticseq_train,
-        ensembleOutPrefix,
-        consensusOutPrefix,
-        classifiedOutPrefix,
-        algo,
-        keep_intermediates,
-        train_seed,
-        tree_depth,
-        iterations,
-        features_excluded,
+    run_somaticseq.run_single_mode(
+        outdir=outdir_i,
+        ref=ref,
+        bam=bam,
+        sample_name=sample_name,
+        truth_snv=truth_snv,
+        truth_indel=truth_indel,
+        classifier_snv=classifier_snv,
+        classifier_indel=classifier_indel,
+        pass_threshold=pass_threshold,
+        lowqual_threshold=lowqual_threshold,
+        hom_threshold=hom_threshold,
+        het_threshold=het_threshold,
+        dbsnp=dbsnp,
+        cosmic=cosmic,
+        inclusion=inclusion,
+        exclusion=exclusion,
+        mutect=mutect,
+        mutect2=mutect2,
+        varscan=varscan,
+        vardict=vardict,
+        lofreq=lofreq,
+        scalpel=scalpel,
+        strelka=strelka,
+        arb_snvs=arb_snvs,
+        arb_indels=arb_indels,
+        min_mq=min_mq,
+        min_bq=min_bq,
+        min_caller=min_caller,
+        somaticseq_train=somaticseq_train,
+        ensembleOutPrefix=ensembleOutPrefix,
+        consensusOutPrefix=consensusOutPrefix,
+        classifiedOutPrefix=classifiedOutPrefix,
+        algo=algo,
+        keep_intermediates=keep_intermediates,
+        train_seed=train_seed,
+        tree_depth=tree_depth,
+        iterations=iterations,
+        features_excluded=features_excluded,
     )
     return outdir_i
 
 
-def mergeSubdirTsv(dirList, filename, outdir=os.curdir):
-    fileList = [f"{dir_i}/{filename}" for dir_i in dirList]
-    concat.tsv(fileList, outdir + os.sep + filename)
+def merge_tsvs_in_subdirs(
+    list_of_dirs: list[str], filename: str, outdir: str = os.curdir
+) -> None:
+    file_list = [f"{dir_i}/{filename}" for dir_i in list_of_dirs]
+    concat.tsv(file_list, outdir + os.sep + filename)
 
 
-def mergeSubdirVcf(dirList, filename, outdir=os.curdir):
-    fileList = [f"{dir_i}/{filename}" for dir_i in dirList]
-    concat.vcf(fileList, outdir + os.sep + filename)
+def merge_vcfs_in_subdirs(
+    list_of_dirs: list[str], filename: str, outdir: str = os.curdir
+) -> None:
+    file_list = [f"{dir_i}/{filename}" for dir_i in list_of_dirs]
+    concat.vcf(file_list, outdir + os.sep + filename)
 
 
 if __name__ == "__main__":
     args = run_somaticseq.run()
     os.makedirs(args.output_directory, exist_ok=True)
-    bed_splitted = splitRegions(
+    bed_splitted = split_regions(
         args.threads,
         os.path.join(args.output_directory, "th.input.bed"),
         args.inclusion_region,
@@ -312,7 +319,7 @@ if __name__ == "__main__":
 
     if args.which == "paired":
         runPaired_by_region_i = partial(
-            runPaired_by_region,
+            run_paired_mode_by_region,
             outdir=args.output_directory,
             ref=args.genome_reference,
             tbam=args.tumor_bam_file,
@@ -365,7 +372,7 @@ if __name__ == "__main__":
 
     elif args.which == "single":
         runSingle_by_region_i = partial(
-            runSingle_by_region,
+            run_single_mode_by_region,
             outdir=args.output_directory,
             ref=args.genome_reference,
             bam=args.bam_file,
@@ -408,19 +415,27 @@ if __name__ == "__main__":
     run_somaticseq.logger.info("Sub-directories created: {}".format(", ".join(subdirs)))
 
     # Merge sub-results
-    mergeSubdirTsv(subdirs, "Ensemble.sSNV.tsv", args.output_directory)
-    mergeSubdirTsv(subdirs, "Ensemble.sINDEL.tsv", args.output_directory)
+    merge_tsvs_in_subdirs(subdirs, "Ensemble.sSNV.tsv", args.output_directory)
+    merge_tsvs_in_subdirs(subdirs, "Ensemble.sINDEL.tsv", args.output_directory)
     if args.classifier_snv:
-        mergeSubdirTsv(subdirs, "SSeq.Classified.sSNV.tsv", args.output_directory)
-        mergeSubdirVcf(subdirs, "SSeq.Classified.sSNV.vcf", args.output_directory)
+        merge_tsvs_in_subdirs(
+            subdirs, "SSeq.Classified.sSNV.tsv", args.output_directory
+        )
+        merge_vcfs_in_subdirs(
+            subdirs, "SSeq.Classified.sSNV.vcf", args.output_directory
+        )
     else:
-        mergeSubdirVcf(subdirs, "Consensus.sSNV.vcf", args.output_directory)
+        merge_vcfs_in_subdirs(subdirs, "Consensus.sSNV.vcf", args.output_directory)
 
     if args.classifier_indel:
-        mergeSubdirTsv(subdirs, "SSeq.Classified.sINDEL.tsv", args.output_directory)
-        mergeSubdirVcf(subdirs, "SSeq.Classified.sINDEL.vcf", args.output_directory)
+        merge_tsvs_in_subdirs(
+            subdirs, "SSeq.Classified.sINDEL.tsv", args.output_directory
+        )
+        merge_vcfs_in_subdirs(
+            subdirs, "SSeq.Classified.sINDEL.vcf", args.output_directory
+        )
     else:
-        mergeSubdirVcf(subdirs, "Consensus.sINDEL.vcf", args.output_directory)
+        merge_vcfs_in_subdirs(subdirs, "Consensus.sINDEL.vcf", args.output_directory)
 
     # If there is training, it should be done after merging the results
     if args.somaticseq_train:
@@ -431,7 +446,7 @@ if __name__ == "__main__":
             if args.iterations
             else run_somaticseq.DEFAULT_XGB_BOOST_ROUNDS
         )
-        run_somaticseq.modelTrainer(
+        run_somaticseq.model_trainer(
             snv_training_file,
             args.algorithm,
             threads=args.threads,
@@ -441,7 +456,7 @@ if __name__ == "__main__":
             features_to_exclude=args.features_excluded,
             hyperparameters=args.extra_hyperparameters,
         )
-        run_somaticseq.modelTrainer(
+        run_somaticseq.model_trainer(
             indel_training_file,
             args.algorithm,
             threads=args.threads,

@@ -21,7 +21,7 @@ DEFAULT_XGB_BOOST_ROUNDS = 500
 DEFAULT_NUM_TREES_PREDICT = 100
 
 
-def modelTrainer(
+def model_trainer(
     input_file: str,
     algo: Literal["xgboost", "ada", "ada.R"],
     threads: int = 1,
@@ -31,7 +31,7 @@ def modelTrainer(
     features_to_exclude: list[str] | None = None,
     hyperparameters: list[str] | None = None,
 ):
-    logger = logging.getLogger(modelTrainer.__name__)
+    logger = logging.getLogger(model_trainer.__name__)
 
     if features_to_exclude is None:
         features_to_exclude = []
@@ -100,7 +100,7 @@ def modelPredictor(
         return output_file
 
 
-def runPaired(
+def run_paired_mode(
     outdir,
     ref,
     tbam,
@@ -152,7 +152,7 @@ def runPaired(
     features_excluded=None,
     hyperparameters=None,
 ):
-    logger = logging.getLogger(runPaired.__name__)
+    logger = logging.getLogger(run_paired_mode.__name__)
 
     if features_excluded is None:
         features_excluded = []
@@ -317,7 +317,7 @@ def runPaired(
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
-            modelTrainer(
+            model_trainer(
                 ensembleSnv,
                 algo,
                 threads=1,
@@ -408,7 +408,7 @@ def runPaired(
         # Train INDEL classifier:
         if somaticseq_train and truth_indel:
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
-            modelTrainer(
+            model_trainer(
                 ensembleIndel,
                 algo,
                 threads=1,
@@ -438,7 +438,7 @@ def runPaired(
             logger.info(f"Removed {file_i}")
 
 
-def runSingle(
+def run_single_mode(
     outdir,
     ref,
     bam,
@@ -479,7 +479,7 @@ def runSingle(
     features_excluded=None,
     hyperparameters=None,
 ):
-    logger = logging.getLogger(runSingle.__name__)
+    logger = logging.getLogger(run_single_mode.__name__)
 
     if features_excluded is None:
         features_excluded = []
@@ -609,7 +609,7 @@ def runSingle(
         # Train SNV classifier:
         if somaticseq_train and truth_snv:
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
-            modelTrainer(
+            model_trainer(
                 ensembleSnv,
                 algo,
                 threads=1,
@@ -689,7 +689,7 @@ def runSingle(
         # Train INDEL classifier:
         if somaticseq_train and truth_indel:
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
-            modelTrainer(
+            model_trainer(
                 ensembleIndel,
                 algo,
                 threads=1,
@@ -1066,7 +1066,7 @@ if __name__ == "__main__":
     args = run()
     os.makedirs(args.output_directory, exist_ok=True)
     if args.which == "paired":
-        runPaired(
+        run_paired_mode(
             outdir=args.output_directory,
             ref=args.genome_reference,
             tbam=args.tumor_bam_file,
@@ -1116,7 +1116,7 @@ if __name__ == "__main__":
             keep_intermediates=args.keep_intermediates,
         )
     elif args.which == "single":
-        runSingle(
+        run_single_mode(
             outdir=args.output_directory,
             ref=args.genome_reference,
             bam=args.bam_file,

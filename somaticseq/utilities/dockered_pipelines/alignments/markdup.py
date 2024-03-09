@@ -40,7 +40,7 @@ DEFAULT_PARAMS = {
 }
 
 
-def splitRegions(input_parameters):
+def split_regions(input_parameters):
     fai = input_parameters["genome_reference"] + ".fai"
 
     tempdir = os.path.join(TMPDIR, uuid.uuid4().hex)
@@ -303,7 +303,7 @@ def parallel(input_parameters, tech="docker"):
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
 
-    bed_splitted = splitRegions(input_parameters)
+    bed_splitted = split_regions(input_parameters)
 
     fractional_outfiles = []
     fractional_bams = []
