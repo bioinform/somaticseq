@@ -4,6 +4,7 @@ import argparse
 import os
 import re
 import subprocess
+from typing import Any, Literal
 from datetime import datetime
 
 import somaticseq.utilities.dockered_pipelines.container_option as container
@@ -16,8 +17,6 @@ def run():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-
-    # Variant Call Type, i.e., snp or indel
     parser.add_argument(
         "-outdir",
         "--output-directory",
@@ -83,7 +82,6 @@ def run():
         help="action for each somaticseq.cmd",
         default="echo",
     )
-
     parser.add_argument(
         "-mutect2", "--run-mutect2", action="store_true", help="Run MuTect2"
     )
@@ -111,7 +109,6 @@ def run():
         action="store_true",
         help="SomaticSeq training mode for classifiers",
     )
-
     parser.add_argument(
         "-snvClassifier", "--snv-classifier", type=str, help="action for each .cmd"
     )
@@ -125,7 +122,6 @@ def run():
     parser.add_argument(
         "-trueIndel", "--truth-indel", type=str, help="VCF of true hits"
     )
-
     parser.add_argument(
         "--mutect2-arguments", type=str, help="extra parameters for Mutect2", default=""
     )
@@ -189,14 +185,12 @@ def run():
         help="either ada or xgboost",
         default="xgboost",
     )
-
     parser.add_argument(
         "-exome",
         "--exome-setting",
         action="store_true",
         help="Invokes exome setting in Strelka2 and MuSE",
     )
-
     parser.add_argument(
         "-nt",
         "--threads",
@@ -204,19 +198,18 @@ def run():
         help="Split the input regions into this many threads",
         default=1,
     )
-
-    # Parse the arguments:
     args = parser.parse_args()
     workflowArguments = vars(args)
 
     workflowArguments["reference_dict"] = (
         re.sub(r"\.[a-zA-Z]+$", "", workflowArguments["genome_reference"]) + ".dict"
     )
-
     return args, workflowArguments
 
 
-def run_SomaticSeq(input_parameters, tech="docker"):
+def run_SomaticSeq(
+    input_parameters: dict[str, Any], tech=Literal["docker", "singularity"]
+) -> str:
     DEFAULT_PARAMS = {
         "MEM": "4G",
         "inclusion_region": None,
@@ -234,7 +227,6 @@ def run_SomaticSeq(input_parameters, tech="docker"):
         "train_somaticseq": False,
         "somaticseq_algorithm": "xgboost",
     }
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -262,7 +254,6 @@ def run_SomaticSeq(input_parameters, tech="docker"):
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
-
     # Mounted paths for all the input files and output directory:
     mounted_genome_reference = fileDict[input_parameters["genome_reference"]][
         "mount_path"
@@ -286,17 +277,12 @@ def run_SomaticSeq(input_parameters, tech="docker"):
     os.makedirs(logdir, exist_ok=True)
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
-
         out.write(f"#$ -o {logdir}\n")
         out.write(f"#$ -e {logdir}\n")
         out.write("#$ -S /bin/bash\n")
         out.write("#$ -l h_vmem={}\n".format(input_parameters["MEM"]))
         out.write("set -e\n\n")
-
         out.write('echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n')
-
-        # out.write( 'docker pull lethalfang/somaticseq:{VERSION} \n\n'.format(VERSION=VERSION) )
-
         out.write(f"{container_line} \\\n")
         out.write("/opt/somaticseq/somaticseq/run_somaticseq.py \\\n")
 
@@ -306,7 +292,6 @@ def run_SomaticSeq(input_parameters, tech="docker"):
                     input_parameters["somaticseq_algorithm"]
                 )
             )
-
         out.write(
             "--output-directory {} \\\n".format(
                 os.path.join(mounted_outdir, input_parameters["somaticseq_directory"])
@@ -338,40 +323,34 @@ def run_SomaticSeq(input_parameters, tech="docker"):
             out.write(
                 "--algorithm {} \\\n".format(input_parameters["somaticseq_algorithm"])
             )
-
             if input_parameters["snv_classifier"]:
                 out.write(
                     "--classifier-snv {} \\\n".format(
                         fileDict[input_parameters["snv_classifier"]]["mount_path"]
                     )
                 )
-
             if input_parameters["indel_classifier"]:
                 out.write(
                     "--classifier-indel {} \\\n".format(
                         fileDict[input_parameters["indel_classifier"]]["mount_path"]
                     )
                 )
-
         if input_parameters["truth_snv"]:
             out.write(
                 "--truth-snv {} \\\n".format(
                     fileDict[input_parameters["truth_snv"]]["mount_path"]
                 )
             )
-
         if input_parameters["truth_indel"]:
             out.write(
                 "--truth-indel {} \\\n".format(
                     fileDict[input_parameters["truth_indel"]]["mount_path"]
                 )
             )
-
         if input_parameters["somaticseq_algorithm"]:
             out.write(
                 "--algorithm {} \\\n".format(input_parameters["somaticseq_algorithm"])
             )
-
         if input_parameters["somaticseq_arguments"]:
             out.write("{} \\\n".format(input_parameters["somaticseq_arguments"]))
 
@@ -401,11 +380,12 @@ def run_SomaticSeq(input_parameters, tech="docker"):
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
     subprocess.call(command_line, shell=True)
-
     return outfile
 
 
-def merge_results(input_parameters, tech="docker"):
+def merge_results(
+    input_parameters: dict[str, Any], tech=Literal["docker", "singularity"]
+) -> str:
     DEFAULT_PARAMS = {
         "MEM": "4G",
         "output_directory": os.curdir,
@@ -420,7 +400,6 @@ def merge_results(input_parameters, tech="docker"):
         "train_somaticseq": False,
         "somaticseq_algorithm": "xgboost",
     }
-
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -443,39 +422,32 @@ def merge_results(input_parameters, tech="docker"):
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
-
     # Mounted paths for all the input files and output directory:
     mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
 
     prjdir = input_parameters["output_directory"]
     logdir = os.path.join(prjdir, "logs")
     outfile = os.path.join(logdir, input_parameters["script"])
-
     mutect2 = mounted_outdir + "/{}/MuTect2.vcf"
     varscan = mounted_outdir + "/{}/VarScan2.vcf"
     vardict = mounted_outdir + "/{}/VarDict.vcf"
     lofreq = mounted_outdir + "/{}/LoFreq.vcf"
     scalpel = mounted_outdir + "/{}/Scalpel.vcf"
     strelka = mounted_outdir + "/{}/Strelka/results/variants/variants.vcf.gz"
-
     somaticdir = input_parameters["somaticseq_directory"]
 
     os.makedirs(logdir, exist_ok=True)
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
-
         out.write(f"#$ -o {logdir}\n")
         out.write(f"#$ -e {logdir}\n")
         out.write("#$ -S /bin/bash\n")
         out.write("#$ -l h_vmem={}\n".format(input_parameters["MEM"]))
         out.write("set -e\n\n")
-
         out.write('echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n')
-
         if input_parameters["run_mutect2"]:
             out.write(f"{container_line} \\\n")
             out.write("concat.py --bgzip-output -infiles \\\n")
-
             for i in range(1, input_parameters["threads"] + 1):
                 out.write(mutect2.format(i) + " ")
 
@@ -485,7 +457,6 @@ def merge_results(input_parameters, tech="docker"):
         if input_parameters["run_varscan2"]:
             out.write(f"{container_line} \\\n")
             out.write("concat.py --bgzip-output -infiles \\\n")
-
             for i in range(1, input_parameters["threads"] + 1):
                 out.write(varscan.format(i) + " ")
 
@@ -495,7 +466,6 @@ def merge_results(input_parameters, tech="docker"):
         if input_parameters["run_vardict"]:
             out.write(f"{container_line} \\\n")
             out.write("concat.py --bgzip-output -infiles \\\n")
-
             for i in range(1, input_parameters["threads"] + 1):
                 out.write(vardict.format(i) + " ")
 
@@ -505,7 +475,6 @@ def merge_results(input_parameters, tech="docker"):
         if input_parameters["run_lofreq"]:
             out.write(f"{container_line} \\\n")
             out.write("concat.py --bgzip-output -infiles \\\n")
-
             for i in range(1, input_parameters["threads"] + 1):
                 out.write(lofreq.format(i) + " ")
 
@@ -515,7 +484,6 @@ def merge_results(input_parameters, tech="docker"):
         if input_parameters["run_scalpel"]:
             out.write(f"{container_line} \\\n")
             out.write("concat.py --bgzip-output -infiles \\\n")
-
             for i in range(1, input_parameters["threads"] + 1):
                 out.write(scalpel.format(i) + " ")
 
@@ -525,19 +493,17 @@ def merge_results(input_parameters, tech="docker"):
         if input_parameters["run_strelka2"]:
             out.write(f"{container_line} \\\n")
             out.write("concat.py --bgzip-output -infiles \\\n")
-
             for i in range(1, input_parameters["threads"] + 1):
                 out.write(strelka.format(i) + " ")
 
             out.write("\\\n")
             out.write(f"-outfile {mounted_outdir}/Strelka.vcf\n\n")
 
-        ###### SomaticSeq #####
+        # SomaticSeq
         if input_parameters["run_somaticseq"]:
             # Ensemble.sSNV.tsv
             out.write(f"{container_line} \\\n")
             out.write("concat.py -infiles \\\n")
-
             for i in range(1, input_parameters["threads"] + 1):
                 out.write(f"{mounted_outdir}/{i}/{somaticdir}/Ensemble.sSNV.tsv" + " ")
 
@@ -547,12 +513,10 @@ def merge_results(input_parameters, tech="docker"):
             # Ensemble.sINDEL.tsv
             out.write(f"{container_line} \\\n")
             out.write("concat.py -infiles \\\n")
-
             for i in range(1, input_parameters["threads"] + 1):
                 out.write(
                     f"{mounted_outdir}/{i}/{somaticdir}/Ensemble.sINDEL.tsv" + " "
                 )
-
             out.write("\\\n")
             out.write(f"-outfile {mounted_outdir}/Ensemble.sINDEL.tsv\n\n")
 
@@ -571,7 +535,6 @@ def merge_results(input_parameters, tech="docker"):
                             input_parameters["threads"], mounted_outdir
                         )
                     )
-
             if input_parameters["train_somaticseq"] and input_parameters["truth_indel"]:
                 out.write(f"{container_line} \\\n")
                 if input_parameters["somaticseq_algorithm"] == "ada":
@@ -586,12 +549,11 @@ def merge_results(input_parameters, tech="docker"):
                             input_parameters["threads"], mounted_outdir
                         )
                     )
-
-            # If in prediction mode, combine SSeq.Classified.sSNV.vcf, else Consensus.sSNV.vcf
+            # If in prediction mode, combine SSeq.Classified.sSNV.vcf, else
+            # Consensus.sSNV.vcf
             if input_parameters["snv_classifier"]:
                 out.write(f"{container_line} \\\n")
                 out.write("concat.py --bgzip-output -infiles \\\n")
-
                 for i in range(1, input_parameters["threads"] + 1):
                     out.write(
                         "{}/{}/{}/SSeq.Classified.sSNV.vcf".format(
@@ -599,14 +561,12 @@ def merge_results(input_parameters, tech="docker"):
                         )
                         + " "
                     )
-
                 out.write("\\\n")
                 out.write(f"-outfile {mounted_outdir}/SSeq.Classified.sSNV.vcf\n\n")
 
                 # SSeq.Classified.sSNV.tsv
                 out.write(f"{container_line} \\\n")
                 out.write("concat.py --bgzip-output -infiles \\\n")
-
                 for i in range(1, input_parameters["threads"] + 1):
                     out.write(
                         "{}/{}/{}/SSeq.Classified.sSNV.tsv".format(
@@ -614,7 +574,6 @@ def merge_results(input_parameters, tech="docker"):
                         )
                         + " "
                     )
-
                 out.write("\\\n")
                 out.write(f"-outfile {mounted_outdir}/SSeq.Classified.sSNV.tsv\n\n")
 
@@ -622,7 +581,6 @@ def merge_results(input_parameters, tech="docker"):
             else:
                 out.write(f"{container_line} \\\n")
                 out.write("concat.py --bgzip-output -infiles \\\n")
-
                 for i in range(1, input_parameters["threads"] + 1):
                     out.write(
                         "{}/{}/{}/Consensus.sSNV.vcf".format(
@@ -630,15 +588,14 @@ def merge_results(input_parameters, tech="docker"):
                         )
                         + " "
                     )
-
                 out.write("\\\n")
                 out.write(f"-outfile {mounted_outdir}/Consensus.sSNV.vcf\n\n")
 
-            # If in prediction mode, combine SSeq.Classified.sINDEL.vcf, else Consensus.sINDEL.vcf
+            # If in prediction mode, combine SSeq.Classified.sINDEL.vcf, else
+            # Consensus.sINDEL.vcf
             if input_parameters["indel_classifier"]:
                 out.write(f"{container_line} \\\n")
                 out.write("concat.py --bgzip-output -infiles \\\n")
-
                 for i in range(1, input_parameters["threads"] + 1):
                     out.write(
                         "{}/{}/{}/SSeq.Classified.sINDEL.vcf".format(
@@ -646,14 +603,12 @@ def merge_results(input_parameters, tech="docker"):
                         )
                         + " "
                     )
-
                 out.write("\\\n")
                 out.write(f"-outfile {mounted_outdir}/SSeq.Classified.sINDEL.vcf\n\n")
 
                 # SSeq.Classified.sINDEL.tsv
                 out.write(f"{container_line} \\\n")
                 out.write("concat.py --bgzip-output -infiles \\\n")
-
                 for i in range(1, input_parameters["threads"] + 1):
                     out.write(
                         "{}/{}/{}/SSeq.Classified.sINDEL.tsv".format(
@@ -661,7 +616,6 @@ def merge_results(input_parameters, tech="docker"):
                         )
                         + " "
                     )
-
                 out.write("\\\n")
                 out.write(f"-outfile {mounted_outdir}/SSeq.Classified.sINDEL.tsv\n\n")
 
@@ -669,7 +623,6 @@ def merge_results(input_parameters, tech="docker"):
             else:
                 out.write(f"{container_line} \\\n")
                 out.write("concat.py --bgzip-output -infiles \\\n")
-
                 for i in range(1, input_parameters["threads"] + 1):
                     out.write(
                         "{}/{}/{}/Consensus.sINDEL.vcf".format(
@@ -677,7 +630,6 @@ def merge_results(input_parameters, tech="docker"):
                         )
                         + " "
                     )
-
                 out.write("\\\n")
                 out.write(f"-outfile {mounted_outdir}/Consensus.sINDEL.vcf\n\n")
 

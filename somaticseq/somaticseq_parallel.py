@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+from typing import Literal
 from functools import partial
 from multiprocessing import Pool
 from shutil import rmtree
@@ -10,8 +11,28 @@ import somaticseq.run_somaticseq as run_somaticseq
 import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
 
 
-def splitRegions(nthreads, outfiles, bed=None, fai=None):
-    assert bed or fai
+def splitRegions(
+    nthreads: int, outfiles: str, bed: str | None = None, fai: str | None = None
+) -> list[str]:
+    """
+    Split into equal-sized regions in bed files.
+
+    Args:
+        nthreads: number of bed files to split into
+        outfiles: a template for file name, e.g., if
+            outfiles="/PATH/_input.bed", the actual output bed files will be
+            /PATH/1_input.bed, /PATH/2_input.bed, ...
+        bed: input bed file to split from. fai file will be ignored if bed is
+            provided.
+        fai: input fai file to split from if bed file not provided.
+
+    Returns:
+        A list of bed files where the regions are equal-sized.
+    """
+    if not (bed or fai):
+        raise FileNotFoundError(
+            "Must have either bed or fai file from which regions can be split."
+        )
     if fai and not bed:
         bed = split_bed.fai2bed(fai, outfiles)
     writtenBeds = split_bed.split(bed, outfiles, nthreads)
@@ -19,59 +40,113 @@ def splitRegions(nthreads, outfiles, bed=None, fai=None):
 
 
 def runPaired_by_region(
-    inclusion,
-    outdir=None,
-    ref=None,
-    tbam=None,
-    nbam=None,
-    tumor_name="TUMOR",
-    normal_name="NORMAL",
-    truth_snv=None,
-    truth_indel=None,
-    classifier_snv=None,
-    classifier_indel=None,
-    pass_threshold=0.5,
-    lowqual_threshold=0.1,
-    hom_threshold=0.85,
-    het_threshold=0.01,
-    dbsnp=None,
-    cosmic=None,
-    exclusion=None,
-    mutect=None,
-    indelocator=None,
-    mutect2=None,
-    varscan_snv=None,
-    varscan_indel=None,
-    jsm=None,
-    sniper=None,
-    vardict=None,
-    muse=None,
-    lofreq_snv=None,
-    lofreq_indel=None,
-    scalpel=None,
-    strelka_snv=None,
-    strelka_indel=None,
-    tnscope=None,
-    platypus=None,
-    arb_snvs=[],
-    arb_indels=[],
-    min_mq=1,
-    min_bq=5,
-    min_caller=0.5,
-    somaticseq_train=False,
-    ensembleOutPrefix="Ensemble.",
-    consensusOutPrefix="Consensus.",
-    classifiedOutPrefix="SSeq.Classified.",
-    algo="xgboost",
-    keep_intermediates=False,
-    train_seed=0,
-    tree_depth=12,
-    iterations=200,
-    features_excluded=[],
-    hyperparameters=None,
+    inclusion: str,
+    outdir: str,
+    ref: str,
+    tbam: str,
+    nbam: str,
+    tumor_name: str = "TUMOR",
+    normal_name: str = "NORMAL",
+    truth_snv: str | None = None,
+    truth_indel: str | None = None,
+    classifier_snv: str | None = None,
+    classifier_indel: str | None = None,
+    pass_threshold: float = 0.5,
+    lowqual_threshold: float = 0.1,
+    hom_threshold: float = 0.85,
+    het_threshold: float = 0.01,
+    dbsnp: str | None = None,
+    cosmic: str | None = None,
+    exclusion: str | None = None,
+    mutect: str | None = None,
+    indelocator: str | None = None,
+    mutect2: str | None = None,
+    varscan_snv: str | None = None,
+    varscan_indel: str | None = None,
+    jsm: str | None = None,
+    sniper: str | None = None,
+    vardict: str | None = None,
+    muse: str | None = None,
+    lofreq_snv: str | None = None,
+    lofreq_indel: str | None = None,
+    scalpel: str | None = None,
+    strelka_snv: str | None = None,
+    strelka_indel: str | None = None,
+    tnscope: str | None = None,
+    platypus: str | None = None,
+    arb_snvs: list[str] = [],
+    arb_indels: str[str] = [],
+    min_mq: float = 1,
+    min_bq: float = 5,
+    min_caller: float = 0.5,
+    somaticseq_train: bool = False,
+    ensembleOutPrefix: str = "Ensemble.",
+    consensusOutPrefix: str = "Consensus.",
+    classifiedOutPrefix: str = "SSeq.Classified.",
+    algo=Literal["xgboost", "ada", "ada.R"],
+    keep_intermediates: bool = False,
+    train_seed: int = 0,
+    tree_depth: int = 12,
+    iterations: int = 200,
+    features_excluded: list[str] = [],
 ):
+    """
+    Args:
+        inclusion: bed file of inclusion regions
+        outdir: output directory
+        ref: genome reference file
+        tbam: tumor bam file
+        nbam: matched normal bam file
+        tumor_name: tumor name to appear in vcf file
+        normal_name: normal name to appear in vcf file
+        truth_snv: ground truth vcf file for snvs
+        truth_indel: ground truth vcf file for indels
+        classifier_snv: trained classifier for snvs
+        classifier_indel: trained classifier for indels
+        pass_threshold: probability threshold above which variants are labeled PASS
+        lowqual_threshold: probability threshold above which variants are labeled LowQual
+        hom_threshold: VAF threshold above which variants are labeled as
+            homozygous in vcf (i.e., 1/1)
+        het_threshold: VAF threshold above which variants are labeled as heterozygous in vcf(i.e., 1/0)
+        dbsnp: dbsnp vcf file
+        cosmic: cosmic vcf file
+        exclusion: bed file to exclude regions
+        mutect: MuTect vcf
+        indelocator: indelocator vcf
+        mutect2: MuTect2 vcf
+        varscan_snv: VarScan2 vcf vcf
+        varscan_indel: VafScan2 indel vcf
+        jsm: JointSNVMix2 vcf
+        sniper: SomaticSniper vcf
+        vardict: VarDict vcf
+        muse: MuSE vcf
+        lofreq_snv: LoFreq snv vcf
+        lofreq_indel: LoFreq indel vcf
+        scalpel: Scalpel (indel) vcf
+        strelka_snv: Strelka2 snv vcf
+        strelka_indel: Strelka2 indel vcf
+        tnscope: TNscope vcf
+        platypus: Platypus vcf
+        arb_snvs: list of arbitrary snv vcfs
+        arb_indels: list of arbitrary indel vcfs
+        min_mq: mapping quality filter
+        min_bq: base ball quality filter
+        min_caller: minimum number of callers for which variants are kept. 0.5
+            to keep all variants that are called at least "LowQual" by at least
+            one caller even if that caller does not consider it a bona fide
+            variant
+        somaticseq_train: whether to train a classifier
+        ensembleOutPrefix: prefix for tsv output
+        consensusOutPrefix: prefix for consensus voting output
+        classifiedOutPrefix: prefix for machine learning classified output
+        algo: xgboost or ada are implemented
+        keep_intermediates: whether to keep intermediate files for debugging purposes
+        train_seed: seed for training
+        tree_depth: tree depth for model building
+        iterations: number of trees to build for classifier
+    """
     basename = inclusion.split(os.sep)[-1].split(".")[0]
-    outdir_i = outdir + os.sep + basename
+    outdir_i = os.path.join(outdir, basename)
     os.makedirs(outdir_i, exist_ok=True)
     run_somaticseq.runPaired(
         outdir_i,
