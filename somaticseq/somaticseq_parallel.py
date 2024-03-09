@@ -89,6 +89,7 @@ def run_paired_mode_by_region(
     tree_depth: int = 12,
     iterations: int = 200,
     features_excluded: list[str] = [],
+    hyperparameters: list[str] | None = None,
 ) -> str:
     """
     Args:
@@ -202,6 +203,7 @@ def run_paired_mode_by_region(
         tree_depth=tree_depth,
         iterations=iterations,
         features_excluded=features_excluded,
+        hyperparameters=hyperparameters,
     )
     return outdir_i
 
@@ -245,6 +247,7 @@ def run_single_mode_by_region(
     tree_depth: int = 12,
     iterations: int = 200,
     features_excluded: list[str] = [],
+    hyperparameters: list[str] | None = None,
 ) -> str:
     basename = inclusion.split(os.sep)[-1].split(".")[0]
     outdir_i = outdir + os.sep + basename
@@ -288,6 +291,7 @@ def run_single_mode_by_region(
         tree_depth=tree_depth,
         iterations=iterations,
         features_excluded=features_excluded,
+        hyperparameters=hyperparameters,
     )
     return outdir_i
 
