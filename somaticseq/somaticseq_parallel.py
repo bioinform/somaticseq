@@ -80,9 +80,9 @@ def run_paired_mode_by_region(
     min_bq: float | int = 5,
     min_caller: float | int = 0.5,
     somaticseq_train: bool = False,
-    ensembleOutPrefix: str = "Ensemble.",
-    consensusOutPrefix: str = "Consensus.",
-    classifiedOutPrefix: str = "SSeq.Classified.",
+    ensemble_outfile_prefix: str = "Ensemble.",
+    consensus_outfile_prefix: str = "Consensus.",
+    classified_outfile_prefix: str = "SSeq.Classified.",
     algo: Literal["xgboost", "ada", "ada.R"] = "xgboost",
     keep_intermediates: bool = False,
     train_seed: int = 0,
@@ -140,9 +140,9 @@ def run_paired_mode_by_region(
             one caller even if that caller does not consider it a bona fide
             variant
         somaticseq_train: whether to train a classifier
-        ensembleOutPrefix: prefix for tsv output
-        consensusOutPrefix: prefix for consensus voting output
-        classifiedOutPrefix: prefix for machine learning classified output
+        ensemble_outfile_prefix: prefix for tsv output
+        consensus_outfile_prefix: prefix for consensus voting output
+        classified_outfile_prefix: prefix for machine learning classified output
         algo: xgboost or ada are implemented
         keep_intermediates: whether to keep intermediate files for debugging
             purposes
@@ -194,9 +194,9 @@ def run_paired_mode_by_region(
         min_bq=min_bq,
         min_caller=min_caller,
         somaticseq_train=somaticseq_train,
-        ensembleOutPrefix=ensembleOutPrefix,
-        consensusOutPrefix=consensusOutPrefix,
-        classifiedOutPrefix=classifiedOutPrefix,
+        ensemble_outfile_prefix=ensemble_outfile_prefix,
+        consensus_outfile_prefix=consensus_outfile_prefix,
+        classified_outfile_prefix=classified_outfile_prefix,
         algo=algo,
         keep_intermediates=keep_intermediates,
         train_seed=train_seed,
@@ -238,9 +238,9 @@ def run_single_mode_by_region(
     min_bq: float | int = 5,
     min_caller: float | int = 0.5,
     somaticseq_train: bool = False,
-    ensembleOutPrefix: str = "Ensemble.",
-    consensusOutPrefix: str = "Consensus.",
-    classifiedOutPrefix: str = "SSeq.Classified.",
+    ensemble_outfile_prefix: str = "Ensemble.",
+    consensus_outfile_prefix: str = "Consensus.",
+    classified_outfile_prefix: str = "SSeq.Classified.",
     algo: Literal["xgboost", "ada", "ada.R"] = "xgboost",
     keep_intermediates: bool = False,
     train_seed: int = 0,
@@ -282,9 +282,9 @@ def run_single_mode_by_region(
         min_bq=min_bq,
         min_caller=min_caller,
         somaticseq_train=somaticseq_train,
-        ensembleOutPrefix=ensembleOutPrefix,
-        consensusOutPrefix=consensusOutPrefix,
-        classifiedOutPrefix=classifiedOutPrefix,
+        ensemble_outfile_prefix=ensemble_outfile_prefix,
+        consensus_outfile_prefix=consensus_outfile_prefix,
+        classified_outfile_prefix=classified_outfile_prefix,
         algo=algo,
         keep_intermediates=keep_intermediates,
         train_seed=train_seed,

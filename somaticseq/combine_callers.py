@@ -255,7 +255,7 @@ def combineSingle(
 
 
 # Combine individual VCF output into a simple combined VCF file, for paired sample callers
-def combinePaired(
+def combine_multiple_paired_caller_vcfs(
     outdir,
     ref,
     tbam,

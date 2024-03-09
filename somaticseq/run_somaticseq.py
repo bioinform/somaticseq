@@ -69,7 +69,7 @@ def model_trainer(
         return xgb_model
 
 
-def modelPredictor(
+def model_predictor(
     input_file: str,
     output_file: str,
     algo: Literal["xgboost", "ada", "ada.R"],
@@ -77,7 +77,7 @@ def modelPredictor(
     iterations: int = 100,
     features_to_exclude: list[str] | None = None,
 ):
-    logger = logging.getLogger(modelPredictor.__name__)
+    logger = logging.getLogger(model_predictor.__name__)
 
     if features_to_exclude is None:
         features_to_exclude = []
@@ -141,9 +141,9 @@ def run_paired_mode(
     min_bq=5,
     min_caller=0.5,
     somaticseq_train=False,
-    ensembleOutPrefix="Ensemble.",
-    consensusOutPrefix="Consensus.",
-    classifiedOutPrefix="SSeq.Classified.",
+    ensemble_outfile_prefix="Ensemble.",
+    consensus_outfile_prefix="Consensus.",
+    classified_outfile_prefix="SSeq.Classified.",
     algo="xgboost",
     keep_intermediates=False,
     train_seed=0,
@@ -211,49 +211,50 @@ def run_paired_mode(
     ]
 
     # Function to combine individual VCFs into a simple VCF list of variants:
-    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combinePaired(
-        outdir=outdir,
-        ref=ref,
-        tbam=tbam,
-        nbam=nbam,
-        inclusion=inclusion,
-        exclusion=exclusion,
-        mutect=mutect,
-        indelocator=indelocator,
-        mutect2=mutect2,
-        varscan_snv=varscan_snv,
-        varscan_indel=varscan_indel,
-        jsm=jsm,
-        sniper=sniper,
-        vardict=vardict,
-        muse=muse,
-        lofreq_snv=lofreq_snv,
-        lofreq_indel=lofreq_indel,
-        scalpel=scalpel,
-        strelka_snv=strelka_snv,
-        strelka_indel=strelka_indel,
-        tnscope=tnscope,
-        platypus=platypus,
-        arb_snvs=arb_snvs,
-        arb_indels=arb_indels,
-        keep_intermediates=True,
+    out_snv, out_indel, intermediate_vcfs, tmp_files = (
+        combineCallers.combine_multiple_paired_caller_vcfs(
+            outdir=outdir,
+            ref=ref,
+            tbam=tbam,
+            nbam=nbam,
+            inclusion=inclusion,
+            exclusion=exclusion,
+            mutect=mutect,
+            indelocator=indelocator,
+            mutect2=mutect2,
+            varscan_snv=varscan_snv,
+            varscan_indel=varscan_indel,
+            jsm=jsm,
+            sniper=sniper,
+            vardict=vardict,
+            muse=muse,
+            lofreq_snv=lofreq_snv,
+            lofreq_indel=lofreq_indel,
+            scalpel=scalpel,
+            strelka_snv=strelka_snv,
+            strelka_indel=strelka_indel,
+            tnscope=tnscope,
+            platypus=platypus,
+            arb_snvs=arb_snvs,
+            arb_indels=arb_indels,
+            keep_intermediates=True,
+        )
     )
+    files_to_delete.add(out_snv)
+    files_to_delete.add(out_indel)
+    [files_to_delete.add(i) for i in tmp_files]
 
-    files_to_delete.add(outSnv)
-    files_to_delete.add(outIndel)
-    [files_to_delete.add(i) for i in tempFiles]
-
-    ensembleSnv = os.sep.join((outdir, ensembleOutPrefix + "sSNV.tsv"))
-    ensembleIndel = os.sep.join((outdir, ensembleOutPrefix + "sINDEL.tsv"))
+    ensemble_snv = os.sep.join((outdir, ensemble_outfile_prefix + "sSNV.tsv"))
+    ensemble_indel = os.sep.join((outdir, ensemble_outfile_prefix + "sINDEL.tsv"))
 
     # SNV
     mutect_infile = (
-        intermediateVcfs["MuTect2"]["snv"]
-        if intermediateVcfs["MuTect2"]["snv"]
+        intermediate_vcfs["MuTect2"]["snv"]
+        if intermediate_vcfs["MuTect2"]["snv"]
         else mutect
     )
     somatic_vcf2tsv.vcf2tsv(
-        is_vcf=outSnv,
+        is_vcf=out_snv,
         nbam_fn=nbam,
         tbam_fn=tbam,
         truth=truth_snv,
@@ -263,32 +264,35 @@ def run_paired_mode(
         varscan=varscan_snv,
         jsm=jsm,
         sniper=sniper,
-        vardict=intermediateVcfs["VarDict"]["snv"],
+        vardict=intermediate_vcfs["VarDict"]["snv"],
         muse=muse,
         lofreq=lofreq_snv,
         scalpel=None,
         strelka=strelka_snv,
-        tnscope=intermediateVcfs["TNscope"]["snv"],
-        platypus=intermediateVcfs["Platypus"]["snv"],
-        arbitrary_vcfs=intermediateVcfs["Arbitrary"]["snv"],
+        tnscope=intermediate_vcfs["TNscope"]["snv"],
+        platypus=intermediate_vcfs["Platypus"]["snv"],
+        arbitrary_vcfs=intermediate_vcfs["Arbitrary"]["snv"],
         dedup=True,
         min_mq=min_mq,
         min_bq=min_bq,
         min_caller=min_caller,
         ref_fa=ref,
         p_scale=None,
-        outfile=ensembleSnv,
+        outfile=ensemble_snv,
     )
 
     # Classify SNV calls
     if classifier_snv:
-        classifiedSnvTsv = os.sep.join((outdir, classifiedOutPrefix + "sSNV.tsv"))
-        classifiedSnvVcf = os.sep.join((outdir, classifiedOutPrefix + "sSNV.vcf"))
-
+        classified_snv_tsv = os.sep.join(
+            (outdir, classified_outfile_prefix + "sSNV.tsv")
+        )
+        classified_snv_vcf = os.sep.join(
+            (outdir, classified_outfile_prefix + "sSNV.vcf")
+        )
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
-        modelPredictor(
-            ensembleSnv,
-            classifiedSnvTsv,
+        model_predictor(
+            ensemble_snv,
+            classified_snv_tsv,
             algo,
             classifier_snv,
             iterations=iterations,
@@ -298,8 +302,8 @@ def run_paired_mode(
             f"##SomaticSeqClassifier={classifier_snv}",
         ]
         tsv2vcf.tsv2vcf(
-            classifiedSnvTsv,
-            classifiedSnvVcf,
+            classified_snv_tsv,
+            classified_snv_vcf,
             snvCallers,
             pass_score=pass_threshold,
             lowqual_score=lowqual_threshold,
@@ -318,7 +322,7 @@ def run_paired_mode(
         if somaticseq_train and truth_snv:
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
             model_trainer(
-                ensembleSnv,
+                ensemble_snv,
                 algo,
                 threads=1,
                 seed=train_seed,
@@ -328,10 +332,10 @@ def run_paired_mode(
                 hyperparameters=hyperparameters,
             )
 
-        consensusSnvVcf = os.sep.join((outdir, consensusOutPrefix + "sSNV.vcf"))
+        consensus_snv_vcf = os.sep.join((outdir, consensus_outfile_prefix + "sSNV.vcf"))
         tsv2vcf.tsv2vcf(
-            ensembleSnv,
-            consensusSnvVcf,
+            ensemble_snv,
+            consensus_snv_vcf,
             snvCallers,
             hom_threshold=hom_threshold,
             het_threshold=het_threshold,
@@ -343,12 +347,12 @@ def run_paired_mode(
         )
     # INDEL
     mutect_infile = (
-        intermediateVcfs["MuTect2"]["indel"]
-        if intermediateVcfs["MuTect2"]["indel"]
+        intermediate_vcfs["MuTect2"]["indel"]
+        if intermediate_vcfs["MuTect2"]["indel"]
         else indelocator
     )
     somatic_vcf2tsv.vcf2tsv(
-        is_vcf=outIndel,
+        is_vcf=out_indel,
         nbam_fn=nbam,
         tbam_fn=tbam,
         truth=truth_indel,
@@ -356,30 +360,33 @@ def run_paired_mode(
         dbsnp=dbsnp,
         mutect=mutect_infile,
         varscan=varscan_indel,
-        vardict=intermediateVcfs["VarDict"]["indel"],
+        vardict=intermediate_vcfs["VarDict"]["indel"],
         lofreq=lofreq_indel,
         scalpel=scalpel,
         strelka=strelka_indel,
-        tnscope=intermediateVcfs["TNscope"]["indel"],
-        platypus=intermediateVcfs["Platypus"]["indel"],
-        arbitrary_vcfs=intermediateVcfs["Arbitrary"]["indel"],
+        tnscope=intermediate_vcfs["TNscope"]["indel"],
+        platypus=intermediate_vcfs["Platypus"]["indel"],
+        arbitrary_vcfs=intermediate_vcfs["Arbitrary"]["indel"],
         dedup=True,
         min_mq=min_mq,
         min_bq=min_bq,
         min_caller=min_caller,
         ref_fa=ref,
         p_scale=None,
-        outfile=ensembleIndel,
+        outfile=ensemble_indel,
     )
     # Classify INDEL calls
     if classifier_indel:
-        classifiedIndelTsv = os.sep.join((outdir, classifiedOutPrefix + "sINDEL.tsv"))
-        classifiedIndelVcf = os.sep.join((outdir, classifiedOutPrefix + "sINDEL.vcf"))
-
+        consensus_indel_tsv = os.sep.join(
+            (outdir, classified_outfile_prefix + "sINDEL.tsv")
+        )
+        consensus_indel_vcf = os.sep.join(
+            (outdir, classified_outfile_prefix + "sINDEL.vcf")
+        )
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
-        modelPredictor(
-            ensembleIndel,
-            classifiedIndelTsv,
+        model_predictor(
+            ensemble_indel,
+            consensus_indel_tsv,
             algo,
             classifier_indel,
             iterations=iterations,
@@ -389,8 +396,8 @@ def run_paired_mode(
             f"##SomaticSeqClassifier={classifier_indel}",
         ]
         tsv2vcf.tsv2vcf(
-            classifiedIndelTsv,
-            classifiedIndelVcf,
+            consensus_indel_tsv,
+            consensus_indel_vcf,
             indelCallers,
             pass_score=pass_threshold,
             lowqual_score=lowqual_threshold,
@@ -409,7 +416,7 @@ def run_paired_mode(
         if somaticseq_train and truth_indel:
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
             model_trainer(
-                ensembleIndel,
+                ensemble_indel,
                 algo,
                 threads=1,
                 seed=train_seed,
@@ -418,10 +425,12 @@ def run_paired_mode(
                 features_to_exclude=features_excluded,
                 hyperparameters=hyperparameters,
             )
-        consensusIndelVcf = os.sep.join((outdir, consensusOutPrefix + "sINDEL.vcf"))
+        consensus_indel_vcf = os.sep.join(
+            (outdir, consensus_outfile_prefix + "sINDEL.vcf")
+        )
         tsv2vcf.tsv2vcf(
-            ensembleIndel,
-            consensusIndelVcf,
+            ensemble_indel,
+            consensus_indel_vcf,
             indelCallers,
             hom_threshold=hom_threshold,
             het_threshold=het_threshold,
@@ -468,9 +477,9 @@ def run_single_mode(
     min_bq=5,
     min_caller=0.5,
     somaticseq_train=False,
-    ensembleOutPrefix="Ensemble.",
-    consensusOutPrefix="Consensus.",
-    classifiedOutPrefix="SSeq.Classified.",
+    ensemble_outfile_prefix="Ensemble.",
+    consensus_outfile_prefix="Consensus.",
+    classified_outfile_prefix="SSeq.Classified.",
     algo="xgboost",
     keep_intermediates=False,
     train_seed=0,
@@ -523,7 +532,7 @@ def run_single_mode(
     ]
 
     # Function to combine individual VCFs into a simple VCF list of variants:
-    outSnv, outIndel, intermediateVcfs, tempFiles = combineCallers.combineSingle(
+    out_snv, out_indel, intermediate_vcfs, tmp_files = combineCallers.combineSingle(
         outdir=outdir,
         ref=ref,
         bam=bam,
@@ -540,48 +549,52 @@ def run_single_mode(
         arb_indels=arb_indels,
         keep_intermediates=True,
     )
-    files_to_delete.add(outSnv)
-    files_to_delete.add(outIndel)
-    [files_to_delete.add(i) for i in tempFiles]
+    files_to_delete.add(out_snv)
+    files_to_delete.add(out_indel)
+    [files_to_delete.add(i) for i in tmp_files]
 
-    ensembleSnv = os.sep.join((outdir, ensembleOutPrefix + "sSNV.tsv"))
-    ensembleIndel = os.sep.join((outdir, ensembleOutPrefix + "sINDEL.tsv"))
+    ensemble_snv = os.sep.join((outdir, ensemble_outfile_prefix + "sSNV.tsv"))
+    ensemble_indel = os.sep.join((outdir, ensemble_outfile_prefix + "sINDEL.tsv"))
 
     # SNV
     mutect_infile = (
-        intermediateVcfs["MuTect2"]["snv"]
-        if intermediateVcfs["MuTect2"]["snv"]
+        intermediate_vcfs["MuTect2"]["snv"]
+        if intermediate_vcfs["MuTect2"]["snv"]
         else mutect
     )
     single_sample_vcf2tsv.vcf2tsv(
-        is_vcf=outSnv,
+        is_vcf=out_snv,
         bam_fn=bam,
         truth=truth_snv,
         cosmic=cosmic,
         dbsnp=dbsnp,
         mutect=mutect_infile,
-        varscan=intermediateVcfs["VarScan2"]["snv"],
-        vardict=intermediateVcfs["VarDict"]["snv"],
-        lofreq=intermediateVcfs["LoFreq"]["snv"],
+        varscan=intermediate_vcfs["VarScan2"]["snv"],
+        vardict=intermediate_vcfs["VarDict"]["snv"],
+        lofreq=intermediate_vcfs["LoFreq"]["snv"],
         scalpel=None,
-        strelka=intermediateVcfs["Strelka"]["snv"],
-        arbitrary_vcfs=intermediateVcfs["Arbitrary"]["snv"],
+        strelka=intermediate_vcfs["Strelka"]["snv"],
+        arbitrary_vcfs=intermediate_vcfs["Arbitrary"]["snv"],
         dedup=True,
         min_mq=min_mq,
         min_bq=min_bq,
         min_caller=min_caller,
         ref_fa=ref,
         p_scale=None,
-        outfile=ensembleSnv,
+        outfile=ensemble_snv,
     )
     # Classify SNV calls
     if classifier_snv:
-        classifiedSnvTsv = os.sep.join((outdir, classifiedOutPrefix + "sSNV.tsv"))
-        classifiedSnvVcf = os.sep.join((outdir, classifiedOutPrefix + "sSNV.vcf"))
+        classified_snv_tsv = os.sep.join(
+            (outdir, classified_outfile_prefix + "sSNV.tsv")
+        )
+        classified_snv_vcf = os.sep.join(
+            (outdir, classified_outfile_prefix + "sSNV.vcf")
+        )
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
-        modelPredictor(
-            ensembleSnv,
-            classifiedSnvTsv,
+        model_predictor(
+            ensemble_snv,
+            classified_snv_tsv,
             algo,
             classifier_snv,
             iterations=iterations,
@@ -591,8 +604,8 @@ def run_single_mode(
             f"##SomaticSeqClassifier={classifier_snv}",
         ]
         tsv2vcf.tsv2vcf(
-            classifiedSnvTsv,
-            classifiedSnvVcf,
+            classified_snv_tsv,
+            classified_snv_vcf,
             snvCallers,
             pass_score=pass_threshold,
             lowqual_score=lowqual_threshold,
@@ -610,7 +623,7 @@ def run_single_mode(
         if somaticseq_train and truth_snv:
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
             model_trainer(
-                ensembleSnv,
+                ensemble_snv,
                 algo,
                 threads=1,
                 seed=train_seed,
@@ -619,10 +632,10 @@ def run_single_mode(
                 features_to_exclude=features_excluded,
                 hyperparameters=hyperparameters,
             )
-        consensusSnvVcf = os.sep.join((outdir, consensusOutPrefix + "sSNV.vcf"))
+        consensus_snv_vcf = os.sep.join((outdir, consensus_outfile_prefix + "sSNV.vcf"))
         tsv2vcf.tsv2vcf(
-            ensembleSnv,
-            consensusSnvVcf,
+            ensemble_snv,
+            consensus_snv_vcf,
             snvCallers,
             hom_threshold=hom_threshold,
             het_threshold=het_threshold,
@@ -633,35 +646,38 @@ def run_single_mode(
         )
     # INDEL
     single_sample_vcf2tsv.vcf2tsv(
-        is_vcf=outIndel,
+        is_vcf=out_indel,
         bam_fn=bam,
         truth=truth_indel,
         cosmic=cosmic,
         dbsnp=dbsnp,
-        mutect=intermediateVcfs["MuTect2"]["indel"],
-        varscan=intermediateVcfs["VarScan2"]["indel"],
-        vardict=intermediateVcfs["VarDict"]["indel"],
-        lofreq=intermediateVcfs["LoFreq"]["indel"],
+        mutect=intermediate_vcfs["MuTect2"]["indel"],
+        varscan=intermediate_vcfs["VarScan2"]["indel"],
+        vardict=intermediate_vcfs["VarDict"]["indel"],
+        lofreq=intermediate_vcfs["LoFreq"]["indel"],
         scalpel=scalpel,
-        strelka=intermediateVcfs["Strelka"]["indel"],
-        arbitrary_vcfs=intermediateVcfs["Arbitrary"]["indel"],
+        strelka=intermediate_vcfs["Strelka"]["indel"],
+        arbitrary_vcfs=intermediate_vcfs["Arbitrary"]["indel"],
         dedup=True,
         min_mq=min_mq,
         min_bq=min_bq,
         min_caller=min_caller,
         ref_fa=ref,
         p_scale=None,
-        outfile=ensembleIndel,
+        outfile=ensemble_indel,
     )
     # Classify INDEL calls
     if classifier_indel:
-        classifiedIndelTsv = os.sep.join((outdir, classifiedOutPrefix + "sINDEL.tsv"))
-        classifiedIndelVcf = os.sep.join((outdir, classifiedOutPrefix + "sINDEL.vcf"))
-
+        consensus_indel_tsv = os.sep.join(
+            (outdir, classified_outfile_prefix + "sINDEL.tsv")
+        )
+        consensus_indel_vcf = os.sep.join(
+            (outdir, classified_outfile_prefix + "sINDEL.vcf")
+        )
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
-        modelPredictor(
-            ensembleIndel,
-            classifiedIndelTsv,
+        model_predictor(
+            ensemble_indel,
+            consensus_indel_tsv,
             algo,
             classifier_indel,
             iterations=iterations,
@@ -671,8 +687,8 @@ def run_single_mode(
             f"##SomaticSeqClassifier={classifier_indel}",
         ]
         tsv2vcf.tsv2vcf(
-            classifiedIndelTsv,
-            classifiedIndelVcf,
+            consensus_indel_tsv,
+            consensus_indel_vcf,
             indelCallers,
             pass_score=pass_threshold,
             lowqual_score=lowqual_threshold,
@@ -690,7 +706,7 @@ def run_single_mode(
         if somaticseq_train and truth_indel:
             iterations = iterations if iterations else DEFAULT_XGB_BOOST_ROUNDS
             model_trainer(
-                ensembleIndel,
+                ensemble_indel,
                 algo,
                 threads=1,
                 seed=train_seed,
@@ -699,10 +715,12 @@ def run_single_mode(
                 features_to_exclude=features_excluded,
                 hyperparameters=hyperparameters,
             )
-        consensusIndelVcf = os.sep.join((outdir, consensusOutPrefix + "sINDEL.vcf"))
+        consensus_indel_vcf = os.sep.join(
+            (outdir, consensus_outfile_prefix + "sINDEL.vcf")
+        )
         tsv2vcf.tsv2vcf(
-            ensembleIndel,
-            consensusIndelVcf,
+            ensemble_indel,
+            consensus_indel_vcf,
             indelCallers,
             hom_threshold=hom_threshold,
             het_threshold=het_threshold,
