@@ -308,6 +308,6 @@ of the more useful tools, e.g.,
     the resulting files crap out on downstream GATK tools.
 -   `run_workflows.py` is a rudimentary workflow manager that executes multiple
     scripts at once.
--   `split_Bed_into_equal_regions.py` splits one bed file into a number of
+-   `split_bed_into_equal_regions.py` splits one bed file into a number of
     output bed files, where each output bed file will have the same total
     length.

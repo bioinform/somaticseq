@@ -5,9 +5,10 @@ import logging
 import os
 import subprocess
 from typing import Literal
-import somaticseq.SSeq_tsv2vcf as tsv2vcf
+
 import somaticseq.combine_callers as combineCallers
 import somaticseq.single_sample_vcf2tsv as single_sample_vcf2tsv
+import somaticseq.somatic_tsv2vcf as tsv2vcf
 import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
 import somaticseq.somatic_xgboost as somatic_xgboost
 from somaticseq._version import __version__

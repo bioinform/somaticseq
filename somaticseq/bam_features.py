@@ -1,9 +1,10 @@
 from collections import defaultdict
+
 import pysam
 import scipy.stats as stats
 from pydantic import BaseModel
 
-from somaticseq.genomicFileHandler.read_info_extractor import (
+from somaticseq.genomic_file_parsers.read_info_extractor import (
     CIGAR_SOFT_CLIP,
     dedup_test,
     mean,

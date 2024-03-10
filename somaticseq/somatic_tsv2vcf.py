@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 
 from somaticseq._version import vcf_header as version_line
-from somaticseq.genomicFileHandler.genomic_file_handlers import p2phred
+from somaticseq.genomic_file_parsers.genomic_file_handlers import p2phred
 
 nan = float("nan")
 time_string = datetime.now().isoformat(sep="_", timespec="seconds")

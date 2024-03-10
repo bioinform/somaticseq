@@ -33,11 +33,9 @@ max_length = args.max_length
 with pysam.AlignmentFile(bam_file) as bam:
     reads = bam.fetch()
 
-    clipped_and_discordant = (
-        clipped_only
-    ) = (
-        discordant_only
-    ) = concordant_reads = mq0 = unmapped = duplicated_reads = total_reads = 0
+    clipped_and_discordant = clipped_only = discordant_only = concordant_reads = mq0 = (
+        unmapped
+    ) = duplicated_reads = total_reads = 0
     frag_lengths = {}
     duplicates_per_length = {}
     MQs = {}

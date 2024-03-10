@@ -2,10 +2,10 @@ import os
 import re
 import subprocess
 
-import somaticseq.vcfModifier.copy_TextFile as copy_TextFile
-import somaticseq.vcfModifier.getUniqueVcfPositions as getUniqueVcfPositions
-import somaticseq.vcfModifier.splitVcf as splitVcf
-from somaticseq.vcfModifier.vcfIntersector import (
+import somaticseq.vcf_modifier.copy_TextFile as copy_TextFile
+import somaticseq.vcf_modifier.getUniqueVcfPositions as getUniqueVcfPositions
+import somaticseq.vcf_modifier.splitVcf as splitVcf
+from somaticseq.vcf_modifier.vcfIntersector import (
     bed_intersector,
     remove_vcf_illegal_lines,
     vcfsorter,
@@ -49,7 +49,7 @@ def combineSingle(
     }
 
     if mutect:
-        import somaticseq.vcfModifier.modify_MuTect as mod_mutect
+        import somaticseq.vcf_modifier.modify_MuTect as mod_mutect
 
         mutect_in = bed_intersector(
             mutect, os.sep.join((outdir, "intersect.mutect1.vcf")), inclusion, exclusion
@@ -61,7 +61,7 @@ def combineSingle(
         snv_intermediates.append(snv_mutect_out)
 
     if mutect2:
-        import somaticseq.vcfModifier.modify_ssMuTect2 as mod_mutect2
+        import somaticseq.vcf_modifier.modify_ssMuTect2 as mod_mutect2
 
         mutect2_in = bed_intersector(
             mutect2,
@@ -83,7 +83,7 @@ def combineSingle(
         intermediate_vcfs["MuTect2"]["indel"] = indel_mutect_out
 
     if varscan:
-        import somaticseq.vcfModifier.modify_VarScan2 as mod_varscan2
+        import somaticseq.vcf_modifier.modify_VarScan2 as mod_varscan2
 
         varscan_in = bed_intersector(
             varscan,
@@ -109,7 +109,7 @@ def combineSingle(
         intermediate_vcfs["VarScan2"]["indel"] = indel_varscan_out
 
     if vardict:
-        import somaticseq.vcfModifier.modify_VarDict as mod_vardict
+        import somaticseq.vcf_modifier.modify_VarDict as mod_vardict
 
         # If the VarDict VCF file has line that clash with bedtools
         cleaned_vardict = os.sep.join((outdir, "cleaned.vardict.vcf"))
@@ -179,7 +179,7 @@ def combineSingle(
         indel_intermediates.append(scalpel_out)
 
     if strelka:
-        import somaticseq.vcfModifier.modify_ssStrelka as mod_strelka
+        import somaticseq.vcf_modifier.modify_ssStrelka as mod_strelka
 
         strelka_in = bed_intersector(
             strelka,
@@ -301,7 +301,7 @@ def combine_multiple_paired_caller_vcfs(
 
     # Modify direct VCF outputs for merging:
     if mutect or indelocator:
-        import somaticseq.vcfModifier.modify_MuTect as mod_mutect
+        import somaticseq.vcf_modifier.modify_MuTect as mod_mutect
 
         if mutect:
             mutect_in = bed_intersector(
@@ -330,7 +330,7 @@ def combine_multiple_paired_caller_vcfs(
             indel_intermediates.append(indel_indelocator_out)
 
     if mutect2:
-        import somaticseq.vcfModifier.modify_MuTect2 as mod_mutect2
+        import somaticseq.vcf_modifier.modify_MuTect2 as mod_mutect2
 
         mutect2_in = bed_intersector(
             mutect2,
@@ -352,7 +352,7 @@ def combine_multiple_paired_caller_vcfs(
         intermediate_vcfs["MuTect2"]["indel"] = indel_mutect_out
 
     if varscan_snv or varscan_indel:
-        import somaticseq.vcfModifier.modify_VarScan2 as mod_varscan2
+        import somaticseq.vcf_modifier.modify_VarScan2 as mod_varscan2
 
         if varscan_snv:
             varscan_in = bed_intersector(
@@ -381,7 +381,7 @@ def combine_multiple_paired_caller_vcfs(
             indel_intermediates.append(indel_varscan_out)
 
     if jsm:
-        import somaticseq.vcfModifier.modify_JointSNVMix2 as mod_jsm
+        import somaticseq.vcf_modifier.modify_JointSNVMix2 as mod_jsm
 
         jsm_in = bed_intersector(
             jsm, os.sep.join((outdir, "intersect.jsm.vcf")), inclusion, exclusion
@@ -393,7 +393,7 @@ def combine_multiple_paired_caller_vcfs(
         snv_intermediates.append(jsm_out)
 
     if sniper:
-        import somaticseq.vcfModifier.modify_SomaticSniper as mod_sniper
+        import somaticseq.vcf_modifier.modify_SomaticSniper as mod_sniper
 
         sniper_in = bed_intersector(
             sniper, os.sep.join((outdir, "intersect.sniper.vcf")), inclusion, exclusion
@@ -405,7 +405,7 @@ def combine_multiple_paired_caller_vcfs(
         snv_intermediates.append(sniper_out)
 
     if vardict:
-        import somaticseq.vcfModifier.modify_VarDict as mod_vardict
+        import somaticseq.vcf_modifier.modify_VarDict as mod_vardict
 
         # If the VarDict VCF file has line that clash with bedtools
         cleaned_vardict = os.sep.join((outdir, "cleaned.vardict.vcf"))
@@ -493,7 +493,7 @@ def combine_multiple_paired_caller_vcfs(
         indel_intermediates.append(scalpel_out)
 
     if strelka_snv or strelka_indel:
-        import somaticseq.vcfModifier.modify_Strelka as mod_strelka
+        import somaticseq.vcf_modifier.modify_Strelka as mod_strelka
 
         if strelka_snv:
             strelka_in = bed_intersector(
@@ -524,7 +524,7 @@ def combine_multiple_paired_caller_vcfs(
             indel_intermediates.append(indel_strelka_out)
 
     if tnscope:
-        import somaticseq.vcfModifier.modify_MuTect2 as mod_mutect2
+        import somaticseq.vcf_modifier.modify_MuTect2 as mod_mutect2
 
         tnscope_in = bed_intersector(
             tnscope,

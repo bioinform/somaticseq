@@ -31,11 +31,11 @@ options.
 
 ### Convert SomaticSeq TSV file to SomaticSeq VCF file
 
-Run `SSeq_tsv2vcf.py -h` to see all the command line options. The VCF file
+Run `somatic_tsv2vcf.py -h` to see all the command line options. The VCF file
 (`-vcf/--vcf-out`) is the output file, e.g.,
 
 ```
-SSeq_tsv2vcf.py --tsv-in predicted_snvs.tsv --vcf-out predicted_snvs.vcf --pass-threshold 0.7 --lowqual-threshold 0.1 --individual-mutation-tools MuTect2 VarDict Strelka --emit-all --phred-scale --paired-samples
+somatic_tsv2vcf.py --tsv-in predicted_snvs.tsv --vcf-out predicted_snvs.vcf --pass-threshold 0.7 --lowqual-threshold 0.1 --individual-mutation-tools MuTect2 VarDict Strelka --emit-all --phred-scale --paired-samples
 ```
 
 It can only work on SomaticSeq generated TSV files.

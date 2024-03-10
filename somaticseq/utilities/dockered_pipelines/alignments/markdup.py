@@ -13,7 +13,7 @@ from shutil import move
 
 import somaticseq.utilities.dockered_pipelines.alignments.mergeBams as mergeBams
 import somaticseq.utilities.dockered_pipelines.container_option as container
-import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
+import somaticseq.utilities.split_bed_into_equal_regions as split_bed
 
 TMPDIR = tempfile.gettempdir()
 

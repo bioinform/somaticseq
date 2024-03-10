@@ -10,7 +10,7 @@ from shutil import move
 
 import somaticseq.utilities.dockered_pipelines.tumor_normal_run as tumor_normal
 import somaticseq.utilities.dockered_pipelines.tumor_only_run as tumor_only
-import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
+import somaticseq.utilities.split_bed_into_equal_regions as split_bed
 
 FORMAT = "%(levelname)s %(asctime)-15s %(name)-20s %(message)s"
 logger = logging.getLogger("Somatic_Mutation_Workflow")

@@ -11,10 +11,10 @@ from warnings import warn
 
 import pysam
 
-import somaticseq.genomicFileHandler.genomic_file_handlers as genome
-import somaticseq.genomicFileHandler.read_info_extractor as read_info_extractor
-import somaticseq.utilities.split_Bed_into_equal_regions as split_regions
-import somaticseq.vcfModifier.vcfIntersector as vcfIntersector
+import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
+import somaticseq.genomic_file_parsers.read_info_extractor as read_info_extractor
+import somaticseq.utilities.split_bed_into_equal_regions as split_regions
+import somaticseq.vcf_modifier.vcfIntersector as vcfIntersector
 
 
 def intersect_multiple_vcf_files(inVcfList_and_BedFile):

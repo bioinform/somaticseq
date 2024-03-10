@@ -3,7 +3,7 @@
 import argparse
 import itertools
 
-import somaticseq.genomicFileHandler.genomic_file_handlers as genome
+import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 # argparse Stuff
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)

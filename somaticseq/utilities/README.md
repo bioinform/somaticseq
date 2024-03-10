@@ -10,7 +10,7 @@ general-purpose bioinformatic utilities.
 -   `bamQC.py`: prints out number of reads that are discordant, soft-clipped,
     MQ0, and unmapped, as well as MQ distribution and fragment length
     distributions.
--   `concat.py`: located in `somaticseq/genomicFileHandler`. It is like
+-   `concat.py`: located in `somaticseq/genomic_file_parsers`. It is like
     `vcf-concat` if the input files are vcf(.gz) file, but has a cool function
     of spreading an input file into multiple output files, e.g., split a .fastq
     files into many sub files for parallel processing.
@@ -44,11 +44,11 @@ general-purpose bioinformatic utilities.
 -   `run_workflows.py`: located in `somaticseq/utilities/dockered_pipelines`. It
     will use python's multiprocessing module to execute scripts in parallel. It
     is also capable of grouping scripts and execute them by groups.
--   `split_Bed_into_equal_regions.py`: splits a BED file into N number of bed
+-   `split_bed_into_equal_regions.py`: splits a BED file into N number of bed
     files, each with equal-sized regions.
 -   `split_mergedBed.py`: used prior to VarDict, by splitting a BED file into
     smaller regions, each with a fixed size in terms of bps.
--   `splitVcf.py`: Located in `somaticseq/vcfModifier`. It takes input of a VCF
+-   `splitVcf.py`: Located in `somaticseq/vcf_modifier`. It takes input of a VCF
     file, and outputs one with only SNVs and one with only indels.
 -   `tally_variants_from_multiple_vcfs.py`: has multiple vcf and bam files as an
     input plus their names, and will output a table of variants and which

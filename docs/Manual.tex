@@ -393,9 +393,9 @@ This module converts SomaticSeq's TSV file (described in Sec. \ref{module:vcf2ts
 
 
 \begin{lstlisting}
-  import somaticseq.somaticseq.SSeq_tsv2vcf as SSeq_tsv2vcf
+  import somaticseq.somaticseq.somatic_tsv2vcf as somatic_tsv2vcf
   
-  SSeq_tsv2vcf.tsv2vcf(tsv_fn='/PATH/TO/SomaticSeq.tsv', vcf_fn='/PATH/TO/SomaticSeq.vcf', tools=['MuTect2', 'SomaticSniper', 'Strelka'], pass_score=0.5, lowqual_score=0.1, hom_threshold=0.85, het_threshold=0.01, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True)
+  somatic_tsv2vcf.tsv2vcf(tsv_fn='/PATH/TO/SomaticSeq.tsv', vcf_fn='/PATH/TO/SomaticSeq.vcf', tools=['MuTect2', 'SomaticSniper', 'Strelka'], pass_score=0.5, lowqual_score=0.1, hom_threshold=0.85, het_threshold=0.01, single_mode=False, paired_mode=True, normal_sample_name='NORMAL', tumor_sample_name='TUMOR', print_reject=True, phred_scaled=True)
 \end{lstlisting}
 
 Parameters:
@@ -414,7 +414,7 @@ Parameters:
 The script can also be run independently. 
 
 \begin{lstlisting}
-somaticseq/SSeq_tsv2vcf.py -h
+somaticseq/somatic_tsv2vcf.py -h
 \end{lstlisting}
 
 
@@ -1395,7 +1395,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
          Fixed some bash scripts involved with single-sample multi-thread callers.
          
          \item
-         \textit{vcfModifier/splitVcf.py} to handle multi-allelic calls better for indels. 
+         \textit{vcf_modifier/splitVcf.py} to handle multi-allelic calls better for indels. 
          
         \end{itemize}
 
@@ -1532,7 +1532,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
             
             \item Used \textit{shell=True} option in many \textit{subprocess.call} instances, to allow more complicated arguments to be passed into, e.g., \textit{\texttt{--}action 'qsub -l walltime=100:00:00'}.
             
-            \item Moved utilities, genomicFileHandler, and vcfModifier directories into somaticseq/somaticseq to prevent potential package conflicts.
+            \item Moved utilities, genomic_file_parsers, and vcf_modifier directories into somaticseq/somaticseq to prevent potential package conflicts.
             
             \item Modified \textit{somaticseq/annotate\_caller.py} to handle cases where Strelka's VCF file does not have the SomaticEVS field. 
             
@@ -1542,7 +1542,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
 	\item Version 3.7.0
 	
         \begin{itemize}
-            \item Allow input of any arbitrary VCF files in addition to the callers we have already incorporated (listed in Introduction), e.g., \textit{\texttt{--}arbitrary-snvs callerX\_snv.vcf callerY\_snv.vcf \texttt{--}arbitrary-indels callerA\_indel.vcf callerB\_indel.vcf}. Must seperate the SNVs and indels into separate VCF files before using them as input to SomaticSeq. If you have a VCF file that has combined SNV and indels, you may use this script included in our repo: \textit{somaticseq/somaticseq/vcfModifier/splitVcf.py -infile combined\_variants.vcf -snv snvs.vcf -indel indels.vcf}. Input can be both \textit{.vcf} or \textit{.vcf.gz}. Output will be .vcf. For the ``arbitrary input VCF files,'' calls labeled as REJECT in the FILTER field will not be counted and will be assigned a value of 0 in the \textit{if\_Caller\_X} field. Calls labeled as LowQual will be assigned a value of 0.1. Calls without any filter label will be counted as a bona fide call for that particular VCF file and assigned a value of 1, i.e., as though it is a PASS call. So modify your VCF files accordigly if needed.
+            \item Allow input of any arbitrary VCF files in addition to the callers we have already incorporated (listed in Introduction), e.g., \textit{\texttt{--}arbitrary-snvs callerX\_snv.vcf callerY\_snv.vcf \texttt{--}arbitrary-indels callerA\_indel.vcf callerB\_indel.vcf}. Must seperate the SNVs and indels into separate VCF files before using them as input to SomaticSeq. If you have a VCF file that has combined SNV and indels, you may use this script included in our repo: \textit{somaticseq/somaticseq/vcf_modifier/splitVcf.py -infile combined\_variants.vcf -snv snvs.vcf -indel indels.vcf}. Input can be both \textit{.vcf} or \textit{.vcf.gz}. Output will be .vcf. For the ``arbitrary input VCF files,'' calls labeled as REJECT in the FILTER field will not be counted and will be assigned a value of 0 in the \textit{if\_Caller\_X} field. Calls labeled as LowQual will be assigned a value of 0.1. Calls without any filter label will be counted as a bona fide call for that particular VCF file and assigned a value of 1, i.e., as though it is a PASS call. So modify your VCF files accordigly if needed.
             
             \item Changed \textit{intersectBed} to \textit{bedtools intersect} in some of the shell commands.
             
@@ -1561,7 +1561,7 @@ Make sure training and prediction use the same SomaticSeq version, or at least m
         \begin{itemize}
             \item Change \textit{-u \$UID} to \textit{-u \$(id -u):\$(id -g)} for docker command in \textit{somaticseq/utilities/dockered\_pipelines/container\_option.py}.
             
-            \item Most robustly check sorting order when VCF files are being read. Raise Exception when they are not sorted according to the reference (implemented in the \textit{catchup\_multilines} function in \textit{somaticseq/genomicFileHandler/genomic\_file\_handlers.py}).
+            \item Most robustly check sorting order when VCF files are being read. Raise Exception when they are not sorted according to the reference (implemented in the \textit{catchup\_multilines} function in \textit{somaticseq/genomic_file_parsers/genomic\_file\_handlers.py}).
         \end{itemize}
         
         

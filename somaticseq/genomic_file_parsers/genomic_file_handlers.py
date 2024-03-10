@@ -1,12 +1,11 @@
-#!/usr/bin/env python3
-
 import gzip
 import io
 import math
 import re
 from functools import cached_property
-from pydantic import BaseModel
 from typing import Any, Literal
+
+from pydantic import BaseModel
 from pysam import AlignmentFile
 
 # The regular expression pattern for "chrXX 1234567" in both VarScan2 Output and
@@ -105,10 +104,12 @@ class VCFVariantRecord(BaseModel):
             key_item = self.info.split(";")
             return True if variable in key_item else False
 
-    def get_sample_variable(self):
+    def get_sample_variable(self) -> list[str]:
         return self.field.split(":")
 
-    def get_sample_item(self, idx: int = 0, out_type: Literal["dict", "list"] = "dict"):
+    def get_sample_item(
+        self, idx: int = 0, out_type: Literal["dict", "list"] = "dict"
+    ) -> dict[str, str] | tuple[list[str], list[str]]:
         """d to output a dictionary. l to output a tuple of lists"""
         assert self.samples
         if out_type.lower() == "dict":
@@ -116,7 +117,7 @@ class VCFVariantRecord(BaseModel):
         elif out_type.lower() == "list":
             return (self.get_sample_variable(), self.samples[idx].split(":"))
 
-    def get_sample_value(self, variable: str, idx: int = 0):
+    def get_sample_value(self, variable: str, idx: int = 0) -> dict[str, str]:
         assert self.field
         assert self.samples
         var2value = dict(zip(self.field.split(":"), self.samples[idx].split(":")))

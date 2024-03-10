@@ -8,8 +8,8 @@
 import argparse
 from copy import copy
 
-import somaticseq.genomicFileHandler.genomic_file_handlers as genome
-import somaticseq.vcfModifier.complex2indel as complex2indel
+import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
+import somaticseq.vcf_modifier.complex2indel as complex2indel
 
 
 def run():

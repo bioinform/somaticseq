@@ -4,8 +4,8 @@ import argparse
 import os
 import re
 import subprocess
-from typing import Any, Literal
 from datetime import datetime
+from typing import Any, Literal
 
 import somaticseq.utilities.dockered_pipelines.container_option as container
 from somaticseq._version import __version__ as VERSION

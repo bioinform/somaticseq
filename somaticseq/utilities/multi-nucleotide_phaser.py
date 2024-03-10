@@ -7,8 +7,8 @@ import itertools
 
 import pysam
 
-import somaticseq.genomicFileHandler.genomic_file_handlers as genome
-from somaticseq.genomicFileHandler.read_info_extractor import (
+import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
+from somaticseq.genomic_file_parsers.read_info_extractor import (
     position_of_aligned_read,
 )
 

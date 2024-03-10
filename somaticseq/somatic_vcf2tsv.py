@@ -11,10 +11,10 @@ import pysam
 import scipy.stats as stats
 
 import somaticseq.annotate_caller as annotate_caller
-import somaticseq.genomicFileHandler.genomic_file_handlers as genome
+import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 import somaticseq.sequencing_features as sequencing_features
 from somaticseq.bam_features import BamFeatures
-from somaticseq.genomicFileHandler.read_info_extractor import (
+from somaticseq.genomic_file_parsers.read_info_extractor import (
     genomic_coordinates,
     rescale,
 )
@@ -762,9 +762,9 @@ def vcf2tsv(
                         ) = annotate_caller.VarDict(variant_id, vardict_variants)
                         num_callers += vardict_classification
                     else:
-                        vardict_classification = (
-                            msi
-                        ) = msilen = shift3 = score_vardict = nan
+                        vardict_classification = msi = msilen = shift3 = (
+                            score_vardict
+                        ) = nan
 
                     if muse:
                         muse_classification = annotate_caller.MuSE(

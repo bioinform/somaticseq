@@ -3,7 +3,7 @@
 import argparse
 import re
 
-import somaticseq.genomicFileHandler.genomic_file_handlers as genome
+import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("-infile", "--vcf-in", type=str, help="VCF in", required=True)

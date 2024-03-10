@@ -1,4 +1,4 @@
-import somaticseq.genomicFileHandler.genomic_file_handlers as genome
+import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 CIGAR_ALN_MATCH = 0
 CIGAR_INSERTION = 1

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
 import os
-from typing import Literal
 from functools import partial
 from multiprocessing import Pool
 from shutil import rmtree
+from typing import Literal
 
-import somaticseq.genomicFileHandler.concat as concat
+import somaticseq.genomic_file_parsers.concat as concat
 import somaticseq.run_somaticseq as run_somaticseq
-import somaticseq.utilities.split_Bed_into_equal_regions as split_bed
+import somaticseq.utilities.split_bed_into_equal_regions as split_bed
 
 
 def split_regions(

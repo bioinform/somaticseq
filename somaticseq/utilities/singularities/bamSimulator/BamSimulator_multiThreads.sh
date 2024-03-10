@@ -226,10 +226,10 @@ fi
 
 if [[ `which python3` ]]
 then
-     $MYDIR/../../split_Bed_into_equal_regions.py -infile ${parent_outdir}/genome.bed -num $threads -outfiles ${parent_outdir}/bed
+     $MYDIR/../../split_bed_into_equal_regions.py -infile ${parent_outdir}/genome.bed -num $threads -outfiles ${parent_outdir}/bed
 else
     singularity exec --bind /:/mnt   docker://lethalfang/somaticseq:${VERSION} \
-    /opt/somaticseq/somaticseq/utilities/split_Bed_into_equal_regions.py \
+    /opt/somaticseq/somaticseq/utilities/split_bed_into_equal_regions.py \
     -infile /mnt/${parent_outdir}/genome.bed -num $threads -outfiles /mnt/${parent_outdir}/bed
 fi
 

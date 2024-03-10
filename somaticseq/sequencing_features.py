@@ -1,5 +1,6 @@
 import pysam
-import somaticseq.genomicFileHandler.genomic_file_handlers as genome
+
+import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 nan = float("nan")
 

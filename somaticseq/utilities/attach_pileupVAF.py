@@ -6,8 +6,8 @@ import argparse
 import re
 import sys
 
-import somaticseq.genomicFileHandler.genomic_file_handlers as genome
-import somaticseq.genomicFileHandler.pileup_reader as pileup
+import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
+import somaticseq.genomic_file_parsers.pileup_reader as pileup
 
 nan = float("nan")
 inf = float("inf")

@@ -169,11 +169,9 @@ class Base_calls(Pileup_line):
         base_calls = seq(self.reads)
 
         ref_forward_count = ref_reverse_count = 0
-        n_count = (
-            a_count
-        ) = (
-            c_count
-        ) = g_count = t_count = N_count = A_count = C_count = G_count = T_count = 0
+        n_count = a_count = c_count = g_count = t_count = N_count = A_count = (
+            C_count
+        ) = G_count = T_count = 0
         del_forward = []
         del_reverse = []
         ins_forward = []

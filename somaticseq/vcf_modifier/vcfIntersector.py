@@ -5,7 +5,7 @@ import re
 import subprocess
 import uuid
 
-import somaticseq.genomicFileHandler.genomic_file_handlers as genome
+import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 
 def remove_vcf_illegal_lines(invcf, outvcf):
