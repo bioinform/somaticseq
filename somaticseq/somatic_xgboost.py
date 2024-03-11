@@ -3,7 +3,7 @@
 import argparse
 import logging
 from copy import copy
-
+from typing import Any
 import pandas as pd
 import xgboost as xgb
 
@@ -36,18 +36,26 @@ NON_FEATURE = [
     "COSMIC_CNT",
     "TrueVariant_or_False",
 ]
-
 DEFAULT_XGB_BOOST_ROUNDS = 500
 DEFAULT_NUM_TREES_PREDICT = 100
 
 
-def param_list_to_dict(param_list, existing_param_dict=DEFAULT_PARAM):
+def param_list_to_dict(
+    param_list: str,
+    existing_param_dict: dict[str, Any] = DEFAULT_PARAM
+) -> dict[str, Any]:
     """
-    param_list is what will be passed from the CLI, e.g.,
-    ['scale_pos_weight:0.8', 'seed:42'] If the value is integer, float, bool,
-    etc., it will be eval'ed as such. Otherwise, it'll remain as a string.
-    """
+    Args:
+        param_list: this is what will be passed from the CLI, e.g.,
+            ["scale_pos_weight:0.8", "seed:42"]. If the value is integer, float,
+            bool, etc., it will be eval'ed as such. Otherwise, it'll remain as a
+            string.
+        existing_param_dict: a pre-existing set of params and their values
+            before being modifed by param_list
 
+    Returns:
+        An updated params dict
+    """
     updated_param_dict = copy(existing_param_dict)
     for param_string in param_list:
         param_i, value_i = param_string.split(":")
@@ -67,11 +75,9 @@ def save_feature_importance_to_file(xgb_model, filename):
     feature_cover = xgb_model.get_score(importance_type="cover")
     feature_total_gain = xgb_model.get_score(importance_type="total_gain")
     feature_total_cover = xgb_model.get_score(importance_type="total_cover")
-
     line_i = "{}\t{}\t{}\t{}\t{}\t{}\n".format(
         "FEATURE", "GAIN", "WEIGHT", "COVER", "TOTAL_GAIN", "TOTAL_COVER"
     )
-
     with open(filename, "w") as fout:
         fout.write(line_i)
 
@@ -85,24 +91,37 @@ def save_feature_importance_to_file(xgb_model, filename):
                 feature_total_cover[feature_i],
             )
             fout.write(line_i)
-
     return True
 
 
 def builder(
-    input_tsvs,
-    param=DEFAULT_PARAM,
-    non_feature=NON_FEATURE,
-    num_rounds=DEFAULT_XGB_BOOST_ROUNDS,
-    model=None,
-):
+    input_tsvs: list[str],
+    param: dict[str, Any] = DEFAULT_PARAM,
+    non_feature: list[str] = NON_FEATURE,
+    num_rounds: int = DEFAULT_XGB_BOOST_ROUNDS,
+    model: str | None = None,
+) -> str:
+    """
+    Build SomaticSeq's somatic mutation classifiers
+
+    Args:
+        input_tsvs: a list of labeled training data sets
+        params: hyperparameters for model training
+        non_features: list of columns in the tsvs not to be used as training.
+            Those typically include chromosome coordinates and the data label.
+        num_rounds: number of boosting rounds
+        model: the output classifier file name. If None, will use input file
+            name as basename.
+    Returns:
+        The classifier file path
+    """
     logger = logging.getLogger("xgboost_" + builder.__name__)
     logger.info("TRAINING {} for XGBOOST".format(",".join(input_tsvs)))
     logger.info("Columns removed before training: {}".format(", ".join(non_feature)))
     logger.info(f"Number of boosting rounds = {num_rounds}")
     logger.info("Hyperparameters: " + ", ".join([f"{i}={param[i]}" for i in param]))
 
-    if not model:
+    if model is None:
         model = input_tsvs[0] + f".xgb.v{__version__}.classifier"
 
     input_data = pd.concat(
@@ -111,7 +130,6 @@ def builder(
             for input_tsv_i in input_tsvs
         ]
     )
-
     train_data = ntchange.ntchange(input_data)
     for non_feature_i in non_feature:
         if non_feature_i in train_data:
@@ -122,12 +140,9 @@ def builder(
                 axis=1,
                 inplace=True,
             )
-
     train_label = input_data["TrueVariant_or_False"]
-
     dtrain = xgb.DMatrix(train_data, label=train_label)
     bst = xgb.train(param, dtrain, num_boost_round=num_rounds)
-
     bst.save_model(model)
     bst.dump_model(model + ".txt")
     save_feature_importance_to_file(bst, model + ".feature_importance.txt")
@@ -136,12 +151,26 @@ def builder(
 
 
 def predictor(
-    model,
-    input_tsv,
-    output_tsv,
-    non_feature=NON_FEATURE,
-    iterations=DEFAULT_NUM_TREES_PREDICT,
-):
+    model: str,
+    input_tsv: str,
+    output_tsv: str,
+    non_feature: list[str] = NON_FEATURE,
+    iterations: int = DEFAULT_NUM_TREES_PREDICT,
+) -> str:
+    """
+    Uses an existing SomaticSeq classifier to predict somatic mutations
+
+    Args:
+        model: path to the existing SomaticSeq classifier
+        input_tsv: the SomaticSeq tsv file for which to classify somatic
+            mutation status
+        output_tsv: adds predicted label to the input_tsv above
+        non_feature: features to exclude from input_tsv
+        iterations: number of trees to use from the model
+
+    Returns:
+        output_tsv file path
+    """
     logger = logging.getLogger("xgboost_" + predictor.__name__)
     logger.info("Columns removed for prediction: {}".format(",".join(non_feature)))
     logger.info(f"Number of trees to use = {iterations}")
@@ -151,7 +180,7 @@ def predictor(
 
     # Read in chunks, start with write/Header, and append/NoHeader afterwards.
     chunksize = 10000
-    writeMode, writeHeader = "w", True
+    write_or_append, write_header_or_not = "w", True
 
     for input_data in pd.read_csv(
         input_tsv, sep="\t", chunksize=chunksize, low_memory=False
@@ -169,12 +198,11 @@ def predictor(
             output_tsv,
             sep="\t",
             index=False,
-            mode=writeMode,
-            header=writeHeader,
+            mode=write_or_append,
+            header=write_header_or_not,
             na_rep="nan",
         )
-
-        writeMode, writeHeader = "a", False
+        write_or_append, write_header_or_not = "a", False
 
     return output_tsv
 
@@ -185,7 +213,6 @@ if __name__ == "__main__":
         description="Run XGBoost",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-
     sample_parsers = parser.add_subparsers(title="mode")
 
     # TRAINING mode
@@ -261,45 +288,37 @@ if __name__ == "__main__":
         default=[],
     )
     parser_predict.set_defaults(which="predict")
-
     args = parser.parse_args()
 
     if args.which == "train":
         PARAM = copy(DEFAULT_PARAM)
-
         if args.num_threads:
             PARAM["nthread"] = args.num_threads
-
         if args.max_depth:
             PARAM["max_depth"] = args.max_depth
-
         if args.tree_method:
             PARAM["seed"] = args.seed
-
         if args.tree_method:
             PARAM["tree_method"] = args.tree_method
-
         # If they're integers, floats, bools, etc., they will be eval'ed to them.
         # If they're strings, they're remain strings.
         if args.extra_params:
             PARAM = param_list_to_dict(args.extra_params, PARAM)
-
         for feature_i in args.features_excluded:
             NON_FEATURE.append(feature_i)
 
-        _ = builder(
+        builder(
             args.tsvs_in,
             param=PARAM,
             non_feature=NON_FEATURE,
             num_rounds=args.num_boost_rounds,
             model=args.model_out,
         )
-
     elif args.which == "predict":
         for feature_i in args.features_excluded:
             NON_FEATURE.append(feature_i)
 
-        _ = predictor(
+        predictor(
             args.model,
             args.tsv_in,
             args.predicted_tsv,

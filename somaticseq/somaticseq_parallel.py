@@ -149,6 +149,9 @@ def run_paired_mode_by_region(
         train_seed: seed for training
         tree_depth: tree depth for model building
         iterations: number of trees to build for classifier
+
+    Returns:
+        output directory
     """
     basename = inclusion.split(os.sep)[-1].split(".")[0]
     outdir_i = os.path.join(outdir, basename)
@@ -249,6 +252,9 @@ def run_single_mode_by_region(
     features_excluded: list[str] = [],
     hyperparameters: list[str] | None = None,
 ) -> str:
+    """
+    Tumor-only version of run_paired_mode_by_region.
+    """
     basename = inclusion.split(os.sep)[-1].split(".")[0]
     outdir_i = outdir + os.sep + basename
     os.makedirs(outdir_i, exist_ok=True)

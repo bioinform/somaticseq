@@ -37,29 +37,26 @@ def run():
         default=sys.stdout,
     )
     args = parser.parse_args()
-    infile = args.input_file
-    outfiles = args.output_files
-    num = args.num_of_files
-    return infile, outfiles, num
+    return args.input_file, args.output_files, args.num_of_files
 
 
 def fai2bed(fai: str, bedout: str) -> str:
     """Create a whole genome bed file based on .fai file."""
-    with open(fai) as fai, open(bedout, "w") as bed:
-        fai_i = fai.readline().rstrip()
+    with open(fai) as fai_h, open(bedout, "w") as bed_h:
+        fai_i = fai_h.readline().rstrip()
         while fai_i:
             fai_item = fai_i.split("\t")
-            bed.write(f"{fai_item[0]}\t0\t{fai_item[1]}\n")
-            fai_i = fai.readline().rstrip()
+            bed_h.write(f"{fai_item[0]}\t0\t{fai_item[1]}\n")
+            fai_i = fai_h.readline().rstrip()
     return bedout
 
 
-def split(infile, outfiles, num) -> list[str]:
+def split(infile: str, outfiles: str, num: int) -> list[str]:
     """Split a bed file into n bed files of equal-sized regions
 
     Args:
         infile: input bed file
-        outfiles: output bed files to which n. will be appended to its basename,
+        outfiles: output bed files to which "n." will be appended to its basename,
             e.g., if outfiles="/PATH/TO/important_regions.bed", the output bed files
             written will be /PATH/TO/1.important_regions.bed,
             /PATH/TO/2.important_regions.bed, etc.
