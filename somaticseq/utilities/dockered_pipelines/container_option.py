@@ -2,6 +2,7 @@ import os
 import uuid
 from pathlib import Path
 from typing import Literal
+
 from somaticseq._version import __version__ as VERSION
 
 DOCKER_IMAGES = {
