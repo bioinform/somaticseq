@@ -1,7 +1,6 @@
 *.pyc
 .DS_Store
 __pycache__
-test.*
 Manual.aux
 Manual.bbl
 Manual.blg
@@ -13,4 +12,3 @@ dist
 build
 .vscode/
 .made
-Makefile
