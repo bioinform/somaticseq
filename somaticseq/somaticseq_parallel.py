@@ -328,7 +328,7 @@ if __name__ == "__main__":
     pool = Pool(processes=args.threads)
 
     if args.which == "paired":
-        runPaired_by_region_i = partial(
+        run_paired_by_region_i = partial(
             run_paired_mode_by_region,
             outdir=args.output_directory,
             ref=args.genome_reference,
@@ -377,11 +377,11 @@ if __name__ == "__main__":
             hyperparameters=args.extra_hyperparameters,
             keep_intermediates=args.keep_intermediates,
         )
-        subdirs = pool.map(runPaired_by_region_i, bed_splitted)
+        subdirs = pool.map(run_paired_by_region_i, bed_splitted)
         pool.close()
 
     elif args.which == "single":
-        runSingle_by_region_i = partial(
+        run_single_by_region_i = partial(
             run_single_mode_by_region,
             outdir=args.output_directory,
             ref=args.genome_reference,
@@ -419,7 +419,7 @@ if __name__ == "__main__":
             hyperparameters=args.extra_hyperparameters,
             keep_intermediates=args.keep_intermediates,
         )
-        subdirs = pool.map(runSingle_by_region_i, bed_splitted)
+        subdirs = pool.map(run_single_by_region_i, bed_splitted)
         pool.close()
 
     run_somaticseq.logger.info("Sub-directories created: {}".format(", ".join(subdirs)))

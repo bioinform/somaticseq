@@ -68,7 +68,7 @@ def get_homopolymer_lengths(
     return homopolymer_length, site_homopolymer_length
 
 
-def somaticOddRatio(
+def somatic_odds_ratio(
     n_ref: int, n_alt: int, t_ref: int, t_alt: int, max_value: float = 100
 ) -> float:
     # Odds Ratio just like VarDict's output
@@ -165,7 +165,7 @@ def ling_seq_complexity_with_max_vocab_length(
     number_of_subseqs = 0
     seq_length = len(sequence)
     max_number_of_subseqs = max_sub_vocabularies(seq_length, max_substring_length)
-    set_of_seq_n = set()
+    set_of_seq_n: set[str] = set()
     for i in range(1, min(max_substring_length + 1, seq_length + 1)):
         set_of_seq_n.update(sequence[n : n + i] for n in range(len(sequence) - i + 1))
     number_of_subseqs = len(set_of_seq_n)

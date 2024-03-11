@@ -4,6 +4,7 @@ import argparse
 import logging
 from copy import copy
 from typing import Any
+
 import pandas as pd
 import xgboost as xgb
 
@@ -41,8 +42,7 @@ DEFAULT_NUM_TREES_PREDICT = 100
 
 
 def param_list_to_dict(
-    param_list: str,
-    existing_param_dict: dict[str, Any] = DEFAULT_PARAM
+    param_list: list[str], existing_param_dict: dict[str, Any] = DEFAULT_PARAM
 ) -> dict[str, Any]:
     """
     Args:

@@ -887,7 +887,7 @@ def vcf2tsv(
                             tbam_feature.alt_call_forward
                             + tbam_feature.alt_call_reverse
                         )
-                        sor = sequencing_features.somaticOddRatio(
+                        sor = sequencing_features.somatic_odds_ratio(
                             n_ref, n_alt, t_ref, t_alt
                         )
 
