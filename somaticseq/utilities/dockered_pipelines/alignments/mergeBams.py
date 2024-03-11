@@ -36,18 +36,20 @@ def picard(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=Fal
     all_paths = list(inbams) + [
         outbam,
     ]
-    merge_line, fileDict = container.container_params(
+    merge_line, file_dictionary = container.container_params(
         input_parameters["picard_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
 
-    mounted_outbam = fileDict[outbam]["mount_path"]
+    mounted_outbam = file_dictionary[outbam]["mount_path"]
 
     infile_string = ""
     for file_i in inbams:
-        infile_string = infile_string + "I={} ".format(fileDict[file_i]["mount_path"])
+        infile_string = infile_string + "I={} ".format(
+            file_dictionary[file_i]["mount_path"]
+        )
 
     picard_index_file = re.sub(r"m$", "i", outbam)
 
@@ -106,15 +108,17 @@ def sambamba(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=F
     all_paths = list(inbams) + [
         outbam,
     ]
-    merge_line, fileDict = container.container_params(
+    merge_line, file_dictionary = container.container_params(
         input_parameters["sambamba_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
 
-    mounted_outbam = fileDict[outbam]["mount_path"]
-    infile_string = " ".join([fileDict[file_i]["mount_path"] for file_i in inbams])
+    mounted_outbam = file_dictionary[outbam]["mount_path"]
+    infile_string = " ".join(
+        [file_dictionary[file_i]["mount_path"] for file_i in inbams]
+    )
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")

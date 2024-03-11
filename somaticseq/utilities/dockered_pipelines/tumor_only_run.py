@@ -248,18 +248,18 @@ def run_SomaticSeq(
         if path_i:
             all_paths.append(path_i)
 
-    container_line, fileDict = container.container_params(
+    container_line, file_dictionary = container.container_params(
         f"lethalfang/somaticseq:{VERSION}",
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = fileDict[input_parameters["genome_reference"]][
+    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
         "mount_path"
     ]
-    mounted_tumor_bam = fileDict[input_parameters["bam"]]["mount_path"]
-    mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
+    mounted_tumor_bam = file_dictionary[input_parameters["bam"]]["mount_path"]
+    mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
 
     outdir = os.path.join(
         input_parameters["output_directory"], input_parameters["somaticseq_directory"]
@@ -300,23 +300,25 @@ def run_SomaticSeq(
         out.write(f"--genome-reference {mounted_genome_reference} \\\n")
 
         if input_parameters["inclusion_region"]:
-            mounted_inclusion = fileDict[input_parameters["inclusion_region"]][
+            mounted_inclusion = file_dictionary[input_parameters["inclusion_region"]][
                 "mount_path"
             ]
             out.write(f"--inclusion-region {mounted_inclusion} \\\n")
 
         if input_parameters["exclusion_region"]:
-            mounted_exclusion = fileDict[input_parameters["exclusion_region"]][
+            mounted_exclusion = file_dictionary[input_parameters["exclusion_region"]][
                 "mount_path"
             ]
             out.write(f"--exclusion-region {mounted_exclusion} \\\n")
 
         if input_parameters["cosmic_vcf"]:
-            mounted_cosmic = fileDict[input_parameters["cosmic_vcf"]]["mount_path"]
+            mounted_cosmic = file_dictionary[input_parameters["cosmic_vcf"]][
+                "mount_path"
+            ]
             out.write(f"--cosmic-vcf {mounted_cosmic} \\\n")
 
         if input_parameters["dbsnp_vcf"]:
-            mounted_dbsnp = fileDict[input_parameters["dbsnp_vcf"]]["mount_path"]
+            mounted_dbsnp = file_dictionary[input_parameters["dbsnp_vcf"]]["mount_path"]
             out.write(f"--dbsnp-vcf {mounted_dbsnp} \\\n")
 
         if input_parameters["snv_classifier"] or input_parameters["indel_classifier"]:
@@ -326,25 +328,29 @@ def run_SomaticSeq(
             if input_parameters["snv_classifier"]:
                 out.write(
                     "--classifier-snv {} \\\n".format(
-                        fileDict[input_parameters["snv_classifier"]]["mount_path"]
+                        file_dictionary[input_parameters["snv_classifier"]][
+                            "mount_path"
+                        ]
                     )
                 )
             if input_parameters["indel_classifier"]:
                 out.write(
                     "--classifier-indel {} \\\n".format(
-                        fileDict[input_parameters["indel_classifier"]]["mount_path"]
+                        file_dictionary[input_parameters["indel_classifier"]][
+                            "mount_path"
+                        ]
                     )
                 )
         if input_parameters["truth_snv"]:
             out.write(
                 "--truth-snv {} \\\n".format(
-                    fileDict[input_parameters["truth_snv"]]["mount_path"]
+                    file_dictionary[input_parameters["truth_snv"]]["mount_path"]
                 )
             )
         if input_parameters["truth_indel"]:
             out.write(
                 "--truth-indel {} \\\n".format(
-                    fileDict[input_parameters["truth_indel"]]["mount_path"]
+                    file_dictionary[input_parameters["truth_indel"]]["mount_path"]
                 )
             )
         if input_parameters["somaticseq_algorithm"]:
@@ -416,14 +422,14 @@ def merge_results(
         if path_i:
             all_paths.append(path_i)
 
-    container_line, fileDict = container.container_params(
+    container_line, file_dictionary = container.container_params(
         f"lethalfang/somaticseq:{VERSION}",
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
     # Mounted paths for all the input files and output directory:
-    mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
+    mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
 
     prjdir = input_parameters["output_directory"]
     logdir = os.path.join(prjdir, "logs")

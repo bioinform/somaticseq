@@ -33,16 +33,18 @@ def spread(
     outfile = os.path.join(logdir, input_parameters["script"])
 
     all_paths = list(in_fastqs) + list(out_fastqs)
-    spread_line, fileDict = container.container_params(
+    spread_line, file_dictionary = container.container_params(
         input_parameters["somaticseq_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
 
-    infastq_string = " ".join([fileDict[file_i]["mount_path"] for file_i in in_fastqs])
+    infastq_string = " ".join(
+        [file_dictionary[file_i]["mount_path"] for file_i in in_fastqs]
+    )
     outfastq_string = " ".join(
-        [fileDict[file_i]["mount_path"] for file_i in out_fastqs]
+        [file_dictionary[file_i]["mount_path"] for file_i in out_fastqs]
     )
 
     with open(outfile, "w") as out:

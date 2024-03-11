@@ -52,7 +52,7 @@ def bwa(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    bwa_line, fileDict = container.container_params(
+    bwa_line, file_dictionary = container.container_params(
         input_parameters["bwa_image"],
         tech=tech,
         files=all_paths,
@@ -60,10 +60,12 @@ def bwa(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
-    mounted_reference = fileDict[input_parameters["genome_reference"]]["mount_path"]
-    mounted_fq1 = fileDict[input_parameters["in_fastq1"]]["mount_path"]
-    mounted_fq2 = fileDict[input_parameters["in_fastq2"]]["mount_path"]
+    mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
+    mounted_reference = file_dictionary[input_parameters["genome_reference"]][
+        "mount_path"
+    ]
+    mounted_fq1 = file_dictionary[input_parameters["in_fastq1"]]["mount_path"]
+    mounted_fq2 = file_dictionary[input_parameters["in_fastq2"]]["mount_path"]
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")

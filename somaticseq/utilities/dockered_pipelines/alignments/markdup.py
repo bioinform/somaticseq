@@ -69,7 +69,7 @@ def picard(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    markdup_line, fileDict = container.container_params(
+    markdup_line, file_dictionary = container.container_params(
         input_parameters["picard_image"],
         tech=tech,
         files=all_paths,
@@ -85,8 +85,8 @@ def picard(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
-    mounted_inbam = fileDict[input_parameters["in_bam"]]["mount_path"]
+    mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
+    mounted_inbam = file_dictionary[input_parameters["in_bam"]]["mount_path"]
 
     tempdir = uuid.uuid4().hex
     with open(outfile, "w") as out:
@@ -119,7 +119,8 @@ def picard(input_parameters, tech="docker"):
                 re.sub(
                     r"\.(bam|cram)",
                     "",
-                    fileDict[input_parameters["in_bam"]]["filename"] + ".markdup",
+                    file_dictionary[input_parameters["in_bam"]]["filename"]
+                    + ".markdup",
                 ),
             )
         )
@@ -165,7 +166,7 @@ def sambamba(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    markdup_line, fileDict = container.container_params(
+    markdup_line, file_dictionary = container.container_params(
         input_parameters["sambamba_image"],
         tech=tech,
         files=all_paths,
@@ -173,8 +174,8 @@ def sambamba(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
-    mounted_inbam = fileDict[input_parameters["in_bam"]]["mount_path"]
+    mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
+    mounted_inbam = file_dictionary[input_parameters["in_bam"]]["mount_path"]
 
     tempdir = uuid.uuid4().hex
     with open(outfile, "w") as out:

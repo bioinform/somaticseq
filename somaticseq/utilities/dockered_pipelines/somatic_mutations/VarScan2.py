@@ -50,7 +50,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, fileDict = container.container_params(
+    container_line, file_dictionary = container.container_params(
         input_parameters["varscan2_image"],
         tech=tech,
         files=all_paths,
@@ -64,10 +64,10 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    fileDict[input_parameters["genome_reference"]]["mount_path"]
-    fileDict[input_parameters["tumor_bam"]]["mount_path"]
-    fileDict[input_parameters["normal_bam"]]["mount_path"]
-    mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
+    file_dictionary[input_parameters["genome_reference"]]["mount_path"]
+    file_dictionary[input_parameters["tumor_bam"]]["mount_path"]
+    file_dictionary[input_parameters["normal_bam"]]["mount_path"]
+    mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
 
     # Mounted paths for mpileup dockers
     pl_genome_reference = plDict[input_parameters["genome_reference"]]["mount_path"]
@@ -199,7 +199,7 @@ def tumor_only(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, fileDict = container.container_params(
+    container_line, file_dictionary = container.container_params(
         input_parameters["varscan2_image"],
         tech=tech,
         files=all_paths,
@@ -213,9 +213,9 @@ def tumor_only(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    fileDict[input_parameters["genome_reference"]]["mount_path"]
-    fileDict[input_parameters["bam"]]["mount_path"]
-    mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
+    file_dictionary[input_parameters["genome_reference"]]["mount_path"]
+    file_dictionary[input_parameters["bam"]]["mount_path"]
+    mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
 
     # Mounted paths for mpileup dockers
     pl_genome_reference = plDict[input_parameters["genome_reference"]]["mount_path"]

@@ -52,7 +52,7 @@ def tumor_normal(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, fileDict = container.container_params(
+    container_line, file_dictionary = container.container_params(
         input_parameters["scalpel_image"],
         tech=tech,
         files=all_paths,
@@ -60,14 +60,18 @@ def tumor_normal(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = fileDict[input_parameters["genome_reference"]][
+    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
         "mount_path"
     ]
-    mounted_tumor_bam = fileDict[input_parameters["tumor_bam"]]["mount_path"]
-    mounted_normal_bam = fileDict[input_parameters["normal_bam"]]["mount_path"]
-    mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
-    mounted_reference_dict = fileDict[input_parameters["reference_dict"]]["mount_path"]
-    mounted_inclusion = fileDict[input_parameters["inclusion_region"]]["mount_path"]
+    mounted_tumor_bam = file_dictionary[input_parameters["tumor_bam"]]["mount_path"]
+    mounted_normal_bam = file_dictionary[input_parameters["normal_bam"]]["mount_path"]
+    mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
+    mounted_reference_dict = file_dictionary[input_parameters["reference_dict"]][
+        "mount_path"
+    ]
+    mounted_inclusion = file_dictionary[input_parameters["inclusion_region"]][
+        "mount_path"
+    ]
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
@@ -143,7 +147,7 @@ def tumor_only(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, fileDict = container.container_params(
+    container_line, file_dictionary = container.container_params(
         input_parameters["scalpel_image"],
         tech=tech,
         files=all_paths,
@@ -151,13 +155,17 @@ def tumor_only(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = fileDict[input_parameters["genome_reference"]][
+    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
         "mount_path"
     ]
-    mounted_tumor_bam = fileDict[input_parameters["bam"]]["mount_path"]
-    mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
-    mounted_reference_dict = fileDict[input_parameters["reference_dict"]]["mount_path"]
-    mounted_inclusion = fileDict[input_parameters["inclusion_region"]]["mount_path"]
+    mounted_tumor_bam = file_dictionary[input_parameters["bam"]]["mount_path"]
+    mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
+    mounted_reference_dict = file_dictionary[input_parameters["reference_dict"]][
+        "mount_path"
+    ]
+    mounted_inclusion = file_dictionary[input_parameters["inclusion_region"]][
+        "mount_path"
+    ]
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")

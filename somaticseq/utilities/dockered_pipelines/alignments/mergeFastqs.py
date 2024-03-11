@@ -35,14 +35,16 @@ def gz(
     all_paths = list(infiles) + [
         outfq,
     ]
-    tabix_line, fileDict = container.container_params(
+    tabix_line, file_dictionary = container.container_params(
         input_parameters["tabix_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
-    mounted_outfile = fileDict[outfq]["mount_path"]
-    infile_string = " ".join([fileDict[file_i]["mount_path"] for file_i in infiles])
+    mounted_outfile = file_dictionary[outfq]["mount_path"]
+    infile_string = " ".join(
+        [file_dictionary[file_i]["mount_path"] for file_i in infiles]
+    )
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")

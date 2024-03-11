@@ -55,7 +55,7 @@ def alienTrimmer(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    trim_line, fileDict = container.container_params(
+    trim_line, file_dictionary = container.container_params(
         input_parameters["alienTrimmerImage"],
         tech=tech,
         files=all_paths,
@@ -63,7 +63,7 @@ def alienTrimmer(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
+    mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
 
     temporary_files = []
     with open(outfile, "w") as out:
@@ -128,10 +128,12 @@ def alienTrimmer(input_parameters, tech="docker"):
                 temporary_files.append(out_fastq_2)
 
         else:
-            mounted_fq1 = fileDict[input_parameters["in_fastq1"]]["mount_path"]
+            mounted_fq1 = file_dictionary[input_parameters["in_fastq1"]]["mount_path"]
 
             if paired_end:
-                mounted_fq2 = fileDict[input_parameters["in_fastq2"]]["mount_path"]
+                mounted_fq2 = file_dictionary[input_parameters["in_fastq2"]][
+                    "mount_path"
+                ]
 
         out.write(f"{trim_line} \\\n")
         out.write("/opt/AlienTrimmer_0.4.0/src/AlienTrimmer \\\n")
@@ -243,7 +245,7 @@ def trimmomatic(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    trim_line, fileDict = container.container_params(
+    trim_line, file_dictionary = container.container_params(
         input_parameters["trimmomaticImage"],
         tech=tech,
         files=all_paths,
@@ -251,9 +253,9 @@ def trimmomatic(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_outdir = fileDict[input_parameters["output_directory"]]["mount_path"]
-    mounted_fq1 = fileDict[input_parameters["in_fastq1"]]["mount_path"]
-    mounted_fq2 = fileDict[input_parameters["in_fastq2"]]["mount_path"]
+    mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
+    mounted_fq1 = file_dictionary[input_parameters["in_fastq1"]]["mount_path"]
+    mounted_fq2 = file_dictionary[input_parameters["in_fastq2"]]["mount_path"]
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
