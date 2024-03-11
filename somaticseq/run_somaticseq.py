@@ -755,11 +755,12 @@ def run_single_mode(
 
 def run():
     parser = argparse.ArgumentParser(
-        description="""SomaticSeq v{}: a method to combine results from multiple somatic mutation callers,
-        extract genomic and sequencing features for each variant call from the BAM files,
-        and then use machine learning to score the variants.
-        Publication URL https://doi.org/10.1186/s13059-015-0758-2""".format(
-            __version__
+        description=(
+            f"SomaticSeq v{__version__}: a method to combine results from multiple "
+            "somatic mutation callers, extract genomic and sequencing features for "
+            "each variant call from the BAM files, and then use machine learning to "
+            "score the variants. Publication URL "
+            "https://doi.org/10.1186/s13059-015-0758-2"
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -867,22 +868,26 @@ def run():
         "--iterations",
         type=int,
         help=(
-            "num boosting rounds for xgboost: default is 500 for training and 100 for predicting, i.e., "
-            "by default, 500 trees are built for classifier, but only the first 100 trees are used."
+            "num boosting rounds for xgboost: default is 500 for training and "
+            "100 for predicting, i.e., by default, 500 trees are built for "
+            "classifier, but only the first 100 trees are used."
         ),
     )
     parser.add_argument(
         "--features-excluded",
         type=str,
         nargs="*",
-        help="features to exclude for xgboost training. Must be same for train/predict.",
+        help="features to exclude for model. Must be same for train/predict.",
         default=[],
     )
     parser.add_argument(
         "--extra-hyperparameters",
         type=str,
         nargs="*",
-        help="extra xgboost training hyperparameters in format of PARAM_1:VALUE_1 PARAM_2:VALUE_2. Will overwrite defaults and other options.",
+        help=(
+            "extra xgboost training hyperparameters in format of "
+            "PARAM_1:VALUE_1 PARAM_2:VALUE_2. Will overwrite defaults and other options."
+        ),
         default=None,
     )
     parser.add_argument(
