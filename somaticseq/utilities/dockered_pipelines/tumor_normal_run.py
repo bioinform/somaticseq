@@ -306,7 +306,7 @@ def run_SomaticSeq(
         "truth_indel": None,
         "somaticseq_arguments": "",
         "train_somaticseq": False,
-        "somaticseq_algorithm": "xgboost",
+        "somaticseq_algorithm": ALGORITHM,
     }
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
@@ -510,7 +510,7 @@ def merge_results(
         "truth_indel": None,
         "somaticseq_arguments": "",
         "train_somaticseq": False,
-        "somaticseq_algorithm": "xgboost",
+        "somaticseq_algorithm": ALGORITHM,
     }
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
