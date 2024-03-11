@@ -116,8 +116,6 @@ def linguistic_sequence_complexity(sequence: str) -> float:
     seq_length = len(sequence)
     max_number_of_subseqs = max_vocabularies(seq_length)
     for i in range(1, seq_length + 1):
-        # max_vocab_1 = 4**i
-        # max_vocab_2 = seq_length - i + 1
         set_of_seq_n = set()
         for n, nth_base in enumerate(sequence):
             if n + i <= len(sequence):

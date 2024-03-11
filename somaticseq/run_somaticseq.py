@@ -12,14 +12,32 @@ import somaticseq.somatic_tsv2vcf as tsv2vcf
 import somaticseq.somatic_vcf2tsv as somatic_vcf2tsv
 import somaticseq.somatic_xgboost as somatic_xgboost
 from somaticseq._version import __version__
+from somaticseq.defaults import (
+    ALGORITHM,
+    CLASSIFIED_PREFIX,
+    CONSENSUS_PREFIX,
+    DEFAULT_NUM_TREES_PREDICT,
+    DEFAULT_XGB_BOOST_ROUNDS,
+    ENSEMBLE_PREFIX,
+    HETEROZYGOUS_FRAC,
+    HOMOZYGOUS_FRAC,
+    INDEL_TSV_SUFFIX,
+    INDEL_VCF_SUFFIX,
+    LOWQUAL_SCORE,
+    MIN_BASE_QUALITY,
+    MIN_CALLER,
+    MIN_MAPPING_QUALITY,
+    NORMAL_NAME,
+    PASS_SCORE,
+    SNV_TSV_SUFFIX,
+    SNV_VCF_SUFFIX,
+    TUMOR_NAME,
+)
 
 FORMAT = "%(levelname)s %(asctime)-15s %(name)-20s %(message)s"
 logger = logging.getLogger("SomaticSeq")
 logger.setLevel(logging.DEBUG)
 logging.basicConfig(level=logging.INFO, format=FORMAT)
-
-DEFAULT_XGB_BOOST_ROUNDS = 500
-DEFAULT_NUM_TREES_PREDICT = 100
 
 
 def model_trainer(
@@ -112,9 +130,9 @@ def run_paired_mode(
     truth_indel: str | None = None,
     classifier_snv: str | None = None,
     classifier_indel: str | None = None,
-    pass_threshold: float = 0.5,
-    lowqual_threshold: float = 0.1,
-    hom_threshold: float = 0.85,
+    pass_threshold: float = PASS_SCORE,
+    lowqual_threshold: float = LOWQUAL_SCORE,
+    hom_threshold: float = HOMOZYGOUS_FRAC,
     het_threshold: float = 0.01,
     dbsnp: str | None = None,
     cosmic: str | None = None,
@@ -138,14 +156,14 @@ def run_paired_mode(
     platypus: str | None = None,
     arb_snvs: list[str] | None = None,
     arb_indels: list[str] | None = None,
-    min_mq: float | int = 1,
-    min_bq: float | int = 5,
-    min_caller: float | int = 0.5,
+    min_mq: float | int = MIN_MAPPING_QUALITY,
+    min_bq: float | int = MIN_BASE_QUALITY,
+    min_caller: float | int = MIN_CALLER,
     somaticseq_train: bool = False,
-    ensemble_outfile_prefix: str = "Ensemble.",
-    consensus_outfile_prefix: str = "Consensus.",
-    classified_outfile_prefix: str = "SSeq.Classified.",
-    algo: Literal["xgboost", "ada"] = "xgboost",
+    ensemble_outfile_prefix: str = ENSEMBLE_PREFIX,
+    consensus_outfile_prefix: str = CONSENSUS_PREFIX,
+    classified_outfile_prefix: str = CLASSIFIED_PREFIX,
+    algo: Literal["xgboost", "ada"] = ALGORITHM,
     keep_intermediates: bool = False,
     train_seed: int = 0,
     tree_depth: int = 12,
@@ -242,8 +260,8 @@ def run_paired_mode(
     for i in tmp_files:
         files_to_delete.add(i)
 
-    ensemble_snv = os.sep.join((outdir, ensemble_outfile_prefix + "sSNV.tsv"))
-    ensemble_indel = os.sep.join((outdir, ensemble_outfile_prefix + "sINDEL.tsv"))
+    ensemble_snv = os.sep.join((outdir, ensemble_outfile_prefix + SNV_TSV_SUFFIX))
+    ensemble_indel = os.sep.join((outdir, ensemble_outfile_prefix + INDEL_TSV_SUFFIX))
     # SNV
     mutect_infile = (
         intermediate_vcfs["MuTect2"]["snv"]
@@ -281,10 +299,10 @@ def run_paired_mode(
     # Classify SNV calls
     if classifier_snv:
         classified_snv_tsv = os.sep.join(
-            (outdir, classified_outfile_prefix + "sSNV.tsv")
+            (outdir, classified_outfile_prefix + SNV_TSV_SUFFIX)
         )
         classified_snv_vcf = os.sep.join(
-            (outdir, classified_outfile_prefix + "sSNV.vcf")
+            (outdir, classified_outfile_prefix + SNV_VCF_SUFFIX)
         )
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
         model_predictor(
@@ -329,7 +347,9 @@ def run_paired_mode(
                 hyperparameters=hyperparameters,
             )
 
-        consensus_snv_vcf = os.sep.join((outdir, consensus_outfile_prefix + "sSNV.vcf"))
+        consensus_snv_vcf = os.sep.join(
+            (outdir, consensus_outfile_prefix + SNV_VCF_SUFFIX)
+        )
         tsv2vcf.tsv2vcf(
             ensemble_snv,
             consensus_snv_vcf,
@@ -375,10 +395,10 @@ def run_paired_mode(
     # Classify INDEL calls
     if classifier_indel:
         consensus_indel_tsv = os.sep.join(
-            (outdir, classified_outfile_prefix + "sINDEL.tsv")
+            (outdir, classified_outfile_prefix + INDEL_TSV_SUFFIX)
         )
         consensus_indel_vcf = os.sep.join(
-            (outdir, classified_outfile_prefix + "sINDEL.vcf")
+            (outdir, classified_outfile_prefix + INDEL_VCF_SUFFIX)
         )
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
         model_predictor(
@@ -423,7 +443,7 @@ def run_paired_mode(
                 hyperparameters=hyperparameters,
             )
         consensus_indel_vcf = os.sep.join(
-            (outdir, consensus_outfile_prefix + "sINDEL.vcf")
+            (outdir, consensus_outfile_prefix + INDEL_VCF_SUFFIX)
         )
         tsv2vcf.tsv2vcf(
             ensemble_indel,
@@ -448,14 +468,14 @@ def run_single_mode(
     outdir: str,
     ref: str,
     bam: str,
-    sample_name: str = "TUMOR",
+    sample_name: str = TUMOR_NAME,
     truth_snv: str | None = None,
     truth_indel: str | None = None,
     classifier_snv: str | None = None,
     classifier_indel: str | None = None,
-    pass_threshold: float = 0.5,
-    lowqual_threshold: float = 0.1,
-    hom_threshold: float = 0.85,
+    pass_threshold: float = PASS_SCORE,
+    lowqual_threshold: float = LOWQUAL_SCORE,
+    hom_threshold: float = HOMOZYGOUS_FRAC,
     het_threshold: float = 0.01,
     dbsnp: str | None = None,
     cosmic: str | None = None,
@@ -470,14 +490,14 @@ def run_single_mode(
     strelka: str | None = None,
     arb_snvs: list[str] | None = None,
     arb_indels: list[str] | None = None,
-    min_mq: float | int = 1,
-    min_bq: float | int = 5,
-    min_caller: float | int = 0.5,
+    min_mq: float | int = MIN_MAPPING_QUALITY,
+    min_bq: float | int = MIN_BASE_QUALITY,
+    min_caller: float | int = MIN_CALLER,
     somaticseq_train: bool = False,
-    ensemble_outfile_prefix: str = "Ensemble.",
-    consensus_outfile_prefix: str = "Consensus.",
-    classified_outfile_prefix: str = "SSeq.Classified.",
-    algo: Literal["xgboost", "ada"] = "xgboost",
+    ensemble_outfile_prefix: str = ENSEMBLE_PREFIX,
+    consensus_outfile_prefix: str = CONSENSUS_PREFIX,
+    classified_outfile_prefix: str = CLASSIFIED_PREFIX,
+    algo: Literal["xgboost", "ada"] = ALGORITHM,
     keep_intermediates: bool = False,
     train_seed: int = 0,
     tree_depth: int = 12,
@@ -548,8 +568,8 @@ def run_single_mode(
     for i in tmp_files:
         files_to_delete.add(i)
 
-    ensemble_snv = os.sep.join((outdir, ensemble_outfile_prefix + "sSNV.tsv"))
-    ensemble_indel = os.sep.join((outdir, ensemble_outfile_prefix + "sINDEL.tsv"))
+    ensemble_snv = os.sep.join((outdir, ensemble_outfile_prefix + SNV_TSV_SUFFIX))
+    ensemble_indel = os.sep.join((outdir, ensemble_outfile_prefix + INDEL_TSV_SUFFIX))
 
     # SNV
     mutect_infile = (
@@ -581,10 +601,10 @@ def run_single_mode(
     # Classify SNV calls
     if classifier_snv:
         classified_snv_tsv = os.sep.join(
-            (outdir, classified_outfile_prefix + "sSNV.tsv")
+            (outdir, classified_outfile_prefix + SNV_TSV_SUFFIX)
         )
         classified_snv_vcf = os.sep.join(
-            (outdir, classified_outfile_prefix + "sSNV.vcf")
+            (outdir, classified_outfile_prefix + SNV_VCF_SUFFIX)
         )
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
         model_predictor(
@@ -627,7 +647,9 @@ def run_single_mode(
                 features_to_exclude=features_excluded,
                 hyperparameters=hyperparameters,
             )
-        consensus_snv_vcf = os.sep.join((outdir, consensus_outfile_prefix + "sSNV.vcf"))
+        consensus_snv_vcf = os.sep.join(
+            (outdir, consensus_outfile_prefix + SNV_VCF_SUFFIX)
+        )
         tsv2vcf.tsv2vcf(
             ensemble_snv,
             consensus_snv_vcf,
@@ -664,10 +686,10 @@ def run_single_mode(
     # Classify INDEL calls
     if classifier_indel:
         consensus_indel_tsv = os.sep.join(
-            (outdir, classified_outfile_prefix + "sINDEL.tsv")
+            (outdir, classified_outfile_prefix + INDEL_TSV_SUFFIX)
         )
         consensus_indel_vcf = os.sep.join(
-            (outdir, classified_outfile_prefix + "sINDEL.vcf")
+            (outdir, classified_outfile_prefix + INDEL_VCF_SUFFIX)
         )
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
         model_predictor(
@@ -711,7 +733,7 @@ def run_single_mode(
                 hyperparameters=hyperparameters,
             )
         consensus_indel_vcf = os.sep.join(
-            (outdir, consensus_outfile_prefix + "sINDEL.vcf")
+            (outdir, consensus_outfile_prefix + INDEL_VCF_SUFFIX)
         )
         tsv2vcf.tsv2vcf(
             ensemble_indel,
@@ -756,17 +778,20 @@ def run():
     parser.add_argument("--classifier-snv", type=str, help="RData for SNV")
     parser.add_argument("--classifier-indel", type=str, help="RData for INDEL")
     parser.add_argument(
-        "--pass-threshold", type=float, help="SCORE for PASS", default=0.5
+        "--pass-threshold", type=float, help="SCORE for PASS", default=PASS_SCORE
     )
     parser.add_argument(
-        "--lowqual-threshold", type=float, help="SCORE for LowQual", default=0.1
+        "--lowqual-threshold",
+        type=float,
+        help="SCORE for LowQual",
+        default=LOWQUAL_SCORE,
     )
     parser.add_argument(
         "-algo",
         "--algorithm",
         type=str,
         help="ada or xgboost",
-        default="xgboost",
+        default=ALGORITHM,
         choices=("ada", "xgboost"),
     )
     parser.add_argument(
@@ -774,28 +799,28 @@ def run():
         "--homozygous-threshold",
         type=float,
         help="VAF for homozygous",
-        default=0.85,
+        default=HOMOZYGOUS_FRAC,
     )
     parser.add_argument(
         "-het",
         "--heterozygous-threshold",
         type=float,
         help="VAF for heterozygous",
-        default=0.01,
+        default=HETEROZYGOUS_FRAC,
     )
     parser.add_argument(
         "-minMQ",
         "--minimum-mapping-quality",
         type=float,
         help="Minimum mapping quality below which is considered poor",
-        default=1,
+        default=MIN_MAPPING_QUALITY,
     )
     parser.add_argument(
         "-minBQ",
         "--minimum-base-quality",
         type=float,
         help="Minimum base quality below which is considered poor",
-        default=5,
+        default=MIN_BASE_QUALITY,
     )
     parser.add_argument(
         "-mincaller",
@@ -841,7 +866,10 @@ def run():
         "-iters",
         "--iterations",
         type=int,
-        help="num boosting rounds for xgboost: default is 500 for training and 100 for predicting, i.e., by default, 500 trees are built for classifier, but only the first 100 trees are used.",
+        help=(
+            "num boosting rounds for xgboost: default is 500 for training and 100 for predicting, i.e., "
+            "by default, 500 trees are built for classifier, but only the first 100 trees are used."
+        ),
     )
     parser.add_argument(
         "--features-excluded",
@@ -875,10 +903,14 @@ def run():
         "-nbam", "--normal-bam-file", type=str, help="Normal BAM File", required=True
     )
     parser_paired.add_argument(
-        "-tumorSM", "--tumor-sample", type=str, help="Tumor Name", default="TUMOR"
+        "-tumorSM", "--tumor-sample", type=str, help="Tumor Name", default=TUMOR_NAME
     )
     parser_paired.add_argument(
-        "-normalSM", "--normal-sample", type=str, help="Normal Name", default="NORMAL"
+        "-normalSM",
+        "--normal-sample",
+        type=str,
+        help="Normal Name",
+        default=NORMAL_NAME,
     )
     parser_paired.add_argument(
         "-mutect",
@@ -1000,7 +1032,7 @@ def run():
         "-bam", "--bam-file", type=str, help="BAM File", required=True
     )
     parser_single.add_argument(
-        "-SM", "--sample-name", type=str, help="Sample Name", default="TUMOR"
+        "-SM", "--sample-name", type=str, help="Sample Name", default=TUMOR_NAME
     )
     parser_single.add_argument(
         "-mutect",
