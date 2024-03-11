@@ -710,7 +710,7 @@ def make_workflow(args, wf_arg_dict):
             if wf_arg_dict["run_somaticseq"]:
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"somaticSeq.{timestamp}.cmd"
-                somaticseq_job = tumor_normal.run_SomaticSeq(
+                somaticseq_job = tumor_normal.run_somaticseq_workflow(
                     input_arguments, args.container_tech
                 )
                 workflow_tasks["somaticseq_jobs"].append(somaticseq_job)
@@ -862,7 +862,7 @@ def make_workflow(args, wf_arg_dict):
             if wf_arg_dict["run_somaticseq"]:
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"somaticSeq.{timestamp}.cmd"
-                somaticseq_job = tumor_only.run_SomaticSeq(
+                somaticseq_job = tumor_only.run_somaticseq_workflow(
                     input_arguments, args.container_tech
                 )
                 workflow_tasks["somaticseq_jobs"].append(somaticseq_job)

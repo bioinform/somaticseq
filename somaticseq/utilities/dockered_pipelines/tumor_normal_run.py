@@ -287,7 +287,7 @@ def run():
     return args, wf_arg_dict
 
 
-def run_SomaticSeq(
+def run_somaticseq_workflow(
     input_parameters: dict[str, Any], tech: Literal["docker", "singularity"] = "docker"
 ):
     DEFAULT_PARAMS = {
