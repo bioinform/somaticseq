@@ -9,6 +9,25 @@ from typing import Literal
 import somaticseq.genomic_file_parsers.concat as concat
 import somaticseq.run_somaticseq as run_somaticseq
 import somaticseq.utilities.split_bed_into_equal_regions as split_bed
+from somaticseq.defaults import (
+    ALGORITHM,
+    CLASSIFIED_PREFIX,
+    CONSENSUS_PREFIX,
+    ENSEMBLE_PREFIX,
+    HETEROZYGOUS_FRAC,
+    HOMOZYGOUS_FRAC,
+    INDEL_TSV_SUFFIX,
+    INDEL_VCF_SUFFIX,
+    LOWQUAL_SCORE,
+    MIN_BASE_QUALITY,
+    MIN_CALLER,
+    MIN_MAPPING_QUALITY,
+    NORMAL_NAME,
+    PASS_SCORE,
+    SNV_TSV_SUFFIX,
+    SNV_VCF_SUFFIX,
+    TUMOR_NAME,
+)
 
 
 def split_regions(
@@ -29,11 +48,12 @@ def split_regions(
     Returns:
         A list of bed files where the regions are equal-sized.
     """
-    if not (bed or fai):
+    if not (fai or bed):
         raise FileNotFoundError(
             "Must have either bed or fai file from which regions can be split."
         )
-    if fai and not bed:
+    if not bed:
+        assert fai
         bed = split_bed.fai2bed(fai, outfiles)
     output_bedfiles = split_bed.split(bed, outfiles, nthreads)
     return output_bedfiles
@@ -45,16 +65,16 @@ def run_paired_mode_by_region(
     ref: str,
     tbam: str,
     nbam: str,
-    tumor_name: str = "TUMOR",
-    normal_name: str = "NORMAL",
+    tumor_name: str = TUMOR_NAME,
+    normal_name: str = NORMAL_NAME,
     truth_snv: str | None = None,
     truth_indel: str | None = None,
     classifier_snv: str | None = None,
     classifier_indel: str | None = None,
-    pass_threshold: float = 0.5,
-    lowqual_threshold: float = 0.1,
-    hom_threshold: float = 0.85,
-    het_threshold: float = 0.01,
+    pass_threshold: float = PASS_SCORE,
+    lowqual_threshold: float = LOWQUAL_SCORE,
+    hom_threshold: float = HOMOZYGOUS_FRAC,
+    het_threshold: float = HETEROZYGOUS_FRAC,
     dbsnp: str | None = None,
     cosmic: str | None = None,
     exclusion: str | None = None,
@@ -76,14 +96,14 @@ def run_paired_mode_by_region(
     platypus: str | None = None,
     arb_snvs: list[str] = [],
     arb_indels: list[str] = [],
-    min_mq: float | int = 1,
-    min_bq: float | int = 5,
-    min_caller: float | int = 0.5,
+    min_mq: float | int = MIN_MAPPING_QUALITY,
+    min_bq: float | int = MIN_BASE_QUALITY,
+    min_caller: float | int = MIN_CALLER,
     somaticseq_train: bool = False,
-    ensemble_outfile_prefix: str = "Ensemble.",
-    consensus_outfile_prefix: str = "Consensus.",
-    classified_outfile_prefix: str = "SSeq.Classified.",
-    algo: Literal["xgboost", "ada"] = "xgboost",
+    ensemble_outfile_prefix: str = ENSEMBLE_PREFIX,
+    consensus_outfile_prefix: str = CONSENSUS_PREFIX,
+    classified_outfile_prefix: str = CLASSIFIED_PREFIX,
+    algo: Literal["xgboost", "ada"] = ALGORITHM,
     keep_intermediates: bool = False,
     train_seed: int = 0,
     tree_depth: int = 12,
@@ -216,15 +236,15 @@ def run_single_mode_by_region(
     outdir: str,
     ref: str,
     bam: str,
-    sample_name: str = "TUMOR",
+    sample_name: str = TUMOR_NAME,
     truth_snv: str | None = None,
     truth_indel: str | None = None,
     classifier_snv: str | None = None,
     classifier_indel: str | None = None,
-    pass_threshold: float = 0.5,
-    lowqual_threshold: float = 0.1,
-    hom_threshold: float = 0.85,
-    het_threshold: float = 0.01,
+    pass_threshold: float = PASS_SCORE,
+    lowqual_threshold: float = LOWQUAL_SCORE,
+    hom_threshold: float = HOMOZYGOUS_FRAC,
+    het_threshold: float = HETEROZYGOUS_FRAC,
     dbsnp: str | None = None,
     cosmic: str | None = None,
     exclusion: str | None = None,
@@ -237,14 +257,14 @@ def run_single_mode_by_region(
     strelka: str | None = None,
     arb_snvs: list[str] = [],
     arb_indels: list[str] = [],
-    min_mq: float | int = 1,
-    min_bq: float | int = 5,
-    min_caller: float | int = 0.5,
+    min_mq: float | int = MIN_MAPPING_QUALITY,
+    min_bq: float | int = MIN_BASE_QUALITY,
+    min_caller: float | int = MIN_CALLER,
     somaticseq_train: bool = False,
-    ensemble_outfile_prefix: str = "Ensemble.",
-    consensus_outfile_prefix: str = "Consensus.",
-    classified_outfile_prefix: str = "SSeq.Classified.",
-    algo: Literal["xgboost", "ada"] = "xgboost",
+    ensemble_outfile_prefix: str = ENSEMBLE_PREFIX,
+    consensus_outfile_prefix: str = CONSENSUS_PREFIX,
+    classified_outfile_prefix: str = CLASSIFIED_PREFIX,
+    algo: Literal["xgboost", "ada"] = ALGORITHM,
     keep_intermediates: bool = False,
     train_seed: int = 0,
     tree_depth: int = 12,
@@ -256,7 +276,7 @@ def run_single_mode_by_region(
     Tumor-only version of run_paired_mode_by_region.
     """
     basename = inclusion.split(os.sep)[-1].split(".")[0]
-    outdir_i = outdir + os.sep + basename
+    outdir_i = os.path.join(outdir, basename)
     os.makedirs(outdir_i, exist_ok=True)
     run_somaticseq.run_single_mode(
         outdir=outdir_i,
@@ -305,15 +325,15 @@ def run_single_mode_by_region(
 def merge_tsvs_in_subdirs(
     list_of_dirs: list[str], filename: str, outdir: str = os.curdir
 ) -> None:
-    file_list = [f"{dir_i}/{filename}" for dir_i in list_of_dirs]
-    concat.tsv(file_list, outdir + os.sep + filename)
+    file_list = [os.path.join(dir_i, filename) for dir_i in list_of_dirs]
+    concat.tsv(file_list, os.path.join(outdir, filename))
 
 
 def merge_vcfs_in_subdirs(
     list_of_dirs: list[str], filename: str, outdir: str = os.curdir
 ) -> None:
-    file_list = [f"{dir_i}/{filename}" for dir_i in list_of_dirs]
-    concat.vcf(file_list, outdir + os.sep + filename)
+    file_list = [os.path.join(dir_i, filename) for dir_i in list_of_dirs]
+    concat.vcf(file_list, os.path.join(outdir, filename))
 
 
 if __name__ == "__main__":
@@ -425,32 +445,43 @@ if __name__ == "__main__":
     run_somaticseq.logger.info("Sub-directories created: {}".format(", ".join(subdirs)))
 
     # Merge sub-results
-    merge_tsvs_in_subdirs(subdirs, "Ensemble.sSNV.tsv", args.output_directory)
-    merge_tsvs_in_subdirs(subdirs, "Ensemble.sINDEL.tsv", args.output_directory)
+    merge_tsvs_in_subdirs(
+        subdirs, f"{ENSEMBLE_PREFIX}{SNV_TSV_SUFFIX}", args.output_directory
+    )
+    merge_tsvs_in_subdirs(
+        subdirs, f"{ENSEMBLE_PREFIX}{INDEL_TSV_SUFFIX}", args.output_directory
+    )
     if args.classifier_snv:
         merge_tsvs_in_subdirs(
-            subdirs, "SSeq.Classified.sSNV.tsv", args.output_directory
+            subdirs, f"{CLASSIFIED_PREFIX}{SNV_TSV_SUFFIX}", args.output_directory
         )
         merge_vcfs_in_subdirs(
-            subdirs, "SSeq.Classified.sSNV.vcf", args.output_directory
+            subdirs, f"{CLASSIFIED_PREFIX}{SNV_VCF_SUFFIX}", args.output_directory
         )
     else:
-        merge_vcfs_in_subdirs(subdirs, "Consensus.sSNV.vcf", args.output_directory)
-
+        merge_vcfs_in_subdirs(
+            subdirs, f"{CONSENSUS_PREFIX}{SNV_VCF_SUFFIX}", args.output_directory
+        )
     if args.classifier_indel:
         merge_tsvs_in_subdirs(
-            subdirs, "SSeq.Classified.sINDEL.tsv", args.output_directory
+            subdirs, f"{CLASSIFIED_PREFIX}{INDEL_TSV_SUFFIX}", args.output_directory
         )
         merge_vcfs_in_subdirs(
-            subdirs, "SSeq.Classified.sINDEL.vcf", args.output_directory
+            subdirs, f"{CLASSIFIED_PREFIX}{INDEL_VCF_SUFFIX}", args.output_directory
         )
     else:
-        merge_vcfs_in_subdirs(subdirs, "Consensus.sINDEL.vcf", args.output_directory)
+        merge_vcfs_in_subdirs(
+            subdirs, f"{CONSENSUS_PREFIX}{INDEL_VCF_SUFFIX}", args.output_directory
+        )
 
     # If there is training, it should be done after merging the results
     if args.somaticseq_train:
-        snv_training_file = args.output_directory + os.sep + "Ensemble.sSNV.tsv"
-        indel_training_file = args.output_directory + os.sep + "Ensemble.sINDEL.tsv"
+        snv_training_file = os.path.join(
+            args.output_directory, f"{ENSEMBLE_PREFIX}{SNV_TSV_SUFFIX}"
+        )
+        indel_training_file = os.path.join(
+            args.output_directory, f"{ENSEMBLE_PREFIX}{INDEL_TSV_SUFFIX}"
+        )
         num_iterations = (
             args.iterations
             if args.iterations
@@ -487,4 +518,4 @@ if __name__ == "__main__":
             rmtree(dir_i)
             run_somaticseq.logger.info(f"Removed sub-directory: {dir_i}")
 
-    run_somaticseq.logger.info("Done.")
+    run_somaticseq.logger.info("SomaticSeq is DONE!")

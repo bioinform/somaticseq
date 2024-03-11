@@ -776,8 +776,8 @@ def run():
     )
     parser.add_argument("--truth-snv", type=str, help="VCF of true hits")
     parser.add_argument("--truth-indel", type=str, help="VCF of true hits")
-    parser.add_argument("--classifier-snv", type=str, help="RData for SNV")
-    parser.add_argument("--classifier-indel", type=str, help="RData for INDEL")
+    parser.add_argument("--classifier-snv", type=str, help="snv classifier")
+    parser.add_argument("--classifier-indel", type=str, help="indel classifier")
     parser.add_argument(
         "--pass-threshold", type=float, help="SCORE for PASS", default=PASS_SCORE
     )

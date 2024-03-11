@@ -8,9 +8,9 @@ LOWQUAL_SCORE: float = 0.1
 HOMOZYGOUS_FRAC: float = 0.85
 HETEROZYGOUS_FRAC: float = 0.01
 
-SNV_TSV_SUFFIX: str = ".sSNV.tsv"
-INDEL_TSV_SUFFIX: str = ".sINDEL.tsv"
-SNV_VCF_SUFFIX: str = ".sSNV.vcf"
+SNV_TSV_SUFFIX: str = "sSNV.tsv"
+INDEL_TSV_SUFFIX: str = "sINDEL.tsv"
+SNV_VCF_SUFFIX: str = "sSNV.vcf"
 INDEL_VCF_SUFFIX: str = ".sINDEL.vcf"
 ENSEMBLE_PREFIX: str = "Ensemble."
 CONSENSUS_PREFIX: str = "Consensus."
