@@ -2,22 +2,50 @@
 
 set -e
 
-mkdir -p paired_somaticseq
+MYDIR="$( cd "$( dirname "$0" )" && pwd )"
+VERSION=`head -n 1 ${MYDIR}/../somaticseq/_version.py | awk -F "=" '{print $2}' | tr -d '[[:space:]]"'`
 
 somaticseq_parallel.py \
 --somaticseq-train      \
 --algorithm             xgboost \
 --extra-hyperparameters scale_pos_weight:0.1 seed:100 \
---output-directory      paired_somaticseq \
---genome-reference      tiny.fa \
---dbsnp-vcf             tiny_dbsnp.vcf \
---truth-snv             Varsim.somatic.truth.vcf \
---truth-indel           Varsim.somatic.truth.vcf \
+--output-directory      paired_somaticseq/training \
+--genome-reference      ${MYDIR}/tiny.fa \
+--dbsnp-vcf             ${MYDIR}/tiny_dbsnp.vcf \
+--truth-snv             ${MYDIR}/Varsim.somatic.truth.vcf \
+--truth-indel           ${MYDIR}/Varsim.somatic.truth.vcf \
 --threads               3 \
 paired \
---tumor-bam-file        tumor.markdup.bam \
---normal-bam-file       normal.markdup.bam \
---mutect2-vcf           paired_example/MuTect2.vcf.gz \
---vardict-vcf           paired_example/VarDict.vcf.gz \
---strelka-snv           paired_example/Strelka/results/variants/somatic.snvs.vcf.gz \
---strelka-indel         paired_example/Strelka/results/variants/somatic.indels.vcf.gz
+--tumor-bam-file        ${MYDIR}/tumor.markdup.bam \
+--normal-bam-file       ${MYDIR}/normal.markdup.bam \
+--mutect2-vcf           ${MYDIR}/paired_example/MuTect2.vcf.gz \
+--somaticsniper-vcf     ${MYDIR}/paired_example/SomaticSniper.vcf.gz \
+--vardict-vcf           ${MYDIR}/paired_example/VarDict.vcf.gz \
+--muse-vcf              ${MYDIR}/paired_example/MuSE.vcf.gz \
+--lofreq-snv            ${MYDIR}/paired_example/LoFreq.snv.vcf.gz \
+--lofreq-indel          ${MYDIR}/paired_example/LoFreq.indel.vcf.gz \
+--scalpel-vcf           ${MYDIR}/paired_example/Scalpel.vcf.gz \
+--strelka-snv           ${MYDIR}/paired_example/Strelka.snv.vcf.gz \
+--strelka-indel         ${MYDIR}/paired_example/Strelka.indel.vcf.gz
+
+
+somaticseq_parallel.py \
+--algorithm             xgboost \
+--classifier-snv        paired_somaticseq/training/Ensemble.sSNV.tsv.xgb.v3.8.0.classifier \
+--classifier-indel      paired_somaticseq/training/Ensemble.sINDEL.tsv.xgb.v3.8.0.classifier \
+--output-directory      paired_somaticseq/classification \
+--genome-reference      ${MYDIR}/tiny.fa \
+--dbsnp-vcf             ${MYDIR}/tiny_dbsnp.vcf \
+--threads               3 \
+paired \
+--tumor-bam-file        ${MYDIR}/tumor.markdup.bam \
+--normal-bam-file       ${MYDIR}/normal.markdup.bam \
+--mutect2-vcf           ${MYDIR}/paired_example/MuTect2.vcf.gz \
+--somaticsniper-vcf     ${MYDIR}/paired_example/SomaticSniper.vcf.gz \
+--vardict-vcf           ${MYDIR}/paired_example/VarDict.vcf.gz \
+--muse-vcf              ${MYDIR}/paired_example/MuSE.vcf.gz \
+--lofreq-snv            ${MYDIR}/paired_example/LoFreq.snv.vcf.gz \
+--lofreq-indel          ${MYDIR}/paired_example/LoFreq.indel.vcf.gz \
+--scalpel-vcf           ${MYDIR}/paired_example/Scalpel.vcf.gz \
+--strelka-snv           ${MYDIR}/paired_example/Strelka.snv.vcf.gz \
+--strelka-indel         ${MYDIR}/paired_example/Strelka.indel.vcf.gz
