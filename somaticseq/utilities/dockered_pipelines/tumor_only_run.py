@@ -533,7 +533,7 @@ def merge_results(
                 )
             out.write("\\\n")
             out.write(
-                f"-outfile {mounted_outdir}/{ENSEMBLE_PREFIX}{SNV_TSV_SUFFIX}\n\n"
+                f"-outfile {mounted_outdir}/{ENSEMBLE_PREFIX}{INDEL_TSV_SUFFIX}\n\n"
             )
             # If asked to create classifier, do it here when TSV files are combined
             if input_parameters["train_somaticseq"] and input_parameters["truth_snv"]:
