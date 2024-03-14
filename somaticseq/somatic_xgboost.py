@@ -145,9 +145,7 @@ def builder(
     bst = xgb.train(param, dtrain, num_boost_round=num_rounds)
     bst.save_model(model)
     bst.dump_model(f"{model}.json", with_stats=True, dump_format="json")
-    bst.dump_model(
-        f"{model}.txt", fmap=f"{model}.fmap", with_stats=True, dump_format="text"
-    )
+    bst.dump_model(f"{model}.txt", with_stats=True, dump_format="text")
     save_feature_importance_to_file(bst, f"{model}.feature_importance.txt")
 
     return model
