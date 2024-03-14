@@ -47,11 +47,11 @@ def param_list_to_dict(
     """
     Args:
         param_list: this is what will be passed from the CLI, e.g.,
-            ["scale_pos_weight:0.8", "seed:42"]. If the value is integer, float,
-            bool, etc., it will be eval'ed as such. Otherwise, it'll remain as a
-            string.
+            ["scale_pos_weight:0.8", "seed:42", "grow_policy:lossguide"]. If the
+            value is integer, float, bool, etc., it will be eval'ed as such.
+            Otherwise, it'll remain as a string.
         existing_param_dict: a pre-existing set of params and their values
-            before being modifed by param_list
+            before param_list adds and/or modifies it.
 
     Returns:
         An updated params dict
@@ -62,6 +62,7 @@ def param_list_to_dict(
         try:
             value_i = eval(value_i)
         except NameError:
+            # value_i stays a string if cannot be eval'ed
             pass
 
         updated_param_dict[param_i] = value_i
@@ -80,7 +81,6 @@ def save_feature_importance_to_file(xgb_model, filename):
     )
     with open(filename, "w") as fout:
         fout.write(line_i)
-
         for feature_i in sorted(feature_gain):
             line_i = "{}\t{}\t{}\t{}\t{}\t{}\n".format(
                 feature_i,
@@ -144,8 +144,11 @@ def builder(
     dtrain = xgb.DMatrix(train_data, label=train_label)
     bst = xgb.train(param, dtrain, num_boost_round=num_rounds)
     bst.save_model(model)
-    bst.dump_model(model + ".txt")
-    save_feature_importance_to_file(bst, model + ".feature_importance.txt")
+    bst.dump_model(f"{model}.json", with_stats=True, dump_format="json")
+    bst.dump_model(
+        f"{model}.txt", fmap=f"{model}.fmap", with_stats=True, dump_format="text"
+    )
+    save_feature_importance_to_file(bst, f"{model}.feature_importance.txt")
 
     return model
 

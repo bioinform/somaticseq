@@ -50,7 +50,8 @@ def run_workflows(list_of_list_of_tasks, threads=1, shell="bash"):
     """
     The input should be a list of "list of tasks."
     Each task shall be executed with the syntax of "bash TASK.sh".
-    The order of the "list of tasks" imply precedence, i.e., all tasks in the 1st list must be complete before any task in the 2nd list may proceed.
+    The order of the "list of tasks" imply precedence, i.e., all tasks in the
+    1st list must be complete before any task in the 2nd list may proceed.
     """
     pool = Pool(processes=threads)
     run_script_i = partial(run_script, shell=shell)
@@ -106,10 +107,10 @@ def run():
             "This module has two use cases:\n1) the first use case is simple, e.g., "
             "run the 4 scripts using 2 threads in parallel: "
             "run_workflows.py --scripts 1.sh 2.sh 3.sh 4.sh -nt 2.\n2) "
-            "the second use case is more complex, e.g., with -nt 3 threads, "
+            "The second use case is more complex, e.g., with -nt 3 threads, and "
             "the following 10 scripts have to be completed in the following orders: "
-            "the first 3 need to complete first, and then the next 4 need to complete, "
-            "and then finally the next 3 will need to complete: "
+            "the first 3 scripts to be complete first, and then complete the next 4, "
+            "and finally complete the next 3. The command will be "
             "run_workflows.py -scripts 1.sh 2.sh 3.sh 4.sh 5.sh 6.sh 7.sh 8.sh 9.sh 10.sh -parts 3 4 3 -nt 3",
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -129,6 +130,7 @@ if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
     logging.basicConfig(level=logging.INFO, format=FORMAT)
     args = run()
+
     if args.partition_numbering:
         list_of_workflows = partition_list_to_lists(
             args.list_of_scripts, args.partition_numbering
@@ -137,9 +139,7 @@ if __name__ == "__main__":
 
     else:
         run_workflows(
-            [
-                args.list_of_scripts,
-            ],
+            [args.list_of_scripts],
             args.threads,
             args.shell,
         )
