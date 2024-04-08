@@ -86,7 +86,7 @@ def partition_list_to_lists(
     Returns:
         list of list: e.g., [ [1, 2, 3], [4, 5, 6, 7, 8, 9], [10] ]
     """
-    if sum(num_in_each_list) == len(super_list):
+    if sum(num_in_each_list) != len(super_list):
         raise ValueError(
             "The sum(num_in_each_list) is expected to equal len(super_list)."
         )

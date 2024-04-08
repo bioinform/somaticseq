@@ -8,30 +8,23 @@ from os.path import basename
 
 def fai2bed(file_name):
     with open(file_name) as gfile:
-        line_i = gfile.readline().rstrip("\n")
-
         callableLociBoundries = {}
         callableLociCounters = {}
         callableLociLabels = {}
         orderedContig = []
-
+        line_i = gfile.readline().rstrip("\n")
         while line_i:
             contig_match = re.match(r"([^\t]+)\t", line_i)
-
             if contig_match:
-                contig_i = contig_match.groups()[0].split(" ")[
-                    0
-                ]  # some .fai files have space after the contig for descriptions.
+                # some .fai files have space after the contig for descriptions.
+                contig_i = contig_match.groups()[0].split(" ")[0]
                 orderedContig.append(contig_i)
-
                 contig_size = int(line_i.split("\t")[1])
-
                 callableLociBoundries[contig_i] = [0, contig_size]
                 callableLociCounters[contig_i] = [0]
                 callableLociLabels[contig_i] = [[]]
-
             else:
-                raise Exception(".fai file format not as expected.")
+                raise FileNotFoundError(".fai file format not as expected.")
 
             line_i = gfile.readline().rstrip("\n")
 
