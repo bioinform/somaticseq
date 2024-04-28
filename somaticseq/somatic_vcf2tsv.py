@@ -141,7 +141,7 @@ extra_caller_header = ""
 label_header = "{TrueVariant_or_False}"
 
 
-def run():
+def run() -> dict:
     inputParameters = {}
 
     parser = argparse.ArgumentParser(

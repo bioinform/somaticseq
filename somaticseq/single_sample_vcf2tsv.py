@@ -95,7 +95,7 @@ extra_caller_header = ""
 label_header = "{TrueVariant_or_False}"
 
 
-def run():
+def run() -> dict:
     inputParameters = {}
     parser = argparse.ArgumentParser(
         description="This is a SomaticSeq subroutine to convert a VCF file into a TSV file with all the SomaticSeq features for tumor-only modes. Any VCF file can be used as the main input. The output will have the same variants. Also required is the BAM files, with additional optional inputs.",

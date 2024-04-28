@@ -7,7 +7,7 @@ import re
 import sys
 
 
-def run():
+def run() -> tuple[str, str, int]:
     # argparse Stuff
     parser = argparse.ArgumentParser(
         description="""Given an input bed file, this program will output a number of bed files, each will have same number of total base pairs.

@@ -112,7 +112,7 @@ def spreader(infileList, outfiles, chunk=4, bgzip=False, threads=1):
     return actual_outfiles
 
 
-def run():
+def run() -> tuple[argparse.Namespace, str]:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )

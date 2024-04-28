@@ -753,7 +753,7 @@ def run_single_mode(
             logger.info(f"Removed {file_i}")
 
 
-def run():
+def run() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             f"SomaticSeq v{__version__}: a method to combine results from multiple "

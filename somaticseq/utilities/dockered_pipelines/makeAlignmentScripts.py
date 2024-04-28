@@ -16,7 +16,7 @@ logger.setLevel(logging.DEBUG)
 logging.basicConfig(level=logging.INFO, format=FORMAT)
 
 
-def run():
+def run() -> tuple[argparse.Namespace, dict]:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )

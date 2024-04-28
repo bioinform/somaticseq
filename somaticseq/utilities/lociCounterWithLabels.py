@@ -6,12 +6,30 @@ from copy import copy
 from os.path import basename
 
 
-def fai2bed(file_name):
+def fai2bed(
+    file_name: str,
+) -> tuple[dict[str, list[int]], dict[str, list[int]], dict[str, list[str]], list[str]]:
+    """
+    This function initiates the regions and region counters based on the contigs
+    in a .fa.fai file. This script will start with the whole contig regions
+    here, and then iterate through each bed file to extract regions where bed
+    files overlap.
+
+    Returns:
+        callableLociBoundries: dict where keys are contigs, and values are [0,
+            contig_size].
+        callableLociCounters: dict where keys are contigs, and values are number
+            of regions overlapping this region. Values are initiated at 0.
+        callableLociLabels: dict where keys are contigs, and values are list of
+            bed files (or their corresponding names) overlapping them.
+        orderedContig: list of contigs ordered by their apperance in the .fa.fai
+            file.
+    """
     with open(file_name) as gfile:
-        callableLociBoundries = {}
-        callableLociCounters = {}
-        callableLociLabels = {}
-        orderedContig = []
+        callableLociBoundries: dict[str, list[int]] = {}
+        callableLociCounters: dict[str, list[int]] = {}
+        callableLociLabels: [str, list[str]] = {}
+        orderedContig: list[str] = []
         line_i = gfile.readline().rstrip("\n")
         while line_i:
             contig_match = re.match(r"([^\t]+)\t", line_i)
@@ -27,7 +45,6 @@ def fai2bed(file_name):
                 raise FileNotFoundError(".fai file format not as expected.")
 
             line_i = gfile.readline().rstrip("\n")
-
     return (
         callableLociBoundries,
         callableLociCounters,
@@ -36,25 +53,24 @@ def fai2bed(file_name):
     )
 
 
-def bed2regions(bed_file):
-    regions = {}
-
+def bed2regions(bed_file: str) -> dict[str, list[tuple[int, int]]]:
+    """
+    Returns: dict where keys are contigs, and the values are list of regions in
+    a bed file.
+    """
+    regions: dict[str, list[tuple[int, int]]] = {}
     with open(bed_file) as gfile:
         line_i = gfile.readline().rstrip("\n")
-
         while line_i:
             item = line_i.split("\t")
-
             chrom = item[0]
             startPos = int(item[1])
             endPos = int(item[2])
-
             try:
                 regions[chrom].append((startPos, endPos))
             except KeyError:
                 regions[chrom] = []
                 regions[chrom].append((startPos, endPos))
-
             line_i = gfile.readline().rstrip("\n")
 
     return regions

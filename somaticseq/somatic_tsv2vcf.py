@@ -11,7 +11,7 @@ nan = float("nan")
 time_string = datetime.now().isoformat(sep="_", timespec="seconds")
 
 
-def run():
+def run() -> dict:
     inputParameters = {}
 
     parser = argparse.ArgumentParser(

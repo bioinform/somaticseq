@@ -9,7 +9,7 @@ from multiprocessing import Pool
 from typing import Any
 
 
-def seconds_to_readable(second_i):
+def seconds_to_readable(second_i: float) -> str:
     days = second_i // 86400
     hours = second_i // 3600 % 24
     minutes = second_i // 60 % 60
@@ -28,7 +28,7 @@ def seconds_to_readable(second_i):
     return out_line.lstrip(" ")
 
 
-def run_script(bash_script, shell="bash"):
+def run_script(bash_script: str, shell: str = "bash") -> int:
     logger = logging.getLogger(run_script.__name__)
     cmd_line = f"{shell} {bash_script}"
     logger.info(cmd_line)
@@ -46,7 +46,11 @@ def run_script(bash_script, shell="bash"):
     return return_code
 
 
-def run_workflows(list_of_list_of_tasks, threads=1, shell="bash"):
+def run_workflows(
+    list_of_list_of_tasks: list[list[str]],
+    threads: int = 1,
+    shell: str = "bash",
+) -> bool:
     """
     The input should be a list of "list of tasks."
     Each task shall be executed with the syntax of "bash TASK.sh".
@@ -62,7 +66,7 @@ def run_workflows(list_of_list_of_tasks, threads=1, shell="bash"):
     return True
 
 
-def cumsum(num_in_each_list):
+def cumsum(num_in_each_list: list[int]) -> list[int]:
     """Calculate cumulative sum of a list like np.cumsum"""
     summed_list = []
     n = len(num_in_each_list)
@@ -101,7 +105,7 @@ def partition_list_to_lists(
     return list_of_list
 
 
-def run():
+def run() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "This module has two use cases:\n1) the first use case is simple, e.g., "
@@ -111,7 +115,8 @@ def run():
             "the following 10 scripts have to be completed in the following orders: "
             "the first 3 scripts to be complete first, and then complete the next 4, "
             "and finally complete the next 3. The command will be "
-            "run_workflows.py -scripts 1.sh 2.sh 3.sh 4.sh 5.sh 6.sh 7.sh 8.sh 9.sh 10.sh -parts 3 4 3 -nt 3",
+            "run_workflows.py -scripts 1.sh 2.sh 3.sh 4.sh 5.sh "
+            "6.sh 7.sh 8.sh 9.sh 10.sh -parts 3 4 3 -nt 3",
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )

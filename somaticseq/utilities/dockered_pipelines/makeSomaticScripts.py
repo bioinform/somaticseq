@@ -18,7 +18,7 @@ logger.setLevel(logging.DEBUG)
 logging.basicConfig(level=logging.INFO, format=FORMAT)
 
 
-def run():
+def run() -> tuple[argparse.Namespace, dict]:
     """
     Get CLI arguments.
     """

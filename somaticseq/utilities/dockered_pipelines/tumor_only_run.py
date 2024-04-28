@@ -24,7 +24,7 @@ from somaticseq.defaults import (
 timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
 
 
-def run():
+def run() -> tuple[argparse.Namespace, dict]::
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )

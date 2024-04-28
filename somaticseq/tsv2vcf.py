@@ -627,7 +627,7 @@ def tsv2vcf(
             tsv_i = tsv.readline().rstrip()
 
 
-def run():
+def run() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="This is a SomaticSeq subroutine SomaticSeq TSV file into VCF file.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
