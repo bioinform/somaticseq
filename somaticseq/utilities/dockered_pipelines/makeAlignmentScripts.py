@@ -118,9 +118,7 @@ def run() -> tuple[argparse.Namespace, dict]:
 
 
 def make_workflow(args, input_parameters):
-    timestamp = re.sub(
-        r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
-    )
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
     os.makedirs(
         os.path.join(input_parameters["output_directory"], "logs"), exist_ok=True

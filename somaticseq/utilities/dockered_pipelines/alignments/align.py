@@ -3,19 +3,19 @@
 import argparse
 import math
 import os
-import re
 import subprocess
 from datetime import datetime
 
-import somaticseq.utilities.dockered_pipelines.container_option as container
-
-timestamp = re.sub(
-    r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
 )
+
+timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "bwa_image": "lethalfang/bwa:0.7.17_samtools",
+    "bwa_image": DOCKER_IMAGES.bwa,
     "MEM": 8,
     "output_directory": os.curdir,
     "out_bam": "aligned.bam",
@@ -38,7 +38,6 @@ def bwa(input_parameters, tech="docker"):
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
 
-    #
     logdir = os.path.join(input_parameters["output_directory"], "logs")
     outfile = os.path.join(logdir, input_parameters["script"])
 
@@ -52,7 +51,7 @@ def bwa(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    bwa_line, file_dictionary = container.container_params(
+    bwa_line, file_dictionary = container_params(
         input_parameters["bwa_image"],
         tech=tech,
         files=all_paths,
@@ -163,5 +162,4 @@ def run():
 
 if __name__ == "__main__":
     args, input_parameters = run()
-
     bwa(input_parameters, args.container_tech)

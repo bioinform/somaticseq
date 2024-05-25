@@ -12,20 +12,21 @@ from pathlib import Path
 from shutil import move
 
 import somaticseq.utilities.dockered_pipelines.alignments.mergeBams as mergeBams
-import somaticseq.utilities.dockered_pipelines.container_option as container
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
+)
 import somaticseq.utilities.split_bed_into_equal_regions as split_bed
 
 TMPDIR = tempfile.gettempdir()
 
-timestamp = re.sub(
-    r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
-)
+timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "picard_image": "lethalfang/picard:2.22.7",
-    "sambamba_image": "lethalfang/sambamba:0.7.1",
-    "samtools_image": "lethalfang/samtools:1.10",
+    "picard_image": DOCKER_IMAGES.picard,
+    "sambamba_image": DOCKER_IMAGES.sambamba,
+    "samtools_image": DOCKER_IMAGES.samtools,
     "MEM": 8,
     "output_directory": os.curdir,
     "out_bam": "aligned.markdup.bam",
@@ -69,13 +70,13 @@ def picard(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    markdup_line, file_dictionary = container.container_params(
+    markdup_line, file_dictionary = container_params(
         input_parameters["picard_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
-    samtools_line, stDict = container.container_params(
+    samtools_line, stDict = container_params(
         input_parameters["samtools_image"],
         tech,
         [
@@ -166,7 +167,7 @@ def sambamba(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    markdup_line, file_dictionary = container.container_params(
+    markdup_line, file_dictionary = container_params(
         input_parameters["sambamba_image"],
         tech=tech,
         files=all_paths,
@@ -229,7 +230,7 @@ def fractional(bed, input_parameters, tech="docker"):
     outfile = os.path.join(logdir, f"markdup_fractional.{timestamp}.cmd")
     os.makedirs(logdir, exist_ok=True)
 
-    sambam_line, stDict = container.container_params(
+    sambam_line, stDict = container_params(
         input_parameters["sambamba_image"],
         tech,
         [

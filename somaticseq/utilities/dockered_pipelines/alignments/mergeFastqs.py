@@ -7,9 +7,7 @@ from datetime import datetime
 
 import somaticseq.utilities.dockered_pipelines.container_option as container
 
-timestamp = re.sub(
-    r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
-)
+timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {

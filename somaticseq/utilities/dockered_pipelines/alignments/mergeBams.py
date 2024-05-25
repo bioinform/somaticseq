@@ -5,11 +5,12 @@ import re
 import subprocess
 from datetime import datetime
 
-import somaticseq.utilities.dockered_pipelines.container_option as container
-
-timestamp = re.sub(
-    r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
 )
+
+timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
@@ -36,8 +37,8 @@ def picard(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=Fal
     all_paths = list(inbams) + [
         outbam,
     ]
-    merge_line, file_dictionary = container.container_params(
-        input_parameters["picard_image"],
+    merge_line, file_dictionary = container_params(
+        DOCKER_IMAGES.picard,
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
@@ -108,8 +109,8 @@ def sambamba(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=F
     all_paths = list(inbams) + [
         outbam,
     ]
-    merge_line, file_dictionary = container.container_params(
-        input_parameters["sambamba_image"],
+    merge_line, file_dictionary = container_params(
+        DOCKER_IMAGES.sambamba,
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],

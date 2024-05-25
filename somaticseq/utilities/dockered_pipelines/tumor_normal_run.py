@@ -7,8 +7,10 @@ import subprocess
 from datetime import datetime
 from typing import Any, Literal
 
-import somaticseq.utilities.dockered_pipelines.container_option as container
-from somaticseq._version import __version__ as VERSION
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
+)
 from somaticseq.defaults import (
     ALGORITHM,
     CLASSIFIED_PREFIX,
@@ -330,8 +332,8 @@ def run_somaticseq_workflow(
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
-        f"lethalfang/somaticseq:{VERSION}",
+    container_line, file_dictionary = container_params(
+        DOCKER_IMAGES.somaticseq,
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
@@ -528,8 +530,8 @@ def merge_results(
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
-        f"lethalfang/somaticseq:{VERSION}",
+    container_line, file_dictionary = container_params(
+        DOCKER_IMAGES.somaticseq,
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],

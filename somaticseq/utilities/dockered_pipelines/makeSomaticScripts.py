@@ -528,9 +528,7 @@ def make_workflow(args, wf_arg_dict):
         "Create SomaticSeq Workflow Scripts: "
         + ", ".join([f"{i}={vars(args)[i]}" for i in vars(args)])
     )
-    timestamp = re.sub(
-        r"[:-]", ".", datetime.now().isoformat(sep=".", timespec="milliseconds")
-    )
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
     workflow_tasks = {"caller_jobs": [], "somaticseq_jobs": [], "merging_jobs": []}
     os.makedirs(wf_arg_dict["output_directory"], exist_ok=True)
 

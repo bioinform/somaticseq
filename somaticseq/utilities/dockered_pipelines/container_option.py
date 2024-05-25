@@ -1,26 +1,31 @@
 import os
 import uuid
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
 from somaticseq._version import __version__ as VERSION
 
-DOCKER_IMAGES = {
-    "somaticseq_image": f"lethalfang/somaticseq:{VERSION}",
-    "scalpel_image": "lethalfang/scalpel:0.5.4",
-    "mutect2_image": "broadinstitute/gatk:4.0.5.2",
-    "muse_image": "marghoob/muse:1.0rc_c",
-    "lofreq_image": "lethalfang/lofreq:2.1.3.1-1",
-    "jsm2_image": "lethalfang/jointsnvmix2:0.7.5",
-    "vardict_image": "lethalfang/vardictjava:1.7.0",
-    "somaticsniper_image": "lethalfang/somaticsniper:1.0.5.0-2",
-    "strelka2_image": "lethalfang/strelka:2.9.5",
-    "bwa_image": "lethalfang/bwa:0.7.17_samtools",
-    "picard_image": "lethalfang/picard:2.22.7",
-    "sambamba_image": "lethalfang/sambamba:0.7.1",
-    "samtools_image": "lethalfang/samtools:1.10",
-    "tabix_image": "lethalfang/tabix:1.10",
-}
+
+@dataclass
+class DockerImages:
+    somaticseq: str = f"lethalfang/somaticseq:{VERSION}"
+    scalpel: str = "lethalfang/scalpel:0.5.4"
+    mutect2: str = "broadinstitute/gatk:4.0.5.2"
+    muse: str = "marghoob/muse:1.0rc_c"
+    lofreq: str = "lethalfang/lofreq:2.1.3.1-1"
+    jsm2: str = "lethalfang/jointsnvmix2:0.7.5"
+    vardict: str = "lethalfang/vardictjava:1.7.0"
+    somaticsniper: str = "lethalfang/somaticsniper:1.0.5.0-2"
+    strelka2: str = "lethalfang/strelka:2.9.5"
+    bwa: str = "lethalfang/bwa:0.7.17_samtools"
+    picard: str = "lethalfang/picard:2.22.7"
+    sambamba: str = "lethalfang/sambamba:0.7.1"
+    samtools: str = "lethalfang/samtools:1.10"
+    tabix: str = "lethalfang/tabix:1.10"
+
+
+DOCKER_IMAGES = DockerImages()
 
 
 def container_params(
