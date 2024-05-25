@@ -2,19 +2,22 @@
 
 import argparse
 import os
-import re
 import subprocess
 import uuid
 from datetime import datetime
 
-import somaticseq.utilities.dockered_pipelines.container_option as container
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
+)
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "alienTrimmerImage": "lethalfang/alientrimmer:0.4.0",
-    "trimmomaticImage": "lethalfang/trimmomatic:0.39",
+    "alientrimmer_image": DOCKER_IMAGES.alientrimmer,
+    "trimmomatic_image": DOCKER_IMAGES.trimmomatic,
+    "tabix_image": DOCKER_IMAGES.tabix,
     "MEM": 36,
     "output_directory": os.curdir,
     "out_fastq1_name": "reads.R1.fastq.gz",
@@ -54,8 +57,8 @@ def alienTrimmer(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    trim_line, file_dictionary = container.container_params(
-        input_parameters["alienTrimmerImage"],
+    trim_line, file_dictionary = container_params(
+        input_parameters["alientrimmer_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
@@ -82,8 +85,8 @@ def alienTrimmer(input_parameters, tech="docker"):
             out_fastq_2 = uuid.uuid4().hex + ".fastq"
 
             if paired_end:
-                tabix_line, tabixDict = container.container_params(
-                    "lethalfang/tabix:1.7",
+                tabix_line, tabixDict = container_params(
+                    input_parameters["tabix_image"],
                     tech,
                     (
                         input_parameters["output_directory"],
@@ -92,8 +95,8 @@ def alienTrimmer(input_parameters, tech="docker"):
                     ),
                 )
             else:
-                tabix_line, tabixDict = container.container_params(
-                    "lethalfang/tabix:1.7",
+                tabix_line, tabixDict = container_params(
+                    input_parameters["tabix_image"],
                     tech,
                     (
                         input_parameters["output_directory"],
@@ -244,8 +247,8 @@ def trimmomatic(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    trim_line, file_dictionary = container.container_params(
-        input_parameters["trimmomaticImage"],
+    trim_line, file_dictionary = container_params(
+        input_parameters["trimmomatic_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],

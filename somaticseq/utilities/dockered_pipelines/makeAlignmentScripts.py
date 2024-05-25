@@ -4,7 +4,6 @@ import argparse
 import logging
 import math
 import os
-import re
 import uuid
 from copy import copy
 from datetime import datetime

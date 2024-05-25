@@ -1,15 +1,17 @@
 import os
-import re
 import subprocess
 from datetime import datetime
 
-import somaticseq.utilities.dockered_pipelines.container_option as container
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
+)
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "muse_image": "marghoob/muse:1.0rc_c",
+    "muse_image": DOCKER_IMAGES.muse,
     "MEM": "4G",
     "normal_bam": None,
     "tumor_bam": None,
@@ -53,7 +55,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
+    container_line, file_dictionary = container_params(
         input_parameters["muse_image"],
         tech=tech,
         files=all_paths,

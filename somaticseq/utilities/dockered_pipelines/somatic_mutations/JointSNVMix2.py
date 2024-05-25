@@ -1,15 +1,18 @@
 import os
-import re
 import subprocess
 from datetime import datetime
 
-import somaticseq.utilities.dockered_pipelines.container_option as container
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
+)
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "jsm2_image": "lethalfang/jointsnvmix2:0.7.5",
+    "jsm2_image": DOCKER_IMAGES.jsm2,
+    "bedtools_image": DOCKER_IMAGES.bedtools,
     "MEM": "8G",
     "threads": 1,
     "normal_bam": None,
@@ -53,7 +56,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
+    container_line, file_dictionary = container_params(
         input_parameters["jsm2_image"],
         tech=tech,
         files=all_paths,
@@ -167,8 +170,8 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         )
 
         if input_parameters["threads"] > 1:
-            bedtool_line, outdir_i = container.container_params(
-                "lethalfang/bedtools:2.26.0",
+            bedtool_line, outdir_i = container_params(
+                input_parameters["bedtools_image"],
                 tech,
                 (input_parameters["output_directory"],),
             )

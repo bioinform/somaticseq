@@ -3,13 +3,17 @@ import re
 import subprocess
 from datetime import datetime
 
-import somaticseq.utilities.dockered_pipelines.container_option as container
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
+)
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "varscan2_image": "djordjeklisic/sbg-varscan2:v1",
+    "varscan2_image": DOCKER_IMAGES.varscan2,
+    "samtools_image": DOCKER_IMAGES.samtools,
     "MEM": "4G",
     "threads": 1,
     "inclusion_region": None,
@@ -50,14 +54,14 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
+    container_line, file_dictionary = container_params(
         input_parameters["varscan2_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
-    mpileine_line, plDict = container.container_params(
-        "lethalfang/samtools:1.7",
+    mpileine_line, plDict = container_params(
+        input_parameters["samtools_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
@@ -199,14 +203,14 @@ def tumor_only(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
+    container_line, file_dictionary = container_params(
         input_parameters["varscan2_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
-    mpileine_line, plDict = container.container_params(
-        "lethalfang/samtools:1.7",
+    mpileine_line, plDict = container_params(
+        input_parameters["samtools_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],

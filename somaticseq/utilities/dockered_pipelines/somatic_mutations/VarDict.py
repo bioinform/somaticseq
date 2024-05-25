@@ -1,16 +1,18 @@
 import os
-import re
 import subprocess
 from datetime import datetime
 
-import somaticseq.utilities.dockered_pipelines.container_option as container
-from somaticseq._version import __version__ as VERSION
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
+)
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "vardict_image": "lethalfang/vardictjava:1.7.0",
+    "vardict_image": DOCKER_IMAGES.vardict,
+    "somaticseq_image": DOCKER_IMAGES.somaticseq,
     "MEM": "8G",
     "threads": 1,
     "normal_bam": None,
@@ -53,7 +55,7 @@ def tumor_normal(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
+    container_line, file_dictionary = container_params(
         input_parameters["vardict_image"],
         tech=tech,
         files=all_paths,
@@ -92,8 +94,8 @@ def tumor_normal(input_parameters, tech="docker"):
                 wgs_bed.write("{}\t{}\t{}\n".format(item[0], "0", item[1]))
 
     # However the "bed_file" is defined here, create a dockered line and mount dictionary for it:
-    bed_split_line, bedDict = container.container_params(
-        f"lethalfang/somaticseq:{VERSION}",
+    bed_split_line, bedDict = container_params(
+        input_parameters["somaticseq_image"],
         tech,
         (bed_file, input_parameters["output_directory"]),
     )
@@ -184,7 +186,7 @@ def tumor_only(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
+    container_line, file_dictionary = container_params(
         input_parameters["vardict_image"],
         tech=tech,
         files=all_paths,
@@ -223,8 +225,8 @@ def tumor_only(input_parameters, tech="docker"):
                 wgs_bed.write("{}\t{}\t{}\n".format(item[0], "0", item[1]))
 
     # However the "bed_file" is defined here, create a dockered line and mount dictionary for it:
-    bed_split_line, bedDict = container.container_params(
-        f"lethalfang/somaticseq:{VERSION}",
+    bed_split_line, bedDict = container_params(
+        input_parameters["somaticseq_image"],
         tech,
         (bed_file, input_parameters["output_directory"]),
     )

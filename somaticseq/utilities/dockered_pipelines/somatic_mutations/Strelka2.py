@@ -1,15 +1,18 @@
 import os
-import re
 import subprocess
 from datetime import datetime
 
-import somaticseq.utilities.dockered_pipelines.container_option as container
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
+)
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "strelka2_image": "lethalfang/strelka:2.9.5",
+    "strelka2_image": DOCKER_IMAGES.strelka2,
+    "tabix_image": DOCKER_IMAGES.tabix,
     "MEM": "4G",
     "threads": 1,
     "inclusion_region": None,
@@ -48,7 +51,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
+    container_line, file_dictionary = container_params(
         input_parameters["strelka2_image"],
         tech=tech,
         files=all_paths,
@@ -81,8 +84,8 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write('echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n')
 
         # Make .bed.gz out of .bed files using tabix:
-        tabix_line, tabixDict = container.container_params(
-            "lethalfang/tabix:1.7", tech, all_paths
+        tabix_line, tabixDict = container_params(
+            input_parameters["tabix_image"], tech, all_paths
         )
         tabix_selector = tabixDict[input_parameters["inclusion_region"]]["mount_path"]
         tabix_outdir = tabixDict[input_parameters["output_directory"]]["mount_path"]
@@ -163,7 +166,7 @@ def tumor_only(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
+    container_line, file_dictionary = container_params(
         input_parameters["strelka2_image"],
         tech=tech,
         files=all_paths,
@@ -195,8 +198,8 @@ def tumor_only(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write('echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n')
 
         # Make .bed.gz out of .bed files using tabix:
-        tabix_line, tabixDict = container.container_params(
-            "lethalfang/tabix:1.7", tech, all_paths
+        tabix_line, tabixDict = container_params(
+            input_parameters["tabix_image"], tech, all_paths
         )
         tabix_selector = tabixDict[input_parameters["inclusion_region"]]["mount_path"]
         tabix_outdir = tabixDict[input_parameters["output_directory"]]["mount_path"]

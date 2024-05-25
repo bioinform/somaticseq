@@ -1,16 +1,17 @@
 import os
-import re
 import subprocess
 from datetime import datetime
 
-import somaticseq.utilities.dockered_pipelines.container_option as container
-from somaticseq._version import __version__ as VERSION
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
+)
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "somaticseq_image": f"lethalfang/somaticseq:{VERSION}",
+    "somaticseq_image": DOCKER_IMAGES.somaticseq,
     "MEM": 2,
     "output_directory": os.curdir,
     "extra_docker_options": "",
@@ -31,7 +32,7 @@ def spread(
     outfile = os.path.join(logdir, input_parameters["script"])
 
     all_paths = list(in_fastqs) + list(out_fastqs)
-    spread_line, file_dictionary = container.container_params(
+    spread_line, file_dictionary = container_params(
         input_parameters["somaticseq_image"],
         tech=tech,
         files=all_paths,

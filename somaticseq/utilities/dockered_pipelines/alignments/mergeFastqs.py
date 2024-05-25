@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 
 import os
-import re
 import subprocess
 from datetime import datetime
-
-import somaticseq.utilities.dockered_pipelines.container_option as container
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
+)
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "tabix_image": "lethalfang/tabix:1.10",
+    "tabix_image": DOCKER_IMAGES.tabix,
     "MEM": 4,
     "output_directory": os.curdir,
     "action": "echo",
@@ -33,7 +34,7 @@ def gz(
     all_paths = list(infiles) + [
         outfq,
     ]
-    tabix_line, file_dictionary = container.container_params(
+    tabix_line, file_dictionary = container_params(
         input_parameters["tabix_image"],
         tech=tech,
         files=all_paths,

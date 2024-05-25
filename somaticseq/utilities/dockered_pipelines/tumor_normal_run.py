@@ -24,7 +24,7 @@ from somaticseq.defaults import (
     TUMOR_NAME,
 )
 
-timestamp = re.sub(r"[:-]", ".", datetime.now().isoformat())
+timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 def run() -> tuple[argparse.Namespace, dict]:

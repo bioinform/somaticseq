@@ -1,15 +1,18 @@
 import os
-import re
 import subprocess
 from datetime import datetime
 
-import somaticseq.utilities.dockered_pipelines.container_option as container
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
+)
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "mutect2_image": "broadinstitute/gatk:4.2.4.1",
+    "mutect2_image": DOCKER_IMAGES.mutect2,
+    "samtools_image": DOCKER_IMAGES.samtools,
     "MEM": "8G",
     "threads": 1,
     "inclusion_region": None,
@@ -47,17 +50,17 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
+    container_line, file_dictionary = container_params(
         input_parameters["mutect2_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
-    tumor_name_line, tumor_bam = container.container_params(
-        "lethalfang/samtools:1.7", tech, (input_parameters["tumor_bam"],)
+    tumor_name_line, tumor_bam = container_params(
+        input_parameters["samtools_image"], tech, (input_parameters["tumor_bam"],)
     )
-    normal_name_line, normal_bam = container.container_params(
-        "lethalfang/samtools:1.7", tech, (input_parameters["normal_bam"],)
+    normal_name_line, normal_bam = container_params(
+        input_parameters["samtools_image"], tech, (input_parameters["normal_bam"],)
     )
 
     # Resolve mounted paths
@@ -172,14 +175,14 @@ def tumor_only(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
+    container_line, file_dictionary = container_params(
         input_parameters["mutect2_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
-    tumor_name_line, tumor_bam = container.container_params(
-        "lethalfang/samtools:1.7", tech, (input_parameters["bam"],)
+    tumor_name_line, tumor_bam = container_params(
+        input_parameters["samtools_image"], tech, (input_parameters["bam"],)
     )
 
     # Resolve mounted paths

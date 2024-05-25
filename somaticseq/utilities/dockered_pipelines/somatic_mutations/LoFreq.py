@@ -1,15 +1,17 @@
 import os
-import re
 import subprocess
 from datetime import datetime
 
-import somaticseq.utilities.dockered_pipelines.container_option as container
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
+)
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "lofreq_image": "lethalfang/lofreq:2.1.3.1-1",
+    "lofreq_image": DOCKER_IMAGES.lofreq,
     "MEM": "12G",
     "threads": 1,
     "normal_bam": None,
@@ -54,7 +56,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
+    container_line, file_dictionary = container_params(
         input_parameters["lofreq_image"],
         tech=tech,
         files=all_paths,
@@ -134,7 +136,7 @@ def tumor_only(input_parameters, tech="docker"):
         if path_i:
             all_paths.append(path_i)
 
-    container_line, file_dictionary = container.container_params(
+    container_line, file_dictionary = container_params(
         input_parameters["lofreq_image"],
         tech=tech,
         files=all_paths,

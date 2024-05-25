@@ -9,20 +9,35 @@ from somaticseq._version import __version__ as VERSION
 
 @dataclass
 class DockerImages:
-    somaticseq: str = f"lethalfang/somaticseq:{VERSION}"
-    scalpel: str = "lethalfang/scalpel:0.5.4"
-    mutect2: str = "broadinstitute/gatk:4.0.5.2"
-    muse: str = "marghoob/muse:1.0rc_c"
-    lofreq: str = "lethalfang/lofreq:2.1.3.1-1"
-    jsm2: str = "lethalfang/jointsnvmix2:0.7.5"
-    vardict: str = "lethalfang/vardictjava:1.7.0"
-    somaticsniper: str = "lethalfang/somaticsniper:1.0.5.0-2"
-    strelka2: str = "lethalfang/strelka:2.9.5"
+    alientrimmer: str = "lethalfang/alientrimmer:0.4.0"
+    bedtools: str = "lethalfang/bedtools:2.26.0"
     bwa: str = "lethalfang/bwa:0.7.17_samtools"
+    jsm2: str = "lethalfang/jointsnvmix2:0.7.5"
+    lofreq: str = "lethalfang/lofreq:2.1.3.1-1"
+    muse: str = "marghoob/muse:1.0rc_c"
+    mutect2: str = "broadinstitute/gatk:4.0.5.2"
     picard: str = "lethalfang/picard:2.22.7"
     sambamba: str = "lethalfang/sambamba:0.7.1"
     samtools: str = "lethalfang/samtools:1.10"
+    scalpel: str = "lethalfang/scalpel:0.5.4"
+    somaticseq: str = f"lethalfang/somaticseq:{VERSION}"
+    somaticsniper: str = "lethalfang/somaticsniper:1.0.5.0-2"
+    strelka2: str = "lethalfang/strelka:2.9.5"
     tabix: str = "lethalfang/tabix:1.10"
+    trimmomatic: str = "lethalfang/trimmomatic:0.39"
+    vardict: str = "lethalfang/vardictjava:1.7.0"
+    varscan2: str = "djordjeklisic/sbg-varscan2:v1"
+
+
+@dataclass
+class ContainerMountedFile:
+    file: str
+    filepath: Path
+    filename: str
+    directory: Path
+    absolute_directory: Path
+    mount_directory: str
+    mount_path: str
 
 
 DOCKER_IMAGES = DockerImages()
@@ -74,6 +89,6 @@ def container_params(
         container_string = f"singularity exec --cleanenv {MOUNT_STRING} {extra_args} {singularity_image_loc}{container_image}"
 
     else:
-        raise ValueError("Only supports docker and singularity right now.")
+        raise NotImplementedError("Only supports docker and singularity.")
 
     return container_string, file_dictionary

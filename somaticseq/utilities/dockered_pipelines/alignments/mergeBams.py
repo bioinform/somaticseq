@@ -14,8 +14,8 @@ timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
 
 DEFAULT_PARAMS = {
-    "picard_image": "lethalfang/picard:2.22.7",
-    "sambamba_image": "lethalfang/sambamba:0.7.1",
+    "picard_image": DOCKER_IMAGES.picard,
+    "sambamba_image": DOCKER_IMAGES.sambamba,
     "MEM": 16,
     "action": "echo",
     "extra_docker_options": "",
@@ -38,7 +38,7 @@ def picard(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=Fal
         outbam,
     ]
     merge_line, file_dictionary = container_params(
-        DOCKER_IMAGES.picard,
+        input_parameters["picard_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
@@ -110,7 +110,7 @@ def sambamba(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=F
         outbam,
     ]
     merge_line, file_dictionary = container_params(
-        DOCKER_IMAGES.sambamba,
+        input_parameters["sambamba_image"],
         tech=tech,
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
