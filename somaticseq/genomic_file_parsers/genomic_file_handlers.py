@@ -190,7 +190,7 @@ class PysamHeader(BaseModel):
         return name_tuple  # type: ignore
 
 
-def skip_vcf_header(opened_file: io.TextIO) -> str:
+def skip_vcf_header(opened_file: io.TextIOWrapper) -> str:
     line_i = opened_file.readline().rstrip()
     while line_i.startswith("#"):
         line_i = opened_file.readline().rstrip()
@@ -228,7 +228,7 @@ def faiordict2contigorder(
     return chrom_seq
 
 
-def open_textfile(file_name: str) -> io.TextIO:
+def open_textfile(file_name: str) -> io.TextIOWrapper:
     # See if the input file is a .gz file:
     if str(file_name).lower().endswith(".gz"):
         return gzip.open(file_name, "rt")
@@ -376,7 +376,7 @@ def whoisbehind(
 
 
 def vcf_header_modifier(
-    infile_handle: io.TextIO, addons: list[str] = [], getlost: str = " "
+    infile_handle: io.TextIOWrapper, addons: list[str] = [], getlost: str = " "
 ):
     """addons = A list of INFO, FORMAT, ID, or Filter lines you want to add.
     getlost = a regex expression for the ID of INFO/FORMAT/FILTER that you want
