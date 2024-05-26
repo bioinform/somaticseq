@@ -30,7 +30,7 @@ class DockerImages:
 
 
 @dataclass
-class ContainerMountedFile:
+class MountedFileProperty:
     file: str
     filepath: Path
     filename: str

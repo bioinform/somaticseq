@@ -3,7 +3,7 @@ import io
 import math
 import re
 from functools import cached_property
-from typing import Any, Literal
+from typing import Any, Literal, Iterable
 
 from pydantic import BaseModel
 from pysam import AlignmentFile
@@ -25,6 +25,10 @@ CHROMOSOMES = [str(i) for i in range(1, 23)]
 CHROMOSOMES.append("X")
 CHROMOSOMES.append("Y")
 CHROMOSOMES.append("M")
+
+CHROMOSOME_INDICES = {}
+for n, contig_i in enumerate(CHROMOSOMES):
+    CHROMOSOME_INDICES[contig_i] = n
 
 
 nan = float("nan")
@@ -105,6 +109,7 @@ class VCFVariantRecord(BaseModel):
             return True if variable in key_item else False
 
     def get_sample_variable(self) -> list[str]:
+        assert self.field
         return self.field.split(":")
 
     def get_sample_item(
@@ -116,8 +121,10 @@ class VCFVariantRecord(BaseModel):
             return dict(zip(self.get_sample_variable(), self.samples[idx].split(":")))
         elif out_type.lower() == "list":
             return (self.get_sample_variable(), self.samples[idx].split(":"))
+        else:
+            raise NotImplementedError("out_type either dict or list")
 
-    def get_sample_value(self, variable: str, idx: int = 0) -> dict[str, str]:
+    def get_sample_value(self, variable: str, idx: int = 0) -> str | None:
         assert self.field
         assert self.samples
         var2value = dict(zip(self.field.split(":"), self.samples[idx].split(":")))
@@ -183,7 +190,7 @@ class PysamHeader(BaseModel):
         return name_tuple  # type: ignore
 
 
-def skip_vcf_header(opened_file):
+def skip_vcf_header(opened_file: io.TextIO) -> str:
     line_i = opened_file.readline().rstrip()
     while line_i.startswith("#"):
         line_i = opened_file.readline().rstrip()
@@ -221,11 +228,10 @@ def faiordict2contigorder(
     return chrom_seq
 
 
-def open_textfile(file_name: str) -> io.TextIOWrapper:
+def open_textfile(file_name: str) -> io.TextIO:
     # See if the input file is a .gz file:
     if str(file_name).lower().endswith(".gz"):
         return gzip.open(file_name, "rt")
-
     else:
         return open(file_name)
 
@@ -249,7 +255,7 @@ def phred33toascii(x: int) -> str:
     return chr(x + 33)
 
 
-def p2phred(p, max_phred=inf):
+def p2phred(p: float, max_phred: float | int = inf):
     """Convert p-value to Phred-scale quality score."""
     if p < 0 or p > 1:
         raise ValueError("p-value must be between 0 and 1.")
@@ -265,7 +271,7 @@ def p2phred(p, max_phred=inf):
     return Q
 
 
-def phred2p(phred):
+def phred2p(phred: int | float) -> float:
     """Convert Phred-scale quality score to p-value."""
     return 10 ** (-phred / 10)
 
@@ -276,13 +282,13 @@ def findall_index(mylist: list[Any], tolookfor: Any) -> list[int]:
     return all_indices
 
 
-def findall_index_regex(mylist, pattern):
+def findall_index_regex(mylist: Iterable, pattern: str) -> list[int]:
     """Find all instances in a list that matches a regex pattern."""
     all_indices = [i for i, item in enumerate(mylist) if re.search(pattern, item)]
     return all_indices
 
 
-def count_repeating_bases(sequence):
+def count_repeating_bases(sequence: str) -> list[int]:
     """For a string, count the number of characters that appears in a row.
     E.g., for string "ABBCCCDDDDAAAAAAA", the function returns 1, 2, 3, 4, 7,
     because there is 1 A, 2 B's, 3 C's, 4 D's, and then 7 A's.
@@ -298,16 +304,23 @@ def count_repeating_bases(sequence):
     return counters
 
 
-chrom_seq = {}
-for n, contig_i in enumerate(CHROMOSOMES):
-    chrom_seq[contig_i] = n
-
-
-def whoisbehind(coord_0, coord_1, CHROMOSOMES):
+def whoisbehind(
+    coord_0: str | tuple[str, int] | list[str | int],
+    coord_1: str | tuple[str, int] | list[str | int],
+    sorted_contigs: list[str] | tuple[str, ...] | dict[str, int] = CHROMOSOMES,
+) -> Literal[0, 1, 10]:
     """
-    coord_0 and coord_1 are two strings or two lists, specifying the chromosome,
-    a (typically) tab, and then the location. Return the index where the
-    coordinate is behind. Return 10 if they are the same position.
+
+    Args:
+        coord_0: the "0th_coordinate", can eitehr take in the form of
+            "chr1\t1000" or ("chr1", 1000)
+        coord_1: the "1st_coordinate" to compare which coordinate is behind,
+            e.g., ("chr1", "1000") would be behind ("chr1", "2000")
+        sorted_contig: to allow coordinates of different contigs be compared.
+
+    Return:
+        The index where the coordinate is behind (i.e., 0 of coord_0 is behind,
+            and 1 if coord_1 is behind). 10 if they are the same position.
     """
     end_of_0 = end_of_1 = False
     if coord_0 == "" or coord_0 == ["", ""] or coord_0 == ("", "") or not coord_0:
@@ -321,39 +334,50 @@ def whoisbehind(coord_0, coord_1, CHROMOSOMES):
     elif end_of_0:
         return 1
     else:
+        position0: str | int  # either 1000 or "1000" is acceptable
+        position1: str | int
         if isinstance(coord_0, str):
             chrom0, position0 = coord_0.split()
         elif isinstance(coord_0, list) or isinstance(coord_0, tuple):
+            assert isinstance(coord_0[0], str)
             chrom0, position0 = coord_0[0], coord_0[1]
+        else:
+            raise NotImplementedError("str or tuple/list to store coordinates.")
+
         if isinstance(coord_1, str):
             chrom1, position1 = coord_1.split()
         elif isinstance(coord_1, list) or isinstance(coord_1, tuple):
+            assert isinstance(coord_1[0], str)
             chrom1, position1 = coord_1[0], coord_1[1]
-        if isinstance(CHROMOSOMES, dict):
-            chrom0_position = CHROMOSOMES[chrom0]
-            chrom1_position = CHROMOSOMES[chrom1]
-        elif isinstance(CHROMOSOMES, list) or isinstance(CHROMOSOMES, tuple):
-            chrom0_position = CHROMOSOMES.index(chrom0)
-            chrom1_position = CHROMOSOMES.index(chrom1)
+        else:
+            raise NotImplementedError("str or tuple/list to store coordinates.")
+
+        if isinstance(sorted_contigs, dict):
+            chrom0_position = sorted_contigs[chrom0]
+            chrom1_position = sorted_contigs[chrom1]
+        elif isinstance(sorted_contigs, list) or isinstance(sorted_contigs, tuple):
+            chrom0_position = sorted_contigs.index(chrom0)
+            chrom1_position = sorted_contigs.index(chrom1)
+        else:
+            raise NotImplementedError("sorted_contig cannot be interpreted")
+
         if chrom0_position < chrom1_position:
             return 0  # 1st coordinate is ahead
         elif chrom0_position > chrom1_position:
             return 1  # 1st coordinate is ahead
 
-        # Must be in the same chromosome
-        else:
-            position0 = int(position0)
-            position1 = int(position1)
-            if position0 < position1:
-                return 0
-            elif position0 > position1:
-                return 1
-            # Same chromosome, same position, then same coordinate:
-            elif position0 == position1:
-                return 10
+        # Must be in the same chromosome if not returned yet
+        if int(position0) < int(position1):
+            return 0
+        elif int(position0) > int(position1):
+            return 1
+        else:  # position0 == position1:
+            return 10
 
 
-def vcf_header_modifier(infile_handle, addons=[], getlost=" "):
+def vcf_header_modifier(
+    infile_handle: io.TextIO, addons: list[str] = [], getlost: str = " "
+):
     """addons = A list of INFO, FORMAT, ID, or Filter lines you want to add.
     getlost = a regex expression for the ID of INFO/FORMAT/FILTER that you want
     to get rid of.
@@ -553,7 +577,9 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
     return reporter
 
 
-def find_vcf_at_coordinate(my_coordinate, latest_vcf_line, vcf_file_handle, chrom_seq):
+def find_vcf_at_coordinate(
+    my_coordinate, latest_vcf_line, vcf_file_handle, chrom_seq=CHROMOSOME_INDICES
+):
     """Best used in conjunction with catchup_multilines.
     Given the current coordinate, the latest vcf_line from a vcf file, and the
     vcf file handle, it will return all the VCF variants (as VCF objects) at the
