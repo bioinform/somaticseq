@@ -77,7 +77,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
-
         out.write(f"#$ -o {logdir}\n")
         out.write(f"#$ -e {logdir}\n")
         out.write("#$ -S /bin/bash\n")
@@ -156,9 +155,6 @@ def tumor_only(input_parameters, tech="docker"):
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
-
-        out.write("#!/bin/bash\n\n")
-
         out.write(f"#$ -o {logdir}\n")
         out.write(f"#$ -e {logdir}\n")
         out.write("#$ -S /bin/bash\n")
@@ -173,7 +169,6 @@ def tumor_only(input_parameters, tech="docker"):
         out.write(f"-l {mounted_inclusion} \\\n")
         out.write(f"-f {mounted_genome_reference} \\\n")
         out.write("-o {}/{} \\\n".format(mounted_outdir, input_parameters["outfile"]))
-        out.write(f"-d {mounted_dbsnp_gz} \\\n")
 
         if input_parameters["lofreq_arguments"]:
             out.write("{} \\\n".format(input_parameters["lofreq_arguments"]))
