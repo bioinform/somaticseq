@@ -578,7 +578,10 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
 
 
 def find_vcf_at_coordinate(
-    my_coordinate, latest_vcf_line, vcf_file_handle, chrom_seq=CHROMOSOME_INDICES
+    my_coordinate: tuple[str, str | int],
+    latest_vcf_line,
+    vcf_file_handle,
+    chrom_seq=CHROMOSOME_INDICES,
 ):
     """Best used in conjunction with catchup_multilines.
     Given the current coordinate, the latest vcf_line from a vcf file, and the
@@ -587,6 +590,13 @@ def find_vcf_at_coordinate(
     ref_base_i, alt_base_i ). If there are two ALT bases in a given VCF line,
     the output dictionary will include two copies of this VCF object, with two
     different keys, each representing a different ALT base.
+
+    Args:
+        my_coordinate: the current coordinate to catch up to, e.g., in the form
+            of ("chr1": 1000)
+        latest_vcf_line: the previous line in the VCF file that was read
+
+
     """
     latest_vcf_run = catchup_multilines(
         my_coordinate, latest_vcf_line, vcf_file_handle, chrom_seq
