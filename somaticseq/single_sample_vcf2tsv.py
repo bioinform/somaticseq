@@ -7,6 +7,7 @@ import logging
 import math
 import os
 import re
+import sys
 from copy import copy
 
 import pysam
@@ -268,7 +269,7 @@ def run() -> dict:
         type=str,
         help="Output TSV Name",
         required=False,
-        default=os.sys.stdout,
+        default=sys.stdout,
     )
     args = parser.parse_args()
     inputParameters = vars(args)

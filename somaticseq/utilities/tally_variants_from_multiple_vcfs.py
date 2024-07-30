@@ -20,7 +20,6 @@ import somaticseq.vcf_modifier.vcfIntersector as vcfIntersector
 def intersect_multiple_vcf_files(inVcfList_and_BedFile):
     vcf_files, bed_file = inVcfList_and_BedFile
     dirname = tempfile.gettempdir()
-
     out_files = []
     for vcf_i in vcf_files:
         outfile_i = os.path.join(dirname, uuid.uuid4().hex + ".vcf")
@@ -37,21 +36,17 @@ def extract_snpEff(vcf_line):
 
     vcf_obj = genome.VCFVariantRecord.from_vcf_line(vcf_line)
     snpeff_ann = vcf_obj.get_info_value("ANN")
-
     if snpeff_ann:
         ann_items = snpeff_ann.split(",")
-
         for ann_i in ann_items:
             ann_item = ann_i.split("|")
             gene_i = ann_item[3]
             feature_i = ann_item[6]
             ann_item[9]
             aaChange_i = ann_item[10]
-
             if gene_i and aaChange_i:
                 # Only do non-syn variants
                 aa = re.search(r"p\.([a-zA-Z]+)[0-9]+([a-zA-Z]+)", aaChange_i)
-
                 if aa and (aa.groups()[0] != aa.groups()[1]):
                     annGenes.append(gene_i)
                     annAAs.append(aaChange_i)
@@ -99,11 +94,9 @@ def vaf_from_bam(
             and read_i.mapping_quality >= min_mq
         ):
             dp += 1
-
             sequencing_call = read_info_extractor.alignment_in_read_for_coordinate(
                 read_i, my_coordinate[1] - 1
             )
-
             # Reference calls:
             if (
                 sequencing_call.call_type == read_info_extractor.AlignmentType.match
@@ -133,7 +126,6 @@ def vaf_from_bam(
                 )
             ):
                 var_calls += 1
-
             # Inconsistent read or 2nd alternate calls:
             else:
                 other_calls += 1
@@ -158,7 +150,6 @@ def vcfs2variants(vcf_files, bam_files, sample_names):
 
             while line_i:
                 item = line_i.split("\t")
-
                 contig_i = item[0]
                 pos_i = int(item[1])
                 refbase = item[3]
@@ -168,18 +159,15 @@ def vcfs2variants(vcf_files, bam_files, sample_names):
 
                 genes, amino_acid_changes, txn_ids = extract_snpEff(line_i)
                 dbsnp_cosmic_ids = extract_dbsnp_cosmic(line_i)
-
                 variant_id = (
                     contig_i,
                     pos_i,
                     refbase,
                     altbase,
                 )
-
                 vdp, rdp, odp, totaldp = vaf_from_bam(
                     bam, (contig_i, pos_i), refbase, altbase, 1
                 )
-
                 try:
                     vaf_i = vdp / totaldp
                 except ZeroDivisionError:
@@ -198,7 +186,6 @@ def vcfs2variants(vcf_files, bam_files, sample_names):
                     "VDP": vdp,
                     "DP": totaldp,
                 }
-
                 line_i = vcf.readline().rstrip()
 
         i += 1
@@ -223,7 +210,6 @@ def fills_missing_vafs(variantDict, bam_files, sample_names):
                     variant_i[3],
                     1,
                 )
-
                 try:
                     vaf_i = vdp / totaldp
                 except ZeroDivisionError:
@@ -237,7 +223,6 @@ def fills_missing_vafs(variantDict, bam_files, sample_names):
                     "VDP": vdp,
                     "DP": totaldp,
                 }
-
     for sample_i in bamDict:
         bamDict[sample_i].close()
 
@@ -250,7 +235,6 @@ def make_variant_dict(inputListofLists):
     completeVariantDict = fills_missing_vafs(
         varDictWithMissings, bam_files, sample_names
     )
-
     return completeVariantDict
 
 
@@ -338,7 +322,6 @@ def print_variantDict(
                 num_intersected_filters,
                 "\t".join(data_text),
             )
-
             print(line_out)
 
     return 0
