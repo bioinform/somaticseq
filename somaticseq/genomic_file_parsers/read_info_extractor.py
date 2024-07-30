@@ -1,3 +1,9 @@
+import enum
+from dataclasses import dataclass
+from typing import Literal
+
+import pysam
+
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 CIGAR_ALN_MATCH = 0
@@ -14,163 +20,204 @@ nan = float("nan")
 inf = float("inf")
 
 
-def position_of_aligned_read(read_i, target_position, win_size=3):
+class AlignmentType(enum.IntEnum):
+    match = enum.auto()  # reference base or snv
+    insertion = enum.auto()  # can also be soft-clipping
+    deletion = enum.auto()
+    unknown = enum.auto()
+
+    def __str__(self) -> str:
+        return self.name
+
+
+@dataclass
+class SequencingCall:
+    call_type: AlignmentType | None
+    position_on_read: int | None
+    base_call: str | None
+    indel_length: int | float | None  # float for NaN
+    nearest_indel: int | float | None  # float for NaN
+
+    def __str__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"call_type={self.call_type}, "
+            f"position_on_read={self.position_on_read}, "
+            f"base_call={self.base_call}, "
+            f"indel_length={self.indel_length}, "
+            f"num_flanking_indels={self.nearest_indel})"
+        )
+
+
+def alignment_in_read_for_coordinate(
+    read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
+) -> SequencingCall:
     """
-    Return the base call of the target position, and if it's a start of
-    insertion/deletion. This target position follows pysam convension, i.e.,
-    0-based. In VCF files, deletions/insertions occur AFTER the position.
+    Given a coordinate, return the alignment on the read
 
-    Return (Code, seq_i, base_at_target, indel_length, nearest
-    insertion/deletion)
+    Args:
+        read: pysam.AlignedSegment
+        coordinate: genomic coordinate
+        win_size: window size within which we will record the nearest indel,
+            beyond which we will record "inf"
 
-    The first number in result is a codeMatch to reference on CIGAR, which is
-    either a reference read or a SNV (substitution counts as M in CIGAR) to
-    reference, which is either a reference read or a SNV/SNP
-        2: Deletion after the target position
-        3: Insertion after the target position
-        0: The target position does not match to reference, and may be discarded
-        for "reference/alternate" read count purposes, but can be kept for
-        "inconsistent read" metrics.
+    Returns:
+        SequencingCall
     """
+    # If the coordinate is beyond the read's first and last aligned coordinate
+    aligned_coordinates = read.get_reference_positions()
+    start, stop = aligned_coordinates[0], aligned_coordinates[-1]
+    if not (start <= coordinate <= stop):
+        return SequencingCall(
+            call_type=None,
+            position_on_read=None,
+            base_call=None,
+            indel_length=None,
+            nearest_indel=None,
+        )
 
-    aligned_pairs = read_i.get_aligned_pairs()
-
-    for i, align_i in enumerate(aligned_pairs):
-        # If find a match:
-        if align_i[1] == target_position:
-            seq_i = align_i[0]
-            idx_aligned_pair = i
+    aligned_pairs = read.get_aligned_pairs()
+    for i, aligned_pair in enumerate(aligned_pairs):
+        # The aligned_pair where the aligned coordinate matches the input param
+        if aligned_pair[1] == coordinate:
+            ith_base = aligned_pair[0]
+            ith_aligned_pair = i
             break
 
+    # If the coordinate is deleted from the sequencing read (i.e., when the
+    # deletion alignment in this read occurs before the coordinate and ends
+    # after the coordinate):
+    if ith_base is None:
+        return SequencingCall(
+            call_type=AlignmentType.unknown,
+            position_on_read=ith_base,
+            base_call=None,
+            indel_length=None,
+            nearest_indel=None,
+        )
+
     # If the target position is aligned:
-    try:
-        if seq_i is not None:
-            base_at_target = read_i.seq[seq_i]
+    assert read.query_sequence
+    base_at_coordinate = read.query_sequence[ith_base]
 
-            # Whether if it's a Deletion/Insertion depends on what happens after
-            # this position: If the match (i.e., i, seq_i) is the final
-            # alignment, then you cannot know if it's an indel if "i" is NOT the
-            # final alignment:
-            if i != len(aligned_pairs) - 1:
-                indel_length = 0
-                # If the next alignment is the next sequenced base, then the
-                # target is either a reference read of a SNP/SNV:
-                if (
-                    aligned_pairs[i + 1][0] == seq_i + 1
-                    and aligned_pairs[i + 1][1] == target_position + 1
-                ):
-                    code = 1  # Reference read for mismatch
+    # Whether if it's an indel depends on what happens after this position: If
+    # the match (i.e., ith_aligned_pair, ith_base) is the final aligned_pair,
+    # then you cannot know if it's an indel.
+    # If ith_aligned_pair is the final aligned_pair, we cannot check if there is
+    # indel afterwards. Call it match because it is much more likely than indel,
+    # but assign "nan" to indel_length and None to nearest_indel.
+    if ith_aligned_pair == len(aligned_pairs) - 1:
+        return SequencingCall(
+            call_type=AlignmentType.match,
+            position_on_read=ith_base,
+            base_call=base_at_coordinate,
+            indel_length=nan,
+            nearest_indel=None,
+        )
 
-                # If the next reference position has no read position to it, it
-                # is DELETED in this read:
-                elif (
-                    aligned_pairs[i + 1][0] is None
-                    and aligned_pairs[i + 1][1] == target_position + 1
-                ):
-                    code = 2  # Deletion
+    # If ith_aligned_pair is not the final alignment, we can check subsequent
+    # aligned_pair to see if it's an indel, and calculate more metrics
+    # associated with this alignment.
+    indel_length = 0
+    # If the next aligned_pair is the next sequenced base, then the alignment at
+    # coordinate is a Match: either a reference base or a SNP/SNV. Both are "M"
+    # in CIGAR.
+    if (
+        aligned_pairs[ith_aligned_pair + 1][0] == ith_base + 1
+        and aligned_pairs[ith_aligned_pair + 1][1] == coordinate + 1
+    ):
+        vtype = AlignmentType.match  # Reference read for mismatch
 
-                    for align_j in aligned_pairs[i + 1 : :]:
-                        if align_j[0] is None:
-                            indel_length -= 1
-                        else:
-                            break
-
-                # Opposite of deletion, if the read position cannot be aligned
-                # to the reference, it can be an INSERTION. Insertions sometimes
-                # show up wit soft-clipping at the end, if the inserted sequence
-                # is "too long" to align on a single read. In this case, the
-                # inserted length derived here is but a lower limit of the real
-                # inserted length.
-                elif (
-                    aligned_pairs[i + 1][0] == seq_i + 1
-                    and aligned_pairs[i + 1][1] is None
-                ):
-                    code = 3  # Insertion or soft-clipping
-
-                    for align_j in aligned_pairs[i + 1 : :]:
-                        if align_j[1] is None:
-                            indel_length += 1
-                        else:
-                            break
-
-            # If "i" is the final alignment, cannt exam for indel:
+    # If the next reference position has no read position to it, it is a
+    # deletion in this read at this coordinate. Indel length is negative for
+    # deletion.
+    elif (
+        aligned_pairs[ith_aligned_pair + 1][0] is None
+        and aligned_pairs[ith_aligned_pair + 1][1] == coordinate + 1
+    ):
+        vtype = AlignmentType.deletion  # Deletion
+        for align_j in aligned_pairs[ith_aligned_pair + 1 : :]:
+            if align_j[0] is None:
+                indel_length -= 1
             else:
-                code = 1  # Assuming no indel
-                # Would be zero if certain no indel, but uncertain here
-                indel_length = nan
+                break
 
-        # If the target position is deleted from the sequencing read (i.e., the
-        # deletion in this read occurs before the target position):
-        else:
-            code = 0
-            base_at_target, indel_length, flanking_indel = None, None, None
+    # If the read position cannot be aligned to the reference, it can be an
+    # insertion. Insertions sometimes show up with soft-clipping at the end if
+    # the inserted sequence is "too long" to align on a single read. In this
+    # case, the inserted length derived here is a lower limit of the real
+    # inserted length.
+    elif (
+        aligned_pairs[ith_aligned_pair + 1][0] == ith_base + 1
+        and aligned_pairs[ith_aligned_pair + 1][1] is None
+    ):
+        vtype = AlignmentType.insertion  # Insertion or soft-clipping
+        for align_j in aligned_pairs[ith_aligned_pair + 1 : :]:
+            if align_j[1] is None:
+                indel_length += 1
+            else:
+                break
 
-        # See if there is insertion/deletion within 5 bp of "seq_i" on the query.
-        # seq_i is the i_th aligned base
-        if isinstance(indel_length, int):
-            right_indel_flanks = inf
-            left_indel_flanks = inf
-            left_side_start = idx_aligned_pair - 1
-            right_side_start = idx_aligned_pair + abs(indel_length) + 1
+    # See if there is insertion/deletion within 3 bp of "ith_base" on the query.
+    # ith_base is the i_th aligned base. A positive indel length here indicate
+    # that we're not at the end of the read.
+    right_indel_flanks = inf
+    left_indel_flanks = inf
+    left_side_start = ith_aligned_pair - 1
+    right_side_start = ith_aligned_pair + abs(indel_length) + 1
 
-            # (i, None) = Insertion (or Soft-clips), i.e., means the i_th base
-            # in the query is not aligned to a reference (None, coordinate) =
-            # Deletion, i.e., there is no base in it that aligns to this
-            # coordinate. If those two scenarios occur right after an aligned
-            # base, that base position is counted as an indel.
-            for step_right_i in range(
-                min(win_size, len(aligned_pairs) - right_side_start - 1)
-            ):
-                j = right_side_start + step_right_i
+    # (i, None) = Insertion (or Soft-clips), i.e., means the i_th base in the
+    # query is not aligned to a reference (None, coordinate) = Deletion, i.e.,
+    # there is no base in it that aligns to this coordinate. If those two
+    # scenarios occur right after an aligned base, that base position is counted
+    # as an indel.
+    for step_right_i in range(min(win_size, len(aligned_pairs) - right_side_start - 1)):
+        j = right_side_start + step_right_i
+        if aligned_pairs[j + 1][1] is None or aligned_pairs[j + 1][0] is None:
+            right_indel_flanks = step_right_i + 1
+            break
 
-                if aligned_pairs[j + 1][1] is None or aligned_pairs[j + 1][0] is None:
-                    right_indel_flanks = step_right_i + 1
-                    break
+    for step_left_i in range(min(win_size, left_side_start)):
+        j = left_side_start - step_left_i
+        if aligned_pairs[j][1] is None or aligned_pairs[j][0] is None:
+            left_indel_flanks = step_left_i + 1
+            break
 
-            for step_left_i in range(min(win_size, left_side_start)):
-                j = left_side_start - step_left_i
+    nearest_indel_within_window = min(left_indel_flanks, right_indel_flanks)
 
-                if aligned_pairs[j][1] is None or aligned_pairs[j][0] is None:
-                    left_indel_flanks = step_left_i + 1
-                    break
-
-            flanking_indel = min(left_indel_flanks, right_indel_flanks)
-
-        else:
-            flanking_indel = None
-
-        return code, seq_i, base_at_target, indel_length, flanking_indel
-
-    # The target position does not exist in the read
-    except UnboundLocalError:
-        return None, None, None, None, None
+    return SequencingCall(
+        call_type=vtype,
+        position_on_read=ith_base,
+        base_call=base_at_coordinate,
+        indel_length=indel_length,
+        nearest_indel=nearest_indel_within_window,
+    )
 
 
-## Dedup test for BAM file
-def dedup_test(read_i, remove_dup_or_not=True):
+# Dedup test for BAM file
+def dedup_test(read: pysam.AlignedSegment, remove_dup_or_not: bool = True) -> bool:
     """
     Return False (i.e., remove the read) if the read is a duplicate and if the
     user specify that duplicates should be removed. Else return True (i.e, keep
     the read)
     """
-    if read_i.is_duplicate and remove_dup_or_not:
+    if read.is_duplicate and remove_dup_or_not:
         return False
-    else:
-        return True
+    return True
 
 
 # Useful to make BED region into an iterator of coordinates
-def genomic_coordinates(contig_i, start, end):
+def genomic_coordinates(contig: str, start: int, end: int):
     for pos_i in range(start, end + 1):
-        yield contig_i, pos_i
+        yield contig, pos_i
 
 
-def mean(stuff):
+def mean(stuff) -> float:
     return sum(stuff) / len(stuff) if stuff else nan
 
 
 # Extract Indel DP4 info from pileup files:
-def pileup_indel_DP4(pileup_object, indel_pattern):
+def pileup_indel_dp4(pileup_object, indel_pattern):
     if pileup_object.reads:
         ref_for = pileup_object.reads.count(".")
         ref_rev = pileup_object.reads.count(",")
@@ -185,7 +232,7 @@ def pileup_indel_DP4(pileup_object, indel_pattern):
     return dp4
 
 
-def pileup_DP4(pileup_object, ref_base, variant_call):
+def pileup_dp4(pileup_object, ref_base, variant_call):
     base_calls = pileup_object.base_reads()
 
     if base_calls:
@@ -223,75 +270,70 @@ def pileup_DP4(pileup_object, ref_base, variant_call):
     return ref_for, ref_rev, alt_for, alt_rev
 
 
-def rescale(x, original="fraction", rescale_to=None, max_phred=1001):
-    if (rescale_to is None) or (original.lower() == rescale_to.lower()):
-        y = x if isinstance(x, int) else "%.2f" % x
+def rescale(
+    x: int | float,
+    original: Literal["fraction", "phred"] = "fraction",
+    rescale_to: Literal["fraction", "phred"] | None = None,
+    max_phred: float = 1001,
+) -> float | int:
 
-    elif original.lower() == "fraction" and rescale_to == "phred":
+    if original == "fraction" and rescale_to == "phred":
         y = genome.p2phred(x, max_phred=max_phred)
-        y = "%.2f" % y
+        return round(y, 2)
 
-    elif original.lower() == "phred" and rescale_to == "fraction":
+    if original == "phred" and rescale_to == "fraction":
         y = genome.phred2p(x)
-        y = "%.2f" % y
+        return round(y, 2)
 
-    return y
+    return x if isinstance(x, int) else round(x, 2)
 
 
 # Stuff from VarDict:
-def find_msi(vcf_object):
+def find_msi(vcf_object: genome.VCFVariantRecord) -> float:
     msi = vcf_object.get_info_value("MSI")
     if msi:
-        msi = float(msi)
-    else:
-        msi = nan
-    return msi
+        return float(msi)
+    return nan
 
 
-def find_msilen(vcf_object):
+def find_msilen(vcf_object: genome.VCFVariantRecord) -> float:
     msilen = vcf_object.get_info_value("MSILEN")
     if msilen:
-        msilen = float(msilen)
-    else:
-        msilen = nan
-    return msilen
+        return float(msilen)
+    return nan
 
 
-def find_shift3(vcf_object):
+def find_shift3(vcf_object: genome.VCFVariantRecord) -> float:
     shift3 = vcf_object.get_info_value("SHIFT3")
     if shift3:
-        shift3 = float(shift3)
-    else:
-        shift3 = nan
-    return shift3
+        return float(shift3)
+    return nan
 
 
 # MuTect2's Stuff:
-def mutect2_nlod(vcf_object):
+def mutect2_nlod(vcf_object: genome.VCFVariantRecord) -> float:
     nlod = vcf_object.get_info_value("NLOD")
     if nlod:
         return float(nlod)
-    else:
-        return nan
+    return nan
 
 
-def mutect2_tlod(vcf_object):
+def mutect2_tlod(vcf_object: genome.VCFVariantRecord) -> float:
     tlod = vcf_object.get_info_value("TLOD")
     if tlod:
         return float(tlod)
-    else:
-        return nan
+    return nan
 
 
-def mutect2_str(vcf_object):
+def mutect2_str(vcf_object: genome.VCFVariantRecord) -> int:
     if vcf_object.get_info_value("STR"):
         return 1
-    else:
-        return 0
+    return 0
 
 
-def mutect2_ecnt(vcf_object):
-    ecnt = vcf_object.get_info_value("ECNT")
+def mutect2_ecnt(vcf_object: genome.VCFVariantRecord) -> int | float:
+    ecnt: int | float
+    ecnt = vcf_object.get_info_value("ECNT")  # type: ignore
     if ecnt:
         try:
             ecnt = int(ecnt)
@@ -299,5 +341,4 @@ def mutect2_ecnt(vcf_object):
             ecnt = nan
     else:
         ecnt = nan
-
     return ecnt

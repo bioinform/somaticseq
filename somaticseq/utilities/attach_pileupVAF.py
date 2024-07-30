@@ -104,7 +104,7 @@ nan = float("nan")
 header_append = []
 format_append = []
 
-if args.pileup_DP4:
+if args.pileup_dp4:
     header_append.append(
         '##FORMAT=<ID=plDP4,Number=4,Type=Integer,Description="DP4 from pileup: ref forward, ref reverse, alt forward, alt reverse">'
     )
@@ -259,7 +259,7 @@ while line_i:
 
             ### Pre-defined material ###
             ### If user wants DP4 ###
-            if args.pileup_DP4:
+            if args.pileup_dp4:
                 pl_DP4 = f"{ref_for},{ref_rev},{alt_for},{alt_rev}"
                 sample_append.append(pl_DP4)
 

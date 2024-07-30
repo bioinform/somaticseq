@@ -6,9 +6,10 @@ from pydantic import BaseModel
 
 from somaticseq.genomic_file_parsers.read_info_extractor import (
     CIGAR_SOFT_CLIP,
+    AlignmentType,
+    alignment_in_read_for_coordinate,
     dedup_test,
     mean,
-    position_of_aligned_read,
 )
 
 nan = float("nan")
@@ -94,30 +95,33 @@ class BamFeatures(BaseModel):
         qname_collector: dict[str, list[int]] = defaultdict(list)
         for read in reads:
             if not read.is_unmapped and dedup_test(read):
-                assert read.query_name  # type checking
-                assert read.cigartuples  # type checking
-                assert read.query_qualities  # type checking
+                assert read.query_name is not None  # type checking
+                assert read.cigartuples is not None  # type checking
+                assert read.query_qualities is not None  # type checking
                 dp += 1
-                (
-                    call_code,
-                    ith_base,
-                    base_call_i,
-                    indel_length_i,
-                    flanking_indel_i,
-                ) = position_of_aligned_read(read, my_coordinate[1] - 1)
+                sequencing_call = alignment_in_read_for_coordinate(
+                    read, my_coordinate[1] - 1
+                )
                 if (
                     read.mapping_quality < min_mq
                     and mean(read.query_qualities) < min_bq
                 ):
                     poor_read_count += 1
+
                 if read.mapping_quality == 0:
                     mq0_reads += 1
 
                 # Reference calls:
-                if call_code == 1 and base_call_i == ref_base[0]:
+                if (
+                    sequencing_call.call_type == AlignmentType.match
+                    and sequencing_call.base_call == ref_base[0]
+                ):
+                    assert sequencing_call.position_on_read is not None
                     qname_collector[read.query_name].append(0)
                     ref_read_mq.append(read.mapping_quality)
-                    ref_read_bq.append(read.query_qualities[ith_base])
+                    ref_read_bq.append(
+                        read.query_qualities[sequencing_call.position_on_read]
+                    )
                     try:
                         ref_edit_distance.append(read.get_tag("NM"))
                     except KeyError:
@@ -127,13 +131,15 @@ class BamFeatures(BaseModel):
                     if (
                         read.is_proper_pair
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[ith_base] >= min_bq
+                        and read.query_qualities[sequencing_call.position_on_read]
+                        >= min_bq
                     ):
                         ref_concordant_reads += 1
                     elif (
                         (not read.is_proper_pair)
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[ith_base] >= min_bq
+                        and read.query_qualities[sequencing_call.position_on_read]
+                        >= min_bq
                     ):
                         ref_discordant_reads += 1
 
@@ -141,13 +147,15 @@ class BamFeatures(BaseModel):
                     if (
                         (not read.is_reverse)
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[ith_base] >= min_bq
+                        and read.query_qualities[sequencing_call.position_on_read]
+                        >= min_bq
                     ):
                         ref_for += 1
                     elif (
                         read.is_reverse
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[ith_base] >= min_bq
+                        and read.query_qualities[sequencing_call.position_on_read]
+                        >= min_bq
                     ):
                         ref_rev += 1
 
@@ -161,27 +169,39 @@ class BamFeatures(BaseModel):
                         ref_notSC_reads += 1
 
                     # Distance from the end of the read:
-                    if ith_base is not None:
-                        ref_pos_from_end.append(
-                            min(ith_base, read.query_length - ith_base)
+                    ref_pos_from_end.append(
+                        min(
+                            sequencing_call.position_on_read,
+                            read.query_length - sequencing_call.position_on_read,
                         )
+                    )
                     # Flanking indels:
-                    ref_flanking_indel.append(flanking_indel_i)
+                    ref_flanking_indel.append(sequencing_call.nearest_indel)
 
                 # Alternate calls: SNV, or Deletion, or Insertion where I do not
                 # check for matching indel length
                 elif (
-                    (indel_length == 0 and call_code == 1 and base_call_i == first_alt)
+                    (
+                        indel_length == 0
+                        and sequencing_call.call_type == AlignmentType.match
+                        and sequencing_call.base_call == first_alt
+                    )
                     or (
                         indel_length < 0
-                        and call_code == 2
-                        and indel_length == indel_length_i
+                        and sequencing_call.call_type == AlignmentType.deletion
+                        and indel_length == sequencing_call.indel_length
                     )
-                    or (indel_length > 0 and call_code == 3)
+                    or (
+                        indel_length > 0
+                        and sequencing_call.call_type == AlignmentType.insertion
+                    )
                 ):
+                    assert sequencing_call.position_on_read is not None
                     qname_collector[read.query_name].append(1)
                     alt_read_mq.append(read.mapping_quality)
-                    alt_read_bq.append(read.query_qualities[ith_base])
+                    alt_read_bq.append(
+                        read.query_qualities[sequencing_call.position_on_read]
+                    )
                     try:
                         alt_edit_distance.append(read.get_tag("NM"))
                     except KeyError:
@@ -190,26 +210,30 @@ class BamFeatures(BaseModel):
                     if (
                         read.is_proper_pair
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[ith_base] >= min_bq
+                        and read.query_qualities[sequencing_call.position_on_read]
+                        >= min_bq
                     ):
                         alt_concordant_reads += 1
                     elif (
                         (not read.is_proper_pair)
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[ith_base] >= min_bq
+                        and read.query_qualities[sequencing_call.position_on_read]
+                        >= min_bq
                     ):
                         alt_discordant_reads += 1
                     # Orientation
                     if (
                         (not read.is_reverse)
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[ith_base] >= min_bq
+                        and read.query_qualities[sequencing_call.position_on_read]
+                        >= min_bq
                     ):
                         alt_for += 1
                     elif (
                         read.is_reverse
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[ith_base] >= min_bq
+                        and read.query_qualities[sequencing_call.position_on_read]
+                        >= min_bq
                     ):
                         alt_rev += 1
                     # Soft-clipped reads?
@@ -222,12 +246,15 @@ class BamFeatures(BaseModel):
                         alt_notSC_reads += 1
 
                     # Distance from the end of the read:
-                    if ith_base is not None:
+                    if sequencing_call.position_on_read is not None:
                         alt_pos_from_end.append(
-                            min(ith_base, read.query_length - ith_base)
+                            min(
+                                sequencing_call.position_on_read,
+                                read.query_length - sequencing_call.position_on_read,
+                            )
                         )
                     # Flanking indels:
-                    alt_flanking_indel.append(flanking_indel_i)
+                    alt_flanking_indel.append(sequencing_call.nearest_indel)
 
                 # Inconsistent read or 2nd alternate calls:
                 else:

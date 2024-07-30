@@ -7,10 +7,6 @@ import subprocess
 from datetime import datetime
 from typing import Any, Literal
 
-from somaticseq.utilities.dockered_pipelines.container_option import (
-    DOCKER_IMAGES,
-    container_params,
-)
 from somaticseq.defaults import (
     ALGORITHM,
     CLASSIFIED_PREFIX,
@@ -21,6 +17,10 @@ from somaticseq.defaults import (
     SNV_TSV_SUFFIX,
     SNV_VCF_SUFFIX,
     TUMOR_NAME,
+)
+from somaticseq.utilities.dockered_pipelines.container_option import (
+    DOCKER_IMAGES,
+    container_params,
 )
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")

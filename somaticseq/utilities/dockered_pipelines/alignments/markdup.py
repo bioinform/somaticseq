@@ -12,11 +12,11 @@ from pathlib import Path
 from shutil import move
 
 import somaticseq.utilities.dockered_pipelines.alignments.mergeBams as mergeBams
+import somaticseq.utilities.split_bed_into_equal_regions as split_bed
 from somaticseq.utilities.dockered_pipelines.container_option import (
     DOCKER_IMAGES,
     container_params,
 )
-import somaticseq.utilities.split_bed_into_equal_regions as split_bed
 
 TMPDIR = tempfile.gettempdir()
 

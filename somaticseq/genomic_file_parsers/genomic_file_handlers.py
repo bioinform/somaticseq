@@ -2,8 +2,9 @@ import gzip
 import io
 import math
 import re
+from collections.abc import Iterable
 from functools import cached_property
-from typing import Any, Literal, Iterable
+from typing import Any, Literal
 
 from pydantic import BaseModel
 from pysam import AlignmentFile
@@ -255,7 +256,7 @@ def phred33toascii(x: int) -> str:
     return chr(x + 33)
 
 
-def p2phred(p: float, max_phred: float | int = inf):
+def p2phred(p: float, max_phred: float | int = inf) -> float:
     """Convert p-value to Phred-scale quality score."""
     if p < 0 or p > 1:
         raise ValueError("p-value must be between 0 and 1.")

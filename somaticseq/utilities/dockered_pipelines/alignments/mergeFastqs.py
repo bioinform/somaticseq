@@ -3,6 +3,7 @@
 import os
 import subprocess
 from datetime import datetime
+
 from somaticseq.utilities.dockered_pipelines.container_option import (
     DOCKER_IMAGES,
     container_params,

@@ -100,26 +100,37 @@ def vaf_from_bam(
         ):
             dp += 1
 
-            (
-                code_i,
-                ith_base,
-                base_call_i,
-                indel_length_i,
-                flanking_indel_i,
-            ) = read_info_extractor.position_of_aligned_read(
+            sequencing_call = read_info_extractor.alignment_in_read_for_coordinate(
                 read_i, my_coordinate[1] - 1
             )
 
             # Reference calls:
-            if code_i == 1 and base_call_i == ref_base[0]:
+            if (
+                sequencing_call.call_type == read_info_extractor.AlignmentType.match
+                and sequencing_call.base_call == ref_base[0]
+            ):
                 ref_calls += 1
 
             # Alternate calls:
             # SNV, or Deletion, or Insertion where I do not check for matching indel length
             elif (
-                (indel_length == 0 and code_i == 1 and base_call_i == first_alt)
-                or (indel_length < 0 and code_i == 2 and indel_length == indel_length_i)
-                or (indel_length > 0 and code_i == 3)
+                (
+                    indel_length == 0
+                    and sequencing_call.call_type
+                    == read_info_extractor.AlignmentType.match
+                    and sequencing_call.base_call == first_alt
+                )
+                or (
+                    indel_length < 0
+                    and sequencing_call.call_type
+                    == read_info_extractor.AlignmentType.deletion
+                    and indel_length == sequencing_call.indel_length
+                )
+                or (
+                    indel_length > 0
+                    and sequencing_call.call_type
+                    == read_info_extractor.AlignmentType.insertion
+                )
             ):
                 var_calls += 1
 
@@ -146,7 +157,6 @@ def vcfs2variants(vcf_files, bam_files, sample_names):
                 line_i = vcf.readline().rstrip()
 
             while line_i:
-                genome.VCFVariantRecord.from_vcf_line(line_i)
                 item = line_i.split("\t")
 
                 contig_i = item[0]

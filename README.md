@@ -95,8 +95,9 @@ pip install somaticseq
 
 SomaticSeq can also be found on
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/version.svg)](https://anaconda.org/bioconda/somaticseq),
-which has [![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/downloads.svg)](https://anaconda.org/bioconda/somaticseq) so far.
-To
+which has
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/somaticseq/badges/downloads.svg)](https://anaconda.org/bioconda/somaticseq)
+so far. To
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/somaticseq/README.html),
 which also automatically installs a bunch of 3rd-party somatic mutation callers:
 
