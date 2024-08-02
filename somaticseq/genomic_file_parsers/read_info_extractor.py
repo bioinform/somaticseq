@@ -1,4 +1,5 @@
 import enum
+import re
 from dataclasses import dataclass
 from typing import Literal
 
@@ -15,6 +16,7 @@ CIGAR_HARD_CLIP = 5
 CIGAR_PADDING = 6
 CIGAR_SEQ_MATCH = 7
 CIGAR_SEQ_MISMATCH = 8
+PARSABLE_CIGAR = re.compile("^[0-9MIDS]+$")
 
 nan = float("nan")
 inf = float("inf")
@@ -49,7 +51,120 @@ class SequencingCall:
         )
 
 
-def alignment_in_read_for_coordinate(
+def get_alignment_thru_md_tag_and_cigar(
+    read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
+) -> SequencingCall:
+
+    # First and last aligned coordinates
+    assert read.reference_start is not None
+    assert read.reference_end is not None
+    start, stop = read.reference_start, read.reference_end - 1
+    if not (start <= coordinate <= stop):
+        return SequencingCall(
+            call_type=None,
+            position_on_read=None,
+            base_call=None,
+            indel_length=None,
+            nearest_indel=None,
+        )
+
+    assert read.cigartuples
+    assert read.cigarstring
+    assert re.match(PARSABLE_CIGAR, read.cigarstring)
+    assert read.query_alignment_sequence
+    current_coordinate = start
+    aligned_bases_counted = 0
+    n_insertions = 0
+    n_deletions = 0
+    # Indel calls can be obtained from cigar alone. Let's try that first.
+    for ith_cigar, cigartuple in enumerate(read.cigartuples):
+        cigar_op, n_bases = cigartuple
+        # If read starts with soft-clipped reads, skip as they're before the
+        # start position
+        if cigar_op == CIGAR_SOFT_CLIP:
+            continue
+        # Aligned coordinate doesn't move and there is no aligned bases
+        if cigar_op == CIGAR_INSERTION:
+            n_insertions += n_bases
+        # Aligned coordinates will move along but no aligned bases count
+        elif cigar_op == CIGAR_DELETION:
+            n_deletions += n_bases
+            current_coordinate += n_bases
+        else:
+            current_coordinate += n_bases
+            aligned_bases_counted += n_bases
+
+        if current_coordinate == coordinate:
+            # If the end of CIGAR MATCH puts the coordinate right on target, and
+            # the next CIGAR is indel, then it's an indel call. In VCF files,
+            # indel are recorded to the last position prior to inserted or
+            # deleted bases.
+            if cigar_op != CIGAR_ALN_MATCH:
+                return SequencingCall(
+                    call_type=None,
+                    position_on_read=None,
+                    base_call=None,
+                    indel_length=None,
+                    nearest_indel=None,
+                )
+            # The current CIGAR is MATCH
+            position_on_read = aligned_bases_counted + n_insertions
+            ith_base = read.query_alignment_sequence[position_on_read]
+            # If the coordinate has reached the end of the read
+            if len(read.cigartuples) == ith_cigar + 1:
+                return SequencingCall(
+                    call_type=AlignmentType.match,
+                    position_on_read=position_on_read,
+                    base_call=ith_base,
+                    indel_length=None,
+                    nearest_indel=None,
+                )
+            # If there is at least one more cigar after the current cigar
+            cigartuple_j = read.cigartuples[ith_cigar + 1]
+            cigar_op_j, n_bases_j = cigartuple_j
+            if cigar_op_j == CIGAR_INSERTION or cigar_op_j == CIGAR_SOFT_CLIP:
+                vtype = AlignmentType.insertion
+                indel_length = n_bases_j
+            elif cigar_op_j == CIGAR_DELETION:
+                vtype = AlignmentType.deletion
+                indel_length = -n_bases_j
+            else:
+                raise ValueError(
+                    "After a M, the next parsable are I/D/S, "
+                    f"somehow {cigar_op_j} make it thru."
+                )
+            return SequencingCall(
+                call_type=vtype,
+                position_on_read=position_on_read,
+                base_call=ith_base,
+                indel_length=indel_length,
+                nearest_indel=None,
+            )
+        # If the target coordinate is in the middle of this CIGAR tuple, then we
+        # can only return something meaningful if this CIGAR is MATCH.
+        elif current_coordinate > coordinate:
+            if cigar_op != CIGAR_ALN_MATCH:
+                return SequencingCall(
+                    call_type=None,
+                    position_on_read=None,
+                    base_call=None,
+                    indel_length=None,
+                    nearest_indel=None,
+                )
+            vtype = AlignmentType.match
+
+    md_tag = read.get_tag("MD")
+
+    return SequencingCall(
+        call_type=None,
+        position_on_read=None,
+        base_call=None,
+        indel_length=None,
+        nearest_indel=None,
+    )
+
+
+def get_alignment_in_read(
     read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
 ) -> SequencingCall:
     """
@@ -65,8 +180,10 @@ def alignment_in_read_for_coordinate(
         SequencingCall
     """
     # If the coordinate is beyond the read's first and last aligned coordinate
-    aligned_coordinates = read.get_reference_positions()
-    start, stop = aligned_coordinates[0], aligned_coordinates[-1]
+    assert read.reference_start is not None
+    assert read.reference_end is not None
+    # First and last aligned coordinates
+    start, stop = read.reference_start, read.reference_end - 1
     if not (start <= coordinate <= stop):
         return SequencingCall(
             call_type=None,
