@@ -51,7 +51,7 @@ class SequencingCall:
         )
 
 
-def get_alignment_thru_md_tag_and_cigar(
+def get_alignment_via_md_tag_and_cigar(
     read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
 ) -> SequencingCall:
 
@@ -167,7 +167,7 @@ def get_alignment_thru_md_tag_and_cigar(
     )
 
 
-def get_alignment_in_read(
+def get_alignment_via_aligned_pairs(
     read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
 ) -> SequencingCall:
     """
