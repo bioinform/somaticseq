@@ -74,41 +74,44 @@ def get_alignment_thru_md_tag_and_cigar(
     assert read.query_alignment_sequence
     current_coordinate = start
     aligned_bases_counted = 0
+    position_on_read = 0
     n_insertions = 0
     n_deletions = 0
+    indel_positions = []
     # Indel calls can be obtained from cigar alone. Let's try that first.
     for ith_cigar, cigartuple in enumerate(read.cigartuples):
         cigar_op, n_bases = cigartuple
-        # If read starts with soft-clipped reads, skip as they're before the
-        # start position
         if cigar_op == CIGAR_SOFT_CLIP:
-            continue
-        # Aligned coordinate doesn't move and there is no aligned bases
-        if cigar_op == CIGAR_INSERTION:
+            position_on_read += n_bases
+        elif cigar_op == CIGAR_INSERTION:
+            indel_positions.append(position_on_read)
             n_insertions += n_bases
-        # Aligned coordinates will move along but no aligned bases count
+            position_on_read += n_bases
         elif cigar_op == CIGAR_DELETION:
+            indel_positions.append(position_on_read)
             n_deletions += n_bases
+            aligned_bases_counted += n_bases
             current_coordinate += n_bases
-        else:
+        elif cigar_op == CIGAR_ALN_MATCH:
             current_coordinate += n_bases
             aligned_bases_counted += n_bases
+            position_on_read += n_bases
+        else:
+            raise NotImplementedError("Only handles M/I/D/S CIGARS right now.")
 
         if current_coordinate == coordinate:
-            # If the end of CIGAR MATCH puts the coordinate right on target, and
-            # the next CIGAR is indel, then it's an indel call. In VCF files,
-            # indel are recorded to the last position prior to inserted or
-            # deleted bases.
             if cigar_op != CIGAR_ALN_MATCH:
                 return SequencingCall(
-                    call_type=None,
-                    position_on_read=None,
+                    call_type=AlignmentType.unknown,
+                    position_on_read=position_on_read,
                     base_call=None,
                     indel_length=None,
                     nearest_indel=None,
                 )
-            # The current CIGAR is MATCH
-            position_on_read = aligned_bases_counted + n_insertions
+            # If the end of CIGAR MATCH puts the coordinate right on target, and
+            # the next CIGAR is indel, then it's an indel call. In VCF files,
+            # indel are recorded to the last position prior to inserted or
+            # deleted bases.
             ith_base = read.query_alignment_sequence[position_on_read]
             # If the coordinate has reached the end of the read
             if len(read.cigartuples) == ith_cigar + 1:
@@ -145,8 +148,8 @@ def get_alignment_thru_md_tag_and_cigar(
         elif current_coordinate > coordinate:
             if cigar_op != CIGAR_ALN_MATCH:
                 return SequencingCall(
-                    call_type=None,
-                    position_on_read=None,
+                    call_type=AlignmentType.match,
+                    position_on_read=position_on_read,
                     base_call=None,
                     indel_length=None,
                     nearest_indel=None,
