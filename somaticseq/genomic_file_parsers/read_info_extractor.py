@@ -148,7 +148,7 @@ def get_alignment_via_md_tag_and_cigar(
         elif current_coordinate > coordinate:
             if cigar_op != CIGAR_ALN_MATCH:
                 return SequencingCall(
-                    call_type=AlignmentType.match,
+                    call_type=AlignmentType.unknown,
                     position_on_read=position_on_read,
                     base_call=None,
                     indel_length=None,
