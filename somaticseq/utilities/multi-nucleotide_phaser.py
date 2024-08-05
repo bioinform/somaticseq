@@ -10,7 +10,7 @@ import pysam
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 from somaticseq.genomic_file_parsers.read_info_extractor import (
     AlignmentType,
-    get_alignment_via_aligned_pairs,
+    get_alignment_in_read,
 )
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -133,7 +133,7 @@ with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, op
                 if not (read_i.is_unmapped or read_i.is_duplicate):
                     mnp_call = ""
                     for coordinate_i in my_coordinates:
-                        sequencing_call = get_alignment_via_aligned_pairs(
+                        sequencing_call = get_alignment_in_read(
                             read_i, coordinate_i[1] - 1
                         )
                         # The position is matched:

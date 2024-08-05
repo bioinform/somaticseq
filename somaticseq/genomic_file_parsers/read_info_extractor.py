@@ -16,6 +16,17 @@ CIGAR_HARD_CLIP = 5
 CIGAR_PADDING = 6
 CIGAR_SEQ_MATCH = 7
 CIGAR_SEQ_MISMATCH = 8
+CIGAR_NUMERIC_TO_CHAR = {
+    CIGAR_ALN_MATCH: "M",
+    CIGAR_INSERTION: "I",
+    CIGAR_DELETION: "D",
+    CIGAR_SKIP: "N",
+    CIGAR_SOFT_CLIP: "S",
+    CIGAR_HARD_CLIP: "H",
+    CIGAR_PADDING: "P",
+    CIGAR_SEQ_MATCH: "X",
+    CIGAR_SEQ_MISMATCH: "B",
+}
 PARSABLE_CIGAR = re.compile("^[0-9MIDS]+$")
 
 nan = float("nan")
@@ -47,11 +58,11 @@ class SequencingCall:
             f"position_on_read={self.position_on_read}, "
             f"base_call={self.base_call}, "
             f"indel_length={self.indel_length}, "
-            f"num_flanking_indels={self.nearest_indel})"
+            f"nearest_indel={self.nearest_indel})"
         )
 
 
-def get_alignment_via_md_tag_and_cigar(
+def get_alignment_via_cigar(
     read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
 ) -> SequencingCall:
 
@@ -71,39 +82,39 @@ def get_alignment_via_md_tag_and_cigar(
     assert read.cigartuples
     assert read.cigarstring
     assert re.match(PARSABLE_CIGAR, read.cigarstring)
-    assert read.query_alignment_sequence
-    current_coordinate = start
-    aligned_bases_counted = 0
-    position_on_read = 0
-    n_insertions = 0
-    n_deletions = 0
-    indel_positions = []
+    assert read.query_sequence
+    # -1 to put the current coordinate *before* any operation, so the *end* of a
+    # CIGAR matches a coordinate, instead of the *beginning* of the next CIGAR
+    current_coordinate = start - 1
+    position_on_read = -1
+    latest_insertion_coordinate = -inf
+    latest_deletion_read_position = -inf
+    nearest_indel_on_right = inf
     # Indel calls can be obtained from cigar alone. Let's try that first.
     for ith_cigar, cigartuple in enumerate(read.cigartuples):
         cigar_op, n_bases = cigartuple
         if cigar_op == CIGAR_SOFT_CLIP:
+            latest_insertion_coordinate = current_coordinate
             position_on_read += n_bases
         elif cigar_op == CIGAR_INSERTION:
-            indel_positions.append(position_on_read)
-            n_insertions += n_bases
+            latest_insertion_coordinate = current_coordinate
             position_on_read += n_bases
         elif cigar_op == CIGAR_DELETION:
-            indel_positions.append(position_on_read)
-            n_deletions += n_bases
-            aligned_bases_counted += n_bases
+            latest_deletion_read_position = position_on_read
             current_coordinate += n_bases
         elif cigar_op == CIGAR_ALN_MATCH:
             current_coordinate += n_bases
-            aligned_bases_counted += n_bases
             position_on_read += n_bases
         else:
-            raise NotImplementedError("Only handles M/I/D/S CIGARS right now.")
+            raise NotImplementedError("Only implemented M/I/D/S CIGARS now.")
 
+        # Get out of the loop once CIGAR walker has reached the target
+        # coordinate.
         if current_coordinate == coordinate:
             if cigar_op != CIGAR_ALN_MATCH:
                 return SequencingCall(
                     call_type=AlignmentType.unknown,
-                    position_on_read=position_on_read,
+                    position_on_read=None,
                     base_call=None,
                     indel_length=None,
                     nearest_indel=None,
@@ -112,14 +123,14 @@ def get_alignment_via_md_tag_and_cigar(
             # the next CIGAR is indel, then it's an indel call. In VCF files,
             # indel are recorded to the last position prior to inserted or
             # deleted bases.
-            ith_base = read.query_alignment_sequence[position_on_read]
+            ith_base = read.query_sequence[position_on_read]
             # If the coordinate has reached the end of the read
             if len(read.cigartuples) == ith_cigar + 1:
                 return SequencingCall(
                     call_type=AlignmentType.match,
                     position_on_read=position_on_read,
                     base_call=ith_base,
-                    indel_length=None,
+                    indel_length=nan,
                     nearest_indel=None,
                 )
             # If there is at least one more cigar after the current cigar
@@ -134,14 +145,29 @@ def get_alignment_via_md_tag_and_cigar(
             else:
                 raise ValueError(
                     "After a M, the next parsable are I/D/S, "
-                    f"somehow {cigar_op_j} make it thru."
+                    f"somehow {cigar_op_j} make it through here."
                 )
+            nearest_indel_on_left = min(
+                [
+                    coordinate - latest_insertion_coordinate,
+                    position_on_read - latest_deletion_read_position,
+                ],
+                default=inf,
+            )
+            if len(read.cigartuples) > ith_cigar + 2:
+                cigartuple_k = read.cigartuples[ith_cigar + 2]
+                cigar_op_k, n_bases_k = cigartuple_k
+                if cigar_op_k == CIGAR_ALN_MATCH:
+                    nearest_indel_on_right = n_bases_k
+            nearest_indel = min(nearest_indel_on_left, nearest_indel_on_right)
+            if nearest_indel > win_size:
+                nearest_indel = inf
             return SequencingCall(
                 call_type=vtype,
                 position_on_read=position_on_read,
                 base_call=ith_base,
                 indel_length=indel_length,
-                nearest_indel=None,
+                nearest_indel=nearest_indel,
             )
         # If the target coordinate is in the middle of this CIGAR tuple, then we
         # can only return something meaningful if this CIGAR is MATCH.
@@ -149,15 +175,39 @@ def get_alignment_via_md_tag_and_cigar(
             if cigar_op != CIGAR_ALN_MATCH:
                 return SequencingCall(
                     call_type=AlignmentType.unknown,
-                    position_on_read=position_on_read,
+                    position_on_read=None,
                     base_call=None,
                     indel_length=None,
                     nearest_indel=None,
                 )
-            vtype = AlignmentType.match
-
-    md_tag = read.get_tag("MD")
-
+            overshoot = current_coordinate - coordinate
+            corrected_position = position_on_read - overshoot
+            corrected_coordinate = current_coordinate - overshoot
+            ith_base = read.query_sequence[corrected_position]
+            nearest_indel_on_left = min(
+                [
+                    corrected_coordinate - latest_insertion_coordinate,
+                    corrected_position - latest_deletion_read_position,
+                ],
+                default=inf,
+            )
+            # Distance to the next indel CIGAR from the current position is the
+            # nearest indel to the right, if the next CIGAR exists.
+            if len(read.cigartuples) > ith_cigar + 1:
+                cigartuple_j = read.cigartuples[ith_cigar + 1]
+                cigar_op_j = cigartuple_j[0]
+                if cigar_op_j != CIGAR_ALN_MATCH:
+                    nearest_indel_on_right = overshoot
+            nearest_indel = min(nearest_indel_on_left, nearest_indel_on_right)
+            if nearest_indel > win_size:
+                nearest_indel = inf
+            return SequencingCall(
+                call_type=AlignmentType.match,
+                position_on_read=corrected_position,
+                base_call=ith_base,
+                indel_length=0,
+                nearest_indel=nearest_indel,
+            )
     return SequencingCall(
         call_type=None,
         position_on_read=None,
@@ -312,6 +362,15 @@ def get_alignment_via_aligned_pairs(
         indel_length=indel_length,
         nearest_indel=nearest_indel_within_window,
     )
+
+
+def get_alignment_in_read(
+    read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
+) -> SequencingCall:
+    if read.cigarstring:
+        return get_alignment_via_cigar(read, coordinate, win_size)
+    else:
+        return get_alignment_via_aligned_pairs(read, coordinate, win_size)
 
 
 # Dedup test for BAM file

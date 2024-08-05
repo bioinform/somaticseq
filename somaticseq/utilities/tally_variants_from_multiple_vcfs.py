@@ -94,7 +94,7 @@ def vaf_from_bam(
             and read_i.mapping_quality >= min_mq
         ):
             dp += 1
-            sequencing_call = read_info_extractor.get_alignment_via_aligned_pairs(
+            sequencing_call = read_info_extractor.get_alignment_in_read(
                 read_i, my_coordinate[1] - 1
             )
             # Reference calls:

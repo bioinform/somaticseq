@@ -7,8 +7,8 @@ from pydantic import BaseModel
 from somaticseq.genomic_file_parsers.read_info_extractor import (
     CIGAR_SOFT_CLIP,
     AlignmentType,
-    get_alignment_via_aligned_pairs,
     dedup_test,
+    get_alignment_in_read,
     mean,
 )
 
@@ -99,9 +99,7 @@ class BamFeatures(BaseModel):
                 assert read.cigartuples is not None  # type checking
                 assert read.query_qualities is not None  # type checking
                 dp += 1
-                sequencing_call = get_alignment_via_aligned_pairs(
-                    read, my_coordinate[1] - 1
-                )
+                sequencing_call = get_alignment_in_read(read, my_coordinate[1] - 1)
                 if (
                     read.mapping_quality < min_mq
                     and mean(read.query_qualities) < min_bq
