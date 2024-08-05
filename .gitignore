@@ -12,3 +12,4 @@ dist
 build
 .vscode/
 .made
+.ipynb_checkpoints/
