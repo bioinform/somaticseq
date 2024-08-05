@@ -81,7 +81,6 @@ def get_alignment_via_cigar(
 
     assert read.cigartuples
     assert read.cigarstring
-    assert re.match(PARSABLE_CIGAR, read.cigarstring)
     assert read.query_sequence
     # -1 to put the current coordinate *before* any operation, so the *end* of a
     # CIGAR matches a coordinate, instead of the *beginning* of the next CIGAR
