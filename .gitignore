@@ -13,3 +13,5 @@ build
 .vscode/
 .made
 .ipynb_checkpoints/
+pyproject.toml
+poetry.lock
