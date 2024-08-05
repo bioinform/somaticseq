@@ -10,11 +10,6 @@ packages = [{include = "somaticseq"}]
 name = "PyPI"
 priority = "primary"
 
-[[tool.poetry.source]]
-name = "freenome"
-url = "https://us-west1-python.pkg.dev/freenome-build/pypi/simple/"
-priority = "explicit"
-
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
 pysam = ">=0.21"
