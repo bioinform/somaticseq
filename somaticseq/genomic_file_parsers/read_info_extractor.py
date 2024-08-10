@@ -369,10 +369,9 @@ def get_alignment_via_aligned_pairs(
 def get_alignment_in_read(
     read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
 ) -> SequencingCall:
-    if read.cigarstring and re.match(PARSABLE_CIGAR, read.cigarstring):
+    if read.cigarstring:
         return get_alignment_via_cigar(read, coordinate, win_size)
-    else:
-        return get_alignment_via_aligned_pairs(read, coordinate, win_size)
+    return get_alignment_via_aligned_pairs(read, coordinate, win_size)
 
 
 # Dedup test for BAM file
