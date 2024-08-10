@@ -16,7 +16,6 @@ CIGAR_HARD_CLIP = 5
 CIGAR_PADDING = 6
 CIGAR_SEQ_MATCH = 7
 CIGAR_SEQ_MISMATCH = 8
-CIGARS_MATCH = {CIGAR_ALN_MATCH, CIGAR_SEQ_MATCH, CIGAR_SEQ_MISMATCH}
 CIGAR_NUMERIC_TO_CHAR = {
     CIGAR_ALN_MATCH: "M",
     CIGAR_INSERTION: "I",
@@ -28,6 +27,11 @@ CIGAR_NUMERIC_TO_CHAR = {
     CIGAR_SEQ_MATCH: "=",
     CIGAR_SEQ_MISMATCH: "X",
 }
+CIGARS_MATCHED_SEQ = {CIGAR_ALN_MATCH, CIGAR_SEQ_MATCH, CIGAR_SEQ_MISMATCH}
+CIGARS_INSERTED_SEQ = {CIGAR_INSERTION, CIGAR_SOFT_CLIP}
+CIGARS_DELETED_SEQ = {CIGAR_DELETION, CIGAR_SKIP}
+CIGARS_NO_SEQ = {CIGAR_HARD_CLIP, CIGAR_PADDING}
+
 PARSABLE_CIGAR = re.compile("^[0-9MIDSH=X]+$")
 
 nan = float("nan")
@@ -93,18 +97,15 @@ def get_alignment_via_cigar(
     # Indel calls can be obtained from cigar alone. Let's try that first.
     for ith_cigar, cigartuple in enumerate(read.cigartuples):
         cigar_op, n_bases = cigartuple
-        if cigar_op == CIGAR_HARD_CLIP:
+        if cigar_op in CIGARS_NO_SEQ:
             continue
-        if cigar_op == CIGAR_SOFT_CLIP:
+        if cigar_op in CIGARS_INSERTED_SEQ:
             latest_insertion_coordinate = current_coordinate
             position_on_read += n_bases
-        elif cigar_op == CIGAR_INSERTION:
-            latest_insertion_coordinate = current_coordinate
-            position_on_read += n_bases
-        elif cigar_op == CIGAR_DELETION:
+        elif cigar_op in CIGARS_DELETED_SEQ:
             latest_deletion_read_position = position_on_read
             current_coordinate += n_bases
-        elif cigar_op in CIGARS_MATCH:
+        elif cigar_op in CIGARS_MATCHED_SEQ:
             current_coordinate += n_bases
             position_on_read += n_bases
         else:
@@ -113,7 +114,7 @@ def get_alignment_via_cigar(
         # Get out of the loop once CIGAR walker has reached the target
         # coordinate.
         if current_coordinate == coordinate:
-            if cigar_op not in CIGARS_MATCH:
+            if cigar_op not in CIGARS_MATCHED_SEQ:
                 return SequencingCall(
                     call_type=AlignmentType.unknown,
                     position_on_read=None,
@@ -138,10 +139,10 @@ def get_alignment_via_cigar(
             # If there is at least one more cigar after the current cigar
             cigartuple_j = read.cigartuples[ith_cigar + 1]
             cigar_op_j, n_bases_j = cigartuple_j
-            if cigar_op_j == CIGAR_INSERTION or cigar_op_j == CIGAR_SOFT_CLIP:
+            if cigar_op_j in CIGARS_INSERTED_SEQ:
                 vtype = AlignmentType.insertion
                 indel_length = n_bases_j
-            elif cigar_op_j == CIGAR_DELETION:
+            elif cigar_op_j in CIGARS_DELETED_SEQ:
                 vtype = AlignmentType.deletion
                 indel_length = -n_bases_j
             else:
@@ -159,7 +160,7 @@ def get_alignment_via_cigar(
             if len(read.cigartuples) > ith_cigar + 2:
                 cigartuple_k = read.cigartuples[ith_cigar + 2]
                 cigar_op_k, n_bases_k = cigartuple_k
-                if cigar_op_k in CIGARS_MATCH:
+                if cigar_op_k in CIGARS_MATCHED_SEQ:
                     nearest_indel_on_right = n_bases_k
             nearest_indel = min(nearest_indel_on_left, nearest_indel_on_right)
             if nearest_indel > win_size:
@@ -174,7 +175,7 @@ def get_alignment_via_cigar(
         # If the target coordinate is in the middle of this CIGAR tuple, then we
         # can only return something meaningful if this CIGAR is MATCH.
         elif current_coordinate > coordinate:
-            if cigar_op not in CIGARS_MATCH:
+            if cigar_op not in CIGARS_MATCHED_SEQ:
                 return SequencingCall(
                     call_type=AlignmentType.unknown,
                     position_on_read=None,
@@ -198,7 +199,7 @@ def get_alignment_via_cigar(
             if len(read.cigartuples) > ith_cigar + 1:
                 cigartuple_j = read.cigartuples[ith_cigar + 1]
                 cigar_op_j = cigartuple_j[0]
-                if cigar_op_j not in CIGARS_MATCH:
+                if cigar_op_j not in CIGARS_MATCHED_SEQ:
                     nearest_indel_on_right = overshoot
             nearest_indel = min(nearest_indel_on_left, nearest_indel_on_right)
             if nearest_indel > win_size:
