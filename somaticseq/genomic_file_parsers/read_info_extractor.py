@@ -67,6 +67,13 @@ class SequencingCall:
         )
 
 
+def print_read1_or_2(read: pysam.AlignedSegment) -> str:
+    if read.is_read1:
+        return "R1"
+    elif read.is_read2:
+        return "R2"
+    return "R0"
+
 def get_alignment_via_cigar(
     read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
 ) -> SequencingCall:
@@ -109,7 +116,7 @@ def get_alignment_via_cigar(
             current_coordinate += n_bases
             position_on_read += n_bases
         else:
-            raise NotImplementedError("Only implemented M/I/D/S CIGARS now.")
+            raise NotImplementedError(f"{read.query_name} has CIGAR_OP {cigar_op}.")
 
         # Get out of the loop once CIGAR walker has reached the target
         # coordinate.
@@ -139,7 +146,19 @@ def get_alignment_via_cigar(
             # If there is at least one more cigar after the current cigar
             cigartuple_j = read.cigartuples[ith_cigar + 1]
             cigar_op_j, n_bases_j = cigartuple_j
-            if cigar_op_j in CIGARS_INSERTED_SEQ:
+            # This is like at the end of a read
+            if cigar_op_j in CIGARS_NO_SEQ:
+                return SequencingCall(
+                    call_type=AlignmentType.match,
+                    position_on_read=position_on_read,
+                    base_call=ith_base,
+                    indel_length=nan,
+                    nearest_indel=None,
+                )
+            if cigar_op_j in CIGARS_MATCHED_SEQ:
+                vtype = AlignmentType.match
+                indel_length = 0
+            elif cigar_op_j in CIGARS_INSERTED_SEQ:
                 vtype = AlignmentType.insertion
                 indel_length = n_bases_j
             elif cigar_op_j in CIGARS_DELETED_SEQ:
@@ -147,8 +166,7 @@ def get_alignment_via_cigar(
                 indel_length = -n_bases_j
             else:
                 raise ValueError(
-                    "After a M, the next parsable are I/D/S, "
-                    f"somehow {cigar_op_j} make it through here."
+                    f"{read.query_name} at {coordinate}."
                 )
             nearest_indel_on_left = min(
                 [
