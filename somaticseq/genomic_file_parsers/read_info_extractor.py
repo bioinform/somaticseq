@@ -16,6 +16,7 @@ CIGAR_HARD_CLIP = 5
 CIGAR_PADDING = 6
 CIGAR_SEQ_MATCH = 7
 CIGAR_SEQ_MISMATCH = 8
+CIGARS_MATCH = {CIGAR_ALN_MATCH, CIGAR_SEQ_MATCH, CIGAR_SEQ_MISMATCH}
 CIGAR_NUMERIC_TO_CHAR = {
     CIGAR_ALN_MATCH: "M",
     CIGAR_INSERTION: "I",
@@ -24,10 +25,10 @@ CIGAR_NUMERIC_TO_CHAR = {
     CIGAR_SOFT_CLIP: "S",
     CIGAR_HARD_CLIP: "H",
     CIGAR_PADDING: "P",
-    CIGAR_SEQ_MATCH: "X",
-    CIGAR_SEQ_MISMATCH: "B",
+    CIGAR_SEQ_MATCH: "=",
+    CIGAR_SEQ_MISMATCH: "X",
 }
-PARSABLE_CIGAR = re.compile("^[0-9MIDS]+$")
+PARSABLE_CIGAR = re.compile("^[0-9MIDSH=X]+$")
 
 nan = float("nan")
 inf = float("inf")
@@ -92,6 +93,8 @@ def get_alignment_via_cigar(
     # Indel calls can be obtained from cigar alone. Let's try that first.
     for ith_cigar, cigartuple in enumerate(read.cigartuples):
         cigar_op, n_bases = cigartuple
+        if cigar_op == CIGAR_HARD_CLIP:
+            continue
         if cigar_op == CIGAR_SOFT_CLIP:
             latest_insertion_coordinate = current_coordinate
             position_on_read += n_bases
@@ -101,7 +104,7 @@ def get_alignment_via_cigar(
         elif cigar_op == CIGAR_DELETION:
             latest_deletion_read_position = position_on_read
             current_coordinate += n_bases
-        elif cigar_op == CIGAR_ALN_MATCH:
+        elif cigar_op in CIGARS_MATCH:
             current_coordinate += n_bases
             position_on_read += n_bases
         else:
@@ -110,7 +113,7 @@ def get_alignment_via_cigar(
         # Get out of the loop once CIGAR walker has reached the target
         # coordinate.
         if current_coordinate == coordinate:
-            if cigar_op != CIGAR_ALN_MATCH:
+            if cigar_op not in CIGARS_MATCH:
                 return SequencingCall(
                     call_type=AlignmentType.unknown,
                     position_on_read=None,
@@ -156,7 +159,7 @@ def get_alignment_via_cigar(
             if len(read.cigartuples) > ith_cigar + 2:
                 cigartuple_k = read.cigartuples[ith_cigar + 2]
                 cigar_op_k, n_bases_k = cigartuple_k
-                if cigar_op_k == CIGAR_ALN_MATCH:
+                if cigar_op_k in CIGARS_MATCH:
                     nearest_indel_on_right = n_bases_k
             nearest_indel = min(nearest_indel_on_left, nearest_indel_on_right)
             if nearest_indel > win_size:
@@ -171,7 +174,7 @@ def get_alignment_via_cigar(
         # If the target coordinate is in the middle of this CIGAR tuple, then we
         # can only return something meaningful if this CIGAR is MATCH.
         elif current_coordinate > coordinate:
-            if cigar_op != CIGAR_ALN_MATCH:
+            if cigar_op not in CIGARS_MATCH:
                 return SequencingCall(
                     call_type=AlignmentType.unknown,
                     position_on_read=None,
@@ -195,7 +198,7 @@ def get_alignment_via_cigar(
             if len(read.cigartuples) > ith_cigar + 1:
                 cigartuple_j = read.cigartuples[ith_cigar + 1]
                 cigar_op_j = cigartuple_j[0]
-                if cigar_op_j != CIGAR_ALN_MATCH:
+                if cigar_op_j not in CIGARS_MATCH:
                     nearest_indel_on_right = overshoot
             nearest_indel = min(nearest_indel_on_left, nearest_indel_on_right)
             if nearest_indel > win_size:
