@@ -97,11 +97,11 @@ class BamFeatures(BaseModel):
             if not read.is_unmapped and dedup_test(read):
                 assert read.query_name is not None  # type checking
                 assert read.cigartuples is not None  # type checking
-                assert read.query_qualities is not None  # type checking
                 dp += 1
                 sequencing_call = get_alignment_in_read(read, my_coordinate[1] - 1)
                 if (
-                    read.mapping_quality < min_mq
+                    read.query_qualities
+                    and read.mapping_quality < min_mq
                     and mean(read.query_qualities) < min_bq
                 ):
                     poor_read_count += 1
@@ -109,6 +109,10 @@ class BamFeatures(BaseModel):
                 if read.mapping_quality == 0:
                     mq0_reads += 1
 
+                if read.query_qualities:
+                    bq = read.query_qualities[sequencing_call.position_on_read]
+                else:
+                    bq = nan
                 # Reference calls:
                 if (
                     sequencing_call.call_type == AlignmentType.match
@@ -117,9 +121,7 @@ class BamFeatures(BaseModel):
                     assert sequencing_call.position_on_read is not None
                     qname_collector[read.query_name].append(0)
                     ref_read_mq.append(read.mapping_quality)
-                    ref_read_bq.append(
-                        read.query_qualities[sequencing_call.position_on_read]
-                    )
+                    ref_read_bq.append(bq)
                     try:
                         ref_edit_distance.append(read.get_tag("NM"))
                     except KeyError:
@@ -129,15 +131,13 @@ class BamFeatures(BaseModel):
                     if (
                         read.is_proper_pair
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[sequencing_call.position_on_read]
-                        >= min_bq
+                        and bq >= min_bq
                     ):
                         ref_concordant_reads += 1
                     elif (
                         (not read.is_proper_pair)
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[sequencing_call.position_on_read]
-                        >= min_bq
+                        and bq >= min_bq
                     ):
                         ref_discordant_reads += 1
 
@@ -145,15 +145,13 @@ class BamFeatures(BaseModel):
                     if (
                         (not read.is_reverse)
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[sequencing_call.position_on_read]
-                        >= min_bq
+                        and bq >= min_bq
                     ):
                         ref_for += 1
                     elif (
                         read.is_reverse
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[sequencing_call.position_on_read]
-                        >= min_bq
+                        and bq >= min_bq
                     ):
                         ref_rev += 1
 
@@ -197,9 +195,7 @@ class BamFeatures(BaseModel):
                     assert sequencing_call.position_on_read is not None
                     qname_collector[read.query_name].append(1)
                     alt_read_mq.append(read.mapping_quality)
-                    alt_read_bq.append(
-                        read.query_qualities[sequencing_call.position_on_read]
-                    )
+                    alt_read_bq.append(bq)
                     try:
                         alt_edit_distance.append(read.get_tag("NM"))
                     except KeyError:
@@ -208,30 +204,26 @@ class BamFeatures(BaseModel):
                     if (
                         read.is_proper_pair
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[sequencing_call.position_on_read]
-                        >= min_bq
+                        and bq >= min_bq
                     ):
                         alt_concordant_reads += 1
                     elif (
                         (not read.is_proper_pair)
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[sequencing_call.position_on_read]
-                        >= min_bq
+                        and bq >= min_bq
                     ):
                         alt_discordant_reads += 1
                     # Orientation
                     if (
                         (not read.is_reverse)
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[sequencing_call.position_on_read]
-                        >= min_bq
+                        and bq >= min_bq
                     ):
                         alt_for += 1
                     elif (
                         read.is_reverse
                         and read.mapping_quality >= min_mq
-                        and read.query_qualities[sequencing_call.position_on_read]
-                        >= min_bq
+                        and bq >= min_bq
                     ):
                         alt_rev += 1
                     # Soft-clipped reads?

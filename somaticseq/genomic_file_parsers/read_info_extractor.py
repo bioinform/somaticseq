@@ -74,6 +74,7 @@ def print_read1_or_2(read: pysam.AlignedSegment) -> str:
         return "R2"
     return "R0"
 
+
 def get_alignment_via_cigar(
     read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
 ) -> SequencingCall:
@@ -166,7 +167,7 @@ def get_alignment_via_cigar(
                 indel_length = -n_bases_j
             else:
                 raise ValueError(
-                    f"{read.query_name} at {coordinate}."
+                    f"{read.query_name} with {read.cigarstring} failed at {coordinate}."
                 )
             nearest_indel_on_left = min(
                 [
