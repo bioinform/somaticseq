@@ -100,7 +100,6 @@ class BamFeatures(BaseModel):
             assert read.cigartuples is not None  # type checking
             dp += 1
             sequencing_call = get_alignment_in_read(read, my_coordinate[1] - 1)
-            assert sequencing_call.position_on_read is not None
             if (
                 read.query_qualities
                 and read.mapping_quality < min_mq
@@ -111,7 +110,7 @@ class BamFeatures(BaseModel):
             if read.mapping_quality == 0:
                 mq0_reads += 1
 
-            if read.query_qualities:
+            if read.query_qualities and sequencing_call.position_on_read is not None:
                 bq = read.query_qualities[sequencing_call.position_on_read]
             else:
                 bq = nan
