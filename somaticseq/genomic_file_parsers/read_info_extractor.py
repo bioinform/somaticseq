@@ -32,17 +32,15 @@ CIGARS_INSERTED_SEQ = {CIGAR_INSERTION, CIGAR_SOFT_CLIP}
 CIGARS_DELETED_SEQ = {CIGAR_DELETION, CIGAR_SKIP}
 CIGARS_NO_SEQ = {CIGAR_HARD_CLIP, CIGAR_PADDING}
 
-PARSABLE_CIGAR = re.compile("^[0-9MIDSH=X]+$")
-
 nan = float("nan")
 inf = float("inf")
 
 
 class AlignmentType(enum.IntEnum):
-    match = enum.auto()  # reference base or snv
-    insertion = enum.auto()  # can also be soft-clipping
-    deletion = enum.auto()
-    unknown = enum.auto()
+    match = enum.auto()  # CIGARS_MATCHED_SEQ
+    insertion = enum.auto()  # CIGARS_INSERTED_SEQ
+    deletion = enum.auto()  # CIGARS_DELETED_SEQ
+    unknown = enum.auto()  # CIGARS_NO_SEQ or out of range
 
     def __str__(self) -> str:
         return self.name
