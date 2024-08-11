@@ -94,162 +94,159 @@ class BamFeatures(BaseModel):
         poor_read_count = 0
         qname_collector: dict[str, list[int]] = defaultdict(list)
         for read in reads:
-            if not read.is_unmapped and dedup_test(read):
-                assert read.query_name is not None  # type checking
-                assert read.cigartuples is not None  # type checking
-                dp += 1
-                sequencing_call = get_alignment_in_read(read, my_coordinate[1] - 1)
+            if read.is_unmapped or not dedup_test(read):
+                continue
+            assert read.query_name is not None  # type checking
+            assert read.cigartuples is not None  # type checking
+            dp += 1
+            sequencing_call = get_alignment_in_read(read, my_coordinate[1] - 1)
+            assert sequencing_call.position_on_read is not None
+            if (
+                read.query_qualities
+                and read.mapping_quality < min_mq
+                and mean(read.query_qualities) < min_bq
+            ):
+                poor_read_count += 1
+
+            if read.mapping_quality == 0:
+                mq0_reads += 1
+
+            if read.query_qualities:
+                bq = read.query_qualities[sequencing_call.position_on_read]
+            else:
+                bq = nan
+            # Reference calls:
+            if (
+                sequencing_call.call_type == AlignmentType.match
+                and sequencing_call.base_call == ref_base[0]
+            ):
+                qname_collector[read.query_name].append(0)
+                ref_read_mq.append(read.mapping_quality)
+                ref_read_bq.append(bq)
+                try:
+                    ref_edit_distance.append(read.get_tag("NM"))
+                except KeyError:
+                    pass
+
+                # Concordance
                 if (
-                    read.query_qualities
-                    and read.mapping_quality < min_mq
-                    and mean(read.query_qualities) < min_bq
+                    read.is_proper_pair
+                    and read.mapping_quality >= min_mq
+                    and bq >= min_bq
                 ):
-                    poor_read_count += 1
+                    ref_concordant_reads += 1
+                elif (
+                    (not read.is_proper_pair)
+                    and read.mapping_quality >= min_mq
+                    and bq >= min_bq
+                ):
+                    ref_discordant_reads += 1
 
-                if read.mapping_quality == 0:
-                    mq0_reads += 1
+                # Orientation
+                if (
+                    (not read.is_reverse)
+                    and read.mapping_quality >= min_mq
+                    and bq >= min_bq
+                ):
+                    ref_for += 1
+                elif (
+                    read.is_reverse and read.mapping_quality >= min_mq and bq >= min_bq
+                ):
+                    ref_rev += 1
 
-                if read.query_qualities:
-                    bq = read.query_qualities[sequencing_call.position_on_read]
+                # Soft-clipped reads?
+                if (
+                    read.cigartuples[0][0] == CIGAR_SOFT_CLIP
+                    or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP
+                ):
+                    ref_SC_reads += 1
                 else:
-                    bq = nan
-                # Reference calls:
+                    ref_notSC_reads += 1
+
+                # Distance from the end of the read:
+                ref_pos_from_end.append(
+                    min(
+                        sequencing_call.position_on_read,
+                        read.query_length - sequencing_call.position_on_read,
+                    )
+                )
+                # Flanking indels:
+                ref_flanking_indel.append(sequencing_call.nearest_indel)
+
+            # Alternate calls: SNV, or Deletion, or Insertion where I do not
+            # check for matching indel length
+            elif (
+                (
+                    indel_length == 0
+                    and sequencing_call.call_type == AlignmentType.match
+                    and sequencing_call.base_call == first_alt
+                )
+                or (
+                    indel_length < 0
+                    and sequencing_call.call_type == AlignmentType.deletion
+                    and indel_length == sequencing_call.indel_length
+                )
+                or (
+                    indel_length > 0
+                    and sequencing_call.call_type == AlignmentType.insertion
+                )
+            ):
+                assert sequencing_call.position_on_read is not None
+                qname_collector[read.query_name].append(1)
+                alt_read_mq.append(read.mapping_quality)
+                alt_read_bq.append(bq)
+                try:
+                    alt_edit_distance.append(read.get_tag("NM"))
+                except KeyError:
+                    pass
+                # Concordance
                 if (
-                    sequencing_call.call_type == AlignmentType.match
-                    and sequencing_call.base_call == ref_base[0]
+                    read.is_proper_pair
+                    and read.mapping_quality >= min_mq
+                    and bq >= min_bq
                 ):
-                    assert sequencing_call.position_on_read is not None
-                    qname_collector[read.query_name].append(0)
-                    ref_read_mq.append(read.mapping_quality)
-                    ref_read_bq.append(bq)
-                    try:
-                        ref_edit_distance.append(read.get_tag("NM"))
-                    except KeyError:
-                        pass
+                    alt_concordant_reads += 1
+                elif (
+                    (not read.is_proper_pair)
+                    and read.mapping_quality >= min_mq
+                    and bq >= min_bq
+                ):
+                    alt_discordant_reads += 1
+                # Orientation
+                if (
+                    (not read.is_reverse)
+                    and read.mapping_quality >= min_mq
+                    and bq >= min_bq
+                ):
+                    alt_for += 1
+                elif (
+                    read.is_reverse and read.mapping_quality >= min_mq and bq >= min_bq
+                ):
+                    alt_rev += 1
+                # Soft-clipped reads?
+                if (
+                    read.cigartuples[0][0] == CIGAR_SOFT_CLIP
+                    or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP
+                ):
+                    alt_SC_reads += 1
+                else:
+                    alt_notSC_reads += 1
 
-                    # Concordance
-                    if (
-                        read.is_proper_pair
-                        and read.mapping_quality >= min_mq
-                        and bq >= min_bq
-                    ):
-                        ref_concordant_reads += 1
-                    elif (
-                        (not read.is_proper_pair)
-                        and read.mapping_quality >= min_mq
-                        and bq >= min_bq
-                    ):
-                        ref_discordant_reads += 1
-
-                    # Orientation
-                    if (
-                        (not read.is_reverse)
-                        and read.mapping_quality >= min_mq
-                        and bq >= min_bq
-                    ):
-                        ref_for += 1
-                    elif (
-                        read.is_reverse
-                        and read.mapping_quality >= min_mq
-                        and bq >= min_bq
-                    ):
-                        ref_rev += 1
-
-                    # Soft-clipped reads?
-                    if (
-                        read.cigartuples[0][0] == CIGAR_SOFT_CLIP
-                        or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP
-                    ):
-                        ref_SC_reads += 1
-                    else:
-                        ref_notSC_reads += 1
-
-                    # Distance from the end of the read:
-                    ref_pos_from_end.append(
+                # Distance from the end of the read:
+                if sequencing_call.position_on_read is not None:
+                    alt_pos_from_end.append(
                         min(
                             sequencing_call.position_on_read,
                             read.query_length - sequencing_call.position_on_read,
                         )
                     )
-                    # Flanking indels:
-                    ref_flanking_indel.append(sequencing_call.nearest_indel)
+                # Flanking indels:
+                alt_flanking_indel.append(sequencing_call.nearest_indel)
 
-                # Alternate calls: SNV, or Deletion, or Insertion where I do not
-                # check for matching indel length
-                elif (
-                    (
-                        indel_length == 0
-                        and sequencing_call.call_type == AlignmentType.match
-                        and sequencing_call.base_call == first_alt
-                    )
-                    or (
-                        indel_length < 0
-                        and sequencing_call.call_type == AlignmentType.deletion
-                        and indel_length == sequencing_call.indel_length
-                    )
-                    or (
-                        indel_length > 0
-                        and sequencing_call.call_type == AlignmentType.insertion
-                    )
-                ):
-                    assert sequencing_call.position_on_read is not None
-                    qname_collector[read.query_name].append(1)
-                    alt_read_mq.append(read.mapping_quality)
-                    alt_read_bq.append(bq)
-                    try:
-                        alt_edit_distance.append(read.get_tag("NM"))
-                    except KeyError:
-                        pass
-                    # Concordance
-                    if (
-                        read.is_proper_pair
-                        and read.mapping_quality >= min_mq
-                        and bq >= min_bq
-                    ):
-                        alt_concordant_reads += 1
-                    elif (
-                        (not read.is_proper_pair)
-                        and read.mapping_quality >= min_mq
-                        and bq >= min_bq
-                    ):
-                        alt_discordant_reads += 1
-                    # Orientation
-                    if (
-                        (not read.is_reverse)
-                        and read.mapping_quality >= min_mq
-                        and bq >= min_bq
-                    ):
-                        alt_for += 1
-                    elif (
-                        read.is_reverse
-                        and read.mapping_quality >= min_mq
-                        and bq >= min_bq
-                    ):
-                        alt_rev += 1
-                    # Soft-clipped reads?
-                    if (
-                        read.cigartuples[0][0] == CIGAR_SOFT_CLIP
-                        or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP
-                    ):
-                        alt_SC_reads += 1
-                    else:
-                        alt_notSC_reads += 1
-
-                    # Distance from the end of the read:
-                    if sequencing_call.position_on_read is not None:
-                        alt_pos_from_end.append(
-                            min(
-                                sequencing_call.position_on_read,
-                                read.query_length - sequencing_call.position_on_read,
-                            )
-                        )
-                    # Flanking indels:
-                    alt_flanking_indel.append(sequencing_call.nearest_indel)
-
-                # Inconsistent read or 2nd alternate calls:
-                else:
-                    qname_collector[read.query_name].append(2)
-                    noise_read_count += 1
+            # Inconsistent read or 2nd alternate calls:
+            else:
+                qname_collector[read.query_name].append(2)
+                noise_read_count += 1
 
         # Done extracting info from tumor BAM. Now tally them:
         ref_mq = mean(ref_read_mq)
