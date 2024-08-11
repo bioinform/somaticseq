@@ -64,7 +64,6 @@ class BamFeatures(BaseModel):
         min_bq: int = 10,
     ) -> BaseModel:  # typing.Self in python>=3.11
         indel_length = len(first_alt) - len(ref_base)
-
         reads = bam_fh.fetch(my_coordinate[0], my_coordinate[1] - 1, my_coordinate[1])
         ref_read_mq = []
         alt_read_mq = []
@@ -190,7 +189,6 @@ class BamFeatures(BaseModel):
                     and sequencing_call.call_type == AlignmentType.insertion
                 )
             ):
-                assert sequencing_call.position_on_read is not None
                 qname_collector[read.query_name].append(1)
                 alt_read_mq.append(read.mapping_quality)
                 alt_read_bq.append(bq)
