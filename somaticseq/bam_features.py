@@ -162,6 +162,7 @@ class BamFeatures(BaseModel):
                     ref_notSC_reads += 1
 
                 # Distance from the end of the read:
+                assert sequencing_call.position_on_read is not None
                 ref_pos_from_end.append(
                     min(
                         sequencing_call.position_on_read,
@@ -230,13 +231,13 @@ class BamFeatures(BaseModel):
                     alt_notSC_reads += 1
 
                 # Distance from the end of the read:
-                if sequencing_call.position_on_read is not None:
-                    alt_pos_from_end.append(
-                        min(
-                            sequencing_call.position_on_read,
-                            read.query_length - sequencing_call.position_on_read,
-                        )
+                assert sequencing_call.position_on_read is not None
+                alt_pos_from_end.append(
+                    min(
+                        sequencing_call.position_on_read,
+                        read.query_length - sequencing_call.position_on_read,
                     )
+                )
                 # Flanking indels:
                 alt_flanking_indel.append(sequencing_call.nearest_indel)
 
