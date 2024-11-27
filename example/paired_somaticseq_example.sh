@@ -31,8 +31,8 @@ paired \
 
 somaticseq_parallel.py \
 --algorithm             xgboost \
---classifier-snv        paired_somaticseq/training/Ensemble.sSNV.tsv.xgb.v3.8.0.classifier \
---classifier-indel      paired_somaticseq/training/Ensemble.sINDEL.tsv.xgb.v3.8.0.classifier \
+--classifier-snv        paired_somaticseq/training/Ensemble.sSNV.tsv.xgb.v${VERSION}.classifier \
+--classifier-indel      paired_somaticseq/training/Ensemble.sINDEL.tsv.xgb.v${VERSION}.classifier \
 --output-directory      paired_somaticseq/classification \
 --genome-reference      ${MYDIR}/tiny.fa \
 --dbsnp-vcf             ${MYDIR}/tiny_dbsnp.vcf \

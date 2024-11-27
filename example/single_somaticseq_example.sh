@@ -24,8 +24,8 @@ single \
 
 somaticseq_parallel.py \
 --algorithm             xgboost \
---classifier-snv        single_somaticseq/training/Ensemble.sSNV.tsv.xgb.v3.8.0.classifier \
---classifier-indel      single_somaticseq/training/Ensemble.sINDEL.tsv.xgb.v3.8.0.classifier \
+--classifier-snv        single_somaticseq/training/Ensemble.sSNV.tsv.xgb.v${VERSION}.classifier \
+--classifier-indel      single_somaticseq/training/Ensemble.sINDEL.tsv.xgb.v${VERSION}.classifier \
 --output-directory      single_somaticseq/classification \
 --genome-reference      ${MYDIR}/tiny.fa \
 --dbsnp-vcf             ${MYDIR}/tiny_dbsnp.vcf \
