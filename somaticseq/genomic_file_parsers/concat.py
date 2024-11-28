@@ -132,7 +132,10 @@ def run() -> tuple[argparse.Namespace, str]:
         "-chunk",
         "--chunk-size",
         type=int,
-        help="In --spread mode, the number of lines to be written into the output file each time. By default chunk=4 by default for fastq files, i.e., every 4 lines make up one read record.",
+        help=(
+            "In --spread mode, the number of lines to be written into the output file each time. "
+            "By default chunk=4 by default for fastq files, i.e., every 4 lines make up one read record."
+        ),
         default=4,
     )
     parser.add_argument(
@@ -175,7 +178,7 @@ def run() -> tuple[argparse.Namespace, str]:
     return args, filetype
 
 
-if __name__ == "__main__":
+def main() -> None:
     args, ftype = run()
     if ftype == "spread":
         spreader(
@@ -189,7 +192,11 @@ if __name__ == "__main__":
         vcf(args.input_files, args.output_file, args.bgzip_output)
     elif ftype == "bed":
         bed(args.input_files, args.output_file, args.bgzip_output)
-    elif ftype == "tsv":
+    elif ftype == "tsv" or ftype == "unknown":
         tsv(args.input_files, args.output_file, args.bgzip_output)
-    elif ftype == "unknown":
-        tsv(args.input_files, args.output_file, args.bgzip_output)
+    else:
+        NotImplementedError(f"{ftype} unsupported.")
+
+
+if __name__ == "__main__":
+    main()
