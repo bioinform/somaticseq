@@ -384,9 +384,8 @@ def run():
     return args
 
 
-if __name__ == "__main__":
+def main() -> None:
     args = run()
-
     if args.num_threads > 1 and args.bed_inclusion:
         partitioned_variant_dicts = make_variant_dict_parallel(
             args.vcf_files,
@@ -395,7 +394,6 @@ if __name__ == "__main__":
             args.bed_inclusion,
             args.num_threads,
         )
-
         for n, dict_i in enumerate(partitioned_variant_dicts):
             if n == 0:
                 printHeader = True
@@ -409,7 +407,6 @@ if __name__ == "__main__":
                 args.minimum_samples,
                 printHeader,
             )
-
     else:
         if args.num_threads > 1:
             warn("This module is unable parallelize this task without bed file input.")
@@ -420,3 +417,7 @@ if __name__ == "__main__":
         print_variantDict(
             variant_dict, args.sample_names, args.filter_labels, args.minimum_samples
         )
+
+
+if __name__ == "__main__":
+    main()

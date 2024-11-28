@@ -183,7 +183,6 @@ def run(fai_file, bed_files, bed_labels, bed_out):
     for i, bed_file_i in enumerate(bed_files):
         bedRegions = bed2regions(bed_file_i)
         label_i = bed_labels[i]
-
         for chrom in bedRegions:
             (
                 contigBoundries[chrom],
@@ -196,7 +195,6 @@ def run(fai_file, bed_files, bed_labels, bed_out):
                 contigLabels[chrom],
                 label_i,
             )
-
     with open(bed_out, "w") as bed_out:
         for contig_i in orderedContigs:
             if contigCounters[contig_i] != [0]:
@@ -206,7 +204,6 @@ def run(fai_file, bed_files, bed_labels, bed_out):
                         if contigLabels[contig_i][i]
                         else "."
                     )
-
                     out_string = "{}\t{}\t{}\t{}\t{}".format(
                         contig_i,
                         contigBoundries[contig_i][i],
@@ -214,18 +211,19 @@ def run(fai_file, bed_files, bed_labels, bed_out):
                         count_i,
                         label_string,
                     )
-
                     bed_out.write(out_string + "\n")
-
     return 0
 
 
-if __name__ == "__main__":
+def main() -> None:
     parser = argparse.ArgumentParser(
-        description="This is a program to tally and count the overlapping regions when given multiple input bed files. A CRITICAL REQUIREMENT is that each input bed file is sorted and non-overlapping, which could be achived with bedtools merge before they are used as input to this program.",
+        description=(
+            "This is a program to tally and count the overlapping regions when given multiple input bed files. "
+            "A CRITICAL REQUIREMENT is that each input bed file is sorted and non-overlapping, "
+            "which could be achived with bedtools merge before they are used as input to this program."
+        ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-
     parser.add_argument(
         "-fai", "--fai-file", type=str, help=".fa.fai file", required=True, default=None
     )
@@ -250,14 +248,12 @@ if __name__ == "__main__":
         required=False,
         default=None,
     )
-
     args = parser.parse_args()
 
     fai_file = args.fai_file
     bed_files = args.bed_files
     bed_out = args.bed_out
     bed_labels = args.bed_labels
-
     if bed_labels:
         assert len(bed_labels) == len(bed_files)
     else:
@@ -265,3 +261,7 @@ if __name__ == "__main__":
 
     ## Run the program:
     run(fai_file, bed_files, bed_labels, bed_out)
+
+
+if __name__ == "__main__":
+    main()

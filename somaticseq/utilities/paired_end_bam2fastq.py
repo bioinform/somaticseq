@@ -27,8 +27,7 @@ def reverse_complement(seq):
 def text_open_write(filename):
     if str(filename).endswith(".gz"):
         return gzip.open(filename, "wt")
-    else:
-        return open(filename, "w")
+    return open(filename, "w")
 
 
 def bam2fq(bam_file, fastq1, fastq2):
@@ -37,7 +36,6 @@ def bam2fq(bam_file, fastq1, fastq2):
     ) as fq1, text_open_write(fastq2) as fq2:
         reads1 = {}
         reads2 = {}
-
         reads = bam.fetch()
         for read_i in reads:
             if not read_i.is_secondary:
@@ -47,7 +45,6 @@ def bam2fq(bam_file, fastq1, fastq2):
                     else read_i.query_sequence
                 )
                 qual_i = read_i.qual[::-1] if read_i.is_reverse else read_i.qual
-
                 if read_i.is_read1:
                     if read_i.query_name in reads2:
                         fq1.write(f"@{read_i.query_name}/1\n")
@@ -56,7 +53,6 @@ def bam2fq(bam_file, fastq1, fastq2):
                         fq1.write(qual_i + "\n")
 
                         read_2 = reads2.pop(read_i.query_name)
-
                         fq2.write("@{}/2\n".format(read_2["qname"]))
                         fq2.write(read_2["seq"] + "\n")
                         fq2.write("+\n")
@@ -71,7 +67,6 @@ def bam2fq(bam_file, fastq1, fastq2):
                 elif read_i.is_read2:
                     if read_i.query_name in reads1:
                         read_1 = reads1.pop(read_i.query_name)
-
                         fq1.write("@{}/1\n".format(read_1["qname"]))
                         fq1.write(read_1["seq"] + "\n")
                         fq1.write("+\n")
@@ -81,7 +76,6 @@ def bam2fq(bam_file, fastq1, fastq2):
                         fq2.write(seq_i + "\n")
                         fq2.write("+\n")
                         fq2.write(qual_i + "\n")
-
                     else:
                         reads2[read_i.query_name] = {}
                         reads2[read_i.query_name]["qname"] = read_i.query_name
@@ -91,7 +85,7 @@ def bam2fq(bam_file, fastq1, fastq2):
     return True
 
 
-if __name__ == "__main__":
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Convert paired-end BAM to FASTQ1 and 2",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -101,3 +95,7 @@ if __name__ == "__main__":
     parser.add_argument("-fq2", "--fastq2", type=str, help="fastq2 out")
     args = parser.parse_args()
     bam2fq(args.bam, args.fastq1, args.fastq2)
+
+
+if __name__ == "__main__":
+    main()

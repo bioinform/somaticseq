@@ -75,7 +75,7 @@ def LC(sequence):
     return lc
 
 
-if __name__ == "__main__":
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Calculate linguistic sequence complexity according to DOI:10.1093/bioinformatics/18.5.679",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -85,15 +85,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "-len", "--substring-length", type=int, help="sub-lenght up to..."
     )
-
     args = parser.parse_args()
-
     if args.substring_length:
         length = args.substring_length
         assert length <= len(args.sequence)
 
     else:
         length = len(args.sequence)
-
     # This one adds up sub-strings up to a length
     print(seq_features.ling_seq_complexity_with_max_vocab_length(args.sequence, length))
+
+
+if __name__ == "__main__":
+    main()

@@ -176,6 +176,10 @@ def split(infile: str, outfiles: str, num: int) -> list[str]:
     return outfiles_written
 
 
-if __name__ == "__main__":
+def main() -> None:
     infile, outfiles, num = run()
     split(infile, outfiles, num)
+
+
+if __name__ == "__main__":
+    main()

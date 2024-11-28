@@ -22,7 +22,6 @@ def snpsift_snp(snpsift_jar, input_vcf, dbsnp_vcf, output_vcf, info_string):
     )
     logger.info(sift_command)
     subprocess.check_call(sift_command, shell=True)
-
     return output_vcf
 
 
@@ -33,7 +32,6 @@ def snpsift_cosmic(snpsift_jar, input_vcf, cosmic_vcf, output_vcf, info_string):
     )
     logger.info(sift_command)
     subprocess.check_call(sift_command, shell=True)
-
     return output_vcf
 
 
@@ -44,7 +42,6 @@ def snpeff_annotate(snpeff_jar, input_vcf, output_vcf, db):
     )
     logger.info(eff_command)
     subprocess.check_call(eff_command, shell=True)
-
     return output_vcf
 
 
@@ -60,7 +57,6 @@ def annotate_small_variants(
     eff_db,
 ):
     dirname = tempfile.gettempdir()
-
     dbsnp_annotated = snpsift_snp(
         snpsift_jar,
         input_vcf,
@@ -76,24 +72,19 @@ def annotate_small_variants(
         cosmic_string,
     )
     output_vcf = snpeff_annotate(snpeff_jar, cosmic_annotated, output_vcf, eff_db)
-
     os.remove(dbsnp_annotated)
     os.remove(cosmic_annotated)
-
     pysam.tabix_index(output_vcf, force=True, preset="vcf")
-
     return output_vcf + ".gz"
 
 
-if __name__ == "__main__":
+def main() -> None:
     FORMAT = "%(levelname)s %(asctime)-15s %(name)-20s %(message)s"
     logging.basicConfig(level=logging.INFO, format=FORMAT)
-
     parser = argparse.ArgumentParser(
         description="Annotate with snpSift and snpEff with dbSNP and COSMIC",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-
     parser.add_argument("-infile", "--infile", help="input vcf file")
     parser.add_argument("-outfile", "--outfile", help="output vcf file")
     parser.add_argument(
@@ -105,9 +96,7 @@ if __name__ == "__main__":
     parser.add_argument("-snpsift", "--snpsift", help="SnpSift JAR")
     parser.add_argument("-snpeff", "--snpeff", help="snpEff JAR")
     parser.add_argument("-db", "--snpeff-db", help="snpEff db", default="GRCh38.86")
-
     args = parser.parse_args()
-
     annotate_small_variants(
         args.snpsift,
         args.snpeff,
@@ -119,3 +108,7 @@ if __name__ == "__main__":
         COSMIC_STRING,
         args.snpeff_db,
     )
+
+
+if __name__ == "__main__":
+    main()
