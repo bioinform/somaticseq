@@ -129,7 +129,7 @@ def run() -> argparse.Namespace:
     return args
 
 
-if __name__ == "__main__":
+def main() -> None:
     FORMAT = "%(levelname)s %(asctime)-15s %(name)-20s %(message)s"
     logger = logging.getLogger("run_workflow.py")
     logger.setLevel(logging.DEBUG)
@@ -148,3 +148,7 @@ if __name__ == "__main__":
             args.threads,
             args.shell,
         )
+
+
+if __name__ == "__main__":
+    main()

@@ -109,6 +109,10 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
             line_i = vcf_in.readline().rstrip()
 
 
-if __name__ == "__main__":
+def main() -> None:
     infile, snv_out, indel_out = run()
     split_into_snv_and_indel(infile, snv_out, indel_out)
+
+
+if __name__ == "__main__":
+    main()
