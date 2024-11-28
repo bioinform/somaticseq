@@ -336,7 +336,10 @@ def merge_vcfs_in_subdirs(
     concat.vcf(file_list, os.path.join(outdir, filename))
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """
+    main function to call somaticseq
+    """
     args = run_somaticseq.run()
     os.makedirs(args.output_directory, exist_ok=True)
     bed_splitted = split_regions(
@@ -462,6 +465,7 @@ if __name__ == "__main__":
         merge_vcfs_in_subdirs(
             subdirs, f"{CONSENSUS_PREFIX}{SNV_VCF_SUFFIX}", args.output_directory
         )
+
     if args.classifier_indel:
         merge_tsvs_in_subdirs(
             subdirs, f"{CLASSIFIED_PREFIX}{INDEL_TSV_SUFFIX}", args.output_directory
@@ -507,7 +511,6 @@ if __name__ == "__main__":
             features_to_exclude=args.features_excluded,
             hyperparameters=args.extra_hyperparameters,
         )
-
     # Clean up after yourself
     if not args.keep_intermediates:
         for bed_i in bed_splitted:
@@ -519,3 +522,7 @@ if __name__ == "__main__":
             run_somaticseq.logger.info(f"Removed sub-directory: {dir_i}")
 
     run_somaticseq.logger.info("SomaticSeq is DONE!")
+
+
+if __name__ == "__main__":
+    main()

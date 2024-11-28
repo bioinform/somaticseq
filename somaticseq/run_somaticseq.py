@@ -1107,7 +1107,10 @@ def run() -> argparse.Namespace:
 
 
 # Execute:
-if __name__ == "__main__":
+def main() -> None:
+    """
+    Single-threaded execution
+    """
     args = run()
     os.makedirs(args.output_directory, exist_ok=True)
     if args.which == "paired":
@@ -1199,3 +1202,7 @@ if __name__ == "__main__":
             hyperparameters=args.extra_hyperparameters,
             keep_intermediates=args.keep_intermediates,
         )
+
+
+if __name__ == "__main__":
+    main()
