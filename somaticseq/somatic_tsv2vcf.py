@@ -755,7 +755,7 @@ def tsv2vcf(
             tsv_i = tsv.readline().rstrip()
 
 
-if __name__ == "__main__":
+def main() -> None:
     runParameters = run()
     tsv2vcf(
         tsv_fn=runParameters["tsv_in"],
@@ -772,3 +772,7 @@ if __name__ == "__main__":
         print_reject=runParameters["emit_all"],
         phred_scaled=runParameters["phred_scale"],
     )
+
+
+if __name__ == "__main__":
+    main()

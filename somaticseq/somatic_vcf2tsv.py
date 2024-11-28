@@ -1162,7 +1162,7 @@ def vcf2tsv(
         [opened_file.close() for opened_file in opened_files if opened_file]
 
 
-if __name__ == "__main__":
+def main() -> None:
     runParameters = run()
 
     vcf2tsv(
@@ -1194,3 +1194,7 @@ if __name__ == "__main__":
         p_scale=runParameters["p_scale"],
         outfile=runParameters["output_tsv_file"],
     )
+
+
+if __name__ == "__main__":
+    main()

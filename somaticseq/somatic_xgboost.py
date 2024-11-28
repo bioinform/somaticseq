@@ -209,7 +209,7 @@ def predictor(
 
 
 # Execute:
-if __name__ == "__main__":
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Run XGBoost",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -326,3 +326,7 @@ if __name__ == "__main__":
             non_feature=NON_FEATURE,
             iterations=args.num_trees,
         )
+
+
+if __name__ == "__main__":
+    main()
