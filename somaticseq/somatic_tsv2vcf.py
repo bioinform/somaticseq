@@ -11,9 +11,7 @@ nan = float("nan")
 time_string = datetime.now().isoformat(sep="_", timespec="seconds")
 
 
-def run() -> dict:
-    inputParameters = {}
-
+def run() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="This is a SomaticSeq subroutine SomaticSeq TSV file into VCF file.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -104,11 +102,8 @@ def run() -> dict:
         required=False,
         default=True,
     )
-
     args = parser.parse_args()
-    inputParameters = vars(args)
-
-    return inputParameters
+    return args
 
 
 def dp4_to_gt(
@@ -756,21 +751,21 @@ def tsv2vcf(
 
 
 def main() -> None:
-    runParameters = run()
+    run_params = run()
     tsv2vcf(
-        tsv_fn=runParameters["tsv_in"],
-        vcf_fn=runParameters["vcf_out"],
-        tools=runParameters["individual_mutation_tools"],
-        pass_score=runParameters["pass_threshold"],
-        lowqual_score=runParameters["lowqual_threshold"],
-        hom_threshold=runParameters["hom_threshold"],
-        het_threshold=runParameters["het_threshold"],
-        single_mode=runParameters["single_sample"],
-        paired_mode=runParameters["paired_samples"],
-        normal_sample_name=runParameters["normal_sample_name"],
-        tumor_sample_name=runParameters["tumor_sample_name"],
-        print_reject=runParameters["emit_all"],
-        phred_scaled=runParameters["phred_scale"],
+        tsv_fn=run_params.tsv_in,
+        vcf_fn=run_params.vcf_out,
+        tools=run_params.individual_mutation_tools,
+        pass_score=run_params.pass_threshold,
+        lowqual_score=run_params.lowqual_threshold,
+        hom_threshold=run_params.hom_threshold,
+        het_threshold=run_params.het_threshold,
+        single_mode=run_params.single_sample,
+        paired_mode=run_params.paired_samples,
+        normal_sample_name=run_params.normal_sample_name,
+        tumor_sample_name=run_params.tumor_sample_name,
+        print_reject=run_params.emit_all,
+        phred_scaled=run_params.phred_scale,
     )
 
 

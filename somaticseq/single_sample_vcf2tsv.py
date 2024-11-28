@@ -96,8 +96,7 @@ extra_caller_header = ""
 label_header = "{TrueVariant_or_False}"
 
 
-def run() -> dict:
-    inputParameters = {}
+def run() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="This is a SomaticSeq subroutine to convert a VCF file into a TSV file with all the SomaticSeq features for tumor-only modes. Any VCF file can be used as the main input. The output will have the same variants. Also required is the BAM files, with additional optional inputs.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -272,8 +271,7 @@ def run() -> dict:
         default=sys.stdout,
     )
     args = parser.parse_args()
-    inputParameters = vars(args)
-    return inputParameters
+    return args
 
 
 def vcf2tsv(
@@ -888,29 +886,29 @@ def vcf2tsv(
 
 
 def main() -> None:
-    runParameters = run()
+    run_params = run()
     vcf2tsv(
-        is_vcf=runParameters["vcf_format"],
-        is_bed=runParameters["bed_format"],
-        is_pos=runParameters["positions_list"],
-        bam_fn=runParameters["in_bam"],
-        truth=runParameters["ground_truth_vcf"],
-        cosmic=runParameters["cosmic_vcf"],
-        dbsnp=runParameters["dbsnp_vcf"],
-        mutect=runParameters["mutect_vcf"],
-        varscan=runParameters["varscan_vcf"],
-        vardict=runParameters["vardict_vcf"],
-        lofreq=runParameters["lofreq_vcf"],
-        scalpel=runParameters["scalpel_vcf"],
-        strelka=runParameters["strelka_vcf"],
-        arbitrary_vcfs=runParameters["arbitrary_vcfs"],
-        dedup=runParameters["deduplicate"],
-        min_mq=runParameters["minimum_mapping_quality"],
-        min_bq=runParameters["minimum_base_quality"],
-        min_caller=runParameters["minimum_num_callers"],
-        ref_fa=runParameters["genome_reference"],
-        p_scale=runParameters["p_scale"],
-        outfile=runParameters["output_tsv_file"],
+        is_vcf=run_params.vcf_format,
+        is_bed=run_params.bed_format,
+        is_pos=run_params.positions_list,
+        bam_fn=run_params.in_bam,
+        truth=run_params.ground_truth_vcf,
+        cosmic=run_params.cosmic_vcf,
+        dbsnp=run_params.dbsnp_vcf,
+        mutect=run_params.mutect_vcf,
+        varscan=run_params.varscan_vcf,
+        vardict=run_params.vardict_vcf,
+        lofreq=run_params.lofreq_vcf,
+        scalpel=run_params.scalpel_vcf,
+        strelka=run_params.strelka_vcf,
+        arbitrary_vcfs=run_params.arbitrary_vcfs,
+        dedup=run_params.deduplicate,
+        min_mq=run_params.minimum_mapping_quality,
+        min_bq=run_params.minimum_base_quality,
+        min_caller=run_params.minimum_num_callers,
+        ref_fa=run_params.genome_reference,
+        p_scale=run_params.p_scale,
+        outfile=run_params.output_tsv_file,
     )
 
 
