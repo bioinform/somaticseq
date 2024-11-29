@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "somaticseq"
 keywords = ["somatic mutations", "bioinformatics", "genomics"]
-maintainers = [
+authors = [
     {name = "Li Tai Fang", email = "ltfang@gmail.com"},
     {name = "Pegah Tootoonchi Afshar"},
     {name = "Aparna Chhibber"},
@@ -16,7 +16,7 @@ maintainers = [
     {name = "Narges Bani Asadi"},
     {name = "Hugo Y.K. Lam"},
 ]
-authors = [
+maintainers = [
     {name = "Li Tai Fang", email = "ltfang@gmail.com"},
 ]
 description = "SomaticSeq"
