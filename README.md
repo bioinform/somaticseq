@@ -81,8 +81,9 @@ dependencies
 -   Optional: R and [ada](https://cran.r-project.org/package=ada) are required
     for AdaBoost, whereas XGBoost (default) is implemented in python.
 -   To install SomaticSeq, clone this repo, `cd somaticseq`, and then run
-    `pip install .`. A number of commands prefixed with `somaticseq_` will be
-    placed into the PATH.
+    `pip install .` (To install extra packages for development:
+    `pip install '.[dev]'`). A number of commands prefixed with `somaticseq_`
+    will be placed into the PATH.
 
 ## To install using pip
 

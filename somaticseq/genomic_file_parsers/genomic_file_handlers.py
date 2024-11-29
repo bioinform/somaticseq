@@ -4,7 +4,7 @@ import math
 import re
 from collections.abc import Iterable
 from functools import cached_property
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
 from pydantic import BaseModel
 from pysam import AlignmentFile
@@ -134,7 +134,7 @@ class VCFVariantRecord(BaseModel):
         return var2value[variable]
 
     @classmethod
-    def from_vcf_line(cls, vcf_line: str) -> BaseModel:  # typing.Self in python>=3.11
+    def from_vcf_line(cls, vcf_line: str) -> Self:
         vcf_line = vcf_line.rstrip("\n")
         if not vcf_line:
             return cls()

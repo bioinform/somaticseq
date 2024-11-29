@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Self
 
 import pysam
 import scipy.stats as stats
@@ -62,7 +63,7 @@ class BamFeatures(BaseModel):
         first_alt: str,
         min_mq: int = 1,
         min_bq: int = 10,
-    ) -> BaseModel:  # typing.Self in python>=3.11
+    ) -> Self:
         indel_length = len(first_alt) - len(ref_base)
         reads = bam_fh.fetch(my_coordinate[0], my_coordinate[1] - 1, my_coordinate[1])
         ref_read_mq = []

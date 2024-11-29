@@ -21,7 +21,7 @@ maintainers = [
 ]
 description = "SomaticSeq"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {text = "BSD-2-Clause"}
 dependencies = [
     "pysam",
@@ -65,4 +65,9 @@ somaticseq_split_vcf = "somaticseq.vcf_modifier.splitVcf:main"
 dev = [
     "black",
     "flake8",
+    "pytest",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"

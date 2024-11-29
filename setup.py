@@ -24,7 +24,7 @@ setup(
     url="https://github.com/bioinform/somaticseq",
     packages=find_packages(),
     package_data={"": ["*.R"]},
-    python_requires=">=3.10.0",
+    python_requires=">=3.11.0",
     setup_requires=["setuptools>=42", "setuptools_scm"],
     install_requires=[  # overridden by pyproject.toml
         "pysam",
