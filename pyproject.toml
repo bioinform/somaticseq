@@ -7,6 +7,14 @@ name = "somaticseq"
 keywords = ["somatic mutations", "bioinformatics", "genomics"]
 maintainers = [
     {name = "Li Tai Fang", email = "ltfang@gmail.com"},
+    {name = "Pegah Tootoonchi Afshar"},
+    {name = "Aparna Chhibber"},
+    {name = "Marghoob Mohiyuddin"},
+    {name = "John C. Mu"},
+    {name = "Greg Gibeling"},
+    {name = "Sharon Barr"},
+    {name = "Narges Bani Asadi"},
+    {name = "Hugo Y.K. Lam"},
 ]
 authors = [
     {name = "Li Tai Fang", email = "ltfang@gmail.com"},
