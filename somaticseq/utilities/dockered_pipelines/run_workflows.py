@@ -116,7 +116,7 @@ def run() -> argparse.Namespace:
             "the first 3 scripts to be complete first, and then complete the next 4, "
             "and finally complete the next 3. The command will be "
             "run_workflows.py -scripts 1.sh 2.sh 3.sh 4.sh 5.sh "
-            "6.sh 7.sh 8.sh 9.sh 10.sh -parts 3 4 3 -nt 3",
+            "6.sh 7.sh 8.sh 9.sh 10.sh -parts 3 4 3 -nt 3"
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
