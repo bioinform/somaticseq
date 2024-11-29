@@ -386,6 +386,10 @@ def make_workflow(args, input_parameters):
     return workflow_tasks
 
 
-if __name__ == "__main__":
+def main() -> None:
     args, input_parameters = run()
     make_workflow(args, input_parameters)
+
+
+if __name__ == "__main__":
+    main()

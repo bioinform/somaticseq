@@ -911,6 +911,10 @@ def make_workflow(args, wf_arg_dict):
     return workflow_tasks
 
 
-if __name__ == "__main__":
+def main() -> None:
     args, wf_arg_dict = run()
     make_workflow(args, wf_arg_dict)
+
+
+if __name__ == "__main__":
+    main()
