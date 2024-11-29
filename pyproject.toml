@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools", "setuptools_scm", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "somaticseq"
+keywords = ["somatic mutations", "bioinformatics", "genomics"]
+maintainers = [
+    {name = "Li Tai Fang", email = "ltfang@gmail.com"},
+]
+description = "SomaticSeq"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "BSD-2-Clause"}
+dependencies = [
+    "pysam",
+    "numpy",
+    "scipy",
+    "pandas",
+    "xgboost>=1.4",
+    "pydantic>=2.0.0,<3.0",
+    "click>=8.0",
+]
+dynamic = ["version"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Healthcare Industry",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+Homepage = "https://github.com/bioinform/somaticseq"
+
+[project.scripts]
+somaticseq = "somaticseq.somaticseq_parallel:main"
+somaticseq_parallel = "somaticseq.somaticseq_parallel:main"
+somaticseq_single_thread = "somaticseq.run_somaticseq:main"
+single_sample_vcf2tsv = "somaticseq.single_sample_vcf2tsv:main"
+somatic_vcf2tsv = "somaticseq.somatic_vcf2tsv:main"
+somatic_xgboost = "somaticseq.somatic_xgboost:main"
+somatic_tsv2vcf = "somaticseq.somatic_tsv2vcf:main"
+somatic_concat = "somaticseq.genomic_file_parsers.concat:main"
+linguistic_sequence_complexity = "somaticseq.utilities.linguistic_sequence_complexity:main"
+loci_counter = "somaticseq.utilities.lociCounterWithLabels:main"
+paired_end_bam2fastq = "somaticseq.utilities.paired_end_bam2fastq:main"
+split_bed_into_equal_regions = "somaticseq.utilities.split_bed_into_equal_regions:main"
+make_alignment_scripts = "somaticseq.utilities.dockered_pipelines.makeAlignmentScripts:main"
+make_somatic_scripts = "somaticseq.utilities.dockered_pipelines.makeSomaticScripts:main"
+run_workflows = "somaticseq.utilities.dockered_pipelines.run_workflows:main"
+split_vcf = "somaticseq.vcf_modifier.splitVcf:main"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "flake8",
+]

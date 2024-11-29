@@ -1,2 +1,3 @@
-__version__ = "3.9.0"
+from .__version__ import __version__
+
 vcf_header = f"##SomaticSeq=v{__version__}"

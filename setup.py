@@ -2,17 +2,12 @@
 
 from setuptools import find_packages, setup
 
-from somaticseq._version import __version__
-
-print(__version__)
-
 with open("README.md") as fn:
     long_description = fn.read()
 
 
 setup(
     name="somaticseq",
-    version=__version__,
     description="SomaticSeq: An ensemble approach to accurately detect somatic mutations using SomaticSeq",
     long_description=long_description,
     long_description_content_type="text/markdown",
