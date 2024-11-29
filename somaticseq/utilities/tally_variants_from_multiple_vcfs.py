@@ -141,9 +141,10 @@ def vcfs2variants(vcf_files, bam_files, sample_names):
     for vcf_file_i, bam_file_i, sample_name_i in zip(
         vcf_files, bam_files, sample_names
     ):
-        with genome.open_textfile(vcf_file_i) as vcf, pysam.AlignmentFile(
-            bam_file_i
-        ) as bam:
+        with (
+            genome.open_textfile(vcf_file_i) as vcf,
+            pysam.AlignmentFile(bam_file_i) as bam,
+        ):
             line_i = vcf.readline().rstrip()
             while line_i.startswith("#"):
                 line_i = vcf.readline().rstrip()

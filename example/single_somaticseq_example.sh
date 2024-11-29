@@ -5,7 +5,7 @@ set -e
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 VERSION=`head -n 1 ${MYDIR}/../somaticseq/_version.py | awk -F "=" '{print $2}' | tr -d '[[:space:]]"'`
 
-somaticseq_parallel.py \
+somaticseq \
 --somaticseq-train \
 --algorithm             xgboost \
 --extra-hyperparameters scale_pos_weight:0.1 seed:100 \
@@ -22,7 +22,7 @@ single \
 --strelka-vcf           ${MYDIR}/tumor_only_example/Strelka/results/variants/variants.vcf.gz
 
 
-somaticseq_parallel.py \
+somaticseq \
 --algorithm             xgboost \
 --classifier-snv        single_somaticseq/training/Ensemble.sSNV.tsv.xgb.v${VERSION}.classifier \
 --classifier-indel      single_somaticseq/training/Ensemble.sINDEL.tsv.xgb.v${VERSION}.classifier \

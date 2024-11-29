@@ -39,9 +39,11 @@ def run():
 
 
 def split_into_snv_and_indel(infile, snv_out, indel_out):
-    with genome.open_textfile(infile) as vcf_in, open(snv_out, "w") as snv_out, open(
-        indel_out, "w"
-    ) as indel_out:
+    with (
+        genome.open_textfile(infile) as vcf_in,
+        open(snv_out, "w") as snv_out,
+        open(indel_out, "w") as indel_out,
+    ):
         line_i = vcf_in.readline().rstrip()
 
         while line_i.startswith("#"):

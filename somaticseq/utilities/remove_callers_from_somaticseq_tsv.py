@@ -2,7 +2,7 @@
 
 import argparse
 import gzip
-from math import isnan, nan
+from math import isnan
 
 all_possible_callers = (
     "if_MuTect",

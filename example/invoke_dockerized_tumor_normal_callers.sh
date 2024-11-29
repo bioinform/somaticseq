@@ -4,7 +4,7 @@ MYDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 mkdir -p paired_example
 
-makeSomaticScripts.py \
+somaticseq_make_somatic_scripts \
 paired \
 --output-directory $(pwd -P)/paired_example \
 --tumor-bam        ${MYDIR}/tumor.markdup.bam \

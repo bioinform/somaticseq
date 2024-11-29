@@ -38,9 +38,11 @@ def convert(infile, snv_out, indel_out):
     info_to_split = "NLOD", "TLOD"
     info_to_keep = "STR", "ECNT"
 
-    with genome.open_textfile(infile) as vcf_in, open(snv_out, "w") as snv_out, open(
-        indel_out, "w"
-    ) as indel_out:
+    with (
+        genome.open_textfile(infile) as vcf_in,
+        open(snv_out, "w") as snv_out,
+        open(indel_out, "w") as indel_out,
+    ):
         line_i = vcf_in.readline().rstrip()
 
         while line_i.startswith("##"):

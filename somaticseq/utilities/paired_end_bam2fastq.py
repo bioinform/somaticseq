@@ -31,9 +31,11 @@ def text_open_write(filename):
 
 
 def bam2fq(bam_file, fastq1, fastq2):
-    with pysam.AlignmentFile(bam_file) as bam, text_open_write(
-        fastq1
-    ) as fq1, text_open_write(fastq2) as fq2:
+    with (
+        pysam.AlignmentFile(bam_file) as bam,
+        text_open_write(fastq1) as fq1,
+        text_open_write(fastq2) as fq2,
+    ):
         reads1 = {}
         reads2 = {}
         reads = bam.fetch()

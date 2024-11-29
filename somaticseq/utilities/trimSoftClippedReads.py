@@ -27,9 +27,10 @@ args = parser.parse_args()
 bam_file = args.bam_file_in
 bam_out = args.bam_file_out
 
-with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
-    bam_out, "wb", template=bam
-) as bamout:
+with (
+    pysam.AlignmentFile(bam_file) as bam,
+    pysam.AlignmentFile(bam_out, "wb", template=bam) as bamout,
+):
     reads = bam.fetch()
     total_trimmed_bases = 0
     for read_i in reads:

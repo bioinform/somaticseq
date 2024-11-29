@@ -63,9 +63,10 @@ minMQ = args.min_MQ
 filter_discordant = args.no_discordant
 filter_clip = args.no_clipping
 
-with pysam.AlignmentFile(bam_file) as bam, pysam.AlignmentFile(
-    bam_out, "wb", template=bam
-) as bamout:
+with (
+    pysam.AlignmentFile(bam_file) as bam,
+    pysam.AlignmentFile(bam_out, "wb", template=bam) as bamout,
+):
     reads = bam.fetch()
 
     for read_i in reads:

@@ -34,9 +34,11 @@ def run():
 
 
 def convert(infile, snv_out, indel_out):
-    with genome.open_textfile(infile) as vcf, open(snv_out, "w") as snpout, open(
-        indel_out, "w"
-    ) as indelout:
+    with (
+        genome.open_textfile(infile) as vcf,
+        open(snv_out, "w") as snpout,
+        open(indel_out, "w") as indelout,
+    ):
         line_i = vcf.readline().rstrip()
 
         while line_i.startswith("##"):

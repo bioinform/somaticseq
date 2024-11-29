@@ -46,9 +46,12 @@ ref_fa = args.genome_reference
 outfile = args.output_vcf_file
 threshold = args.phasing_threshold
 
-with genome.open_textfile(infile) as infile, pysam.AlignmentFile(bam) as bam, open(
-    outfile, "w"
-) as outfile, pysam.FastaFile(ref_fa) as ref_fa:
+with (
+    genome.open_textfile(infile) as infile,
+    pysam.AlignmentFile(bam) as bam,
+    open(outfile, "w") as outfile,
+    pysam.FastaFile(ref_fa) as ref_fa,
+):
     my_line = infile.readline().rstrip()
 
     while my_line.startswith("##"):

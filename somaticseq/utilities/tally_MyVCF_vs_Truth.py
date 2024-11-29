@@ -245,9 +245,11 @@ def open_my_vcf(file_name):
 
 
 # Read both files line by line:
-with open_my_vcf(args.my_vcf) as myvcf, open_my_vcf(args.truth_vcf) as truthvcf, open(
-    args.output_file, "w"
-) as vcfout:
+with (
+    open_my_vcf(args.my_vcf) as myvcf,
+    open_my_vcf(args.truth_vcf) as truthvcf,
+    open(args.output_file, "w") as vcfout,
+):
     # For both VCF files, read until it hits data:
     double_palm_collector = []
     my_line = myvcf.readline()
