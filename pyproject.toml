@@ -26,7 +26,6 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Bio-Informatics",
   "Intended Audience :: Science/Research",
   "Intended Audience :: Healthcare Industry",
-  "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
 ]
 
