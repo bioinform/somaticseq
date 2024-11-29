@@ -3,7 +3,7 @@
 set -e
 
 MYDIR="$( cd "$( dirname "$0" )" && pwd )"
-VERSION=`head -n 1 ${MYDIR}/../somaticseq/_version.py | awk -F "=" '{print $2}' | tr -d '[[:space:]]"'`
+VERSION=`head -n 1 ${MYDIR}/../../somaticseq/_version.py | awk -F "=" '{print $2}' | tr -d '[[:space:]]"'`
 
 somaticseq \
 --somaticseq-train      \
