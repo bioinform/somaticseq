@@ -1,23 +1,18 @@
 # SomaticSeq Modules
 
-`somaticseq_parallel.py` is the overarching command that takes VCF outputs from
-individual callers all the way to the end. For customized or debugging purposes,
-a number of modules can be run independently.
-
-`run_somaticseq.py` can be used for the same purposes as
-`somaticseq_parallel.py`, except that it runs everything in a single thread,
-i.e., `somaticseq_parallel.py` simply runs `run_somaticseq.py` on different
-regions in parallel.
+`somaticseq` is the overarching command that takes VCF outputs from individual
+callers all the way to the end. For customized or debugging purposes, a number
+of modules can be run independently.
 
 ### Extract features from tumor and normal BAM files for any VCF file
 
-After all the VCF files are combined, `somatic_vcf2tsv.py` or
-`single_sample_vcf2tsv.py` were invoked to extract genomic and sequencing
+After all the VCF files are combined, `somaticseq_paired_vcf2tsv` or
+`somaticseq_single_vcf2tsv` were invoked to extract genomic and sequencing
 features from BAM and VCF files. These modules can be used independently to
 extract BAM features with _any_ sorted VCF files, e.g.,
 
 ```
-somatic_vcf2tsv.py -myvcf Variants_Of_Interest.vcf -nbam normal.bam -tbam tumor.bam -ref human.fasta -mincaller 0 -outfile Variants_with_BAM_Features.vcf
+somaticseq_paired_vcf2tsv -myvcf Variants_Of_Interest.vcf -nbam normal.bam -tbam tumor.bam -ref human.fasta -mincaller 0 -outfile Variants_with_BAM_Features.vcf
 ```
 
 Notice the `-mincaller 0` option above, which tells the module to extract
@@ -26,35 +21,35 @@ words, `-mincaller 0` tells the module to extract feature for every input
 candidate. Default in SomaticSeq is `-mincaller 0.5` which means it will keep
 variants that are LowQual in some callers, but REJECT calls can be excluded.
 
-Run `somatic_vcf2tsv.py -h` or `single_sample_vcf2tsv.py -h` to see command line
-options.
+Run `somaticseq_paired_vcf2tsv -h` or `somaticseq_single_vcf2tsv -h` to see
+command line options.
 
 ### Convert SomaticSeq TSV file to SomaticSeq VCF file
 
-Run `somatic_tsv2vcf.py -h` to see all the command line options. The VCF file
+Run `somaticseq_tsv2vcf -h` to see all the command line options. The VCF file
 (`-vcf/--vcf-out`) is the output file, e.g.,
 
 ```
-somatic_tsv2vcf.py --tsv-in predicted_snvs.tsv --vcf-out predicted_snvs.vcf --pass-threshold 0.7 --lowqual-threshold 0.1 --individual-mutation-tools MuTect2 VarDict Strelka --emit-all --phred-scale --paired-samples
+somaticseq_tsv2vcf --tsv-in predicted_snvs.tsv --vcf-out predicted_snvs.vcf --pass-threshold 0.7 --lowqual-threshold 0.1 --individual-mutation-tools MuTect2 VarDict Strelka --emit-all --phred-scale --paired-samples
 ```
 
 It can only work on SomaticSeq generated TSV files.
 
 ### Train XGBoost model
 
-Run `somatic_xgboost.py train -h` to see all the options.
+Run `somaticseq_xgboost train -h` to see all the options.
 
 You can combine multiple TSV files to create one single model, and try different
 parameters, e.g.,
 
 ```
-somatic_xgboost.py train -tsvs SAMPLE-01_SNVs.tsv SAMPLE-02_SNVs.tsv .... SAMPLE-NN_SNVs.tsv -out SNV.xgboost.classifier -threads 8 -depth 12 -seed 1234 -method hist -iter 250 --extra-params grow_policy:lossguide max_leaves:24
+somaticseq_xgboost train -tsvs SAMPLE-01_SNVs.tsv SAMPLE-02_SNVs.tsv .... SAMPLE-NN_SNVs.tsv -out SNV.xgboost.classifier -threads 8 -depth 12 -seed 1234 -method hist -iter 250 --extra-params grow_policy:lossguide max_leaves:24
 ```
 
 ### Train AdaBoost model
 
 You can only input one TSV file, or combine them manually, e.g.,
-`cat */Ensemble.sSNV.tsv | awk 'NR==1 || $0 !~ /^CHROM/' > Ensemble.sSNVs.tsv`.
+`somaticseq_concat -infiles */Ensemble.sSNV.tsv -outfile Ensemble.sSNVs.tsv`.
 
 ```
 ada_model_builder_ntChange.R Ensemble.sSNVs.tsv
@@ -62,11 +57,11 @@ ada_model_builder_ntChange.R Ensemble.sSNVs.tsv
 
 ### Predict using a XGBoost model
 
-Run `somatic_xgboost.py predict -h` to see all the options. Be absolutely sure
+Run `somaticseq_xgboost predict -h` to see all the options. Be absolutely sure
 the training and prediction data match.
 
 ```
-somatic_xgboost.py predict -model SNV.xgboost.classifier -tsv variant_candidates.tsv -out predicted_variant_set.tsv -ntrees 50
+somaticseq_xgboost predict -model SNV.xgboost.classifier -tsv variant_candidates.tsv -out predicted_variant_set.tsv -ntrees 50
 ```
 
 ### Predict using an AdaBoost model

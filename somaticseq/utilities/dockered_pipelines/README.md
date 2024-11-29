@@ -10,11 +10,11 @@ mutation detections.
 -   The documentation for those scripts can also be found in Section 4 of the
     [User's Manual](../../docs/Manual.pdf "Documentation").
 
-## Somatic mutation detection workflow (makeSomaticScripts.py)
+## Somatic mutation detection workflow (somaticseq_make_somatic_scripts will run makeSomaticScripts.py)
 
-You may run `makeSomaticScripts.py [paired|single] -h` to see all the available
-options for this command, in either paired (tumor-normal) or single (tumor-only)
-mode. This workflow starts from BAM files.
+You may run `somaticseq_make_somatic_scripts [paired|single] -h` to see all the
+available options for this command, in either paired (tumor-normal) or single
+(tumor-only) mode. This workflow starts from BAM files.
 
 ### Tumor-normal paired mode
 
@@ -45,7 +45,7 @@ The following command will
     the same time.
 
 ```
-makeSomaticScripts.py paired \
+somaticseq_make_somatic_scripts paired \
 --normal-bam       /ABSOLUTE/PATH/TO/normal_sample.bam \
 --tumor-bam        /ABSOLUTE/PATH/TO/tumor_sample.bam \
 --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa \
@@ -84,19 +84,19 @@ Only call for callers that support single-sample modes, i.e., `--run-mutect2`,
 `--run-strelka2`.
 
 ```
-makeSomaticScripts.py single \
+somaticseq_make_somatic_scripts single \
 --bam /ABSOLUTE/PATH/TO/tumor_sample.bam --genome-reference /ABSOLUTE/PATH/TO/GRCh38.fa --output-directory /ABSOLUTE/PATH/TO/RESULTS --dbsnp-vcf /ABSOLUTE/PATH/TO/dbSNP.GRCh38.vcf --threads 12 --run-mutect2 --run-vardict --run-lofreq --run-scalpel --run-strelka2 --run-somaticseq --run-workflow
 ```
 
-## Alignment workflow based on "Broad's Best Practices" (makeAlignmentScripts.py)
+## Alignment workflow based on "Broad's Best Practices" (somaticseq_make_alignment_scripts will run makeAlignmentScripts.py)
 
-You may run `makeAlignmentScripts.py -h` to see all the options. This workflow
-starts from FASTQ files.
+You may run `somaticseq_make_alignment_scripts -h` to see all the options. This
+workflow starts from FASTQ files.
 
 ### Example to invoke the workflow trim, align, and then mark duplicates
 
 ```
-makeAlignmentScripts.py \
+somaticseq_make_alignment_scripts \
 --output-directory /PATH/TO/OUTPUT_DIRECTORY \
 --in-fastq1s       /PATH/TO/RG001_R1.fq.gz /PATH/TO/RG002_R1.fq.gz /PATH/TO/RG003_R1.fq.gz ... \
 --in-fastq2s       /PATH/TO/RG001_R2.fq.gz /PATH/TO/RG002_R2.fq.gz /PATH/TO/RG003_R2.fq.gz ... \

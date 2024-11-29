@@ -79,9 +79,10 @@ dependencies
     files.
 -   Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
 -   Optional: R and [ada](https://cran.r-project.org/package=ada) are required
-    for AdaBoost, whereas XGBoost is implemented in python.
+    for AdaBoost, whereas XGBoost (default) is implemented in python.
 -   To install SomaticSeq, clone this repo, `cd somaticseq`, and then run
-    `pip install .` or `./setup.py install`.
+    `pip install .`. A number of commands prefixed with `somaticseq_` will be
+    placed into the PATH.
 
 ## To install using pip
 
@@ -151,7 +152,7 @@ should finish in <1 minute if installed properly.
 
 ```
 # Merge caller results and extract SomaticSeq features
-somaticseq_parallel.py \
+somaticseq \
   --output-directory  $OUTPUT_DIR \
   --genome-reference  GRCh38.fa \
   --inclusion-region  genome.bed \
@@ -185,7 +186,7 @@ paired \
 
     -   If your caller puts SNVs and indels in the same output VCF file, you may
         split it using a SomaticSeq utility script, e.g.,
-        `splitVcf.py -infile small_variants.vcf -snv snvs.vcf -indel indels.vcf`.
+        `somaticseq_split_vcf -infile small_variants.vcf -snv snvs.vcf -indel indels.vcf`.
         As usual, input can be either `.vcf` or `.vcf.gz`, but output will be
         `.vcf`.
     -   For those VCF file(s), any calls **not** labeled REJECT or LowQual will
@@ -242,10 +243,10 @@ position.
 
 ## To train for SomaticSeq classifiers with multiple data sets
 
-Run `somatic_xgboost.py train --help` to see the options, e.g.,
+Run `somaticseq_xgboost train --help` to see the options, e.g.,
 
 ```
-somatic_xgboost.py train \
+somaticseq_xgboost train \
   -tsvs SAMPLE_1/Ensemble.sSNV.tsv SAMPLE_2/Ensemble.sSNV.tsv ... SAMPLE_N/Ensemble.sSNV.tsv \
   -out multiSample.SNV.classifier \
   -threads 8 -depth 12 -seed 42 -method hist -iter 250 \
@@ -262,8 +263,8 @@ options.
 
 ### To run somatic mutation callers and then SomaticSeq
 
-We have created a module (i.e., `makeSomaticScripts.py`) that can run all the
-dockerized somatic mutation callers and then SomaticSeq, described at
+We have created a module (i.e., `somaticseq_make_somatic_scripts`) that can run
+all the dockerized somatic mutation callers and then SomaticSeq, described at
 [**somaticseq/utilities/dockered_pipelines**](somaticseq/utilities/dockered_pipelines).
 There is also an alignment workflow described there. You need
 [docker](https://www.docker.com/) to run these workflows. Singularity is also
@@ -296,20 +297,20 @@ supported, but is not optimized. Let me know if you find bugs.
 
 Described at
 [**somaticseq/utilities/dockered_pipelines**](somaticseq/utilities/dockered_pipelines).
-The module is `makeAlignmentScripts.py`.
+The module is `somaticseq_make_alignment_scripts`.
 
 ### Utilities
 
 We have some generally useful scripts in [utilities](somaticseq/utilities). Some
 of the more useful tools, e.g.,
 
--   `lociCounterWithLabels.py` finds overlapping regions among multiple bed
+-   `somaticseq_loci_counter` finds overlapping regions among multiple bed
     files.
--   `paired_end_bam2fastq.py` converts paired-end bam files into 1.fastq and
-    2.fastq files. It will not require an enormous amount of memory, nor will
-    the resulting files crap out on downstream GATK tools.
--   `run_workflows.py` is a rudimentary workflow manager that executes multiple
-    scripts at once.
--   `split_bed_into_equal_regions.py` splits one bed file into a number of
-    output bed files, where each output bed file will have the same total
+-   `somaticseq_paired_end_bam2fastq` converts paired-end bam files into 1.fastq
+    and 2.fastq files. It will not require an enormous amount of memory, nor
+    will the resulting files crap out on downstream GATK tools.
+-   `somaticseq_run_workflows` is a rudimentary workflow manager that executes
+    multiple scripts at once.
+-   `somaticseq_split_bed_into_equal_regions` splits one bed file into a number
+    of output bed files, where each output bed file will have the same total
     length.
