@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
+import os
 
+import setuptools_scm
 from setuptools import find_packages, setup
 
 with open("README.md") as fn:
     long_description = fn.read()
 
+# Read the version from the _version.py file
+version_file = os.path.join("somaticseq", "_version.py")
+with open(version_file) as f:
+    exec(f.read())  # This will define __version__
 
 setup(
     name="somaticseq",
     description="SomaticSeq: An ensemble approach to accurately detect somatic mutations using SomaticSeq",
+    version=__version__,
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Li Tai Fang",
@@ -17,6 +24,7 @@ setup(
     packages=find_packages(),
     package_data={"": ["*.R"]},
     python_requires=">=3.10.0",
+    setup_requires=["setuptools>=42", "setuptools_scm"],
     install_requires=[  # overridden by pyproject.toml
         "pysam",
         "numpy",
