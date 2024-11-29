@@ -17,7 +17,7 @@ setup(
     packages=find_packages(),
     package_data={"": ["*.R"]},
     python_requires=">=3.10.0",
-    install_requires=[
+    install_requires=[  # overridden by pyproject.toml
         "pysam",
         "numpy",
         "scipy",
