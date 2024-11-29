@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+# mypy: ignore-errors
 import os
 
-import setuptools_scm
+import setuptools_scm  # noqa
 from setuptools import find_packages, setup
 
 with open("README.md") as fn:
@@ -15,7 +16,7 @@ with open(version_file) as f:
 setup(
     name="somaticseq",
     description="SomaticSeq: An ensemble approach to accurately detect somatic mutations using SomaticSeq",
-    version=__version__,
+    version=__version__,  # noqa
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Li Tai Fang",
