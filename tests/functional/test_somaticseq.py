@@ -19,22 +19,28 @@ def vcf_files_match(vcf_1: str, vcf_2: str) -> bool:
         for vcf_line_1, vcf_line_2 in zip(v1, v2):
             var1 = genome.VCFVariantRecord.from_vcf_line(vcf_line_1)
             var2 = genome.VCFVariantRecord.from_vcf_line(vcf_line_2)
+            assert var1.identifier
+            assert var2.identifier
+            # Items in ID field of VCF files are non-deterministic, so make it
+            # deterministic
+            identifiers_1 = tuple(sorted(var1.identifier.split(";")))
+            identifiers_2 = tuple(sorted(var2.identifier.split(";")))
             content_1.add(
                 (
                     var1.chromosome,
                     var1.position,
-                    var1.identifier,
                     var1.refbase,
                     var1.altbase,
+                    identifiers_1,
                 )
             )
             content_2.add(
                 (
                     var2.chromosome,
                     var2.position,
-                    var2.identifier,
                     var2.refbase,
                     var2.altbase,
+                    identifiers_2,
                 )
             )
     return content_1 == content_2
