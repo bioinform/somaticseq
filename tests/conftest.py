@@ -87,7 +87,24 @@ def tiny_paired_strelka_indel_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "paired_example" / "Strelka.indel.vcf.gz")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
+def tiny_single_mutect2_vcf(test_datadir: Path) -> str:
+    return os.fspath(test_datadir / "tumor_only_example" / "MuTect2.vcf.gz")
+
+
+@pytest.fixture(scope="session")
+def tiny_single_vardict_vcf(test_datadir: Path) -> str:
+    return os.fspath(test_datadir / "tumor_only_example" / "VarDict.vcf.gz")
+
+
+@pytest.fixture(scope="session")
+def tiny_single_strelka_vcf(test_datadir: Path) -> str:
+    return os.fspath(
+        test_datadir / "tumor_only_example" / "Strelka/results/variants/variants.vcf.gz"
+    )
+
+
+@pytest.fixture(scope="session")
 def reference_output(
     test_datadir: Path,
 ) -> dict[str, str]:
@@ -97,5 +114,11 @@ def reference_output(
         ),
         "paired_consensus_indel_vcf": str(
             test_datadir / "paired_example" / "Consensus.sINDEL.vcf.gz"
+        ),
+        "single_consensus_snv_vcf": str(
+            test_datadir / "tumor_only_example" / "Consensus.sSNV.vcf.gz"
+        ),
+        "single_consensus_indel_vcf": str(
+            test_datadir / "tumor_only_example" / "Consensus.sINDEL.vcf.gz"
         ),
     }
