@@ -42,62 +42,62 @@ def tiny_truth_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "Varsim.somatic.truth.vcf")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def tiny_paired_mutect2_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "paired_example" / "MuTect2.vcf.gz")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def tiny_paired_somaticsniper_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "paired_example" / "SomaticSniper.vcf.gz")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def tiny_paired_vardict_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "paired_example" / "VarDict.vcf.gz")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def tiny_paired_muse_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "paired_example" / "MuSE.vcf.gz")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def tiny_paired_lofreq_snv_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "paired_example" / "LoFreq.snv.vcf.gz")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def tiny_paired_lofreq_indel_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "paired_example" / "LoFreq.indel.vcf.gz")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def tiny_paired_scalpel_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "paired_example" / "Scalpel.vcf.gz")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def tiny_paired_strelka_snv_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "paired_example" / "Strelka.snv.vcf.gz")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def tiny_paired_strelka_indel_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "paired_example" / "Strelka.indel.vcf.gz")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def tiny_single_mutect2_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "tumor_only_example" / "MuTect2.vcf.gz")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def tiny_single_vardict_vcf(test_datadir: Path) -> str:
     return os.fspath(test_datadir / "tumor_only_example" / "VarDict.vcf.gz")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def tiny_single_strelka_vcf(test_datadir: Path) -> str:
     return os.fspath(
         test_datadir / "tumor_only_example" / "Strelka/results/variants/variants.vcf.gz"
