@@ -1,9 +1,9 @@
-## Utilities
+# Utilities
 
 Some of the scripts here are required by SomaticSeq. Others are simply
 general-purpose bioinformatic utilities.
 
-### The following are some useful scripts during genomic analysis. Use `--help` to see the usages.
+## The following are some useful scripts during genomic analysis. Use `--help` to see the usages.
 
 -   `somaticseq_concat` ([code](../genomic_file_parsers/concat.py*)): behaves
     like `vcf-concat` if the input files are vcf(.gz) file. It has a cool
@@ -51,6 +51,8 @@ general-purpose bioinformatic utilities.
 -   `somaticseq_paired_end_bam2fastq` ([code](paired_end_bam2fastq.py)): convert
     paired-end bam files into `1.fastq(.gz)` and `2.fastq(.gz)`. Both `.fastq`
     or `.fastq.gz` output formats are acceptable.
+
+### Additional scripts that may be useful
 
 -   `attach_pileupVAF.py`: attaches DP4 and VAF information from up to two
     pileup files (i.e,. tumor and normal) to an input VCF file.
