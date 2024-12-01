@@ -3,16 +3,16 @@
 ## Run SomaticSeq for tumor-normal mode
 
 ```
-cd example
-./paired_somaticseq_example.sh
+/PATH/TO/somaticseq/tests/example/paired_somaticseq_example.sh
 ```
 
 This example uses the outputs from MuTect2, VarDict, and Strelka2 as input. This
 is just an example. There are additional callers that are officially supported
 besides those three. If this command is run successfully, the directory
-`paired_somaticseq` will be created. In it, SomaticSeq TSV files, VCF files, and
-ada classifiers will be created. Do _not_ use those classifiers for anything
-other than demo purposes. They are for demo purposes and completely useless.
+`paired_somaticseq` will be created in your current directory. In it, SomaticSeq
+TSV files, VCF files, and ada classifiers will be created. Do _not_ use those
+classifiers for anything other than demo purposes. They are for demo purposes
+and completely useless.
 
 ## Run SomaticSeq for tumor-only mode
 
@@ -20,7 +20,7 @@ Similar to above
 
 ```
 cd example
-./single_somaticseq_example.sh
+/PATH/TO/somaticseq/tests/example/single_somaticseq_example.sh
 ```
 
 The directory will be `single_somaticseq`.
@@ -33,7 +33,7 @@ If you are able to run docker, you may test the following workflow:
 
 ```
 cd example
-./invoke_dockerized_tumor_normal_callers.sh
+/PATH/TO/somaticseq/tests/example/invoke_dockerized_tumor_normal_callers.sh
 ```
 
 Then, the following scripts will be created and executed:
@@ -54,4 +54,5 @@ executed.
 
 ## dockerized workflow with tumor-only mode.
 
-Same as above, but run the `invoke_dockerized_tumor_only_callers.sh`.
+Same as above, but run the
+`/PATH/TO/somaticseq/tests/example/invoke_dockerized_tumor_only_callers.sh`.
