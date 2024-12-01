@@ -123,8 +123,24 @@ def run() -> argparse.Namespace:
     # INPUT FILES and Global Options
     parser.add_argument("-scripts", "--list-of-scripts", nargs="*", type=str)
     parser.add_argument("-nt", "--threads", default=1, type=int)
-    parser.add_argument("-parts", "--partition-numbering", nargs="*", type=int)
-    parser.add_argument("-sh", "--shell", default="bash", type=str)
+    parser.add_argument(
+        "-parts",
+        "--partition-numbering",
+        nargs="*",
+        help=(
+            "If invoked, will be used to group the scripts, e.g., `-parts 2 4 3` means"
+            " the first 2 scripts will complete first before the next 4 scripts are run. "
+            "Those 4 scripts will have to complete before the next 3 scripts are run."
+        ),
+        type=int,
+    )
+    parser.add_argument(
+        "-sh",
+        "--shell",
+        default="bash",
+        help="The command to execute the script. Default is bash, but can also be sh, python, Rscript, etc.",
+        type=str,
+    )
     args = parser.parse_args()
     return args
 

@@ -83,7 +83,13 @@ def main() -> None:
 
     parser.add_argument("-seq", "--sequence", type=str, help="GCTA sequences")
     parser.add_argument(
-        "-len", "--substring-length", type=int, help="sub-lenght up to..."
+        "-len",
+        "--substring-length",
+        type=int,
+        help=(
+            "Default is the whole length of the sequence. "
+            "If specified, then it will calculate sub-length up to this value."
+        ),
     )
     args = parser.parse_args()
     if args.substring_length:

@@ -231,7 +231,7 @@ def main() -> None:
         "-beds",
         "--bed-files",
         type=str,
-        help="BED files",
+        help="Input bed files. Each MUST be non-overlapping regions sorted to the input fai file.",
         nargs="+",
         required=True,
         default=None,

@@ -1,8 +1,10 @@
 # SomaticSeq
 
 SomaticSeq is an ensemble somatic SNV/indel caller that has the ability to use
-machine learning to filter out false positives from other callers. The detailed
-documentation is located in [docs/Manual.pdf](docs/Manual.pdf "User Manual").
+machine learning to filter out false positives from other callers. It also comes
+with a suite of [genomic utilities](somaticseq/utilities/README.md). The
+detailed documentation is located in
+[docs/Manual.pdf](docs/Manual.pdf "User Manual").
 
 -   It was published in
     [Fang, L.T., Afshar, P.T., Chhibber, A. _et al_. An ensemble approach to accurately detect somatic mutations using SomaticSeq. _Genome Biol_ **16**, 197 (2015)](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, et al. Genome Biol (2015)").

@@ -14,7 +14,8 @@ import somaticseq.vcf_modifier.complex2indel as complex2indel
 
 def run():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description="Split a VCF file into SNVs and INDELs.",
     )
 
     # Variant Call Type, i.e., snp or indel
