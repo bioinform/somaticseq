@@ -16,7 +16,10 @@ general-purpose bioinformatic utilities.
 
 -   `somaticseq_split_bed_into_equal_regions` (aka
     `split_bed_into_equal_regions.py`): splits a BED file into N number of bed
-    files, each with equal-sized regions.
+    files, each with equal-sized regions. E.g.,
+    `somaticseq_split_bed_into_equal_regions -infile regions.bed --num-of-files 10 -outfiles /OUTDIR/split.bed`
+    will produce `/OUTDIR/1.split.bed`, `/OUTDIR/2.split.bed`..., and
+    `/OUTDIR/10.split.bed`.
 
 -   `somaticseq_loci_counter` ([code](lociCounterWithLabels.py)): takes input
     multiple BED files, where each BED file must be **non-overlapping regions
@@ -28,7 +31,14 @@ general-purpose bioinformatic utilities.
 
 -   `somaticseq_run_workflows` ([code](dockered_pipelines/run_workflows.py)):
     uses python's multiprocessing module to execute scripts in parallel. It is
-    capable of grouping scripts and execute them by groups.
+    capable of grouping scripts and execute them by groups. -
+    `somaticseq_run_workflows -scripts 1.sh 2.sh ... -nt 4` will execute all the
+    scripts 4 at a time assuming `bash`. - A more complex use case:
+    `somaticseq_run_workflows -scripts 1.R 2.R ... 10.R -nt 4 -parts 5, 2, 3 -sh Rscript`
+    will still use a maximum of 4 threads. It will use `Rscript` to the first 5
+    scripts first, i.e., `Rscript 1.R` to `Rscript 5.R`. When they are all
+    complete, it will run the next two `Rscript 6.R` and `Rscript 7.R`. Finally,
+    it will run the next 3 `Rscript 8.R`, `Rscript 9.R`, and `Rscript 10.R`
 
 -   `somaticseq_linguistic_sequence_complexity`
     ([code](linguistic_sequence_complexity.py)): calculates linguistic sequence
@@ -80,6 +90,6 @@ general-purpose bioinformatic utilities.
 
 -   `trimSoftClippedReads.py`: trims soft-clipped bases off each read from a BAM
     file.
-    
+
 -   `variant_annotation.py`: uses snpSift and snpEff to annotate vcf files in
     parallel.
