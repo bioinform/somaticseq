@@ -119,8 +119,8 @@ pip install -e .
 
 ### Test your installation
 
-There are some toy data sets and test scripts in [**example**](tests/example) that
-should finish in <1 minute if installed properly.
+There are some toy data sets and test scripts in [**example**](tests/example)
+that should finish in <1 minute if installed properly.
 
 ## Run SomaticSeq with an example command
 
