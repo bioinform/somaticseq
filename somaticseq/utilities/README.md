@@ -5,7 +5,7 @@ general-purpose bioinformatic utilities.
 
 ## The following are some useful scripts during genomic analysis. Use `--help` to see the usages.
 
--   `somaticseq_concat` ([code](../genomic_file_parsers/concat.py*)): behaves
+-   `somaticseq_concat` ([code](../genomic_file_parsers/concat.py)): behaves
     like `vcf-concat` if the input files are vcf(.gz) file. It has a cool
     function of spreading an input file into multiple output files, e.g., split
     a .fastq files into many sub files for parallel processing, e.g.,
@@ -14,9 +14,9 @@ general-purpose bioinformatic utilities.
     a time `-chunk 4` into `1.fq`, `2.fq`, `3.fq`, and then back to `1.fq`...
     Finally they will be bgzipped into `1.fq.gz`, `2.fq.gz`, and `3.fq.gz`.
 
--   `somaticseq_split_bed_into_equal_regions` (aka
-    `split_bed_into_equal_regions.py`): splits a BED file into N number of bed
-    files, each with equal-sized regions. E.g.,
+-   `somaticseq_split_bed_into_equal_regions`
+    ([code](split_bed_into_equal_regions.py)): splits a BED file into N number
+    of bed files, each with equal-sized regions. E.g.,
     `somaticseq_split_bed_into_equal_regions -infile regions.bed --num-of-files 10 -outfiles /OUTDIR/split.bed`
     will produce `/OUTDIR/1.split.bed`, `/OUTDIR/2.split.bed`..., and
     `/OUTDIR/10.split.bed`.
@@ -45,8 +45,8 @@ general-purpose bioinformatic utilities.
     complexity given a nucleotide sequence (e.g., GCCAGAC) based on
     [Troyanskaya OG _et al_. Bioinformatics 2002](https://doi.org/10.1093/bioinformatics/18.5.679).
 
--   `somaticseq_split_vcf` ([code](`../vcf_modifier/splitVcf.py)): takes input
-    of a VCF file, and outputs one with only SNVs and one with only indels.
+-   `somaticseq_split_vcf` ([code](../vcf_modifier/splitVcf.py)): takes input of
+    a VCF file, and outputs one with only SNVs and one with only indels.
 
 -   `somaticseq_paired_end_bam2fastq` ([code](paired_end_bam2fastq.py)): convert
     paired-end bam files into `1.fastq(.gz)` and `2.fastq(.gz)`. Both `.fastq`
