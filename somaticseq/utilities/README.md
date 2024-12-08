@@ -6,13 +6,13 @@ general-purpose bioinformatic utilities.
 ## The following are some useful scripts during genomic analysis. Use `--help` to see the usages.
 
 -   `somaticseq_make_somatic_scripts`
-    ([code](dockered_pipelines/makeSomaticScripts.py)): run all the dockerized 
+    ([code](dockered_pipelines/makeSomaticScripts.py)): run all the dockerized
     somatic mutation callers and then SomaticSeq, described
     [here](dockered_pipelines/README.md).
 
 -   `somaticseq_make_alignment_scripts`
-    ([code](dockered_pipelines/makeAlignmentScripts.py)):
-    run fastq-to-bam workflow described [here](dockered_pipelines/README.md).
+    ([code](dockered_pipelines/makeAlignmentScripts.py)): run fastq-to-bam
+    workflow described [here](dockered_pipelines/README.md).
 
 -   `somaticseq_concat` ([code](../genomic_file_parsers/concat.py)): behaves
     like `vcf-concat` if the input files are vcf(.gz) file. It has a cool

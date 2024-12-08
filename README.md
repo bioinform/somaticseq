@@ -121,14 +121,16 @@ pip install -e .
 
 ### Test your installation
 
-There are some toy data sets and test scripts in [**example**](tests/example)
-that should finish in <1 minute if installed properly.
+If installed successfully, you will be able to run `somaticseq --help` in the
+terminal. There are some toy data sets and test scripts in
+[**example**](tests/example) that should finish in <1 minute if installed
+properly.
 
 ## Run SomaticSeq with an example command
 
 -   At minimum, given the results of the individual mutation caller(s),
     SomaticSeq will extract sequencing features for the combined call set.
-    Required inputs are
+    Required inputs for command `somaticseq` are:
 
     -   `--output-directory` and `--genome-reference`, then
     -   Either `paired` or `single` to invoke paired or single sample mode,
@@ -244,9 +246,11 @@ position.
   z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
 ```
 
-## To train for SomaticSeq classifiers with multiple data sets
+## To train for SomaticSeq classifiers with multiple data sets combined
 
-Run `somaticseq_xgboost train --help` to see the options, e.g.,
+Run `somaticseq_xgboost train --help` to see the options. It is recommended that
+SNV and INDEL models be trained separately, but it is up to you to experiment,
+e.g.,
 
 ```
 somaticseq_xgboost train \
@@ -309,11 +313,11 @@ of the more useful tools, e.g.,
 
 -   `somaticseq_loci_counter` finds overlapping regions among multiple bed
     files.
--   `somaticseq_paired_end_bam2fastq` converts paired-end bam files into 1.fastq
-    and 2.fastq files. It will not require an enormous amount of memory, nor
-    will the resulting files crap out on downstream GATK tools.
 -   `somaticseq_run_workflows` is a rudimentary workflow manager that executes
     multiple scripts at once.
 -   `somaticseq_split_bed_into_equal_regions` splits one bed file into a number
     of output bed files, where each output bed file will have the same total
     length.
+-   `somaticseq_linguistic_sequence_complexity` calculates sequence complexity
+    given a nucleotide sequence (e.g., GCCAGAC) based on
+    [Troyanskaya OG _et al_. Bioinformatics 2002](https://doi.org/10.1093/bioinformatics/18.5.679).
