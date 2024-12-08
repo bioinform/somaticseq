@@ -122,9 +122,9 @@ pip install -e .
 ### Test your installation
 
 If installed successfully, you will be able to run `somaticseq --help` in the
-terminal. There are some toy data sets and test scripts in
-[**example**](tests/example) that should finish in <1 minute if installed
-properly.
+terminal. Also make sure `bedtools` is executable. There are some toy data sets
+and test scripts in [**example**](tests/example) that should finish in <1 minute
+if installed properly.
 
 ## Run SomaticSeq with an example command
 
