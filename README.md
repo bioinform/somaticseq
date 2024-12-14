@@ -35,7 +35,13 @@ The following are some of the use cases for these resources:
     [Xiao W. _et al_. Nat Biotechnol 2021](https://doi.org/10.1038/s41587-021-00994-5).
 -   Use high-confidence call set as the "ground truth" to build accurate and
     robust machine learning models for somatic mutation detections, e.g.,
-    [Sahraeian S.M.E. _et al_. Genome Biol 2022](https://doi.org/10.1186/s13059-021-02592-9)
+    [NeuSomatic by Sahraeian S.M.E. _et al_. Genome Biol 2022](https://doi.org/10.1186/s13059-021-02592-9),
+    [DeepSomatic by Park J. _et al_. 2024](https://doi.org/10.1101/2024.08.16.608331).
+-   Use the bam files and high-confidence call set to benchmark a workflow,
+    e.g.,
+    [Benchmarking NVIDIA Clara Parabricks Somatic Variant Calling Pipeline on AWS](https://aws.amazon.com/blogs/hpc/benchmarking-nvidia-clara-parabricks-somatic-variant-calling-pipeline-on-aws/),
+    [NVIDIA Docs Hub](https://docs.nvidia.com/clara/parabricks/how-tos/somaticcalling.html),
+    [nf-core/sarek](https://doi.org/10.1093/nargab/lqae031), etc.
 
 #### Click for [more details of the SEQC2's somatic mutation project](docs/seqc2.md).
 
