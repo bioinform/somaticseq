@@ -31,13 +31,10 @@ def run():
     )
     # Parse the arguments:
     args = parser.parse_args()
-    infile = args.input_vcf
-    snv_out = args.snv_out
-    indel_out = args.indel_out
-    return infile, snv_out, indel_out
+    return args.input_vcf, args.snv_out, args.indel_out
 
 
-def split_complex_variants_into_multiple_lines(
+def split_complex_variants_into_snvs_and_indels(
     vcf_record: genome.VCFVariantRecord,
 ) -> list[genome.VCFVariantRecord]:
     """
@@ -50,7 +47,10 @@ def split_complex_variants_into_multiple_lines(
     )
     assert decomplexed_variants
     snv_and_indel_records = []
-    for offset, ref_i, alt_i in decomplexed_variants:
+    for decomplex_dict in decomplexed_variants:
+        offset = decomplex_dict["OFFSET"]
+        ref_i = decomplex_dict["REF"]
+        alt_i = decomplex_dict["ALT"]
         variant_i = copy(vcf_record)
         variant_i.position = vcf_record.position + offset
         variant_i.refbase = ref_i
@@ -81,7 +81,7 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
                 elif len(vcf_i.refbase) == 1 or len(vcf_i.altbase) == 1:
                     indel_out.write(line_i + "\n")
                 else:
-                    snvs_and_indels = split_complex_variants_into_multiple_lines(vcf_i)
+                    snvs_and_indels = split_complex_variants_into_snvs_and_indels(vcf_i)
                     for snv_or_indel in snvs_and_indels:
                         if len(snv_or_indel.refbase) == len(snv_or_indel.altbase) == 1:
                             snv_out.write(snv_or_indel.to_vcf_line() + "\n")
@@ -94,7 +94,7 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
                 elif "/" in vcf_i.altbase:
                     alt_bases = vcf_i.altbase.split("/")
                 else:
-                    raise Exception(f"Check the line: {line_i}")
+                    raise ValueError(f"Check the line: {line_i}")
 
                 for ith_base, altbase_i in enumerate(alt_bases):
                     # snv
@@ -113,7 +113,7 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
                     else:
                         vcf_j = copy(vcf_i)
                         vcf_j.altbase = altbase_i
-                        snvs_and_indels = split_complex_variants_into_multiple_lines(
+                        snvs_and_indels = split_complex_variants_into_snvs_and_indels(
                             vcf_j
                         )
                         for snv_or_indel in snvs_and_indels:
