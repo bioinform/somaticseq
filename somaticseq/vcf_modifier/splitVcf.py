@@ -9,7 +9,9 @@ import argparse
 from copy import copy
 
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
-import somaticseq.vcf_modifier.complex2indel as complex2indel
+from somaticseq.vcf_modifier.complex2indel import (
+    resolve_complex_variants_into_snvs_and_indels,
+)
 
 
 def run():
@@ -17,7 +19,6 @@ def run():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="Split a VCF file into SNVs and INDELs.",
     )
-
     # Variant Call Type, i.e., snp or indel
     parser.add_argument(
         "-infile", "--input-vcf", type=str, help="Input VCF file", required=True
@@ -28,15 +29,34 @@ def run():
     parser.add_argument(
         "-snv", "--snv-out", type=str, help="Output VCF file", required=True
     )
-
     # Parse the arguments:
     args = parser.parse_args()
-
     infile = args.input_vcf
     snv_out = args.snv_out
     indel_out = args.indel_out
-
     return infile, snv_out, indel_out
+
+
+def split_complex_variants_into_multiple_lines(
+    vcf_record: genome.VCFVariantRecord,
+) -> list[genome.VCFVariantRecord]:
+    """
+    Split a complex variant into snvs and indels
+    """
+    assert vcf_record.refbase
+    assert vcf_record.altbase
+    decomplexed_variants = resolve_complex_variants_into_snvs_and_indels(
+        refbases=vcf_record.refbase, altbases=vcf_record.altbase
+    )
+    assert decomplexed_variants
+    snv_and_indel_records = []
+    for offset, ref_i, alt_i in decomplexed_variants:
+        variant_i = copy(vcf_record)
+        variant_i.position = vcf_record.position + offset
+        variant_i.refbase = ref_i
+        variant_i.altbase = alt_i
+        snv_and_indel_records.append(variant_i)
+    return snv_and_indel_records
 
 
 def split_into_snv_and_indel(infile, snv_out, indel_out):
@@ -50,7 +70,6 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
         while line_i.startswith("#"):
             snv_out.write(line_i + "\n")
             indel_out.write(line_i + "\n")
-
             line_i = vcf_in.readline().rstrip()
 
         while line_i:
@@ -61,10 +80,15 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
                     snv_out.write(line_i + "\n")
                 elif len(vcf_i.refbase) == 1 or len(vcf_i.altbase) == 1:
                     indel_out.write(line_i + "\n")
-
+                else:
+                    snvs_and_indels = split_complex_variants_into_multiple_lines(vcf_i)
+                    for snv_or_indel in snvs_and_indels:
+                        if len(snv_or_indel.refbase) == len(snv_or_indel.altbase) == 1:
+                            snv_out.write(snv_or_indel.to_vcf_line() + "\n")
+                        else:
+                            indel_out.write(snv_or_indel.to_vcf_line() + "\n")
             else:
                 item = line_i.split("\t")
-
                 if "," in vcf_i.altbase:
                     alt_bases = vcf_i.altbase.split(",")
                 elif "/" in vcf_i.altbase:
@@ -73,41 +97,34 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
                     raise Exception(f"Check the line: {line_i}")
 
                 for ith_base, altbase_i in enumerate(alt_bases):
+                    # snv
                     if len(vcf_i.refbase) == 1 and len(altbase_i) == 1:
                         item_j = copy(item)
                         item_j[4] = altbase_i
                         new_line = "\t".join(item_j)
-
                         snv_out.write(new_line + "\n")
-
+                    # indel
                     elif len(vcf_i.refbase) == 1 or len(altbase_i) == 1:
                         item_j = copy(item)
                         item_j[4] = altbase_i
                         new_line = "\t".join(item_j)
-
                         indel_out.write(new_line + "\n")
-
+                    # complex variants
                     else:
-                        complex_variant = complex2indel.translate(
-                            vcf_i.refbase, altbase_i
+                        vcf_j = copy(vcf_i)
+                        vcf_j.altbase = altbase_i
+                        snvs_and_indels = split_complex_variants_into_multiple_lines(
+                            vcf_j
                         )
-
-                        if complex_variant:
-                            (new_ref, new_alt), offset = complex_variant
-
-                            if new_ref[0] == new_alt[0] and (
-                                len(new_ref) == 1 or len(new_alt) == 1
+                        for snv_or_indel in snvs_and_indels:
+                            if (
+                                len(snv_or_indel.refbase)
+                                == len(snv_or_indel.altbase)
+                                == 1
                             ):
-                                item_j = copy(item)
-                                item_j[3] = new_ref
-                                item_j[4] = new_alt
-
-                                # This *may* cause the output VCF file to go out of order
-                                if offset != 0:
-                                    item_j[1] = str(int(item[1]) + offset)
-
-                                new_line = "\t".join(item_j)
-                                indel_out.write(new_line + "\n")
+                                snv_out.write(snv_or_indel.to_vcf_line() + "\n")
+                            else:
+                                indel_out.write(snv_or_indel.to_vcf_line() + "\n")
 
             line_i = vcf_in.readline().rstrip()
 

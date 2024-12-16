@@ -133,6 +133,27 @@ class VCFVariantRecord(BaseModel):
             return None
         return var2value[variable]
 
+    def to_vcf_line(self) -> str:
+        if not (self.chromosome and self.position and self.refbase and self.altbase):
+            return ""
+
+        vcf_line = "\t".join(
+            [
+                self.chromosome,
+                str(self.position),
+                self.identifier or ".",
+                self.refbase,
+                self.altbase,
+                str(self.qual),
+                self.filters or ".",
+                self.info or ".",
+            ]
+        )
+        addon_line: str = ""
+        if self.field and self.samples:
+            addon_line = self.field + "\t" + "\t".join(self.samples)
+        return vcf_line + addon_line
+
     @classmethod
     def from_vcf_line(cls, vcf_line: str) -> Self:
         vcf_line = vcf_line.rstrip("\n")
