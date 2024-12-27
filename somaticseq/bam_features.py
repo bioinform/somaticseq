@@ -1,9 +1,10 @@
+import warnings
 from collections import defaultdict
 from typing import Self
 
 import pysam
-import scipy.stats as stats
 from pydantic import BaseModel
+from scipy import stats
 
 from somaticseq.genomic_file_parsers.read_info_extractor import (
     CIGAR_SOFT_CLIP,
@@ -12,6 +13,9 @@ from somaticseq.genomic_file_parsers.read_info_extractor import (
     get_alignment_in_read,
     mean,
 )
+
+# Suppress SmallSampleWarning from scipy.stats
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 nan = float("nan")
 

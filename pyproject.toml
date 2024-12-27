@@ -58,7 +58,7 @@ somaticseq_split_bed_into_equal_regions = "somaticseq.utilities.split_bed_into_e
 somaticseq_make_alignment_scripts = "somaticseq.utilities.dockered_pipelines.makeAlignmentScripts:main"
 somaticseq_make_somatic_scripts = "somaticseq.utilities.dockered_pipelines.makeSomaticScripts:main"
 somaticseq_run_workflows = "somaticseq.utilities.dockered_pipelines.run_workflows:main"
-somaticseq_split_vcf = "somaticseq.vcf_modifier.splitVcf:main"
+somaticseq_split_vcf = "somaticseq.vcf_modifier.split_vcf:main"
 
 [project.optional-dependencies]
 dev = [
