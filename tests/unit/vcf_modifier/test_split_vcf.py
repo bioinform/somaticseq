@@ -1,7 +1,9 @@
 import pytest
 from _pytest.tmpdir import TempPathFactory
 
-from somaticseq.genomic_file_parsers.genomic_file_handlers import VCFVariantRecord
+from somaticseq.genomic_file_parsers.genomic_file_handlers import (
+    VCFVariantRecord,
+)
 from somaticseq.vcf_modifier.split_vcf import split_into_snv_and_indel
 
 COMPLEX_VCF = [
