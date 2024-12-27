@@ -173,7 +173,7 @@ class VCFVariantRecord(BaseModel):
         ) = item
         position = int(pos)
         if qual_str != ".":
-            qual = float(qual_str)
+            qual = eval(qual_str)
         else:
             qual = None
         try:
