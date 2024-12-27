@@ -34,7 +34,7 @@ def run() -> argparse.Namespace:
         "-snv", "--snv-out", type=str, help="Output VCF file", required=True
     )
     parser.add_argument(
-        "-fai", "--fasta-fai", type=str, help="For sorting", required=True
+        "-genome", "--genome-reference", type=str, help="For sorting", required=True
     )
     # Parse the arguments:
     args = parser.parse_args()
@@ -64,7 +64,7 @@ def split_complex_variants_into_snvs_and_indels(
 
 
 def split_into_snv_and_indel(
-    infile: str, out_snv_vcf: str, out_indel_vcf: str, fai_file: str
+    infile: str, out_snv_vcf: str, out_indel_vcf: str, genome_reference: str
 ) -> None:
     tmp_snv_vcf = os.path.join(tempfile.gettempdir(), uuid.uuid4().hex) + ".vcf"
     tmp_indel_vcf = os.path.join(tempfile.gettempdir(), uuid.uuid4().hex) + ".vcf"
@@ -135,14 +135,14 @@ def split_into_snv_and_indel(
                                 indel_out.write(snv_or_indel.to_vcf_line() + "\n")
 
             line_i = vcf_in.readline().rstrip()
-    vcfsorter(fai_file, tmp_snv_vcf, out_snv_vcf)
-    vcfsorter(fai_file, tmp_indel_vcf, out_indel_vcf)
+    vcfsorter(genome_reference, tmp_snv_vcf, out_snv_vcf)
+    vcfsorter(genome_reference, tmp_indel_vcf, out_indel_vcf)
 
 
 def main() -> None:
     args = run()
     split_into_snv_and_indel(
-        args.input_vcf, args.snv_out, args.indel_out, args.fasta_fai
+        args.input_vcf, args.snv_out, args.indel_out, args.genome_reference
     )
 
 

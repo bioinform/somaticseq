@@ -151,7 +151,7 @@ class VCFVariantRecord(BaseModel):
         )
         addon_line: str = ""
         if self.field and self.samples:
-            addon_line = self.field + "\t" + "\t".join(self.samples)
+            addon_line = "\t" + self.field + "\t" + "\t".join(self.samples)
         return vcf_line + addon_line
 
     @classmethod
