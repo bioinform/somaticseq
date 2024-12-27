@@ -96,7 +96,7 @@ def combineSingle(
         indel_temp = os.sep.join((outdir, "indel.varscan.temp.vcf"))
         snv_varscan_out = os.sep.join((outdir, "snv.varscan.vcf"))
         indel_varscan_out = os.sep.join((outdir, "indel.varscan.vcf"))
-        splitVcf.split_into_snv_and_indel(varscan_in, snv_temp, indel_temp)
+        splitVcf.split_into_snv_and_indel(varscan_in, snv_temp, indel_temp, ref)
         mod_varscan2.convert(snv_temp, snv_varscan_out)
         mod_varscan2.convert(indel_temp, indel_varscan_out)
 
@@ -155,7 +155,9 @@ def combineSingle(
         intermediate_files.add(lofreq_in)
         snv_lofreq_out = os.sep.join((outdir, "snv.lofreq.vcf"))
         indel_lofreq_out = os.sep.join((outdir, "indel.lofreq.vcf"))
-        splitVcf.split_into_snv_and_indel(lofreq_in, snv_lofreq_out, indel_lofreq_out)
+        splitVcf.split_into_snv_and_indel(
+            lofreq_in, snv_lofreq_out, indel_lofreq_out, ref
+        )
 
         for file_i in snv_lofreq_out, indel_lofreq_out:
             intermediate_files.add(file_i)
@@ -556,7 +558,7 @@ def combine_multiple_paired_caller_vcfs(
         snv_platypus_out = os.sep.join((outdir, "snv.platypus.vcf"))
         indel_platypus_out = os.sep.join((outdir, "indel.platypus.vcf"))
         splitVcf.split_into_snv_and_indel(
-            platypus_in, snv_platypus_out, indel_platypus_out
+            platypus_in, snv_platypus_out, indel_platypus_out, ref
         )
         for file_i in snv_platypus_out, indel_platypus_out:
             intermediate_files.add(file_i)

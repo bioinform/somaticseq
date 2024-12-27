@@ -144,7 +144,7 @@ class VCFVariantRecord(BaseModel):
                 self.identifier or ".",
                 self.refbase,
                 self.altbase,
-                str(self.qual),
+                str(self.qual) if self.qual is not None else ".",
                 self.filters or ".",
                 self.info or ".",
             ]

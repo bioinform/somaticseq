@@ -80,8 +80,8 @@ def convert(infile, snv_out, indel_out, is_tnscope):
             normal_index, tumor_index = 1, 0
 
         else:
-            header.index(normal_name) - 9
-            header.index(tumor_name) - 9
+            normal_index = header.index(normal_name) - 9
+            tumor_index = header.index(tumor_name) - 9
 
         # This will be the first variant line:
         line_i = vcf_in.readline().rstrip()
@@ -131,13 +131,13 @@ def convert(infile, snv_out, indel_out, is_tnscope):
 
                     info_string = ";".join(split_infos)
 
-                    GT0 = vcf_i.get_sample_value("GT", idx=0)
+                    GT0 = vcf_i.get_sample_value("GT", idx=normal_index)
                     if GT0 != "0/0" and GT0 != "0/1":
                         sample_0 = re.sub(r"^[^:]+", "0/1", vcf_i.samples[0])
                     else:
                         sample_0 = vcf_i.samples[0]
 
-                    GT1 = vcf_i.get_sample_value("GT", idx=1)
+                    GT1 = vcf_i.get_sample_value("GT", idx=tumor_index)
                     if GT1 != "0/0" and GT0 != "0/1":
                         sample_1 = re.sub(r"^[^:]+", "0/1", vcf_i.samples[1])
                     else:

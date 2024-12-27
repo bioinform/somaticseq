@@ -6,15 +6,19 @@
 # It does NOT try to resolve different genotypes if there are multiple on a single VCF file. So keep in mind of this limitation.
 
 import argparse
+import os
+import tempfile
+import uuid
 from copy import copy
 
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 from somaticseq.vcf_modifier.complex2indel import (
     resolve_complex_variants_into_snvs_and_indels,
 )
+from somaticseq.vcf_modifier.vcfIntersector import vcfsorter
 
 
-def run():
+def run() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="Split a VCF file into SNVs and INDELs.",
@@ -29,9 +33,12 @@ def run():
     parser.add_argument(
         "-snv", "--snv-out", type=str, help="Output VCF file", required=True
     )
+    parser.add_argument(
+        "-fai", "--fasta-fai", type=str, help="For sorting", required=True
+    )
     # Parse the arguments:
     args = parser.parse_args()
-    return args.input_vcf, args.snv_out, args.indel_out
+    return args
 
 
 def split_complex_variants_into_snvs_and_indels(
@@ -48,22 +55,23 @@ def split_complex_variants_into_snvs_and_indels(
     assert decomplexed_variants
     snv_and_indel_records = []
     for decomplex_dict in decomplexed_variants:
-        offset = decomplex_dict["OFFSET"]
-        ref_i = decomplex_dict["REF"]
-        alt_i = decomplex_dict["ALT"]
         variant_i = copy(vcf_record)
-        variant_i.position = vcf_record.position + offset
-        variant_i.refbase = ref_i
-        variant_i.altbase = alt_i
+        variant_i.position = vcf_record.position + decomplex_dict["OFFSET"]
+        variant_i.refbase = decomplex_dict["REF"]
+        variant_i.altbase = decomplex_dict["ALT"]
         snv_and_indel_records.append(variant_i)
     return snv_and_indel_records
 
 
-def split_into_snv_and_indel(infile, snv_out, indel_out):
+def split_into_snv_and_indel(
+    infile: str, out_snv_vcf: str, out_indel_vcf: str, fai_file: str
+) -> None:
+    tmp_snv_vcf = os.path.join(tempfile.gettempdir(), uuid.uuid4().hex) + ".vcf"
+    tmp_indel_vcf = os.path.join(tempfile.gettempdir(), uuid.uuid4().hex) + ".vcf"
     with (
         genome.open_textfile(infile) as vcf_in,
-        open(snv_out, "w") as snv_out,
-        open(indel_out, "w") as indel_out,
+        open(tmp_snv_vcf, "w") as snv_out,
+        open(tmp_indel_vcf, "w") as indel_out,
     ):
         line_i = vcf_in.readline().rstrip()
 
@@ -127,11 +135,15 @@ def split_into_snv_and_indel(infile, snv_out, indel_out):
                                 indel_out.write(snv_or_indel.to_vcf_line() + "\n")
 
             line_i = vcf_in.readline().rstrip()
+    vcfsorter(fai_file, tmp_snv_vcf, out_snv_vcf)
+    vcfsorter(fai_file, tmp_indel_vcf, out_indel_vcf)
 
 
 def main() -> None:
-    infile, snv_out, indel_out = run()
-    split_into_snv_and_indel(infile, snv_out, indel_out)
+    args = run()
+    split_into_snv_and_indel(
+        args.input_vcf, args.snv_out, args.indel_out, args.fasta_fai
+    )
 
 
 if __name__ == "__main__":
