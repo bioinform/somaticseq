@@ -34,6 +34,7 @@ def test_split_into_snv_and_indel(
         out_indel_vcf=out_indel,
         genome_reference=tiny_fasta,
     )
+
     snvs = []
     with open(out_snv) as snv:
         for line in snv:
