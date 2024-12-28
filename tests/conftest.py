@@ -99,9 +99,7 @@ def tiny_single_vardict_vcf(test_datadir: Path) -> str:
 
 @pytest.fixture
 def tiny_single_strelka_vcf(test_datadir: Path) -> str:
-    return os.fspath(
-        test_datadir / "tumor_only_example" / "Strelka.vcf.gz"
-    )
+    return os.fspath(test_datadir / "tumor_only_example" / "Strelka.vcf.gz")
 
 
 @pytest.fixture(scope="session")

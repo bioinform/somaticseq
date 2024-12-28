@@ -69,6 +69,13 @@ def convert(infile, snv_out, indel_out, genome_reference):
                     snvout.write(new_line + "\n")
                 elif len(vcf_i.refbase) == 1 or len(vcf_i.altbase) == 1:
                     indelout.write(new_line + "\n")
+                else:
+                    snvs_and_indels = split_complex_variants_into_snvs_and_indels(vcf_i)
+                    for snv_or_indel in snvs_and_indels:
+                        if len(snv_or_indel.refbase) == len(snv_or_indel.altbase) == 1:
+                            snvout.write(snv_or_indel.to_vcf_line() + "\n")
+                        else:
+                            indelout.write(snv_or_indel.to_vcf_line() + "\n")
 
             else:
                 alt_bases = vcf_i.altbase.split(",")
@@ -126,13 +133,27 @@ def convert(infile, snv_out, indel_out, genome_reference):
                         snvout.write(new_line + "\n")
                     elif len(vcf_i.refbase) == 1 or len(altbase_i) == 1:
                         indelout.write(new_line + "\n")
+                    else:
+                        complex_call = genome.VCFVariantRecord.from_vcf_line(new_line)
+                        snvs_and_indels = split_complex_variants_into_snvs_and_indels(
+                            complex_call
+                        )
+                        for snv_or_indel in snvs_and_indels:
+                            if (
+                                len(snv_or_indel.refbase)
+                                == len(snv_or_indel.altbase)
+                                == 1
+                            ):
+                                snvout.write(snv_or_indel.to_vcf_line() + "\n")
+                            else:
+                                indelout.write(snv_or_indel.to_vcf_line() + "\n")
 
             line_i = vcf_in.readline().rstrip()
 
     vcfsorter(genome_reference, tmp_snv_vcf, snv_out)
     vcfsorter(genome_reference, tmp_indel_vcf, indel_out)
-    # os.remove(tmp_snv_vcf)
-    # os.remove(tmp_indel_vcf)
+    os.remove(tmp_snv_vcf)
+    os.remove(tmp_indel_vcf)
 
 
 if __name__ == "__main__":
