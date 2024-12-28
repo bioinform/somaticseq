@@ -166,10 +166,8 @@ def convert(infile, snv_out, indel_out, genome_reference):
             # Also, the old version has no ALD (somatic.pl). The new version has ALD (paired.pl).
             format_field = vcfcall.field.split(":")
             idx_rd = format_field.index("RD")
-
             tumor_sample = vcfcall.samples[0].split(":")
             tumor_dp4 = tumor_sample.pop(idx_rd)
-
             if paired:
                 normal_sample = vcfcall.samples[1].split(":")
                 normal_dp4 = normal_sample.pop(idx_rd)
@@ -216,7 +214,6 @@ def convert(infile, snv_out, indel_out, genome_reference):
                     new_format_string=new_format_string,
                     tumor_sample=tumor_sample,
                 )
-
             # Write to snp and indel into different files:
             if "TYPE=SNV" in vcfcall.info:
                 snpout.write(line_i + "\n")
@@ -224,7 +221,7 @@ def convert(infile, snv_out, indel_out, genome_reference):
             elif "TYPE=Deletion" in vcfcall.info or "TYPE=Insertion" in vcfcall.info:
                 indelout.write(line_i + "\n")
 
-            elif "TYPE=Complex" in vcfcall.info:
+            else:  # "TYPE=Complex"
                 complex_call = genome.VCFVariantRecord.from_vcf_line(line_i)
                 snvs_and_indels = split_complex_variants_into_snvs_and_indels(
                     complex_call
@@ -237,6 +234,7 @@ def convert(infile, snv_out, indel_out, genome_reference):
 
             # Continue:
             line_i = vcf.readline().rstrip()
+
     vcfsorter(genome_reference, tmp_snv_vcf, snv_out)
     vcfsorter(genome_reference, tmp_indel_vcf, indel_out)
     os.remove(tmp_snv_vcf)
