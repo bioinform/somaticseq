@@ -7,10 +7,11 @@ def resolve_complex_variants_into_snvs_and_indels(
 
     if len(refbases) == 1 and len(altbases) == 1:  # snv
         return None
-    
-    if (len(refbases) == 1 or len(altbases) == 1) and (refbases[0] == altbases[0]):  # indel
-        return None
 
+    if (len(refbases) == 1 or len(altbases) == 1) and (
+        refbases[0] == altbases[0]
+    ):  # indel
+        return None
 
     # Initialize a list to hold the new records
     list_of_variants: list[dict] = []
@@ -30,6 +31,6 @@ def resolve_complex_variants_into_snvs_and_indels(
     # Handle insertion
     elif len(altbases) > len(refbases):
         list_of_variants.append(
-            {"OFFSET": i, "REF": refbases[i], "ALT": refbases[i] + altbases[i+1:]},
+            {"OFFSET": i, "REF": refbases[i], "ALT": refbases[i] + altbases[i + 1 :]},
         )
     return list_of_variants
