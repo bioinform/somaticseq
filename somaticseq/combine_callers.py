@@ -72,7 +72,7 @@ def combineSingle(
         intermediate_files.add(mutect2_in)
         snv_mutect_out = os.sep.join((outdir, "snv.mutect2.vcf"))
         indel_mutect_out = os.sep.join((outdir, "indel.mutect2.vcf"))
-        mod_mutect2.convert(mutect2_in, snv_mutect_out, indel_mutect_out)
+        mod_mutect2.convert(mutect2_in, snv_mutect_out, indel_mutect_out, ref)
 
         for file_i in snv_mutect_out, indel_mutect_out:
             intermediate_files.add(file_i)
@@ -343,7 +343,7 @@ def combine_multiple_paired_caller_vcfs(
         intermediate_files.add(mutect2_in)
         snv_mutect_out = os.sep.join((outdir, "snv.mutect2.vcf"))
         indel_mutect_out = os.sep.join((outdir, "indel.mutect2.vcf"))
-        mod_mutect2.convert(mutect2_in, snv_mutect_out, indel_mutect_out, False)
+        mod_mutect2.convert(mutect2_in, snv_mutect_out, indel_mutect_out, False, ref)
 
         for file_i in snv_mutect_out, indel_mutect_out:
             intermediate_files.add(file_i)
@@ -537,7 +537,7 @@ def combine_multiple_paired_caller_vcfs(
         intermediate_files.add(tnscope_in)
         snv_tnscope_out = os.sep.join((outdir, "snv.tnscope.vcf"))
         indel_tnscope_out = os.sep.join((outdir, "indel.tnscope.vcf"))
-        mod_mutect2.convert(tnscope_in, snv_tnscope_out, indel_tnscope_out, True)
+        mod_mutect2.convert(tnscope_in, snv_tnscope_out, indel_tnscope_out, True, ref)
 
         for file_i in snv_tnscope_out, indel_tnscope_out:
             intermediate_files.add(file_i)
