@@ -1,17 +1,18 @@
 def resolve_complex_variants_into_snvs_and_indels(
     refbases: str, altbases: str
-) -> list[dict] | None:
+) -> list[dict]:
     """
     Split complex variants into combination of snvs and indels.
     """
+    snv_or_indel = [{"OFFSET": 0, "REF": refbases, "ALT": altbases}]
 
     if len(refbases) == 1 and len(altbases) == 1:  # snv
-        return None
+        return snv_or_indel
 
     if (len(refbases) == 1 or len(altbases) == 1) and (
         refbases[0] == altbases[0]
     ):  # indel
-        return None
+        return snv_or_indel
 
     # Initialize a list to hold the new records
     list_of_variants: list[dict] = []

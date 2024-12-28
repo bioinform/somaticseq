@@ -13,7 +13,7 @@ from somaticseq.vcf_modifier.split_vcf import (
 from somaticseq.vcf_modifier.vcfIntersector import vcfsorter
 
 
-def run() -> tuple[str, str, str]:
+def run() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -30,11 +30,11 @@ def run() -> tuple[str, str, str]:
         help="Output INDEL VCF file",
         required=True,
     )
+    parser.add_argument(
+        "-ref", "--genome-reference", type=str, help="genome reference", required=True
+    )
     args = parser.parse_args()
-    infile = args.input_vcf
-    snv_out = args.output_snv
-    indel_out = args.output_indel
-    return infile, snv_out, indel_out
+    return args
 
 
 def _make_new_vcf_line(
@@ -226,9 +226,12 @@ def convert(infile, snv_out, indel_out, genome_reference):
 
             elif "TYPE=Complex" in vcfcall.info:
                 complex_call = genome.VCFVariantRecord.from_vcf_line(line_i)
-                snvs_and_indels = split_complex_variants_into_snvs_and_indels(
-                    complex_call
-                )
+                try:
+                    snvs_and_indels = split_complex_variants_into_snvs_and_indels(
+                        complex_call
+                    )
+                except AssertionError:
+                    breakpoint()
                 for snv_or_indel in snvs_and_indels:
                     if len(snv_or_indel.refbase) == len(snv_or_indel.altbase) == 1:
                         snpout.write(snv_or_indel.to_vcf_line() + "\n")
@@ -244,5 +247,5 @@ def convert(infile, snv_out, indel_out, genome_reference):
 
 
 if __name__ == "__main__":
-    infile, snv_out, indel_out = run()
-    convert(infile, snv_out, indel_out)
+    args = run()
+    convert(args.input_vcf, args.output_snv, args.output_indel, args.genome_reference)

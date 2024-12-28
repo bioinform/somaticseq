@@ -52,7 +52,6 @@ def split_complex_variants_into_snvs_and_indels(
     decomplexed_variants = resolve_complex_variants_into_snvs_and_indels(
         refbases=vcf_record.refbase, altbases=vcf_record.altbase
     )
-    assert decomplexed_variants
     snv_and_indel_records = []
     for decomplex_dict in decomplexed_variants:
         variant_i = copy(vcf_record)
