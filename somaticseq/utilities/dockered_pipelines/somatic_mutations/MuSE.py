@@ -107,7 +107,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
             out.write("-G \\\n")
 
         if input_parameters["muse_arguments"]:
-            out.write("{} \\\n".format())
+            out.write("{} \\\n".format(input_parameters["muse_arguments"]))
 
         out.write("-O {}/{} \\\n".format(mounted_outdir, input_parameters["outfile"]))
         out.write(f"-D {mounted_dbsnp_gz}\n")

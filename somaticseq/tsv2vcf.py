@@ -735,8 +735,8 @@ def run() -> argparse.Namespace:
         action="store_true",
         help="Paired tumor-normal samples",
     )
-    assert args.single_sample or args.paired_samples
     args = parser.parse_args()
+    assert args.single_sample or args.paired_samples
     return args
 
 
