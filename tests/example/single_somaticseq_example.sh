@@ -17,9 +17,9 @@ somaticseq \
 --threads               3 \
 single \
 --bam-file              ${MYDIR}/tumor.markdup.bam \
---mutect2-vcf           ${MYDIR}/paired_example/MuTect2.vcf.gz \
---vardict-vcf           ${MYDIR}/paired_example/VarDict.vcf.gz \
---strelka-vcf           ${MYDIR}/tumor_only_example/Strelka/results/variants/variants.vcf.gz
+--mutect2-vcf           ${MYDIR}/tumor_only_example/MuTect2.vcf.gz \
+--vardict-vcf           ${MYDIR}/tumor_only_example/VarDict.vcf.gz \
+--strelka-vcf           ${MYDIR}/tumor_only_example/Strelka.vcf.gz
 
 
 somaticseq \
@@ -32,6 +32,6 @@ somaticseq \
 --threads               3 \
 single \
 --bam-file              ${MYDIR}/tumor.markdup.bam \
---mutect2-vcf           ${MYDIR}/paired_example/MuTect2.vcf.gz \
---vardict-vcf           ${MYDIR}/paired_example/VarDict.vcf.gz \
---strelka-vcf           ${MYDIR}/tumor_only_example/Strelka/results/variants/variants.vcf.gz
+--mutect2-vcf           ${MYDIR}/tumor_only_example/MuTect2.vcf.gz \
+--vardict-vcf           ${MYDIR}/tumor_only_example/VarDict.vcf.gz \
+--strelka-vcf           ${MYDIR}/tumor_only_example/Strelka.vcf.gz
