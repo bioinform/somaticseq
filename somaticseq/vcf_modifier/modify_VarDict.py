@@ -226,12 +226,9 @@ def convert(infile, snv_out, indel_out, genome_reference):
 
             elif "TYPE=Complex" in vcfcall.info:
                 complex_call = genome.VCFVariantRecord.from_vcf_line(line_i)
-                try:
-                    snvs_and_indels = split_complex_variants_into_snvs_and_indels(
-                        complex_call
-                    )
-                except AssertionError:
-                    breakpoint()
+                snvs_and_indels = split_complex_variants_into_snvs_and_indels(
+                    complex_call
+                )
                 for snv_or_indel in snvs_and_indels:
                     if len(snv_or_indel.refbase) == len(snv_or_indel.altbase) == 1:
                         snpout.write(snv_or_indel.to_vcf_line() + "\n")
