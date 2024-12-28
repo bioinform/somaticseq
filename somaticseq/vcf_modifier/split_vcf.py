@@ -66,8 +66,9 @@ def split_complex_variants_into_snvs_and_indels(
 def split_into_snv_and_indel(
     infile: str, out_snv_vcf: str, out_indel_vcf: str, genome_reference: str
 ) -> None:
-    tmp_snv_vcf = os.path.join(tempfile.gettempdir(), uuid.uuid4().hex) + ".vcf"
-    tmp_indel_vcf = os.path.join(tempfile.gettempdir(), uuid.uuid4().hex) + ".vcf"
+    tempdir = tempfile.mkdtemp()
+    tmp_snv_vcf = os.path.join(tempdir, uuid.uuid4().hex) + ".vcf"
+    tmp_indel_vcf = os.path.join(tempdir, uuid.uuid4().hex) + ".vcf"
     with (
         genome.open_textfile(infile) as vcf_in,
         open(tmp_snv_vcf, "w") as snv_out,
@@ -137,12 +138,17 @@ def split_into_snv_and_indel(
             line_i = vcf_in.readline().rstrip()
     vcfsorter(genome_reference, tmp_snv_vcf, out_snv_vcf)
     vcfsorter(genome_reference, tmp_indel_vcf, out_indel_vcf)
+    os.remove(tmp_snv_vcf)
+    os.remove(tmp_indel_vcf)
 
 
 def main() -> None:
     args = run()
     split_into_snv_and_indel(
-        args.input_vcf, args.snv_out, args.indel_out, args.genome_reference
+        infile=args.input_vcf,
+        out_snv_vcf=args.snv_out,
+        out_indel_vcf=args.indel_out,
+        genome_reference=args.genome_reference,
     )
 
 

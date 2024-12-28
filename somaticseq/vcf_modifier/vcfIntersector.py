@@ -129,8 +129,18 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
     return outfile
 
 
-# Use somaticseq/somaticseq/utilities/vcfsorter.pl fa.dict unsorted.vcf > sorted.vcf
-def vcfsorter(ref, vcfin, vcfout):
+def vcfsorter(ref: str, vcfin: str, vcfout: str):
+    """
+    Uses bedtools sort and then make sure there is no duplicate line.
+
+    Args:
+        ref: Fasta file. Code assumes .fai will exist.
+        vcfin: vcf file input
+        vcfout: vcf file output
+
+    Returns:
+        Exit code for bedtools sort.
+    """
     fai = ref + ".fai"
     cmd_line = f"bedtools sort -faidx {fai} -header -i {vcfin} | uniq > {vcfout}"
     subprocess.check_call(cmd_line, shell=True)

@@ -315,7 +315,7 @@ def count_repeating_bases(sequence: str) -> list[int]:
     E.g., for string "ABBCCCDDDDAAAAAAA", the function returns 1, 2, 3, 4, 7,
     because there is 1 A, 2 B's, 3 C's, 4 D's, and then 7 A's.
     """
-    counters = []
+    counters: list[int] = []
     previous_base = None
     for current_base in sequence:
         if current_base == previous_base:
