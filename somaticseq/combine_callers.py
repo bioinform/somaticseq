@@ -129,7 +129,7 @@ def combineSingle(
 
         snv_vardict_out = os.sep.join((outdir, "snv.vardict.vcf"))
         indel_vardict_out = os.sep.join((outdir, "indel.vardict.vcf"))
-        mod_vardict.convert(vardict_in, snv_vardict_out, indel_vardict_out)
+        mod_vardict.convert(vardict_in, snv_vardict_out, indel_vardict_out, ref)
         sorted_snv_vardict_out = os.sep.join((outdir, "snv.sort.vardict.vcf"))
         sorted_indel_vardict_out = os.sep.join((outdir, "indel.sort.vardict.vcf"))
         vcfsorter(ref, snv_vardict_out, sorted_snv_vardict_out)
@@ -426,7 +426,7 @@ def combine_multiple_paired_caller_vcfs(
         intermediate_files.add(vardict_in)
         snv_vardict_out = os.sep.join((outdir, "snv.vardict.vcf"))
         indel_vardict_out = os.sep.join((outdir, "indel.vardict.vcf"))
-        mod_vardict.convert(vardict_in, snv_vardict_out, indel_vardict_out)
+        mod_vardict.convert(vardict_in, snv_vardict_out, indel_vardict_out, ref)
         sorted_snv_vardict_out = os.sep.join((outdir, "snv.sort.vardict.vcf"))
         sorted_indel_vardict_out = os.sep.join((outdir, "indel.sort.vardict.vcf"))
         vcfsorter(ref, snv_vardict_out, sorted_snv_vardict_out)

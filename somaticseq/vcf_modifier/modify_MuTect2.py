@@ -8,7 +8,7 @@ import re
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 
-def run():
+def run() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -23,7 +23,6 @@ def run():
     parser.add_argument(
         "-indel", "--indel-out", type=str, help="Output VCF file", required=True
     )
-
     parser.add_argument(
         "-tnscope",
         "--is-tnscope",
@@ -32,16 +31,8 @@ def run():
         required=False,
         default=False,
     )
-
-    # Parse the arguments:
     args = parser.parse_args()
-
-    infile = args.input_vcf
-    snv_out = args.snv_out
-    indel_out = args.indel_out
-    is_tnscope = args.is_tnscope
-
-    return infile, snv_out, indel_out, is_tnscope
+    return args
 
 
 def convert(infile, snv_out, indel_out, is_tnscope):
@@ -168,5 +159,10 @@ def convert(infile, snv_out, indel_out, is_tnscope):
 
 
 if __name__ == "__main__":
-    infile, snv_out, indel_out, is_tnscope = run()
-    convert(infile, snv_out, indel_out, is_tnscope)
+    args = run()
+    convert(
+        args.input_vcf,
+        args.snv_out,
+        args.indel_out,
+        args.is_tnscope,
+    )

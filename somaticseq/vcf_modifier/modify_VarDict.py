@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 import re
+import tempfile
+import uuid
 
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 from somaticseq.vcf_modifier.split_vcf import (
     split_complex_variants_into_snvs_and_indels,
 )
+from somaticseq.vcf_modifier.vcfIntersector import vcfsorter
 
 
 def run() -> tuple[str, str, str]:
@@ -71,11 +75,14 @@ def _make_new_vcf_line(
     )
 
 
-def convert(infile, snv_out, indel_out):
+def convert(infile, snv_out, indel_out, genome_reference):
+    tempdir = tempfile.mkdtemp()
+    tmp_snv_vcf = os.path.join(tempdir, uuid.uuid4().hex) + ".vcf"
+    tmp_indel_vcf = os.path.join(tempdir, uuid.uuid4().hex) + ".vcf"
     with (
         genome.open_textfile(infile) as vcf,
-        open(snv_out, "w") as snpout,
-        open(indel_out, "w") as indelout,
+        open(tmp_snv_vcf, "w") as snpout,
+        open(tmp_indel_vcf, "w") as indelout,
     ):
         line_i = vcf.readline().rstrip()
         while line_i.startswith("##"):
@@ -230,6 +237,10 @@ def convert(infile, snv_out, indel_out):
 
             # Continue:
             line_i = vcf.readline().rstrip()
+    vcfsorter(genome_reference, tmp_snv_vcf, snv_out)
+    vcfsorter(genome_reference, tmp_indel_vcf, indel_out)
+    os.remove(tmp_snv_vcf)
+    os.remove(tmp_indel_vcf)
 
 
 if __name__ == "__main__":
