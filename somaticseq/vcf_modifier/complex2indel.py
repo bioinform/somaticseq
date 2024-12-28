@@ -5,8 +5,12 @@ def resolve_complex_variants_into_snvs_and_indels(
     Split complex variants into combination of snvs and indels.
     """
 
-    if len(refbases) == 1 or len(altbases) == 1:  # snv / indel
+    if len(refbases) == 1 and len(altbases) == 1:  # snv
         return None
+    
+    if (len(refbases) == 1 or len(altbases) == 1) and (refbases[0] == altbases[0]):  # indel
+        return None
+
 
     # Initialize a list to hold the new records
     list_of_variants: list[dict] = []
@@ -21,11 +25,11 @@ def resolve_complex_variants_into_snvs_and_indels(
     # Handle deletion
     if len(refbases) > len(altbases):
         list_of_variants.append(
-            {"OFFSET": i, "REF": refbases[i:], "ALT": altbases[i]},
+            {"OFFSET": i, "REF": refbases[i:], "ALT": refbases[i]},
         )
     # Handle insertion
     elif len(altbases) > len(refbases):
         list_of_variants.append(
-            {"OFFSET": i, "REF": refbases[i], "ALT": altbases[i:]},
+            {"OFFSET": i, "REF": refbases[i], "ALT": refbases[i] + altbases[i+1:]},
         )
     return list_of_variants

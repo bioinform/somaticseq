@@ -60,6 +60,6 @@ def test_split_into_snv_and_indel(
     assert indels == [
         ["1", 10, "ATGAG", "A"],
         ["1", 11, "T", "TC"],
-        ["1", 15, "GTCAGGA", "A"],
-        ["1", 17, "C", "AAA"],
+        ["1", 15, "GTCAGGA", "G"],
+        ["1", 17, "C", "CAA"],
     ]

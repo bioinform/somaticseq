@@ -4,13 +4,13 @@ import argparse
 import re
 
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
+from somaticseq.vcf_modifier.split_vcf import split_complex_variants_into_snvs_and_indels
 
 
-def run():
+def run() -> tuple[str, str, str]:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-
     parser.add_argument(
         "-infile", "--input-vcf", type=str, help="Input VCF file", required=True
     )
@@ -29,6 +29,44 @@ def run():
     snv_out = args.output_snv
     indel_out = args.output_indel
     return infile, snv_out, indel_out
+
+
+def _make_new_vcf_line(
+    vcfcall: genome.VCFVariantRecord,
+    new_format_string: str,
+    tumor_sample: str,
+    normal_sample: str | None = None,
+) -> str:
+    if normal_sample:
+        return "\t".join(
+            (
+                vcfcall.chromosome,
+                str(vcfcall.position),
+                vcfcall.identifier,
+                vcfcall.refbase,
+                vcfcall.altbase,
+                str(vcfcall.qual or "."),
+                vcfcall.filters,
+                vcfcall.info,
+                new_format_string,
+                normal_sample,
+                tumor_sample,
+            )
+        )
+    return "\t".join(
+        (
+            vcfcall.chromosome,
+            str(vcfcall.position),
+            vcfcall.identifier,
+            vcfcall.refbase,
+            vcfcall.altbase,
+            str(vcfcall.qual or "."),
+            vcfcall.filters,
+            vcfcall.info,
+            new_format_string,
+            tumor_sample,
+        )
+    )
 
 
 def convert(infile, snv_out, indel_out):
@@ -157,35 +195,17 @@ def convert(infile, snv_out, indel_out):
             vcfcall.info = re.sub(r"END=[0-9]+;", "", vcfcall.info)
 
             if paired:
-                line_i = "\t".join(
-                    (
-                        vcfcall.chromosome,
-                        str(vcfcall.position),
-                        vcfcall.identifier,
-                        vcfcall.refbase,
-                        vcfcall.altbase,
-                        str(vcfcall.qual or "."),
-                        vcfcall.filters,
-                        vcfcall.info,
-                        new_format_string,
-                        normal_sample,
-                        tumor_sample,
-                    )
+                line_i = _make_new_vcf_line(
+                    vcfcall=vcfcall,
+                    new_format_string=new_format_string,
+                    tumor_sample=tumor_sample,
+                    normal_sample=normal_sample,
                 )
             else:
-                line_i = "\t".join(
-                    (
-                        vcfcall.chromosome,
-                        str(vcfcall.position),
-                        vcfcall.identifier,
-                        vcfcall.refbase,
-                        vcfcall.altbase,
-                        str(vcfcall.qual or "."),
-                        vcfcall.filters,
-                        vcfcall.info,
-                        new_format_string,
-                        tumor_sample,
-                    )
+                line_i = _make_new_vcf_line(
+                    vcfcall=vcfcall,
+                    new_format_string=new_format_string,
+                    tumor_sample=tumor_sample,
                 )
 
             # Write to snp and indel into different files:
@@ -195,48 +215,16 @@ def convert(infile, snv_out, indel_out):
             elif "TYPE=Deletion" in vcfcall.info or "TYPE=Insertion" in vcfcall.info:
                 indelout.write(line_i + "\n")
 
-            elif "TYPE=Complex" in vcfcall.info and (
-                len(vcfcall.refbase) == len(vcfcall.altbase)
-            ):
-                i = 0
-
-                for ref_i, alt_i in zip(vcfcall.refbase, vcfcall.altbase):
-                    if ref_i != alt_i:
-                        if paired:
-                            line_i = "\t".join(
-                                (
-                                    vcfcall.chromosome,
-                                    str(vcfcall.position + i),
-                                    vcfcall.identifier,
-                                    ref_i,
-                                    alt_i,
-                                    str(vcfcall.qual or "."),
-                                    vcfcall.filters,
-                                    vcfcall.info,
-                                    new_format_string,
-                                    normal_sample,
-                                    tumor_sample,
-                                )
-                            )
-                        else:
-                            line_i = "\t".join(
-                                (
-                                    vcfcall.chromosome,
-                                    str(vcfcall.position + i),
-                                    vcfcall.identifier,
-                                    ref_i,
-                                    alt_i,
-                                    str(vcfcall.qual or "."),
-                                    vcfcall.filters,
-                                    vcfcall.info,
-                                    new_format_string,
-                                    tumor_sample,
-                                )
-                            )
-
-                        snpout.write(line_i + "\n")
-
-                    i += 1
+            elif "TYPE=Complex" in vcfcall.info:
+                complex_call = genome.VCFVariantRecord.from_vcf_line(line_i)
+                snvs_and_indels = split_complex_variants_into_snvs_and_indels(
+                    complex_call
+                )
+                for snv_or_indel in snvs_and_indels:
+                    if len(snv_or_indel.refbase) == len(snv_or_indel.altbase) == 1:
+                        snpout.write(snv_or_indel.to_vcf_line() + "\n")
+                    else:
+                        indelout.write(snv_or_indel.to_vcf_line() + "\n")
 
             # Continue:
             line_i = vcf.readline().rstrip()
