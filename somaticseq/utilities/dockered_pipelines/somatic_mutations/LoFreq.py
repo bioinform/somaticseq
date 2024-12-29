@@ -43,7 +43,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
 
     logdir = os.path.join(input_parameters["output_directory"], "logs")
     outfile = os.path.join(logdir, input_parameters["script"])
-
     all_paths = []
     for path_i in (
         input_parameters["tumor_bam"],
@@ -62,7 +61,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
-
     # Mounted paths for all the input files and output directory:
     mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
         "mount_path"
@@ -74,7 +72,6 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         "mount_path"
     ]
     mounted_dbsnp_gz = file_dictionary[input_parameters["dbsnp_gz"]]["mount_path"]
-
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
         out.write(f"#$ -o {logdir}\n")
@@ -82,9 +79,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write("#$ -S /bin/bash\n")
         out.write("#$ -l h_vmem={}\n".format(input_parameters["MEM"]))
         out.write("set -e\n\n")
-
         out.write('echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n')
-
         out.write(f"{container_line} \\\n")
         out.write("lofreq somatic \\\n")
         out.write(f"-t {mounted_tumor_bam} \\\n")
@@ -95,18 +90,15 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write(
             "-o {}/{} \\\n".format(mounted_outdir, input_parameters["out_prefix"])
         )
-
         if input_parameters["lofreq_arguments"]:
             out.write("{} \\\n".format(input_parameters["lofreq_arguments"]))
 
         out.write(f"-d {mounted_dbsnp_gz}\n")
-
         out.write('\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n')
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
     subprocess.call(command_line, shell=True)
-
     return outfile
 
 
@@ -123,7 +115,6 @@ def tumor_only(input_parameters, tech="docker"):
 
     logdir = os.path.join(input_parameters["output_directory"], "logs")
     outfile = os.path.join(logdir, input_parameters["script"])
-
     all_paths = []
     for path_i in (
         input_parameters["bam"],
@@ -141,7 +132,6 @@ def tumor_only(input_parameters, tech="docker"):
         files=all_paths,
         extra_args=input_parameters["extra_docker_options"],
     )
-
     # Mounted paths for all the input files and output directory:
     mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
         "mount_path"
@@ -151,8 +141,6 @@ def tumor_only(input_parameters, tech="docker"):
     mounted_inclusion = file_dictionary[input_parameters["inclusion_region"]][
         "mount_path"
     ]
-    mounted_dbsnp_gz = file_dictionary[input_parameters["dbsnp_gz"]]["mount_path"]
-
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
         out.write(f"#$ -o {logdir}\n")
@@ -160,25 +148,20 @@ def tumor_only(input_parameters, tech="docker"):
         out.write("#$ -S /bin/bash\n")
         out.write("#$ -l h_vmem={}\n".format(input_parameters["MEM"]))
         out.write("set -e\n\n")
-
         out.write('echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n')
-
         out.write(f"{container_line} \\\n")
         out.write("lofreq call \\\n")
         out.write("--call-indels \\\n")
         out.write(f"-l {mounted_inclusion} \\\n")
         out.write(f"-f {mounted_genome_reference} \\\n")
         out.write("-o {}/{} \\\n".format(mounted_outdir, input_parameters["outfile"]))
-
         if input_parameters["lofreq_arguments"]:
             out.write("{} \\\n".format(input_parameters["lofreq_arguments"]))
 
         out.write(f"{mounted_tumor_bam}\n")
-
         out.write('\necho -e "Done at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n')
 
     # "Run" the script that was generated
     command_line = "{} {}".format(input_parameters["action"], outfile)
     subprocess.call(command_line, shell=True)
-
     return outfile
