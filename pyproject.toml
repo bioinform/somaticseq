@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "somaticseq"
-keywords = ["somatic mutations", "bioinformatics", "genomics"]
+keywords = ["somatic mutations", "bioinformatics", "genomics", "ngs"]
 authors = [
-    {name = "Li Tai Fang", email = "ltfang@gmail.com"},
+    {name = "Li Tai Fang"},
     {name = "Pegah Tootoonchi Afshar"},
     {name = "Aparna Chhibber"},
     {name = "Marghoob Mohiyuddin"},
@@ -19,7 +19,7 @@ authors = [
 maintainers = [
     {name = "Li Tai Fang", email = "ltfang@gmail.com"},
 ]
-description = "SomaticSeq"
+description = "SomaticSeq: An ensemble approach to accurately detect somatic mutations using SomaticSeq"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "BSD-2-Clause"}
@@ -33,11 +33,11 @@ dependencies = [
 ]
 dynamic = ["version"]
 classifiers = [
-  "Development Status :: 5 - Production/Stable",
-  "Topic :: Scientific/Engineering :: Bio-Informatics",
-  "Intended Audience :: Science/Research",
-  "Intended Audience :: Healthcare Industry",
-  "Programming Language :: Python :: 3",
+    "Development Status :: 5 - Production/Stable",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Healthcare Industry",
+    "Programming Language :: Python :: 3",
 ]
 
 [project.urls]
