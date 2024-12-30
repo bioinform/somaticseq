@@ -5,7 +5,11 @@ import argparse
 import pysam
 
 parser = argparse.ArgumentParser(
-    description="Count some metrics from BAM files such as fragment size, duplication rates, fraction of soft-clipped and discordant reads.",
+    description=(
+        "Count some metrics from BAM files such as "
+        "fragment size, duplication rates, fraction of soft-clipped "
+        "and discordant reads."
+    ),
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 )
 parser.add_argument(

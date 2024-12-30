@@ -1,3 +1,5 @@
+# flake8: noqa: E501
+
 import os
 import subprocess
 from datetime import datetime

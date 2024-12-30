@@ -10,10 +10,11 @@ import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 def remove_vcf_illegal_lines(invcf, outvcf):
     """
-    In VarDict v1.7, there are lines with <XXX> in ALT without END in info, which will cause bedtools to fail.
-    This program will check if these things exist, and if they do, remove them.
-    If the input VCF has illegal lines, it will return the modified output VCF file excluding those lines.
-    If the input VCF file does not have such illegal lines, it will return False.
+    In VarDict v1.7, there are lines with <XXX> in ALT without END in info,
+    which will cause bedtools to fail. This program will check if these things
+    exist, and if they do, remove them. If the input VCF has illegal lines, it
+    will return the modified output VCF file excluding those lines. If the input
+    VCF file does not have such illegal lines, it will return False.
     """
 
     hasIllegalLine = False

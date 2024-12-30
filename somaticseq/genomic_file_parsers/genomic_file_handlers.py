@@ -483,7 +483,8 @@ def catchup(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
 
 def catchup_multilines(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
     """
-    Keep reading the j_th vcf file until it hits (or goes past) the i_th coordinate, then
+    Keep reading the j_th vcf file until it hits (or goes past) the i_th
+    coordinate, then
         1) Create a list to store information for this coordinate in the j_th
            vcf file
         2) Keep reading the j_th vcf file and store all lines with the same
@@ -494,11 +495,10 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
            stop when vcf_j has gone beyond the coordinate.
 
     Returns (True, [Vcf_lines], line_j) if the j_th vcf file contains an entry
-    that matches the i_th coordinate.
-    Returns (False, []        , line_j) if the j_th vcf file does not contain
-    such an entry, and therefore the function has run past the i_th coordinate,
-    by which time the programmer can decide to move into the next i_th
-    coordiate.
+    that matches the i_th coordinate. Returns (False, []        , line_j) if the
+    j_th vcf file does not contain such an entry, and therefore the function has
+    run past the i_th coordinate, by which time the programmer can decide to
+    move into the next i_th coordiate.
     """
 
     coordinate_j = re.match(PATTERN_CHR_POSITION, line_j)
@@ -545,7 +545,8 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
         reporter = (True, lines_of_coordinate_i, line_j)
 
     # If file_j is behind, then needs to catch up:
-    # This is an opportunity to check if the vcf_j file is properly sorted, by asserting current line cannot be "behind" a subsequent line
+    # This is an opportunity to check if the vcf_j file is properly sorted, by
+    # asserting current line cannot be "behind" a subsequent line
     elif is_behind == 1:
         # Keep at it until line_j is no longer behind:
         while is_behind == 1:
@@ -578,9 +579,8 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
                     coordinate_k = next_coord.group()
                     if whoisbehind(coordinate_j, coordinate_k, CHROMOSOMES) == 1:
                         raise Exception(
-                            "{} does not seem to be properly sorted: {} then {}.".format(
-                                filehandle_j.name, coordinate_j, coordinate_k
-                            )
+                            f"{filehandle_j.name} does not seem to be properly sorted: "
+                            f"{coordinate_j} then {coordinate_k}."
                         )
                     coordinate_j = coordinate_k
                 else:
@@ -642,7 +642,6 @@ def find_vcf_at_coordinate(
     return latest_vcf_run[0], vcf_variants, latest_vcf_line
 
 
-# Read the 2nd file (i.e., filehandle_j) one line down if it's behind the i_th coordinate:
 def catchup_one_line_at_a_time(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
     """
     A sister program of catch_up, the difference is that the j_th file will be

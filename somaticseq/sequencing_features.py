@@ -17,7 +17,8 @@ def get_homopolymer_lengths(
     """
 
     # Homopolymer eval (Make sure to modify for INDEL):
-    # The min and max is to prevent the +/- 20 bases from exceeding the ends of the reference sequence
+    # The min and max is to prevent the +/- 20 bases from exceeding the ends of
+    # the reference sequence
     lseq = ref_fa.fetch(
         my_coordinate[0], max(0, my_coordinate[1] - 20), my_coordinate[1]
     )

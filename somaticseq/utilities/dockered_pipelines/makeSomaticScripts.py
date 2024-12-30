@@ -23,10 +23,12 @@ def run() -> tuple[argparse.Namespace, dict]:
     Get CLI arguments.
     """
     parser = argparse.ArgumentParser(
-        description="""
-            This program make run scripts for all the individual dockerized somatic mutation callers that we have incorporated.
-            This is NOT a core SomaticSeq algorithm, but simply a helper program to help some people run 3rd-party somatic mutation callers.
-        """,
+        description=(
+            "This program make run scripts for all the individual dockerized "
+            "somatic mutation callers that we have incorporated. "
+            "This is NOT a core SomaticSeq algorithm, but simply a convenience program "
+            "to help people run 3rd-party somatic mutation callers."
+        ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     sample_parsers = parser.add_subparsers(title="sample_mode")
@@ -290,15 +292,19 @@ def run() -> tuple[argparse.Namespace, dict]:
         "-run",
         "--run-workflow",
         action="store_true",
-        help="Execute the bash scripts right here. Only works on Linux machines with modern bash shells.",
+        help=(
+            "Execute the bash scripts right here. "
+            "Only works on Linux machines with modern bash shells."
+        ),
     )
-
     parser_paired.add_argument(
         "--by-caller",
         action="store_true",
-        help="Execution is ordered primarily by tools, i.e., time-consuming tools will start first",
+        help=(
+            "Execution is ordered primarily by tools, "
+            "i.e., time-consuming tools will start first"
+        ),
     )
-
     parser_paired.set_defaults(which="paired")
 
     # Single Sample mode
@@ -505,12 +511,18 @@ def run() -> tuple[argparse.Namespace, dict]:
         "-run",
         "--run-workflow",
         action="store_true",
-        help="Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.",
+        help=(
+            "Execute the bash scripts locally right here. "
+            "Only works on Linux machines with modern bash shells."
+        ),
     )
     parser_single.add_argument(
         "--by-caller",
         action="store_true",
-        help="Execution is ordered primarily by tools, i.e., time-consuming tools will start first",
+        help=(
+            "Execution is ordered primarily by tools, "
+            "i.e., time-consuming tools will start first"
+        ),
     )
     parser_single.set_defaults(which="single")
 
@@ -553,7 +565,9 @@ def make_workflow(args, wf_arg_dict):
         )
         # Unparallelizables
         if wf_arg_dict["run_jointsnvmix2"]:
-            import somaticseq.utilities.dockered_pipelines.somatic_mutations.JointSNVMix2 as JointSNVMix2
+            from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                JointSNVMix2,
+            )
 
             input_arguments = copy(wf_arg_dict)
             input_arguments["script"] = f"jsm2.{timestamp}.cmd"
@@ -563,7 +577,9 @@ def make_workflow(args, wf_arg_dict):
             workflow_tasks["caller_jobs"].append(jointsnvmix2_job)
 
         if wf_arg_dict["run_somaticsniper"]:
-            import somaticseq.utilities.dockered_pipelines.somatic_mutations.SomaticSniper as SomaticSniper
+            from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                SomaticSniper,
+            )
 
             input_arguments = copy(wf_arg_dict)
             input_arguments["script"] = f"somaticsniper.{timestamp}.cmd"
@@ -619,7 +635,9 @@ def make_workflow(args, wf_arg_dict):
 
             # Invoke parallelizable callers one by one:
             if wf_arg_dict["run_mutect2"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.MuTect2 as MuTect2
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    MuTect2,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"mutect2.{timestamp}.cmd"
@@ -628,7 +646,9 @@ def make_workflow(args, wf_arg_dict):
                 jobs_by_threads.append(mutect2_job)
 
             if wf_arg_dict["run_scalpel"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.Scalpel as Scalpel
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    Scalpel,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"scalpel.{timestamp}.cmd"
@@ -637,7 +657,9 @@ def make_workflow(args, wf_arg_dict):
                 jobs_by_threads.append(scalpel_job)
 
             if wf_arg_dict["run_vardict"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.VarDict as VarDict
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    VarDict,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"vardict.{timestamp}.cmd"
@@ -646,7 +668,9 @@ def make_workflow(args, wf_arg_dict):
                 jobs_by_threads.append(vardict_job)
 
             if wf_arg_dict["run_varscan2"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.VarScan2 as VarScan2
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    VarScan2,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"varscan2.{timestamp}.cmd"
@@ -657,7 +681,9 @@ def make_workflow(args, wf_arg_dict):
                 jobs_by_threads.append(varscan2_job)
 
             if wf_arg_dict["run_lofreq"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.LoFreq as LoFreq
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    LoFreq,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"lofreq.{timestamp}.cmd"
@@ -676,7 +702,9 @@ def make_workflow(args, wf_arg_dict):
                 jobs_by_threads.append(lofreq_job)
 
             if wf_arg_dict["run_muse"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.MuSE as MuSE
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    MuSE,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"muse.{timestamp}.cmd"
@@ -695,7 +723,9 @@ def make_workflow(args, wf_arg_dict):
                 jobs_by_threads.append(muse_job)
 
             if wf_arg_dict["run_strelka2"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.Strelka2 as Strelka2
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    Strelka2,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"strelka.{timestamp}.cmd"
@@ -794,7 +824,9 @@ def make_workflow(args, wf_arg_dict):
 
             # Invoke parallelizable callers one by one:
             if wf_arg_dict["run_mutect2"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.MuTect2 as MuTect2
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    MuTect2,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"mutect2.{timestamp}.cmd"
@@ -803,7 +835,9 @@ def make_workflow(args, wf_arg_dict):
                 jobs_by_threads.append(mutect2_job)
 
             if wf_arg_dict["run_scalpel"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.Scalpel as Scalpel
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    Scalpel,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"scalpel.{timestamp}.cmd"
@@ -812,7 +846,9 @@ def make_workflow(args, wf_arg_dict):
                 jobs_by_threads.append(scalpel_job)
 
             if wf_arg_dict["run_vardict"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.VarDict as VarDict
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    VarDict,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"vardict.{timestamp}.cmd"
@@ -821,7 +857,9 @@ def make_workflow(args, wf_arg_dict):
                 jobs_by_threads.append(vardict_job)
 
             if wf_arg_dict["run_varscan2"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.VarScan2 as VarScan2
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    VarScan2,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"varscan2.{timestamp}.cmd"
@@ -830,7 +868,9 @@ def make_workflow(args, wf_arg_dict):
                 jobs_by_threads.append(varscan2_job)
 
             if wf_arg_dict["run_lofreq"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.LoFreq as LoFreq
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    LoFreq,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"lofreq.{timestamp}.cmd"
@@ -849,7 +889,9 @@ def make_workflow(args, wf_arg_dict):
                 jobs_by_threads.append(lofreq_job)
 
             if wf_arg_dict["run_strelka2"]:
-                import somaticseq.utilities.dockered_pipelines.somatic_mutations.Strelka2 as Strelka2
+                from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
+                    Strelka2,
+                )
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"strelka.{timestamp}.cmd"
@@ -895,7 +937,7 @@ def make_workflow(args, wf_arg_dict):
 
     # Execute the workflow
     if args.run_workflow:
-        import somaticseq.utilities.dockered_pipelines.run_workflows as run_workflows
+        from somaticseq.utilities.dockered_pipelines import run_workflows
 
         run_workflows.run_workflows(
             (
@@ -906,7 +948,8 @@ def make_workflow(args, wf_arg_dict):
             args.threads,
         )
         logger.info(
-            f"SomaticSeq Workflow Done. Check your results. You may remove the {args.threads} sub_directories."
+            "SomaticSeq Workflow Done. Check your results. "
+            f"You may remove the {args.threads} sub_directories."
         )
     return workflow_tasks
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-# Post-process GATK4's MuTect2 output. The main purpose is to split multi-allelic records into one variant record per line.
+# Post-process GATK4's MuTect2 output. The main purpose is to split
+# multi-allelic records into one variant record per line.
 
 import argparse
 import os
@@ -55,7 +56,8 @@ def convert(infile, snv_out, indel_out, genome_reference):
         while line_i:
             vcf_i = genome.VCFVariantRecord.from_vcf_line(line_i)
 
-            # If "germlinerisk" is the only flag, then make it PASS since there is no matched normal
+            # If "germlinerisk" is the only flag, then make it PASS since there
+            # is no matched normal
             if vcf_i.filters == "germline_risk":
                 vcf_i.filters = "PASS"
 

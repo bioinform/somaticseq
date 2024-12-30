@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Supports Insertion/Deletion as well as SNVs
 # Last updated: 8/29/2015
+# flake8: noqa: E501 (Legacy script not being used)
 
 import argparse
 import re
@@ -135,8 +136,9 @@ if Tpileup:
 # Add the extra headers:
 out_vcf_headers = genome.vcf_header_modifier(my_vcf, addons=header_append)
 
-# Find out where the tumor and normal samples are in the vcf files, i.e., which column.
-# Then, Assuming there are two sample names in "my vcf," the one that appears first should have an index of 0, and the next one is 1:
+# Find out where the tumor and normal samples are in the vcf files, i.e., which
+# column. Then, Assuming there are two sample names in "my vcf," the one that
+# appears first should have an index of 0, and the next one is 1:
 main_header = out_vcf_headers[3].split("\t")
 vcf_idxT = main_header.index(tumor_name)
 idxT = vcf_idxT - 9

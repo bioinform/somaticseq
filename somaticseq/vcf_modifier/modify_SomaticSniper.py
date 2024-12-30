@@ -35,9 +35,11 @@ def convert(infile, outfile):
             line_i = vcf.readline().rstrip()
 
         while line_i:
-            # Print "SomaticSniper" into the INFO field if it is called so, otherwise never mind.
+            # Print "SomaticSniper" into the INFO field if it is called so,
+            # otherwise never mind.
             item = line_i.split("\t")
-            # In the REF field, non-GCTA characters should be changed to N to fit the VCF standard:
+            # In the REF field, non-GCTA characters should be changed to N to
+            # fit the VCF standard:
             item[idx_ref] = re.sub(r"[^GCTA]", "N", item[idx_ref], flags=re.I)
             line_i = "\t".join(item)
             vcfout.write(line_i + "\n")

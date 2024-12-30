@@ -218,9 +218,11 @@ def run(fai_file, bed_files, bed_labels, bed_out):
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "This is a program to tally and count the overlapping regions when given multiple input bed files. "
-            "A CRITICAL REQUIREMENT is that each input bed file is sorted and non-overlapping, "
-            "which could be achived with bedtools merge before they are used as input to this program."
+            "This is a program to tally and count the overlapping regions "
+            "when given multiple input bed files. A CRITICAL REQUIREMENT is that "
+            "each input bed file is sorted and non-overlapping, which "
+            "could be achieved with bedtools merge "
+            "before they are used as input to this program."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -231,7 +233,10 @@ def main() -> None:
         "-beds",
         "--bed-files",
         type=str,
-        help="Input bed files. Each MUST be non-overlapping regions sorted to the input fai file.",
+        help=(
+            "Input bed files. "
+            "Each MUST be non-overlapping regions sorted to the input fai file."
+        ),
         nargs="+",
         required=True,
         default=None,

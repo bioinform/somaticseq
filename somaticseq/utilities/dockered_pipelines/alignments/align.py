@@ -97,7 +97,7 @@ def bwa(input_parameters, tech="docker"):
 
         out.write("| samtools view -Sbh - \\\n")
         out.write(
-            '| samtools sort -m {MEM}G --threads {THREADS} -o {DIR}/{OUTFILE}"\n\n'.format(
+            '| samtools sort -m {MEM}G --threads {THREADS} -o {DIR}/{OUTFILE}"\n\n'.format(  # noqa: E501
                 MEM=math.ceil(input_parameters["MEM"] / 2),
                 THREADS=math.ceil(input_parameters["threads"] / 2),
                 DIR=mounted_outdir,
@@ -126,7 +126,6 @@ def run():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-
     # INPUT FILES and Global Options
     parser.add_argument("-outdir", "--output-directory", type=str, default=os.getcwd())
     parser.add_argument("-ref", "--genome-reference", type=str, required=True)

@@ -76,7 +76,7 @@ def picard(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=Fal
 
         out.write(f"{merge_line} \\\n")
         out.write(
-            "java -Xmx{}G -jar /opt/picard.jar MergeSamFiles {} {} ASSUME_SORTED=true CREATE_INDEX=true O={}\n\n".format(
+            "java -Xmx{}G -jar /opt/picard.jar MergeSamFiles {} {} ASSUME_SORTED=true CREATE_INDEX=true O={}\n\n".format(  # noqa: E501
                 input_parameters["MEM"],
                 infile_string,
                 input_parameters["extra_picard_arguments"],

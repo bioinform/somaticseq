@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-# Add GT to Strelka's samples to make compatible with GATK CombineVariants, so don't care about the content. Just 0/1 for everyone.
+# Add GT to Strelka's samples to make compatible with GATK CombineVariants, so
+# don't care about the content. Just 0/1 for everyone.
 
 import argparse
 

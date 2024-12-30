@@ -84,8 +84,11 @@ def bed(infileList, outfile, bgzip=False):
 
 def spreader(infileList, outfiles, chunk=4, bgzip=False, threads=1):
     """
-    Given an infile, it will spread its content into the outfiles "chunk" at a time, e.g,.
-    If infile is a fastq file, and output is 3 fastq files, then the first 4 lines will go to the 1st output, the next 4 lines to go the 2nd output, the next 4 lines go to the 3rd output, and then the next 4 lines will go back to the 1st output, so on and so forth.
+    Given an infile, it will spread its content into the outfiles "chunk" at a
+    time, e.g,. If infile is a fastq file, and output is 3 fastq files, then the
+    first 4 lines will go to the 1st output, the next 4 lines to go the 2nd
+    output, the next 4 lines go to the 3rd output, and then the next 4 lines
+    will go back to the 1st output, so on and so forth.
     """
 
     outs = [open(out_i, "w") for out_i in outfiles]
@@ -133,8 +136,9 @@ def run() -> tuple[argparse.Namespace, str]:
         "--chunk-size",
         type=int,
         help=(
-            "In --spread mode, the number of lines to be written into the output file each time. "
-            "By default chunk=4 by default for fastq files, i.e., every 4 lines make up one read record."
+            "In --spread mode, the number of lines to be written into the output file "
+            "each time. By default chunk=4 by default for fastq files, "
+            "i.e., every 4 lines make up one read record."
         ),
         default=4,
     )
@@ -142,7 +146,10 @@ def run() -> tuple[argparse.Namespace, str]:
         "-nt",
         "--threads",
         type=int,
-        help="only invoked in -spread -bgzip when bgzip compress of output files can be parallelized",
+        help=(
+            "Only invoked in -spread -bgzip "
+            "when bgzip compress of output files can be parallelized."
+        ),
     )
     parser.add_argument(
         "-spread",

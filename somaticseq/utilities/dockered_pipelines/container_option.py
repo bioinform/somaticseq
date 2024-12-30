@@ -77,7 +77,10 @@ def container_params(
             container_dir = file_dictionary[file_i]["mount_dir"]
             MOUNT_STRING = MOUNT_STRING + f" -v {sys_dir}:{container_dir}"
 
-        container_string = f"docker run {MOUNT_STRING} -u $(id -u):$(id -g) --rm {extra_args} {container_image}"
+        container_string = (
+            f"docker run {MOUNT_STRING} -u $(id -u):$(id -g) "
+            f"--rm {extra_args} {container_image}"
+        )
 
     elif tech == "singularity":
         MOUNT_STRING = ""
@@ -86,7 +89,10 @@ def container_params(
             container_dir = file_dictionary[file_i]["mount_dir"]
             MOUNT_STRING = MOUNT_STRING + f" --bind {sys_dir}:{container_dir}"
 
-        container_string = f"singularity exec --cleanenv {MOUNT_STRING} {extra_args} {singularity_image_loc}{container_image}"
+        container_string = (
+            "singularity exec --cleanenv "
+            f"{MOUNT_STRING} {extra_args} {singularity_image_loc}{container_image}"
+        )
 
     else:
         raise NotImplementedError("Only supports docker and singularity.")

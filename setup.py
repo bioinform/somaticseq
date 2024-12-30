@@ -15,7 +15,10 @@ with open(version_file) as f:
 
 setup(
     name="somaticseq",
-    description="SomaticSeq: An ensemble approach to accurately detect somatic mutations using SomaticSeq",
+    description=(
+        "SomaticSeq: "
+        "An ensemble approach to accurately detect somatic mutations using SomaticSeq"
+    ),
     version=__version__,  # noqa
     long_description=long_description,
     long_description_content_type="text/markdown",

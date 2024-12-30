@@ -14,7 +14,7 @@ import pysam
 
 import somaticseq.annotate_caller as annotate_caller
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
-import somaticseq.sequencing_features as sequencing_features
+import somaticseq.sequencing_features as seq_features
 from somaticseq.bam_features import BamFeatures
 from somaticseq.genomic_file_parsers.read_info_extractor import (
     genomic_coordinates,
@@ -98,7 +98,13 @@ label_header = "{TrueVariant_or_False}"
 
 def run() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="This is a SomaticSeq subroutine to convert a VCF file into a TSV file with all the SomaticSeq features for tumor-only modes. Any VCF file can be used as the main input. The output will have the same variants. Also required is the BAM files, with additional optional inputs.",
+        description=(
+            "This is a SomaticSeq subroutine to convert a VCF file into a TSV file "
+            "with all the SomaticSeq features for tumor-only modes. "
+            "Any VCF file can be used as the main input. "
+            "The output will have the same variants. "
+            "Also required is the BAM files, with additional optional inputs."
+        ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     input_sites = parser.add_mutually_exclusive_group()
@@ -226,7 +232,7 @@ def run() -> argparse.Namespace:
         "-dedup",
         "--deduplicate",
         action="store_true",
-        help="Do not consider duplicate reads from tBAM files. Default is to count everything",
+        help="Do not count reads marked as duplicates. Default=False.",
         required=False,
         default=False,
     )
@@ -377,7 +383,8 @@ def vcf2tsv(
         while my_line.startswith("#") or my_line.startswith("track="):
             my_line = my_sites.readline().rstrip()
 
-        # First coordinate, for later purpose of making sure the input is sorted properly
+        # First coordinate, for later purpose of making sure the input is sorted
+        # properly
         coordinate_i = re.match(genome.PATTERN_CHR_POSITION, my_line)
         coordinate_i = coordinate_i.group() if coordinate_i else ""
 
@@ -401,21 +408,21 @@ def vcf2tsv(
                     vcf_i.altbase = alt_i
                     variants_at_my_coordinate.append(vcf_i)
 
-                # As long as the "coordinate" stays the same, it will keep reading until it's different.
+                # As long as the "coordinate" stays the same, it will keep
+                # reading until it's different.
                 while my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
                     my_line = my_sites.readline().rstrip()
                     my_vcf = genome.VCFVariantRecord.from_vcf_line(my_line)
 
-                    ########## This block is code is to ensure the input VCF file is properly sorted ##
+                    # This block is code is to ensure the input VCF file is
+                    # properly sorted
                     coordinate_j = re.match(genome.PATTERN_CHR_POSITION, my_line)
                     coordinate_j = coordinate_j.group() if coordinate_j else ""
                     if genome.whoisbehind(coordinate_i, coordinate_j, chrom_seq) == 1:
                         raise Exception(
                             f"{mysites} does not seem to be properly sorted."
                         )
-
                     coordinate_i = coordinate_j
-                    ###################################################################################
                     if my_coordinates[0] == (my_vcf.chromosome, my_vcf.position):
                         alt_bases = my_vcf.altbase.split(",")
                         for alt_i in alt_bases:
@@ -436,9 +443,9 @@ def vcf2tsv(
                 fai_item = my_line.split("\t")
                 my_coordinates = genomic_coordinates(fai_item[0], 1, int(fai_item[1]))
 
-            ##### ##### ##### ##### ##### #####
             for my_coordinate in my_coordinates:
-                ######## If VCF, can get ref base, variant base, as well as other identifying information ########
+                # If VCF, can get ref base, variant base, as well as other
+                # identifying information
                 if is_vcf:
                     ref_bases = []
                     alt_bases = []
@@ -452,7 +459,9 @@ def vcf2tsv(
                         alt_bases.append(first_alt)
                         indel_lengths.append(indel_length)
 
-                        # Extract these information if they exist in the VCF file, but they could be re-written if dbSNP/COSMIC are supplied.
+                        # Extract these information if they exist in the VCF
+                        # file, but they could be re-written if dbSNP/COSMIC are
+                        # supplied.
                         if_dbsnp = (
                             1 if re.search(r"rs[0-9]+", variant_i.identifier) else 0
                         )
@@ -477,18 +486,20 @@ def vcf2tsv(
 
                         all_my_identifiers.append(my_identifier_i)
 
-                ## If not, 1) get ref_base, first_alt from other VCF files.
-                #          2) Create placeholders for dbSNP and COSMIC that can be overwritten with dbSNP/COSMIC VCF files (if provided)
+                # If not, 1) get ref_base, first_alt from other VCF files.
+                # 2) Create placeholders for dbSNP and COSMIC that can be
+                # overwritten with dbSNP/COSMIC VCF files (if provided)
                 else:
                     variants_at_my_coordinate = [
                         None
                     ]  # Just to have something to iterate
                     ref_base = first_alt = indel_length = None
 
-                    # Could be re-written if dbSNP/COSMIC are supplied. If not, they will remain NaN.
+                    # Could be re-written if dbSNP/COSMIC are supplied. If not,
+                    # they will remain NaN.
                     if_dbsnp = if_cosmic = if_common = num_cases = nan
 
-                #################################### Find the same coordinate in those VCF files ####################################
+                # Find the same coordinate in those VCF files
                 if mutect:
                     (
                         got_mutect,
@@ -576,7 +587,8 @@ def vcf2tsv(
                         chrom_seq,
                     )
 
-                # Now, use pysam to look into the tBAM file(s), variant by variant from the input:
+                # Now, use pysam to look into the tBAM file(s), variant by
+                # variant from the input:
                 for ith_call, my_call in enumerate(variants_at_my_coordinate):
                     if is_vcf:
                         # The particular line in the input VCF file:
@@ -598,7 +610,7 @@ def vcf2tsv(
                     # Reset num_caller to 0 for each variant in the same coordinate
                     num_callers = 0
 
-                    #################### Collect Caller Vcf ####################:
+                    # Collect Caller Vcf
                     if mutect:
                         mutect_classification, tlod, ecnt = annotate_caller.ssMuTect(
                             variant_id, mutect_variants
@@ -664,7 +676,7 @@ def vcf2tsv(
 
                     # Potentially write the output only if it meets this threshold:
                     if num_callers >= min_caller:
-                        ########## Ground truth file ##########
+                        # Ground truth file
                         if truth:
                             if variant_id in truth_variants.keys():
                                 judgement = 1
@@ -675,7 +687,7 @@ def vcf2tsv(
                         else:
                             judgement = nan
 
-                        ########## dbSNP ########## Will overwrite dbSNP info from input VCF file
+                        # dbSNP: Will overwrite dbSNP info from input VCF file
                         if dbsnp:
                             if_dbsnp, if_common, rsID = annotate_caller.dbSNP(
                                 variant_id, dbsnp_variants
@@ -683,7 +695,7 @@ def vcf2tsv(
                             for ID_i in rsID:
                                 my_identifiers.add(ID_i)
 
-                        ########## COSMIC ########## Will overwrite COSMIC info from input VCF file
+                        # COSMIC: Will overwrite COSMIC info from input VCF file
                         if cosmic:
                             if_cosmic, num_cases, cosmicID = annotate_caller.COSMIC(
                                 variant_id, cosmic_variants
@@ -691,7 +703,7 @@ def vcf2tsv(
                             for ID_i in cosmicID:
                                 my_identifiers.add(ID_i)
 
-                        ########## ######### INFO EXTRACTION FROM BAM FILES ########## #########
+                        # INFO EXTRACTION FROM BAM FILES
                         # Tumor tBAM file:
                         tbam_feature = BamFeatures.from_alignment_file(
                             bam_fh=bam,
@@ -705,11 +717,12 @@ def vcf2tsv(
                         (
                             homopolymer_length,
                             site_homopolymer_length,
-                        ) = sequencing_features.get_homopolymer_lengths(
+                        ) = seq_features.get_homopolymer_lengths(
                             ref_fa, my_coordinate, ref_base, first_alt
                         )
 
-                        # Linguistic sequence complexity in a +/-80bp window, but substring calculation stops at 20-bp substring.
+                        # Linguistic sequence complexity in a +/-80bp window,
+                        # but substring calculation stops at 20-bp substring.
                         seq_span_80bp = ref_fa.fetch(
                             my_coordinate[0],
                             max(0, my_coordinate[1] - 41),
@@ -723,24 +736,29 @@ def vcf2tsv(
                         seq_right_80bp = ref_fa.fetch(
                             my_coordinate[0], my_coordinate[1], my_coordinate[1] + 81
                         )
-
                         if len(seq_span_80bp) > 20:
-                            LC_spanning = sequencing_features.ling_seq_complexity_with_max_vocab_length(
-                                seq_span_80bp, 20
+                            LC_spanning = (
+                                seq_features.ling_seq_complexity_with_max_vocab_length(
+                                    seq_span_80bp, 20
+                                )
                             )
                         else:
                             LC_spanning = math.nan
 
                         if len(seq_left_80bp) > 20:
-                            left_LC = sequencing_features.ling_seq_complexity_with_max_vocab_length(
-                                seq_left_80bp, 20
+                            left_LC = (
+                                seq_features.ling_seq_complexity_with_max_vocab_length(
+                                    seq_left_80bp, 20
+                                )
                             )
                         else:
                             left_LC = math.nan
 
                         if len(seq_right_80bp) > 20:
-                            right_LC = sequencing_features.ling_seq_complexity_with_max_vocab_length(
-                                seq_right_80bp, 20
+                            right_LC = (
+                                seq_features.ling_seq_complexity_with_max_vocab_length(
+                                    seq_right_80bp, 20
+                                )
                             )
                         else:
                             right_LC = math.nan
@@ -753,7 +771,6 @@ def vcf2tsv(
                         my_identifiers = (
                             ";".join(my_identifiers) if my_identifiers else "."
                         )
-                        ###
                         out_line_part_1 = out_header.format(
                             CHROM=my_coordinate[0],
                             POS=my_coordinate[1],
@@ -834,7 +851,6 @@ def vcf2tsv(
                             tBAM_ALT_InDel_1bp=tbam_feature.alt_indel_1bp,
                             InDel_Length=indel_length,
                         )
-
                         additional_caller_columns = []
                         for arbi_key_i in additional_arbi_caller_numbers:
                             additional_caller_columns.append(
@@ -845,7 +861,6 @@ def vcf2tsv(
                         label_column = label_header.format(
                             TrueVariant_or_False=judgement
                         )
-
                         if len(additional_arbi_caller_numbers) > 0:
                             out_line = "\t".join(
                                 (
@@ -864,7 +879,7 @@ def vcf2tsv(
             if not is_vcf:
                 my_line = my_sites.readline().rstrip()
 
-        ##########  Close all open files if they were opened  ##########
+        # Close all open files if they were opened
         opened_files = [
             ref_fa,
             bam,

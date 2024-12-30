@@ -889,7 +889,8 @@ def run() -> argparse.Namespace:
         nargs="*",
         help=(
             "extra xgboost training hyperparameters in format of "
-            "PARAM_1:VALUE_1 PARAM_2:VALUE_2. Will overwrite defaults and other options."
+            "PARAM_1:VALUE_1 PARAM_2:VALUE_2. "
+            "Will overwrite defaults and other options."
         ),
         default=None,
     )

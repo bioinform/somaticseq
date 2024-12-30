@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
-# Post-process GATK4's MuTect2 output. The main purpose is to split multi-allelic records into one variant record per line.
-# The objective is to seperate SNV and INDEL into two files.
-# The primary objective is to extract variant candidate list, i.e., genomic coordinate, reference, and alternate alleles.
-# It does NOT try to resolve different genotypes if there are multiple on a single VCF file. So keep in mind of this limitation.
+# Post-process GATK4's MuTect2 output. The main purpose is to split
+# multi-allelic records into one variant record per line. The objective is to
+# seperate SNV and INDEL into two files. The primary objective is to extract
+# variant candidate list, i.e., genomic coordinate, reference, and alternate
+# alleles. It does NOT try to resolve different genotypes if there are multiple
+# on a single VCF file. So keep in mind of this limitation.
 
 import argparse
 import os

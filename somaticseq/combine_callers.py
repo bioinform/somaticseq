@@ -12,7 +12,6 @@ from somaticseq.vcf_modifier.vcfIntersector import (
 )
 
 
-# Combine individual VCF output into a simple combined VCF file, for single-sample callers
 def combineSingle(
     outdir,
     ref,
@@ -30,6 +29,8 @@ def combineSingle(
     arb_indels=None,
     keep_intermediates=False,
 ):
+    """Combine individual VCF output into a simple combined VCF file, for
+    single-sample callers"""
     if arb_snvs is None:
         arb_snvs = []
     if arb_indels is None:
@@ -256,7 +257,6 @@ def combineSingle(
     )
 
 
-# Combine individual VCF output into a simple combined VCF file, for paired sample callers
 def combine_multiple_paired_caller_vcfs(
     outdir,
     ref,
@@ -284,6 +284,8 @@ def combine_multiple_paired_caller_vcfs(
     arb_indels=None,
     keep_intermediates=False,
 ):
+    """Combine individual VCF output into a simple combined VCF file, for paired
+    sample callers"""
     if arb_snvs is None:
         arb_snvs = []
     if arb_indels is None:

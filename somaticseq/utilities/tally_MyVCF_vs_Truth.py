@@ -104,7 +104,8 @@ else:
 
 
 def whoisbehind(coord_0, coord_1):
-    """coord_0 and coord_1 are two strings, specifying the chromosome, a (typically) tab, and then the location."""
+    """coord_0 and coord_1 are two strings, specifying the chromosome, a
+    (typically) tab, and then the location."""
 
     if coord_0[0] == coord_1[0] == "":
         return 10
@@ -139,8 +140,9 @@ def whoisbehind(coord_0, coord_1):
 
 
 def only_care(nth_col, itsays, string_input):
-    """itsays is a regex pattern that matches string_input in the nth_col. Returns True if it matches.  Returns False it it does not.
-    IGNORE CASE FOR NOW."""
+    """itsays is a regex pattern that matches string_input in the nth_col.
+    Returns True if it matches.  Returns False it it does not. IGNORE CASE FOR
+    NOW."""
 
     itmatches = re.search(itsays, string_input.split()[nth_col], re.I)
 
@@ -155,15 +157,13 @@ def catch_up(line_1, line_2, file_1, file_2, output_vcf, id_1, id_2, id_12):
 
     vcf_1 = genome.VCFVariantRecord.from_vcf_line(line_1)
     vcf_2 = genome.VCFVariantRecord.from_vcf_line(line_2)
-
     coord_1 = [vcf_1.chromosome, vcf_1.position]
     coord_2 = [vcf_2.chromosome, vcf_2.position]
-
     print(coord_1, coord_2)
-
     is_behind = whoisbehind(coord_1, coord_2)
 
-    # As long as the coordinates are not the same, and both files are not finished:
+    # As long as the coordinates are not the same, and both files are not
+    # finished:
     while is_behind != 10:
         # If 1st VCF is behind:
         if is_behind == 0:

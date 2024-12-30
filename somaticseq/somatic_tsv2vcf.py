@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# flake8: noqa: E501
+# Don't want to bother flake8 with long VCF header lines
 
 import argparse
 import re
@@ -13,7 +15,9 @@ time_string = datetime.now().isoformat(sep="_", timespec="seconds")
 
 def run() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="This is a SomaticSeq subroutine SomaticSeq TSV file into VCF file.",
+        description=(
+            "This is a SomaticSeq subroutine SomaticSeq TSV file into VCF file."
+        ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("-tsv", "--tsv-in", type=str, help="TSV in", required=True)
@@ -70,7 +74,21 @@ def run() -> argparse.Namespace:
         "-tools",
         "--individual-mutation-tools",
         type=str,
-        help="A list of all tools used. Possible values are CGA/MuTect/MuTect2 (M), VarScan2 (V), JointSNVMix2 (J), SomaticSniper (S), VarDict (D), MuSE (U), LoFreq (L), Scalpel (P), Strelka (K), TNscope (T), and/or Platypus (Y)",
+        help=(
+            "A list of all tools used. Possible values are "
+            "CGA/MuTect/MuTect2 (M), "
+            "VarScan2 (V), "
+            "JointSNVMix2 (J), "
+            "SomaticSniper (S), "
+            "VarDict (D), "
+            "MuSE (U), "
+            "LoFreq (L), "
+            "Scalpel (P), "
+            "Strelka (K), "
+            "TNscope (T), "
+            "Platypus (Y), "
+            "and [0-9] for arbitrary callers."
+        ),
         nargs="*",
         required=True,
     )
@@ -86,7 +104,10 @@ def run() -> argparse.Namespace:
         "-phred",
         "--phred-scale",
         action="store_true",
-        help="Flag it to print out Phred scale QUAL (proper VCF format but more annoying to filter)",
+        help=(
+            "Flag it to print out Phred scale QUAL "
+            "(proper VCF format but more annoying to filter)"
+        ),
         required=False,
     )
 
@@ -175,7 +196,6 @@ def tsv2vcf(
         "TNscope": "T",
         "Platypus": "Y",
     }
-
     tool_combo_key = ""
     tool_combo_list = []
     for tool_i in tools:
@@ -183,7 +203,8 @@ def tsv2vcf(
             tool_combo_key = tool_combo_key + tools_code[tool_i]
             tool_combo_list.append(tools_code[tool_i])
         else:
-            # if the string for the code is SnvCaller_N or IndelCaller_N as arbitrary callers
+            # if the string for the code is SnvCaller_N or IndelCaller_N as
+            # arbitrary callers
             arbi_tool_character = re.search(r"[0-9]+$", tool_i).group()
             tool_combo_key = tool_combo_key + arbi_tool_character
             tool_combo_list.append(arbi_tool_character)
@@ -197,7 +218,8 @@ def tsv2vcf(
 
         tsv_header = tsv_i.split("\t")
 
-        # Make the header items into indices (single/paired have different tool names)
+        # Make the header items into indices (single/paired have different tool
+        # names)
         toolcode2index = {}
         for n, item in enumerate(tsv_header):
             if "if_MuTect" == item:
@@ -317,12 +339,10 @@ def tsv2vcf(
         vcf.write(
             '##INFO=<ID=LC,Number=1,Type=Float,Description="Linguistic sequence complexity in Phred scale between 0 to 40. Higher value means higher complexity.">\n'
         )
-
         if single_mode:
             vcf.write(
                 '##INFO=<ID=AF,Number=1,Type=Float,Description="Variant Allele Fraction">\n'
             )
-
         vcf.write('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
         vcf.write(
             '##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="ref forward, ref reverse, alt forward, alt reverse">\n'
@@ -330,7 +350,6 @@ def tsv2vcf(
         vcf.write(
             '##FORMAT=<ID=CD4,Number=4,Type=Integer,Description="ref concordant, ref discordant, alt concordant, alt discordant">\n'
         )
-
         vcf.write(
             '##FORMAT=<ID=refMQ,Number=1,Type=Float,Description="average mapping score for reference reads">\n'
         )
@@ -349,7 +368,6 @@ def tsv2vcf(
         vcf.write(
             '##FORMAT=<ID=altNM,Number=1,Type=Float,Description="average edit distance for alternate reads">\n'
         )
-
         vcf.write(
             '##FORMAT=<ID=fetSB,Number=1,Type=Float,Description="Strand bias FET">\n'
         )
@@ -368,7 +386,6 @@ def tsv2vcf(
         vcf.write(
             '##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">\n'
         )
-
         if single_mode:
             vcf.write(
                 "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\n".format(
@@ -381,10 +398,8 @@ def tsv2vcf(
                     normal_sample_name, tumor_sample_name
                 )
             )
-
         # Start writing content:
         tsv_i = tsv.readline().rstrip()
-
         while tsv_i:
             tsv_item = tsv_i.split("\t")
             try:
@@ -432,7 +447,6 @@ def tsv2vcf(
                     )
 
             tool_combo_values = ",".join(tool_combo_values)
-
             info_string = "{COMBO}={TOOL_COMBO_VALUES};NUM_TOOLS={NUM_TOOLS}".format(
                 COMBO=tool_combo_key,
                 TOOL_COMBO_VALUES=tool_combo_values,

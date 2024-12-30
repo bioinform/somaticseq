@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# flake8: noqa: E501
 
 import argparse
 import os
@@ -157,13 +158,14 @@ def convert(infile, snv_out, indel_out, genome_reference):
             if vcfcall.refbase == vcfcall.altbase:
                 continue
 
-            # In the REF/ALT field, non-GCTA characters should be changed to N to fit the VCF standard:
+            # In the REF/ALT field, non-GCTA characters should be changed to N
+            # to fit the VCF standard:
             vcfcall.refbase = re.sub(r"[^GCTA]", "N", vcfcall.refbase, flags=re.I)
             vcfcall.altbase = re.sub(r"[^GCTA]", "N", vcfcall.altbase, flags=re.I)
 
             ## To be consistent with other tools, Combine AD:RD or ALD:RD into DP4.
-            # VarDict puts Tumor first and Normal next
-            # Also, the old version has no ALD (somatic.pl). The new version has ALD (paired.pl).
+            # VarDict puts Tumor first and Normal next Also, the old version has
+            # no ALD (somatic.pl). The new version has ALD (paired.pl).
             format_field = vcfcall.field.split(":")
             idx_rd = format_field.index("RD")
             tumor_sample = vcfcall.samples[0].split(":")
@@ -175,7 +177,8 @@ def convert(infile, snv_out, indel_out, genome_reference):
             format_field.pop(idx_rd)
 
             # As right now, the old version has no ALD. The new version has ALD.
-            # If the VCF has no ALD, then the AD means the same thing ALD is supposed to mean.
+            # If the VCF has no ALD, then the AD means the same thing ALD is
+            # supposed to mean.
             try:
                 idx_ad = format_field.index("ALD")
             except ValueError:
@@ -198,7 +201,8 @@ def convert(infile, snv_out, indel_out, genome_reference):
             tumor_sample = ":".join(tumor_sample)
             new_format_string = ":".join(format_field)
 
-            # VarDict's END tag has caused problem with GATK CombineVariants. Simply get rid of it.
+            # VarDict's END tag has caused problem with GATK CombineVariants.
+            # Simply get rid of it.
             vcfcall.info = re.sub(r"END=[0-9]+;", "", vcfcall.info)
 
             if paired:

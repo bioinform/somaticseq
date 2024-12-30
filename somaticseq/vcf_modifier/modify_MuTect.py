@@ -55,7 +55,8 @@ def convert(infile, outfile, tbam, nbam=None):
     nbam_header = genome.PysamHeader(nbam) if nbam else None
     tbam_header = genome.PysamHeader(tbam)
 
-    # When MuTect is run in a "single sample mode," the "normal" will be named "none."
+    # When MuTect is run in a "single sample mode," the "normal" will be named
+    # "none."
     n_samplename = nbam_header.SM() if nbam else ["none"]
     t_samplename = tbam_header.SM()
 
@@ -91,7 +92,8 @@ def convert(infile, outfile, tbam, nbam=None):
                     header_items[idx_SM2] = "TUMOR"
 
                 else:
-                    # Keep up to the first sample column, then make sure it's labeled the TUMOR sample name
+                    # Keep up to the first sample column, then make sure it's
+                    # labeled the TUMOR sample name
                     header_items = header_items[: idx_SM1 + 1]
                     header_items[idx_SM1] = "TUMOR"
 

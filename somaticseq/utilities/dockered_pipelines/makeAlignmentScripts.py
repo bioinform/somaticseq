@@ -66,7 +66,10 @@ def run() -> tuple[argparse.Namespace, dict]:
     parser.add_argument(
         "--split-input-fastqs",
         action="store_true",
-        help="split input fastq files before trimming to maximize multi-threading efficiency in trimming.",
+        help=(
+            "split input fastq files before trimming to "
+            "maximize multi-threading efficiency in trimming."
+        ),
     )
 
     # Alignment
@@ -94,7 +97,10 @@ def run() -> tuple[argparse.Namespace, dict]:
     parser.add_argument(
         "--parallelize-markdup",
         action="store_true",
-        help="parallelize by splitting input bam files and work on each independently, and then merge.",
+        help=(
+            "parallelize by splitting input bam files and "
+            "work on each independently, and then merge."
+        ),
     )
 
     # Run Right Here
@@ -102,7 +108,10 @@ def run() -> tuple[argparse.Namespace, dict]:
         "-run",
         "--run-workflow",
         action="store_true",
-        help="Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells.",
+        help=(
+            "Execute the bash scripts locally right here. "
+            "Only works on Linux machines with modern bash shells."
+        ),
     )
 
     args = parser.parse_args()
@@ -135,9 +144,12 @@ def make_workflow(args, input_parameters):
     if args.run_trimming:
         import somaticseq.utilities.dockered_pipelines.alignments.trim as trim
 
-        # Split the fastq files into number of files equal to the thread, to maximize multi-threading
+        # Split the fastq files into number of files equal to the thread, to
+        # maximize multi-threading
         if args.split_input_fastqs:
-            import somaticseq.utilities.dockered_pipelines.alignments.spreadFastq as spreadFastq
+            from somaticseq.utilities.dockered_pipelines.alignments import (
+                spreadFastq,
+            )
 
             spread_parameters = copy(input_parameters)
 
@@ -208,7 +220,8 @@ def make_workflow(args, input_parameters):
                 1, int(input_parameters["threads"] / len(in_fastq1s))
             )
 
-            # If the input_fastqs to trimming are created during the workflow, remove them after trimming
+            # If the input_fastqs to trimming are created during the workflow,
+            # remove them after trimming
             if args.split_input_fastqs:
                 trim_parameters["remove_untrimmed"] = True
             else:
@@ -257,12 +270,14 @@ def make_workflow(args, input_parameters):
         out_fastq_1s = in_fastq1s
         out_fastq_2s = in_fastq2s
 
-    # Merge FASTQ for the next output
-    # If this step is undertaken, replace in_fastqs as out_fastqs for the next step:
+    # Merge FASTQ for the next output. If this step is undertaken, replace
+    # in_fastqs as out_fastqs for the next step:
     remove_in_fqs = True if (args.run_trimming or args.split_input_fastqs) else False
 
     if len(out_fastq_1s) > 1:
-        import somaticseq.utilities.dockered_pipelines.alignments.mergeFastqs as mergeFastqs
+        from somaticseq.utilities.dockered_pipelines.alignments import (
+            mergeFastqs,
+        )
 
         fastq_1s = [
             os.path.join(input_parameters["output_directory"], fq_i)
@@ -283,9 +298,7 @@ def make_workflow(args, input_parameters):
             remove_in_fqs,
         )
         workflow_tasks["merge_fastqs"].append(fq1_merge_script)
-
         input_parameters["in_fastq1"] = merged_fq1
-
         if len(input_parameters["in_fastq2s"]) >= 1:
             fq2_merge_parameters = copy(input_parameters)
 
@@ -298,7 +311,6 @@ def make_workflow(args, input_parameters):
                 input_parameters["output_directory"],
                 input_parameters["out_fastq2_name"],
             )
-
             fq2_merge_script = mergeFastqs.gz(
                 fastq_2s,
                 merged_fq2,
@@ -307,17 +319,14 @@ def make_workflow(args, input_parameters):
                 remove_in_fqs,
             )
             workflow_tasks["merge_fastqs"].append(fq2_merge_script)
-
             input_parameters["in_fastq2"] = merged_fq2
 
     if args.run_alignment:
         import somaticseq.utilities.dockered_pipelines.alignments.align as align
 
         bwa_parameters = copy(input_parameters)
-
         bwa_parameters["script"] = f"align.{timestamp}.cmd"
         bwa_parameters["MEM"] = 8
-
         if args.run_mark_duplicates:
             bwa_parameters["out_bam"] = "aligned.bwa.bam"
 
@@ -328,7 +337,6 @@ def make_workflow(args, input_parameters):
         import somaticseq.utilities.dockered_pipelines.alignments.markdup as markdup
 
         markdup_parameters = copy(input_parameters)
-
         markdup_parameters["software"] = input_parameters["markdup_software"]
         markdup_parameters["script"] = f"markdup.{timestamp}.cmd"
         markdup_parameters["MEM"] = 8
@@ -337,18 +345,15 @@ def make_workflow(args, input_parameters):
             markdup_parameters["in_bam"] = os.path.join(
                 bwa_parameters["output_directory"], bwa_parameters["out_bam"]
             )
-
         if args.parallelize_markdup:
             markdup_parameters["threads"] = max(
                 1, math.ceil(input_parameters["threads"] / 2)
             )
-
             merging_parameters = copy(markdup_parameters)
 
             fractional_markdup_scripts, merge_markdup_script = markdup.parallel(
                 merging_parameters, args.container_tech
             )
-
             workflow_tasks["markdup_bams"] = fractional_markdup_scripts
             workflow_tasks["merging_bams"].append(merge_markdup_script)
 
@@ -359,12 +364,11 @@ def make_workflow(args, input_parameters):
                 markdup_script = markdup.sambamba(
                     markdup_parameters, args.container_tech
                 )
-
             workflow_tasks["markdup_bams"].append(markdup_script)
 
     ########## Execute the workflow ##########
     if args.run_workflow:
-        import somaticseq.utilities.dockered_pipelines.run_workflows as run_workflows
+        from somaticseq.utilities.dockered_pipelines import run_workflows
 
         run_workflows.run_workflows(
             (
@@ -378,9 +382,8 @@ def make_workflow(args, input_parameters):
             args.threads,
         )
         logger.info(
-            "Workflow Done. Check your results. You may remove the {} sub_directories.".format(
-                args.threads
-            )
+            "Workflow Done. Check your results. "
+            f"You may remove the {args.threads} sub_directories."
         )
 
     return workflow_tasks

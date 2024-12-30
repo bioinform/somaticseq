@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-# Post-process GATK4's MuTect2 output. The main purpose is to split multi-allelic records into one variant record per line.
+# Post-process GATK4's MuTect2 output. The main purpose is to split
+# multi-allelic records into one variant record per line.
 
 import argparse
 import os
