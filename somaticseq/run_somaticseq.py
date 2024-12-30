@@ -765,6 +765,9 @@ def run() -> argparse.Namespace:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
+        "-v", "--version", action="version", version=f"SomaticSeq v{__version__}"
+    )
+    parser.add_argument(
         "-outdir", "--output-directory", type=str, help="output directory", default="."
     )
     parser.add_argument(
