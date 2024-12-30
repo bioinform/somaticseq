@@ -176,7 +176,7 @@ PATTERN_CHR_POSITION = r_chrom + r"\t[0-9]+"
 if idxN is not None:
     if Npileup and idxN == 0:
         external_pileups = [[Npileup, Tpileup], [npileup_line, tpileup_line]]
-    elif Npileup and idx == 1:
+    elif Npileup and idxN == 1:
         external_pileups = [[Tpileup, Npileup], [tpileup_line, npileup_line]]
     elif not Npileup:
         external_pileups = [[Tpileup], [tpileup_line]]
