@@ -9,7 +9,7 @@ import sys
 from copy import copy
 
 import pysam
-import scipy.stats as stats
+from scipy import stats
 
 import somaticseq.annotate_caller as annotate_caller
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
