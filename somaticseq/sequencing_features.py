@@ -27,10 +27,14 @@ def get_homopolymer_lengths(
         my_coordinate[1] + 1,
         min(ref_fa.get_reference_length(my_coordinate[0]) + 1, my_coordinate[1] + 21),
     )
-    # This is to get around buy in old version of pysam that reads the reference
+    # This is to get around some old version of pysam that reads the reference
     # sequence in bytes instead of strings
-    lseq = lseq.decode() if isinstance(lseq, bytes) else lseq
-    rseq = rseq.decode() if isinstance(rseq, bytes) else rseq
+    lseq = (
+        lseq.decode() if isinstance(lseq, bytes) else lseq  # type: ignore[attr-defined]
+    )
+    rseq = (
+        rseq.decode() if isinstance(rseq, bytes) else rseq  # type: ignore[attr-defined]
+    )
     seq41_ref = lseq + ref_base + rseq
     seq41_alt = lseq + first_alt + rseq
     ref_counts = genome.count_repeating_bases(seq41_ref)
