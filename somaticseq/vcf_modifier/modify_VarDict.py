@@ -44,6 +44,13 @@ def _make_new_vcf_line(
     tumor_sample: str,
     normal_sample: str | None = None,
 ) -> str:
+    assert vcfcall.chromosome is not None
+    assert vcfcall.position is not None
+    assert vcfcall.identifier is not None
+    assert vcfcall.refbase is not None
+    assert vcfcall.altbase is not None
+    assert vcfcall.filters is not None
+    assert vcfcall.info is not None
     if normal_sample:
         return "\t".join(
             (

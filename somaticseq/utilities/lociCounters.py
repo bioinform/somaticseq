@@ -129,12 +129,11 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
         if secondaryMore:
             while boundry_j < boundry_i:
                 newBoundry.append(boundry_j)
-
+                # Will not reach undefined name (F821) due to flow control
                 if j % 2 == 0:
-                    newCounter.append(counter_i + 1)
+                    newCounter.append(counter_i + 1)  # noqa: F821
                 elif j % 2 == 1:
-                    newCounter.append(counter_i)
-
+                    newCounter.append(counter_i)  # noqa: F821
                 try:
                     boundry_j = next(secondaryIterator)
                     j += 1
@@ -144,7 +143,6 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
 
         # Move onto the next original boundry
         newBoundry.append(boundry_i)
-
         try:
             counter_i = original_counter[i]
         except IndexError:

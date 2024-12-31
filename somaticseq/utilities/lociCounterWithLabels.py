@@ -125,16 +125,14 @@ def countIntersectedRegions(
                 newBoundry.append(boundry_j)
 
                 if j % 2 == 0:
-                    newCounter.append(counter_i + 1)
-
-                    label_i_copy = copy(label_i)
+                    # Will not reach undefined name (F821) due to flow control
+                    newCounter.append(counter_i + 1)  # noqa: F821
+                    label_i_copy = copy(label_i)  # noqa: F821
                     label_i_copy.append(new_label)
                     newLabel.append(label_i_copy)
-
                 elif j % 2 == 1:
-                    newCounter.append(counter_i)
-                    newLabel.append(label_i)
-
+                    newCounter.append(counter_i)  # noqa: F821
+                    newLabel.append(label_i)  # noqa: F821
                 try:
                     boundry_j = next(secondaryIterator)
                     j += 1
@@ -144,7 +142,6 @@ def countIntersectedRegions(
 
         # Move onto the next original boundry
         newBoundry.append(boundry_i)
-
         try:
             counter_i = original_counter[i]
             label_i = original_label[i]
