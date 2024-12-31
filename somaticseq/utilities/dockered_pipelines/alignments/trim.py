@@ -282,7 +282,7 @@ def trimmomatic(input_parameters, tech="docker"):
                 "PE -threads {} -phred33 \\\n".format(input_parameters["threads"])
             )
             out.write(
-                "{FQ1} {FQ2} {DIR}/{PAIR1} {DIR}/{UNPAIR1} {DIR}/{PAIR2} {DIR}/{UNPAIR2} \\\n".format(
+                "{FQ1} {FQ2} {DIR}/{PAIR1} {DIR}/{UNPAIR1} {DIR}/{PAIR2} {DIR}/{UNPAIR2} \\\n".format(  # noqa: E501
                     FQ1=mounted_fq1,
                     FQ2=mounted_fq2,
                     DIR=mounted_outdir,
@@ -306,7 +306,7 @@ def trimmomatic(input_parameters, tech="docker"):
             )
 
         out.write(
-            "ILLUMINACLIP:{ADAPTER}:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:{MINLEN}\n".format(
+            "ILLUMINACLIP:{ADAPTER}:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:{MINLEN}\n".format(  # noqa: E501
                 ADAPTER=input_parameters["adapter"],
                 MINLEN=input_parameters["minimum_length"],
             )

@@ -4,15 +4,14 @@ import subprocess
 
 import somaticseq.vcf_modifier.copy_TextFile as copy_TextFile
 import somaticseq.vcf_modifier.getUniqueVcfPositions as getUniqueVcfPositions
-import somaticseq.vcf_modifier.splitVcf as splitVcf
-from somaticseq.vcf_modifier.vcfIntersector import (
+import somaticseq.vcf_modifier.split_vcf as split_vcf
+from somaticseq.vcf_modifier.bed_util import (
     bed_intersector,
     remove_vcf_illegal_lines,
     vcfsorter,
 )
 
 
-# Combine individual VCF output into a simple combined VCF file, for single-sample callers
 def combineSingle(
     outdir,
     ref,
@@ -30,6 +29,8 @@ def combineSingle(
     arb_indels=None,
     keep_intermediates=False,
 ):
+    """Combine individual VCF output into a simple combined VCF file, for
+    single-sample callers"""
     if arb_snvs is None:
         arb_snvs = []
     if arb_indels is None:
@@ -72,7 +73,7 @@ def combineSingle(
         intermediate_files.add(mutect2_in)
         snv_mutect_out = os.sep.join((outdir, "snv.mutect2.vcf"))
         indel_mutect_out = os.sep.join((outdir, "indel.mutect2.vcf"))
-        mod_mutect2.convert(mutect2_in, snv_mutect_out, indel_mutect_out)
+        mod_mutect2.convert(mutect2_in, snv_mutect_out, indel_mutect_out, ref)
 
         for file_i in snv_mutect_out, indel_mutect_out:
             intermediate_files.add(file_i)
@@ -96,7 +97,7 @@ def combineSingle(
         indel_temp = os.sep.join((outdir, "indel.varscan.temp.vcf"))
         snv_varscan_out = os.sep.join((outdir, "snv.varscan.vcf"))
         indel_varscan_out = os.sep.join((outdir, "indel.varscan.vcf"))
-        splitVcf.split_into_snv_and_indel(varscan_in, snv_temp, indel_temp)
+        split_vcf.split_into_snv_and_indel(varscan_in, snv_temp, indel_temp, ref)
         mod_varscan2.convert(snv_temp, snv_varscan_out)
         mod_varscan2.convert(indel_temp, indel_varscan_out)
 
@@ -129,7 +130,7 @@ def combineSingle(
 
         snv_vardict_out = os.sep.join((outdir, "snv.vardict.vcf"))
         indel_vardict_out = os.sep.join((outdir, "indel.vardict.vcf"))
-        mod_vardict.convert(vardict_in, snv_vardict_out, indel_vardict_out)
+        mod_vardict.convert(vardict_in, snv_vardict_out, indel_vardict_out, ref)
         sorted_snv_vardict_out = os.sep.join((outdir, "snv.sort.vardict.vcf"))
         sorted_indel_vardict_out = os.sep.join((outdir, "indel.sort.vardict.vcf"))
         vcfsorter(ref, snv_vardict_out, sorted_snv_vardict_out)
@@ -155,7 +156,9 @@ def combineSingle(
         intermediate_files.add(lofreq_in)
         snv_lofreq_out = os.sep.join((outdir, "snv.lofreq.vcf"))
         indel_lofreq_out = os.sep.join((outdir, "indel.lofreq.vcf"))
-        splitVcf.split_into_snv_and_indel(lofreq_in, snv_lofreq_out, indel_lofreq_out)
+        split_vcf.split_into_snv_and_indel(
+            lofreq_in, snv_lofreq_out, indel_lofreq_out, ref
+        )
 
         for file_i in snv_lofreq_out, indel_lofreq_out:
             intermediate_files.add(file_i)
@@ -254,7 +257,6 @@ def combineSingle(
     )
 
 
-# Combine individual VCF output into a simple combined VCF file, for paired sample callers
 def combine_multiple_paired_caller_vcfs(
     outdir,
     ref,
@@ -282,6 +284,8 @@ def combine_multiple_paired_caller_vcfs(
     arb_indels=None,
     keep_intermediates=False,
 ):
+    """Combine individual VCF output into a simple combined VCF file, for paired
+    sample callers"""
     if arb_snvs is None:
         arb_snvs = []
     if arb_indels is None:
@@ -341,7 +345,7 @@ def combine_multiple_paired_caller_vcfs(
         intermediate_files.add(mutect2_in)
         snv_mutect_out = os.sep.join((outdir, "snv.mutect2.vcf"))
         indel_mutect_out = os.sep.join((outdir, "indel.mutect2.vcf"))
-        mod_mutect2.convert(mutect2_in, snv_mutect_out, indel_mutect_out, False)
+        mod_mutect2.convert(mutect2_in, snv_mutect_out, indel_mutect_out, False, ref)
 
         for file_i in snv_mutect_out, indel_mutect_out:
             intermediate_files.add(file_i)
@@ -424,7 +428,7 @@ def combine_multiple_paired_caller_vcfs(
         intermediate_files.add(vardict_in)
         snv_vardict_out = os.sep.join((outdir, "snv.vardict.vcf"))
         indel_vardict_out = os.sep.join((outdir, "indel.vardict.vcf"))
-        mod_vardict.convert(vardict_in, snv_vardict_out, indel_vardict_out)
+        mod_vardict.convert(vardict_in, snv_vardict_out, indel_vardict_out, ref)
         sorted_snv_vardict_out = os.sep.join((outdir, "snv.sort.vardict.vcf"))
         sorted_indel_vardict_out = os.sep.join((outdir, "indel.sort.vardict.vcf"))
         vcfsorter(ref, snv_vardict_out, sorted_snv_vardict_out)
@@ -535,7 +539,7 @@ def combine_multiple_paired_caller_vcfs(
         intermediate_files.add(tnscope_in)
         snv_tnscope_out = os.sep.join((outdir, "snv.tnscope.vcf"))
         indel_tnscope_out = os.sep.join((outdir, "indel.tnscope.vcf"))
-        mod_mutect2.convert(tnscope_in, snv_tnscope_out, indel_tnscope_out, True)
+        mod_mutect2.convert(tnscope_in, snv_tnscope_out, indel_tnscope_out, True, ref)
 
         for file_i in snv_tnscope_out, indel_tnscope_out:
             intermediate_files.add(file_i)
@@ -555,8 +559,8 @@ def combine_multiple_paired_caller_vcfs(
         intermediate_files.add(platypus_in)
         snv_platypus_out = os.sep.join((outdir, "snv.platypus.vcf"))
         indel_platypus_out = os.sep.join((outdir, "indel.platypus.vcf"))
-        splitVcf.split_into_snv_and_indel(
-            platypus_in, snv_platypus_out, indel_platypus_out
+        split_vcf.split_into_snv_and_indel(
+            platypus_in, snv_platypus_out, indel_platypus_out, ref
         )
         for file_i in snv_platypus_out, indel_platypus_out:
             intermediate_files.add(file_i)

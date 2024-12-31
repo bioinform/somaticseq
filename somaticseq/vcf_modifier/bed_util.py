@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import re
 import subprocess
@@ -10,10 +8,11 @@ import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 def remove_vcf_illegal_lines(invcf, outvcf):
     """
-    In VarDict v1.7, there are lines with <XXX> in ALT without END in info, which will cause bedtools to fail.
-    This program will check if these things exist, and if they do, remove them.
-    If the input VCF has illegal lines, it will return the modified output VCF file excluding those lines.
-    If the input VCF file does not have such illegal lines, it will return False.
+    In VarDict v1.7, there are lines with <XXX> in ALT without END in info,
+    which will cause bedtools to fail. This program will check if these things
+    exist, and if they do, remove them. If the input VCF has illegal lines, it
+    will return the modified output VCF file excluding those lines. If the input
+    VCF file does not have such illegal lines, it will return False.
     """
 
     hasIllegalLine = False
@@ -129,8 +128,26 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
     return outfile
 
 
-# Use somaticseq/somaticseq/utilities/vcfsorter.pl fa.dict unsorted.vcf > sorted.vcf
-def vcfsorter(ref, vcfin, vcfout):
+def bed_sort_and_merge(infile: str, outfile: str, fai: str) -> None:
+    cmd_line = (
+        f"bedtools sort -faidx {fai} -header -i {infile} | "
+        f"bedtools merge -i stdin > {outfile}"
+    )
+    subprocess.check_call(cmd_line, shell=True)
+
+
+def vcfsorter(ref: str, vcfin: str, vcfout: str):
+    """
+    Uses bedtools sort and then make sure there is no duplicate line.
+
+    Args:
+        ref: Fasta file. Code assumes .fai will exist.
+        vcfin: vcf file input
+        vcfout: vcf file output
+
+    Returns:
+        Exit code for bedtools sort.
+    """
     fai = ref + ".fai"
-    cmd_line = f"bedtools sort -faidx {fai} -header -i {vcfin} > {vcfout}"
+    cmd_line = f"bedtools sort -faidx {fai} -header -i {vcfin} | uniq > {vcfout}"
     subprocess.check_call(cmd_line, shell=True)

@@ -252,13 +252,19 @@ def main() -> None:
         "--extra-params",
         nargs="*",
         type=str,
-        help="extra xgboost training parameters in format of PARAM_1:VALUE_1 PARAM_2:VALUE_2. Will overwrite defaults and other options.",
+        help=(
+            "extra xgboost training parameters in format of "
+            "PARAM_1:VALUE_1 PARAM_2:VALUE_2. "
+            "Will overwrite defaults and other options."
+        ),
     )
     parser_train.add_argument(
         "--features-excluded",
         nargs="*",
         type=str,
-        help="features to exclude for xgboost training. Must be same for train/predict.",
+        help=(
+            "features to exclude for xgboost training. Must be same for train/predict."
+        ),
         default=[],
     )
     parser_train.set_defaults(which="train")
@@ -285,7 +291,9 @@ def main() -> None:
         "--features-excluded",
         nargs="*",
         type=str,
-        help="features to exclude for xgboost training. Must be same for train/predict.",
+        help=(
+            "features to exclude for xgboost training. Must be same for train/predict."
+        ),
         default=[],
     )
     parser_predict.set_defaults(which="predict")

@@ -242,16 +242,6 @@ will be created, i.e., `SSeq.Classified.sSNV.vcf`, `SSeq.Classified.sSNV.tsv`,
 Without those paramters above to invoking training or prediction mode,
 SomaticSeq will default to majority-vote consensus mode.
 
-Do not worry if Python throws the following warning. This occurs when SciPy
-attempts a statistical test with empty data, e.g., z-scores between reference-
-and variant-supporting reads will be `nan` if there is no reference read at a
-position.
-
-```
-  RuntimeWarning: invalid value encountered in double_scalars
-  z = (s - expected) / np.sqrt(n1*n2*(n1+n2+1)/12.0)
-```
-
 ## To train for SomaticSeq classifiers with multiple data sets combined
 
 Run `somaticseq_xgboost train --help` to see the options. It is recommended that

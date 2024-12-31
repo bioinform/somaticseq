@@ -77,7 +77,10 @@ def LC(sequence):
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Calculate linguistic sequence complexity according to DOI:10.1093/bioinformatics/18.5.679",
+        description=(
+            "Calculate linguistic sequence complexity according to "
+            "DOI:10.1093/bioinformatics/18.5.679"
+        ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 

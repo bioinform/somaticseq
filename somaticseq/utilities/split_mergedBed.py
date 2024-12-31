@@ -119,10 +119,13 @@ else:
             except IndexError:
                 end_i = start_i + 1
 
-            # The 1st partition's start position is either the Input BED's start position minus the left flank length, or 0, whichever is greater (can't go negative).
+            # The 1st partition's start position is either the Input BED's start
+            # position minus the left flank length, or 0, whichever is greater
+            # (can't go negative).
             i = max((start_i - left_flank), 0)
 
-            # The 1st partition's end position is either (i + length), or the Input BED's end position plus the right flank, whichever is less
+            # The 1st partition's end position is either (i + length), or the
+            # Input BED's end position plus the right flank, whichever is less
             j = min(i + length, end_i + right_flank)
 
             k = 1
@@ -139,7 +142,8 @@ else:
                 i = j - overlap
 
                 # Next End Position:
-                # If "j" has gone beyond the end of the region, just add the right flank region to the end. Otherwise, add the length.
+                # If "j" has gone beyond the end of the region, just add the
+                # right flank region to the end. Otherwise, add the length.
                 if i + length > end_i:
                     j = end_i + right_flank
                 else:

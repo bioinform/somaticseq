@@ -765,6 +765,9 @@ def run() -> argparse.Namespace:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
+        "-v", "--version", action="version", version=f"SomaticSeq v{__version__}"
+    )
+    parser.add_argument(
         "-outdir", "--output-directory", type=str, help="output directory", default="."
     )
     parser.add_argument(
@@ -886,7 +889,8 @@ def run() -> argparse.Namespace:
         nargs="*",
         help=(
             "extra xgboost training hyperparameters in format of "
-            "PARAM_1:VALUE_1 PARAM_2:VALUE_2. Will overwrite defaults and other options."
+            "PARAM_1:VALUE_1 PARAM_2:VALUE_2. "
+            "Will overwrite defaults and other options."
         ),
         default=None,
     )

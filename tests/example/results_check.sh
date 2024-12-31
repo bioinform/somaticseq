@@ -3,7 +3,7 @@
 mkdir -p result_check
 
 ### Split snv and indel from the ground truth file
-splitVcf.py -infile Varsim.somatic.truth.vcf -snv result_check/true.snv.vcf -indel result_check/true.indel.vcf
+split_vcf.py -infile Varsim.somatic.truth.vcf -snv result_check/true.snv.vcf -indel result_check/true.indel.vcf
 
 
 ### Check the results for paired somaticseq with the ground truth

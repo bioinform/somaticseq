@@ -204,9 +204,9 @@ Synthetic mutations will then be spiked into the designated tumor to create
     python command:
 
 ```
-    import scipy.stats as stats
     import numpy as np
     import matplotlib.pyplot as plt
+    from scipy import stats
 
     leftBeta, rigthBeta = 2,5
     minAF, maxAF = 0,1

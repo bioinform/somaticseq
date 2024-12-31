@@ -98,7 +98,7 @@ def tumor_normal(input_parameters, tech="docker"):
             out.write("--two-pass \\\n")
 
         if input_parameters["scalpel_discovery_arguments"]:
-            out.write("{} \\\n".format())
+            out.write("{} \\\n".format(input_parameters["scalpel_discovery_arguments"]))
 
         out.write(f"--dir {mounted_outdir}/scalpel && \\\n")
         out.write("/opt/scalpel/scalpel-export --somatic \\\n")

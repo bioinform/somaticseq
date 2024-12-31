@@ -1,14 +1,30 @@
 #!/usr/bin/env python3
 
 import argparse
+import logging
+import os
 import re
+import tempfile
+import uuid
 from copy import copy
 from os.path import basename
+
+from somaticseq.vcf_modifier.bed_util import bed_sort_and_merge
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(name)s: %(message)s")
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
 
 def fai2bed(
     file_name: str,
-) -> tuple[dict[str, list[int]], dict[str, list[int]], dict[str, list[str]], list[str]]:
+) -> tuple[
+    dict[str, list[int]], dict[str, list[int]], dict[str, list[list[str]]], list[str]
+]:
     """
     This function initiates the regions and region counters based on the contigs
     in a .fa.fai file. This script will start with the whole contig regions
@@ -28,7 +44,7 @@ def fai2bed(
     with open(file_name) as gfile:
         callableLociBoundries: dict[str, list[int]] = {}
         callableLociCounters: dict[str, list[int]] = {}
-        callableLociLabels: [str, list[str]] = {}
+        callableLociLabels: dict[str, list[list[str]]] = {}
         orderedContig: list[str] = []
         line_i = gfile.readline().rstrip("\n")
         while line_i:
@@ -123,16 +139,14 @@ def countIntersectedRegions(
                 newBoundry.append(boundry_j)
 
                 if j % 2 == 0:
-                    newCounter.append(counter_i + 1)
-
-                    label_i_copy = copy(label_i)
+                    # Will not reach undefined name (F821) due to flow control
+                    newCounter.append(counter_i + 1)  # noqa: F821
+                    label_i_copy = copy(label_i)  # noqa: F821
                     label_i_copy.append(new_label)
                     newLabel.append(label_i_copy)
-
                 elif j % 2 == 1:
-                    newCounter.append(counter_i)
-                    newLabel.append(label_i)
-
+                    newCounter.append(counter_i)  # noqa: F821
+                    newLabel.append(label_i)  # noqa: F821
                 try:
                     boundry_j = next(secondaryIterator)
                     j += 1
@@ -142,7 +156,6 @@ def countIntersectedRegions(
 
         # Move onto the next original boundry
         newBoundry.append(boundry_i)
-
         try:
             counter_i = original_counter[i]
             label_i = original_label[i]
@@ -174,14 +187,18 @@ def countIntersectedRegions(
     return consolidatedBoundries, consolidatedCounters, consolidatedLabels
 
 
-## Print out results:
 def run(fai_file, bed_files, bed_labels, bed_out):
+
+    tempdir = tempfile.mkdtemp()
     # Start routine:
     contigBoundries, contigCounters, contigLabels, orderedContigs = fai2bed(fai_file)
 
     # Look at BED files
     for i, bed_file_i in enumerate(bed_files):
-        bedRegions = bed2regions(bed_file_i)
+        bed_file_j = os.path.join(tempdir, uuid.uuid4().hex) + ".bed"
+        logger.info(f"{bed_file_i} sorted and merged into {bed_file_j}.")
+        bed_sort_and_merge(bed_file_i, bed_file_j, fai_file)
+        bedRegions = bed2regions(bed_file_j)
         label_i = bed_labels[i]
         for chrom in bedRegions:
             (
@@ -218,9 +235,11 @@ def run(fai_file, bed_files, bed_labels, bed_out):
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "This is a program to tally and count the overlapping regions when given multiple input bed files. "
-            "A CRITICAL REQUIREMENT is that each input bed file is sorted and non-overlapping, "
-            "which could be achived with bedtools merge before they are used as input to this program."
+            "This is a program to tally and count the overlapping regions "
+            "when given multiple input bed files. A CRITICAL REQUIREMENT is that "
+            "each input bed file is sorted and non-overlapping, which "
+            "could be achieved with bedtools merge "
+            "before they are used as input to this program."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -231,7 +250,10 @@ def main() -> None:
         "-beds",
         "--bed-files",
         type=str,
-        help="Input bed files. Each MUST be non-overlapping regions sorted to the input fai file.",
+        help=(
+            "Input bed files. "
+            "Each MUST be non-overlapping regions sorted to the input fai file."
+        ),
         nargs="+",
         required=True,
         default=None,

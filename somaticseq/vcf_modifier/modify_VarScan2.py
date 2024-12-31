@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# flake8: noqa: E501
 
 import argparse
 import re
@@ -11,16 +12,12 @@ def run():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-
-    # Variant Call Type, i.e., snp or indel
     parser.add_argument(
         "-infile", "--input-vcf", type=str, help="Input VCF file", required=True
     )
     parser.add_argument(
         "-outfile", "--output-vcf", type=str, help="Output VCF file", required=True
     )
-
-    # Parse the arguments:
     args = parser.parse_args()
     infile = args.input_vcf
     outfile = args.output_vcf

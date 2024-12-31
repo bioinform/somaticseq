@@ -16,7 +16,6 @@ def run():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-
     # Variant Call Type, i.e., snp or indel
     parser.add_argument(
         "-infile",
@@ -40,15 +39,12 @@ def run():
         type=str,
         help="A normal bam file for sample name identification.",
     )
-
     # Parse the arguments:
     args = parser.parse_args()
-
     in_vcf = args.input_vcf
     out_vcf = args.output_vcf
     tbam = args.tumor_bam
     nbam = args.normal_bam
-
     return in_vcf, out_vcf, tbam, nbam
 
 
@@ -59,7 +55,8 @@ def convert(infile, outfile, tbam, nbam=None):
     nbam_header = genome.PysamHeader(nbam) if nbam else None
     tbam_header = genome.PysamHeader(tbam)
 
-    # When MuTect is run in a "single sample mode," the "normal" will be named "none."
+    # When MuTect is run in a "single sample mode," the "normal" will be named
+    # "none."
     n_samplename = nbam_header.SM() if nbam else ["none"]
     t_samplename = tbam_header.SM()
 
@@ -68,25 +65,13 @@ def convert(infile, outfile, tbam, nbam=None):
 
     n_samplename = n_samplename[0]
     t_samplename = t_samplename[0]
-
     assert t_samplename or n_samplename
-
     if t_samplename and n_samplename:
         paired_mode = True
     else:
         paired_mode = False
 
-    (
-        idx_chrom,
-        idx_pos,
-        idx_id,
-        idx_ref,
-        idx_alt,
-        idx_qual,
-        idx_filter,
-        idx_info,
-        idx_format,
-    ) = (0, 1, 2, 3, 4, 5, 6, 7, 8)
+    idx_ref = 3
     idx_SM1, idx_SM2 = 9, 10
 
     with genome.open_textfile(infile) as vcf, open(outfile, "w") as vcfout:
@@ -107,7 +92,8 @@ def convert(infile, outfile, tbam, nbam=None):
                     header_items[idx_SM2] = "TUMOR"
 
                 else:
-                    # Keep up to the first sample column, then make sure it's labeled the TUMOR sample name
+                    # Keep up to the first sample column, then make sure it's
+                    # labeled the TUMOR sample name
                     header_items = header_items[: idx_SM1 + 1]
                     header_items[idx_SM1] = "TUMOR"
 
@@ -121,7 +107,6 @@ def convert(infile, outfile, tbam, nbam=None):
 
             if paired_mode:
                 items_i[idx_SM1], items_i[idx_SM2] = items_i[idxN], items_i[idxT]
-
             else:
                 items_i = items_i[:idx_SM1] + [items_i[idxT]]
 

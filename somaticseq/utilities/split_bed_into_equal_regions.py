@@ -11,10 +11,12 @@ def run() -> tuple[str, str, int]:
     # argparse Stuff
     parser = argparse.ArgumentParser(
         description=(
-            "Given an input bed file, it will output a number of bed files, each with the same number of total base pairs. "
+            "Given an input bed file, it will output a number of bed files, "
+            "each with the same number of total base pairs. "
             "This routine is used to parallelize SomaticSeq tasks. "
-            "One contiguous region may be split into multiple regions in multiple output files. "
-            "The limitation is that some regions of the genome have much higher coverage than others. "
+            "One contiguous region may be split into multiple regions in "
+            "multiple output files. The limitation is that some regions of the "
+            "genome have much higher coverage than others. "
             "This is the reason some regions run much slower than others. "
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# flake8: noqa: E501
 
 import argparse
 
@@ -27,20 +28,7 @@ def run():
 
 
 def convert(infile, outfile):
-    (
-        idx_chrom,
-        idx_pos,
-        idx_id,
-        idx_ref,
-        idx_alt,
-        idx_qual,
-        idx_filter,
-        idx_info,
-        idx_format,
-        idx_SM1,
-        idx_SM2,
-    ) = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-
+    idx_format, idx_SM1, idx_SM2 = 8, 9, 10
     with genome.open_textfile(infile) as vcf, open(outfile, "w") as vcfout:
         line_i = vcf.readline().rstrip()
 
@@ -50,23 +38,19 @@ def convert(infile, outfile):
                 line_i = '##FORMAT=<ID=AD,Number=.,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">'
 
             vcfout.write(line_i + "\n")
-
             line_i = vcf.readline().rstrip()
 
         while line_i:
             item = line_i.split("\t")
-
             format_items = item[idx_format].split(":")
             if "AD" in format_items and "RD" in format_items:
                 # NORMAL
                 idx_ad = format_items.index("AD")
                 idx_rd = format_items.index("RD")
                 format_items.pop(idx_rd)
-
                 item_normal = item[idx_SM1].split(":")
                 normal_ad = int(item_normal[idx_ad])
                 normal_rd = int(item_normal[idx_rd])
-
                 try:
                     vaf = normal_ad / (normal_ad + normal_rd)
                 except ZeroDivisionError:
@@ -112,9 +96,7 @@ def convert(infile, outfile):
                 item[idx_SM2] = ":".join(item_tumor)
 
             line_i = "\t".join(item)
-
             vcfout.write(line_i + "\n")
-
             line_i = vcf.readline().rstrip()
 
 

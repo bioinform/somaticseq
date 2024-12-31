@@ -54,8 +54,8 @@ general-purpose bioinformatic utilities.
     complexity given a nucleotide sequence (e.g., GCCAGAC) based on
     [Troyanskaya OG _et al_. Bioinformatics 2002](https://doi.org/10.1093/bioinformatics/18.5.679).
 
--   `somaticseq_split_vcf` ([code](../vcf_modifier/splitVcf.py)): takes input of
-    a VCF file, and outputs one with only SNVs and one with only indels.
+-   `somaticseq_split_vcf` ([code](../vcf_modifier/split_vcf.py)): takes input
+    of a VCF file, and outputs one with only SNVs and one with only indels.
 
 -   `somaticseq_paired_end_bam2fastq` ([code](paired_end_bam2fastq.py)): convert
     paired-end bam files into `1.fastq(.gz)` and `2.fastq(.gz)`. Both `.fastq`

@@ -30,7 +30,8 @@ class BedFile:
         intersected = False
 
         if contig_i in self.bedRegions:
-            # If the BED file is ordered, it can break out once it goes beyond the position_i
+            # If the BED file is ordered, it can break out once it goes beyond
+            # the position_i
             if ordered:
                 for region_i in self.bedRegions[contig_i]:
                     if region_i[0] < position_i <= region_i[1]:
@@ -40,7 +41,8 @@ class BedFile:
                     elif region_i[0] > position_i:
                         break
 
-            # If the BED file is not ordered, then it needs to go all the way to the end every time
+            # If the BED file is not ordered, then it needs to go all the way to
+            # the end every time
             else:
                 for region_i in self.bedRegions[contig_i]:
                     if region_i[0] < position_i <= region_i[1]:

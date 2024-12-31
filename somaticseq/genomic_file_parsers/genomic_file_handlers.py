@@ -1,10 +1,9 @@
 import gzip
-import io
 import math
 import re
 from collections.abc import Iterable
 from functools import cached_property
-from typing import Any, Literal, Self
+from typing import Any, Literal, Self, TextIO
 
 from pydantic import BaseModel
 from pysam import AlignmentFile
@@ -133,6 +132,27 @@ class VCFVariantRecord(BaseModel):
             return None
         return var2value[variable]
 
+    def to_vcf_line(self) -> str:
+        if not (self.chromosome and self.position and self.refbase and self.altbase):
+            return ""
+
+        vcf_line = "\t".join(
+            [
+                self.chromosome,
+                str(self.position),
+                self.identifier or ".",
+                self.refbase,
+                self.altbase,
+                str(self.qual) if self.qual is not None else ".",
+                self.filters or ".",
+                self.info or ".",
+            ]
+        )
+        addon_line: str = ""
+        if self.field and self.samples:
+            addon_line = "\t" + self.field + "\t" + "\t".join(self.samples)
+        return vcf_line + addon_line
+
     @classmethod
     def from_vcf_line(cls, vcf_line: str) -> Self:
         vcf_line = vcf_line.rstrip("\n")
@@ -152,7 +172,7 @@ class VCFVariantRecord(BaseModel):
         ) = item
         position = int(pos)
         if qual_str != ".":
-            qual = float(qual_str)
+            qual = eval(qual_str)
         else:
             qual = None
         try:
@@ -191,7 +211,7 @@ class PysamHeader(BaseModel):
         return name_tuple  # type: ignore
 
 
-def skip_vcf_header(opened_file: io.TextIOWrapper) -> str:
+def skip_vcf_header(opened_file: TextIO) -> str:
     line_i = opened_file.readline().rstrip()
     while line_i.startswith("#"):
         line_i = opened_file.readline().rstrip()
@@ -229,7 +249,7 @@ def faiordict2contigorder(
     return chrom_seq
 
 
-def open_textfile(file_name: str) -> io.TextIOWrapper:
+def open_textfile(file_name: str) -> TextIO:
     # See if the input file is a .gz file:
     if str(file_name).lower().endswith(".gz"):
         return gzip.open(file_name, "rt")
@@ -237,7 +257,7 @@ def open_textfile(file_name: str) -> io.TextIOWrapper:
         return open(file_name)
 
 
-def open_bam_file(file_name: str) -> AlignmentFile | io.TextIOWrapper:
+def open_bam_file(file_name: str) -> AlignmentFile | TextIO:
     try:
         return AlignmentFile(file_name, "rb")
     except ValueError:
@@ -294,7 +314,7 @@ def count_repeating_bases(sequence: str) -> list[int]:
     E.g., for string "ABBCCCDDDDAAAAAAA", the function returns 1, 2, 3, 4, 7,
     because there is 1 A, 2 B's, 3 C's, 4 D's, and then 7 A's.
     """
-    counters = []
+    counters: list[int] = []
     previous_base = None
     for current_base in sequence:
         if current_base == previous_base:
@@ -377,7 +397,7 @@ def whoisbehind(
 
 
 def vcf_header_modifier(
-    infile_handle: io.TextIOWrapper, addons: list[str] = [], getlost: str = " "
+    infile_handle: TextIO, addons: list[str] = [], getlost: str = " "
 ):
     """addons = A list of INFO, FORMAT, ID, or Filter lines you want to add.
     getlost = a regex expression for the ID of INFO/FORMAT/FILTER that you want
@@ -462,7 +482,8 @@ def catchup(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
 
 def catchup_multilines(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
     """
-    Keep reading the j_th vcf file until it hits (or goes past) the i_th coordinate, then
+    Keep reading the j_th vcf file until it hits (or goes past) the i_th
+    coordinate, then
         1) Create a list to store information for this coordinate in the j_th
            vcf file
         2) Keep reading the j_th vcf file and store all lines with the same
@@ -473,11 +494,10 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
            stop when vcf_j has gone beyond the coordinate.
 
     Returns (True, [Vcf_lines], line_j) if the j_th vcf file contains an entry
-    that matches the i_th coordinate.
-    Returns (False, []        , line_j) if the j_th vcf file does not contain
-    such an entry, and therefore the function has run past the i_th coordinate,
-    by which time the programmer can decide to move into the next i_th
-    coordiate.
+    that matches the i_th coordinate. Returns (False, []        , line_j) if the
+    j_th vcf file does not contain such an entry, and therefore the function has
+    run past the i_th coordinate, by which time the programmer can decide to
+    move into the next i_th coordiate.
     """
 
     coordinate_j = re.match(PATTERN_CHR_POSITION, line_j)
@@ -524,7 +544,8 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
         reporter = (True, lines_of_coordinate_i, line_j)
 
     # If file_j is behind, then needs to catch up:
-    # This is an opportunity to check if the vcf_j file is properly sorted, by asserting current line cannot be "behind" a subsequent line
+    # This is an opportunity to check if the vcf_j file is properly sorted, by
+    # asserting current line cannot be "behind" a subsequent line
     elif is_behind == 1:
         # Keep at it until line_j is no longer behind:
         while is_behind == 1:
@@ -557,9 +578,8 @@ def catchup_multilines(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
                     coordinate_k = next_coord.group()
                     if whoisbehind(coordinate_j, coordinate_k, CHROMOSOMES) == 1:
                         raise Exception(
-                            "{} does not seem to be properly sorted: {} then {}.".format(
-                                filehandle_j.name, coordinate_j, coordinate_k
-                            )
+                            f"{filehandle_j.name} does not seem to be properly sorted: "
+                            f"{coordinate_j} then {coordinate_k}."
                         )
                     coordinate_j = coordinate_k
                 else:
@@ -610,6 +630,7 @@ def find_vcf_at_coordinate(
             vcf_i = VCFVariantRecord.from_vcf_line(vcf_line_i)
 
             # Some VCF files wrongly uses "/" to separate different ALT's
+            assert vcf_i.altbase
             altbases = re.split(r"[,/]", vcf_i.altbase)
             for alt_i in altbases:
                 vcf_variants[
@@ -621,7 +642,6 @@ def find_vcf_at_coordinate(
     return latest_vcf_run[0], vcf_variants, latest_vcf_line
 
 
-# Read the 2nd file (i.e., filehandle_j) one line down if it's behind the i_th coordinate:
 def catchup_one_line_at_a_time(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
     """
     A sister program of catch_up, the difference is that the j_th file will be

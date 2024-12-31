@@ -70,6 +70,7 @@ with (
     reads = bam.fetch()
 
     for read_i in reads:
+        assert read_i.cigarstring is not None
         if (
             read_i.mapping_quality >= minMQ
             and (read_i.has_tag("NM") and read_i.get_tag("NM") <= maxNM)

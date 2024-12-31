@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# flake8: noqa: E501
+# mypy: ignore-errors
 
 import argparse
 import re

@@ -308,5 +308,7 @@ class Base_calls(Pileup_line):
 
         self.deletions = del_forward, del_reverse  # list of deletions
         self.insertions = ins_forward, ins_reverse  # list of insertions
-        self.deletion_calls = deletion_calls  # dictionary of deletion calls (strand agnostic) and their occurrence
-        self.insertion_calls = insertion_calls  # dictionary of insertion calls (strand agnostic) and their occurrence
+        # dictionary of deletion calls (strand agnostic) and their occurrence
+        self.deletion_calls = deletion_calls
+        # dictionary of insertion calls (strand agnostic) and their occurrence
+        self.insertion_calls = insertion_calls

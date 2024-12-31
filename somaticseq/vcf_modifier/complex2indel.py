@@ -1,33 +1,37 @@
-#!/usr/bin/env python3
+def resolve_complex_variants_into_snvs_and_indels(
+    refbases: str, altbases: str
+) -> list[dict]:
+    """
+    Split complex variants into combination of snvs and indels.
+    """
+    snv_or_indel = [{"OFFSET": 0, "REF": refbases, "ALT": altbases}]
 
+    if len(refbases) == 1 and len(altbases) == 1:  # snv
+        return snv_or_indel
 
-def translate(refbase, altbase):
-    offset = 0
+    if (len(refbases) == 1 or len(altbases) == 1) and (
+        refbases[0] == altbases[0]
+    ):  # indel
+        return snv_or_indel
 
-    if len(refbase) == len(altbase):
-        return False
+    # Initialize a list to hold the new records
+    list_of_variants: list[dict] = []
 
-    elif len(refbase) == 1 or len(altbase) == 1:
-        return ((refbase, altbase), offset)
-
-    else:
-        for base_i, base_j in zip(refbase[::-1], altbase[::-1]):
-            if base_i == base_j and (len(refbase) >= 2 and len(altbase) >= 2):
-                refbase = refbase[:-1]
-                altbase = altbase[:-1]
-            else:
-                break
-
-        for base_i, base_j in zip(refbase, altbase):
-            if base_i == base_j and (len(refbase) >= 2 and len(altbase) >= 2):
-                refbase = refbase[1:]
-                altbase = altbase[1:]
-                offset += 1
-            else:
-                break
-
-        return ((refbase, altbase), offset)
-
-
-if __name__ == "__main__":
-    translate(refbase, altbase)
+    # "Left-align" the REF and ALT to assign snvs until one has to consider
+    # deletion or insertion
+    for i, (refbase, altbase) in enumerate(zip(refbases, altbases)):
+        if refbase != altbase:
+            list_of_variants.append(
+                {"OFFSET": i, "REF": refbase, "ALT": altbase},
+            )
+    # Handle deletion
+    if len(refbases) > len(altbases):
+        list_of_variants.append(
+            {"OFFSET": i, "REF": refbases[i:], "ALT": refbases[i]},
+        )
+    # Handle insertion
+    elif len(altbases) > len(refbases):
+        list_of_variants.append(
+            {"OFFSET": i, "REF": refbases[i], "ALT": refbases[i] + altbases[i + 1 :]},
+        )
+    return list_of_variants

@@ -15,7 +15,10 @@ with open(version_file) as f:
 
 setup(
     name="somaticseq",
-    description="SomaticSeq: An ensemble approach to accurately detect somatic mutations using SomaticSeq",
+    description=(
+        "SomaticSeq: "
+        "An ensemble approach to accurately detect somatic mutations using SomaticSeq"
+    ),
     version=__version__,  # noqa
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -53,7 +56,7 @@ setup(
         "somaticseq/utilities/dockered_pipelines/makeAlignmentScripts.py",
         "somaticseq/utilities/dockered_pipelines/makeSomaticScripts.py",
         "somaticseq/utilities/dockered_pipelines/run_workflows.py",
-        "somaticseq/vcf_modifier/splitVcf.py",
+        "somaticseq/vcf_modifier/split_vcf.py",
         "r_scripts/ada_model_builder_ntChange.R",
         "r_scripts/ada_model_predictor.R",
     ],

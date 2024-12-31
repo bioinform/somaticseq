@@ -20,7 +20,11 @@ all_possible_callers = (
 
 
 parser = argparse.ArgumentParser(
-    description="In SomaticSeq TSV files, replace certain callers with nan and remove lines where they are only called by these. To mimic a TSV where only a subset of the callers were used.",
+    description=(
+        "In SomaticSeq TSV files, replace certain callers with nan and remove lines "
+        "where they are only called by these. "
+        "To mimic a TSV where only a subset of the callers were used."
+    ),
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 )
 parser.add_argument("-infile", "--infile", type=str, help="input file", required=True)
