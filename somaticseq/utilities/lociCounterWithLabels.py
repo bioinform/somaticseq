@@ -13,6 +13,11 @@ from somaticseq.vcf_modifier.bed_util import bed_sort_and_merge
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(name)s: %(message)s")
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
 
 def fai2bed(
