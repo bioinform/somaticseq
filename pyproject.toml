@@ -64,6 +64,7 @@ somaticseq_split_vcf = "somaticseq.vcf_modifier.split_vcf:main"
 dev = [
     "black",
     "flake8",
+    "mypy",
     "pytest",
 ]
 

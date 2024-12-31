@@ -631,6 +631,7 @@ def find_vcf_at_coordinate(
             vcf_i = VCFVariantRecord.from_vcf_line(vcf_line_i)
 
             # Some VCF files wrongly uses "/" to separate different ALT's
+            assert vcf_i.altbase
             altbases = re.split(r"[,/]", vcf_i.altbase)
             for alt_i in altbases:
                 vcf_variants[

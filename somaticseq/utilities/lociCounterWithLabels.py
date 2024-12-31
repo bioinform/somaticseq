@@ -8,7 +8,9 @@ from os.path import basename
 
 def fai2bed(
     file_name: str,
-) -> tuple[dict[str, list[int]], dict[str, list[int]], dict[str, list[str]], list[str]]:
+) -> tuple[
+    dict[str, list[int]], dict[str, list[int]], dict[str, list[list[str]]], list[str]
+]:
     """
     This function initiates the regions and region counters based on the contigs
     in a .fa.fai file. This script will start with the whole contig regions
@@ -28,7 +30,7 @@ def fai2bed(
     with open(file_name) as gfile:
         callableLociBoundries: dict[str, list[int]] = {}
         callableLociCounters: dict[str, list[int]] = {}
-        callableLociLabels: [str, list[str]] = {}
+        callableLociLabels: dict[str, list[list[str]]] = {}
         orderedContig: list[str] = []
         line_i = gfile.readline().rstrip("\n")
         while line_i:
