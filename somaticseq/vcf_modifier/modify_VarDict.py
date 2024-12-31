@@ -8,10 +8,10 @@ import tempfile
 import uuid
 
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
+from somaticseq.vcf_modifier.bed_util import vcfsorter
 from somaticseq.vcf_modifier.split_vcf import (
     split_complex_variants_into_snvs_and_indels,
 )
-from somaticseq.vcf_modifier.vcfIntersector import vcfsorter
 
 
 def run() -> argparse.Namespace:

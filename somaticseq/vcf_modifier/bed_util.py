@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import re
 import subprocess
@@ -128,6 +126,14 @@ def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=Non
         os.remove(file_i)
 
     return outfile
+
+
+def bed_sort_and_merge(infile: str, outfile: str, fai: str) -> None:
+    cmd_line = (
+        f"bedtools sort -faidx {fai} -header -i {infile} | "
+        f"bedtools merge -i stdin > {outfile}"
+    )
+    subprocess.check_call(cmd_line, shell=True)
 
 
 def vcfsorter(ref: str, vcfin: str, vcfout: str):

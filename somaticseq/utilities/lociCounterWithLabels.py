@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse
+import logging
+import os
 import re
+import tempfile
+import uuid
 from copy import copy
 from os.path import basename
+
+from somaticseq.vcf_modifier.bed_util import bed_sort_and_merge
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def fai2bed(
@@ -173,14 +182,18 @@ def countIntersectedRegions(
     return consolidatedBoundries, consolidatedCounters, consolidatedLabels
 
 
-## Print out results:
 def run(fai_file, bed_files, bed_labels, bed_out):
+
+    tempdir = tempfile.mkdtemp()
     # Start routine:
     contigBoundries, contigCounters, contigLabels, orderedContigs = fai2bed(fai_file)
 
     # Look at BED files
     for i, bed_file_i in enumerate(bed_files):
-        bedRegions = bed2regions(bed_file_i)
+        bed_file_j = os.path.join(tempdir, uuid.uuid4().hex) + ".bed"
+        logger.info(f"{bed_file_i} sorted and merged into {bed_file_j}.")
+        bed_sort_and_merge(bed_file_i, bed_file_j, fai_file)
+        bedRegions = bed2regions(bed_file_j)
         label_i = bed_labels[i]
         for chrom in bedRegions:
             (

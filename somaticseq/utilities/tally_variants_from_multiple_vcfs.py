@@ -15,7 +15,7 @@ import pysam
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 import somaticseq.genomic_file_parsers.read_info_extractor as read_info_extractor
 import somaticseq.utilities.split_bed_into_equal_regions as split_regions
-import somaticseq.vcf_modifier.vcfIntersector as vcfIntersector
+import somaticseq.vcf_modifier.bed_util as bed_util
 
 
 def intersect_multiple_vcf_files(inVcfList_and_BedFile):
@@ -24,7 +24,7 @@ def intersect_multiple_vcf_files(inVcfList_and_BedFile):
     out_files = []
     for vcf_i in vcf_files:
         outfile_i = os.path.join(dirname, uuid.uuid4().hex + ".vcf")
-        vcfIntersector.bed_intersector(vcf_i, outfile_i, bed_file)
+        bed_util.bed_intersector(vcf_i, outfile_i, bed_file)
         out_files.append(outfile_i)
 
     return out_files

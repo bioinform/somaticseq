@@ -5,7 +5,7 @@ import subprocess
 import somaticseq.vcf_modifier.copy_TextFile as copy_TextFile
 import somaticseq.vcf_modifier.getUniqueVcfPositions as getUniqueVcfPositions
 import somaticseq.vcf_modifier.split_vcf as split_vcf
-from somaticseq.vcf_modifier.vcfIntersector import (
+from somaticseq.vcf_modifier.bed_util import (
     bed_intersector,
     remove_vcf_illegal_lines,
     vcfsorter,
