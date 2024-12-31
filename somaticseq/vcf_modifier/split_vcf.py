@@ -84,7 +84,8 @@ def split_into_snv_and_indel(
 
         while line_i:
             vcf_i = genome.VCFVariantRecord.from_vcf_line(line_i)
-
+            assert vcf_i.refbase  # type checking
+            assert vcf_i.altbase  # type checking
             if ("," not in vcf_i.altbase) and ("/" not in vcf_i.altbase):
                 if len(vcf_i.refbase) == 1 and len(vcf_i.altbase) == 1:
                     snv_out.write(line_i + "\n")
@@ -93,6 +94,8 @@ def split_into_snv_and_indel(
                 else:
                     snvs_and_indels = split_complex_variants_into_snvs_and_indels(vcf_i)
                     for snv_or_indel in snvs_and_indels:
+                        assert snv_or_indel.refbase  # type checking
+                        assert snv_or_indel.altbase  # type checking
                         if len(snv_or_indel.refbase) == len(snv_or_indel.altbase) == 1:
                             snv_out.write(snv_or_indel.to_vcf_line() + "\n")
                         else:
@@ -127,6 +130,8 @@ def split_into_snv_and_indel(
                             vcf_j
                         )
                         for snv_or_indel in snvs_and_indels:
+                            assert snv_or_indel.refbase
+                            assert snv_or_indel.altbase
                             if (
                                 len(snv_or_indel.refbase)
                                 == len(snv_or_indel.altbase)

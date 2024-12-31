@@ -1,10 +1,9 @@
 import gzip
-import io
 import math
 import re
 from collections.abc import Iterable
 from functools import cached_property
-from typing import Any, Literal, Self
+from typing import Any, Literal, Self, TextIO
 
 from pydantic import BaseModel
 from pysam import AlignmentFile
@@ -212,7 +211,7 @@ class PysamHeader(BaseModel):
         return name_tuple  # type: ignore
 
 
-def skip_vcf_header(opened_file: io.TextIOWrapper) -> str:
+def skip_vcf_header(opened_file: TextIO) -> str:
     line_i = opened_file.readline().rstrip()
     while line_i.startswith("#"):
         line_i = opened_file.readline().rstrip()
@@ -250,7 +249,7 @@ def faiordict2contigorder(
     return chrom_seq
 
 
-def open_textfile(file_name: str) -> io.TextIOWrapper:
+def open_textfile(file_name: str) -> TextIO:
     # See if the input file is a .gz file:
     if str(file_name).lower().endswith(".gz"):
         return gzip.open(file_name, "rt")
@@ -258,7 +257,7 @@ def open_textfile(file_name: str) -> io.TextIOWrapper:
         return open(file_name)
 
 
-def open_bam_file(file_name: str) -> AlignmentFile | io.TextIOWrapper:
+def open_bam_file(file_name: str) -> AlignmentFile | TextIO:
     try:
         return AlignmentFile(file_name, "rb")
     except ValueError:
@@ -398,7 +397,7 @@ def whoisbehind(
 
 
 def vcf_header_modifier(
-    infile_handle: io.TextIOWrapper, addons: list[str] = [], getlost: str = " "
+    infile_handle: TextIO, addons: list[str] = [], getlost: str = " "
 ):
     """addons = A list of INFO, FORMAT, ID, or Filter lines you want to add.
     getlost = a regex expression for the ID of INFO/FORMAT/FILTER that you want
