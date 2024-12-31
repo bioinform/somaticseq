@@ -2,6 +2,7 @@
 # Supports Insertion/Deletion as well as SNVs
 # Last updated: 8/29/2015
 # flake8: noqa: E501 (Legacy script not being used)
+# mypy: ignore-errors
 
 import argparse
 import re
