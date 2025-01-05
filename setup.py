@@ -11,29 +11,29 @@ IMAGE_SRC_PATTERN = r'(<img\s+[^>]*src=")([^"]*)(")'
 BASE_URL = "https://github.com/bioinform/somaticseq"
 
 
-def replace_link(match: re.Match) -> str:
-    """
-    Replace relative links in .md from [text](RELATIVE/LINK) into
-    [text]({BASE_URL}/blob/master/RELATIVE/LINK)
-    """
-    text = match.group(1)
-    url = match.group(2)
-    return f"{text}{BASE_URL}/blob/master/{url})"
-
-
-def replace_src(match: re.Match) -> str:
-    """
-    Replace relative image links like above
-    """
-    prefix = match.group(1)  # The part before the URL
-    url = match.group(2)  # The original URL
-    suffix = match.group(3)  # The part after the URL
-    return f"{prefix}{BASE_URL}/raw/master/{url}{suffix}"
+# Read __version__ from the _version.py file
+version_file = os.path.join("somaticseq", "_version.py")
+with open(version_file) as f:
+    exec(f.read())  # This will define __version__
 
 
 def modify_markdown_for_3rd_party(base_markdown: str) -> str:
-    with_abs_url = re.sub(LINK_PATTERN, replace_link, base_markdown)
-    with_abs_img_src = re.sub(IMAGE_SRC_PATTERN, replace_src, with_abs_url)
+    def _replace_link(match: re.Match) -> str:
+        # Replace relative links in .md from [text](RELATIVE/LINK) into
+        # [text]({BASE_URL}/blob/TAG/RELATIVE/LINK)
+        text = match.group(1)
+        url = match.group(2)
+        return f"{text}{BASE_URL}/blob/v{__version__}/{url})"  # noqa
+
+    def _replace_src(match: re.Match) -> str:
+        # Replace relative image links
+        prefix = match.group(1)  # part before the url
+        url = match.group(2)  # original url
+        suffix = match.group(3)  # part after the url
+        return f"{prefix}{BASE_URL}/raw/v{__version__}/{url}{suffix}"  # noqa
+
+    with_abs_url = re.sub(LINK_PATTERN, _replace_link, base_markdown)
+    with_abs_img_src = re.sub(IMAGE_SRC_PATTERN, _replace_src, with_abs_url)
     return with_abs_img_src
 
 
@@ -41,10 +41,6 @@ with open("README.md") as fn:
     long_description = fn.read()
     description_for_3rd_party = modify_markdown_for_3rd_party(long_description)
 
-# Read the version from the _version.py file
-version_file = os.path.join("somaticseq", "_version.py")
-with open(version_file) as f:
-    exec(f.read())  # This will define __version__
 
 setup(
     name="somaticseq",
