@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# mypy: ignore-errors
+
 import os
 import re
 
@@ -22,14 +22,14 @@ def modify_markdown_for_3rd_party(base_markdown: str) -> str:
         # [text]({BASE_URL}/blob/TAG/RELATIVE/LINK)
         text = match.group(1)
         url = match.group(2)
-        return f"{text}{BASE_URL}/blob/v{__version__}/{url})"  # noqa
+        return f"{text}{BASE_URL}/blob/v{__version__}/{url})"  # type: ignore[name-defined] # noqa
 
     def _replace_src(match: re.Match) -> str:
         # Replace relative image links
         prefix = match.group(1)  # part before the url
         url = match.group(2)  # original url
         suffix = match.group(3)  # part after the url
-        return f"{prefix}{BASE_URL}/raw/v{__version__}/{url}{suffix}"  # noqa
+        return f"{prefix}{BASE_URL}/raw/v{__version__}/{url}{suffix}"  # type: ignore[name-defined] # noqa
 
     with_abs_url = re.sub(LINK_PATTERN, _replace_link, base_markdown)
     with_abs_img_src = re.sub(IMAGE_SRC_PATTERN, _replace_src, with_abs_url)
@@ -47,7 +47,7 @@ setup(
         "SomaticSeq: "
         "An ensemble approach to accurately detect somatic mutations using SomaticSeq"
     ),
-    version=__version__,  # noqa
+    version=__version__,  # type: ignore[name-defined] # noqa
     long_description=description_for_3rd_party,
     long_description_content_type="text/markdown",
     author="Li Tai Fang",
