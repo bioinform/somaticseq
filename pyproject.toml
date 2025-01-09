@@ -66,6 +66,7 @@ dev = [
     "flake8",
     "mypy",
     "pytest",
+    "setuptools_scm",
 ]
 
 [tool.pytest.ini_options]

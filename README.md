@@ -118,8 +118,8 @@ conda install -c bioconda somaticseq
 ## To install from github source with conda
 
 ```
-conda create --name my_env -c bioconda python bedtools
-conda activate my_env
+conda create --name venv -c bioconda python bedtools
+conda activate venv
 git clone git@github.com:bioinform/somaticseq.git
 cd somaticseq
 pip install -e .
