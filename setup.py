@@ -3,7 +3,6 @@
 import os
 import re
 
-import setuptools_scm  # noqa
 from setuptools import find_packages, setup
 
 LINK_PATTERN = r"(\[.*?\]\()([^http][^)]*)\)"
@@ -57,7 +56,7 @@ setup(
     packages=find_packages(),
     package_data={"": ["*.R"]},
     python_requires=">=3.11.0",
-    setup_requires=["setuptools>=42", "setuptools_scm"],
+    setup_requires=["setuptools>=42"],
     install_requires=[  # pyproject.toml overrides them
         "pysam",
         "numpy",
