@@ -4,4 +4,4 @@ RUN cd /opt && \
     git clone https://github.com/bioinform/somaticseq && \
     cd somaticseq && \
     git checkout dev && \
-    pip install --break-system-packages .
+    pip install --no-cache-dir --break-system-packages .
