@@ -4,5 +4,6 @@ ARG VERSION
 RUN cd /opt && \
     wget https://github.com/bioinform/somaticseq/archive/refs/tags/v${VERSION}.tar.gz && \
     tar -xvf v${VERSION}.tar.gz && \
-    cd somaticseq-${VERSION} && \
+    mv somaticseq-${VERSION} somaticseq && \
+    cd somaticseq && \
     pip install --no-cache-dir --break-system-packages .
