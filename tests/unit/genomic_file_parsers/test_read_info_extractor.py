@@ -2,14 +2,13 @@ import pysam
 
 from somaticseq.genomic_file_parsers.read_info_extractor import (
     AlignmentType,
-    get_alignment_via_cigar,
+    get_alignment_in_read,
 )
 
 
 def test_get_alignment_via_cigar() -> None:
     """
-    Test the following aligned reads
-
+    Test the following aligned read:
     Coordinates:  100     200   210    220    230  235  240  245  250
                     ^      ^     ^      ^      ^    ^    ^    ^    ^
     Reference:      ================================================
@@ -37,7 +36,7 @@ def test_get_alignment_via_cigar() -> None:
     # matches that are more than 3 bps from the nearest indel
     simple_matches = set(list(range(100, 195 + 1)) + [213, 214, 215, 223, 224, 225])
     for coordinate in range(300):
-        seq_call = get_alignment_via_cigar(read, coordinate)
+        seq_call = get_alignment_in_read(read, coordinate)
         if coordinate in simple_matches:
             assert seq_call.call_type == AlignmentType.match
             assert seq_call.nearest_indel == float("inf")
