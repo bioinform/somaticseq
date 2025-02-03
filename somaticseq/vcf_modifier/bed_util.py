@@ -24,7 +24,6 @@ def remove_vcf_illegal_lines(invcf, outvcf):
 
         while line_i:
             vcf_i = genome.VCFVariantRecord.from_vcf_line(line_i)
-
             if re.match(r"<\w+>", vcf_i.altbase) and (not vcf_i.get_info_value("END")):
                 hasIllegalLine = True
                 break
@@ -126,7 +125,6 @@ def vcfsorter(ref: str, vcfin: str, vcfout: str) -> None:
         Exit code for bedtools sort.
     """
     fai = ref + ".fai"
-
     _, intermediate_file = tempfile.mkstemp(text=True)
     sorted_bed = BedTool(vcfin).sort(faidx=fai, header=True)
     intermediate_bed = sorted_bed.saveas(intermediate_file)
