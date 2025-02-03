@@ -2,6 +2,7 @@ import os
 import re
 import subprocess
 import uuid
+from pybedtools import BedTool
 
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
@@ -54,19 +55,21 @@ def remove_vcf_illegal_lines(invcf, outvcf):
         return hasIllegalLine
 
 
-def bed_include(infile, inclusion_region, outfile):
+def bed_include(
+    infile: str, inclusion_region: str, outfile: str
+) -> str:
     assert infile != outfile
+    if not inclusion_region:
+        return None
+    
+    # Load the BED files
+    a = BedTool(infile)
+    b = BedTool(inclusion_region)
 
-    if inclusion_region:
-        cmd_line = "bedtools intersect -header -a {} -b {} | uniq > {}".format(
-            infile, inclusion_region, outfile
-        )
-        subprocess.check_call(cmd_line, shell=True)
-
-    else:
-        outfile = None
-
-    return outfile
+    # Perform the intersection with header. 'u' option returns unique entries.
+    intersected = a.intersect(b, u=True, header=True)
+    out = intersected.saveas(outfile)
+    return out.fn
 
 
 def bed_exclude(infile, exclusion_region, outfile):
