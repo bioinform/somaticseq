@@ -34,51 +34,6 @@ for n, contig_i in enumerate(CHROMOSOMES):
 nan = float("nan")
 inf = float("inf")
 
-AA_3to1 = {
-    "Ala": "A",
-    "Arg": "R",
-    "Asn": "N",
-    "Asp": "D",
-    "Cys": "C",
-    "Glu": "E",
-    "Gln": "Q",
-    "Gly": "G",
-    "His": "H",
-    "Ile": "I",
-    "Leu": "L",
-    "Lys": "K",
-    "Met": "M",
-    "Phe": "F",
-    "Pro": "P",
-    "Ser": "S",
-    "Thr": "T",
-    "Trp": "W",
-    "Tyr": "Y",
-    "Val": "V",
-}
-AA_1to3 = {
-    "A": "Ala",
-    "R": "Arg",
-    "N": "Asn",
-    "D": "Asp",
-    "C": "Cys",
-    "E": "Glu",
-    "Q": "Gln",
-    "G": "Gly",
-    "H": "His",
-    "I": "Ile",
-    "L": "Leu",
-    "K": "Lys",
-    "M": "Met",
-    "F": "Phe",
-    "P": "Pro",
-    "S": "Ser",
-    "T": "Thr",
-    "W": "Trp",
-    "Y": "Tyr",
-    "V": "Val",
-}
-
 
 class VCFVariantRecord(BaseModel):
     chromosome: str | None = None
@@ -686,7 +641,7 @@ def uniq(input_file: str, output_file: str) -> None:
     """
     Mimicks the "cat input_file | uniq > output_file" function
     """
-    with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
+    with open(input_file) as infile, open(output_file, "w") as outfile:
         # Initialize a variable to store the previous line
         previous_line = None
         for current_line in infile:
