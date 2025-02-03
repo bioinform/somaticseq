@@ -680,3 +680,17 @@ def catchup_one_line_at_a_time(coordinate_i, line_j, filehandle_j, CHROMOSOMES):
         reporter = (-1, line_j_next)
 
     return reporter
+
+
+def uniq(input_file: str, output_file: str) -> None:
+    """
+    Mimicks the "cat input_file | uniq > output_file" function
+    """
+    with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
+        # Initialize a variable to store the previous line
+        previous_line = None
+        for current_line in infile:
+            # Write the current line if it's different from the previous line
+            if current_line != previous_line:
+                outfile.write(current_line)
+                previous_line = current_line  # Update the previous line

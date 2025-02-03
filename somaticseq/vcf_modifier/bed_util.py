@@ -1,6 +1,7 @@
 import os
 import re
 import subprocess
+import tempfile
 import uuid
 from pybedtools import BedTool
 
@@ -66,24 +67,28 @@ def bed_include(
     a = BedTool(infile)
     b = BedTool(inclusion_region)
 
-    # Perform the intersection with header. 'u' option returns unique entries.
-    intersected = a.intersect(b, u=True, header=True)
-    out = intersected.saveas(outfile)
-    return out.fn
+    # Perform the intersection with header
+    intersected = a.intersect(b, header=True)
+    _, temp_file = tempfile.mkstemp(text=True)
+    out = intersected.saveas(temp_file)
+    genome.uniq(out.fn, outfile)
+    return outfile
 
 
 def bed_exclude(infile, exclusion_region, outfile):
     assert infile != outfile
+    if not exclusion_region:
+        return None
+    
+    # Load the BED files
+    a = BedTool(infile)
+    b = BedTool(exclusion_region)
 
-    if exclusion_region:
-        cmd_line = "bedtools intersect -header -a {} -b {} -v | uniq > {}".format(
-            infile, exclusion_region, outfile
-        )
-        subprocess.check_call(cmd_line, shell=True)
-
-    else:
-        outfile = None
-
+    # Perform the intersection with header. 'v' is exclude
+    excluded = a.intersect(b, v=True, header=True)
+    _, temp_file = tempfile.mkstemp(text=True)
+    out = excluded.saveas(temp_file)
+    genome.uniq(out.fn, outfile)
     return outfile
 
 
