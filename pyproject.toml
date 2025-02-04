@@ -21,7 +21,7 @@ maintainers = [
 ]
 description = "SomaticSeq: An ensemble approach to accurately detect somatic mutations using SomaticSeq"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11.0,<3.13"  # pybedtools incompatible with 3.13
 license = {text = "BSD-2-Clause"}
 dependencies = [
     "pysam",

@@ -55,7 +55,7 @@ setup(
     url="https://github.com/bioinform/somaticseq",
     packages=find_packages(),
     package_data={"": ["*.R"]},
-    python_requires=">=3.11.0",
+    python_requires=">=3.11.0,<3.13",  # pybedtools incompatible with 3.13
     setup_requires=["setuptools"],
     install_requires=[  # pyproject.toml overrides them
         "pysam",
