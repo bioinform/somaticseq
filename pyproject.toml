@@ -66,6 +66,7 @@ dev = [
     "flake8",
     "mypy",
     "pytest",
+    "pytest-mock",
     "twine",
 ]
 
