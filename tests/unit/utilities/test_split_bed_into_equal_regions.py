@@ -21,7 +21,7 @@ from somaticseq.utilities.split_bed_into_equal_regions import split
         ),
     ],
 )
-def test_find_chunks_for_whole_bam(
+def test_split(
     expected_inlines: list[str],
     expected_outlines: list[str],
     mocker: MockerFixture,
