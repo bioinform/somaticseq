@@ -60,12 +60,12 @@ def test_split(
 
     mock_reader.readline.side_effect = _mock_reader(expected_inlines)
 
-    def _mock_open(filename: str, mode: str = "r") -> MagicMock:
-        if "1.x.bed" in filename:
+    def _mock_open(file: str, mode: str = "r") -> MagicMock:
+        if "1.x.bed" in file:
             return mock_writer_1
-        elif "2.x.bed" in filename:
+        elif "2.x.bed" in file:
             return mock_writer_2
-        elif "3.x.bed" in filename:
+        elif "3.x.bed" in file:
             return mock_writer_3
         else:
             return mock_reader
