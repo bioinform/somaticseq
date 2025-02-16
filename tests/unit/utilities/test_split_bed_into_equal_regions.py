@@ -1,5 +1,6 @@
 import os
 from collections.abc import Generator
+from unittest.mock import MagicMock
 
 import pytest
 from _pytest.tmpdir import TempPathFactory
@@ -54,7 +55,7 @@ def test_split(
 
     mock_reader.readline.side_effect = _mock_reader(expected_inlines)
 
-    def _mock_open(filename: str, mode: str = "r"):
+    def _mock_open(filename: str, mode: str = "r") -> MagicMock:
         if "1.x.bed" in filename:
             return mock_writer_1
         elif "2.x.bed" in filename:
