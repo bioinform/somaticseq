@@ -39,7 +39,7 @@ def test_split(
     file_opener = mocker.MagicMock()
     file_opener.readline.side_effect = _mock_reader(expected_inlines)
     file_opener.write.side_effect = _mock_writer
-    mocked_fh = mocker.patch("somaticseq.utilities.split_bed_into_equal_regions.open")
+    mocked_fh = mocker.patch("builtins.open")
     mocked_fh.return_value.__enter__.return_value = file_opener
     outdir = tmp_path_factory.mktemp("split_bed")
     out_files = split(
