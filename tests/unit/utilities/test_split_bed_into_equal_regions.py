@@ -32,10 +32,15 @@ def test_split(
     mocker: MockerFixture,
     tmp_path_factory: TempPathFactory,
 ) -> None:
+    """
+    Test case where input bed file is split into 3 output bed files of equal
+    region lengths
+    """
 
     def _mock_reader(expected_inlines: list[str]) -> Generator:
         yield from expected_inlines
 
+    # Mock 1 input bed file and 3 output bed files
     mock_reader = mocker.MagicMock()
     mock_writer_1 = mocker.MagicMock()
     mock_writer_2 = mocker.MagicMock()
