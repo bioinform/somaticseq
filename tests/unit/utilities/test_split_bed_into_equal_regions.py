@@ -70,11 +70,15 @@ def test_split(
         infile="region.bed", outfiles=os.path.join(outdir, "x.bed"), num=3
     )
     assert out_files == [os.path.join(outdir, f"{i}.x.bed") for i in (1, 2, 3)]
+
+    assert mock_writer_1.write.call_count == len(expected_outlines[0])
     for line in expected_outlines[0]:
         mock_writer_1.write.assert_any_call(line)
 
+    assert mock_writer_2.write.call_count == len(expected_outlines[1])
     for line in expected_outlines[1]:
         mock_writer_2.write.assert_any_call(line)
 
+    assert mock_writer_3.write.call_count == len(expected_outlines[2])
     for line in expected_outlines[2]:
         mock_writer_3.write.assert_any_call(line)
