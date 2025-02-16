@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 
 from _pytest.tmpdir import TempPathFactory
@@ -44,6 +45,11 @@ def vcf_files_match(vcf_1: str, vcf_2: str) -> bool:
                 )
             )
     return content_1 == content_2
+
+
+def test_bedtools_installed() -> None:
+    # bedtools must be installed for somaticseq to be fully functional
+    assert shutil.which("bedtools")
 
 
 def test_paired_somaticseq_cli(
