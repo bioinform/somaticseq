@@ -65,10 +65,10 @@ def split(infile: str, outfiles: str, num: int) -> list[str]:
 
     Args:
         infile: input bed file
-        outfiles: output bed files to which "n." will be appended to its basename,
-            e.g., if outfiles="/PATH/TO/important_regions.bed", the output bed files
-            written will be /PATH/TO/1.important_regions.bed,
-            /PATH/TO/2.important_regions.bed, etc.
+        outfiles: output bed files to which "n." will be appended to its
+            basename, e.g., if outfiles="/PATH/TO/regions.bed", the output bed
+            files written will be /PATH/TO/1.regions.bed,
+            /PATH/TO/2.regions.bed, ..., /PATH/TO/n.regions.bed.
         num: number of output bed files
 
     Returns:
@@ -77,9 +77,9 @@ def split(infile: str, outfiles: str, num: int) -> list[str]:
     outfiles_written = []
     out_basename = os.path.basename(outfiles)
     out_directory = os.path.dirname(outfiles)
-    os.makedirs(out_directory, exist_ok=True)
     if not out_directory:
         out_directory = os.curdir
+    os.makedirs(out_directory, exist_ok=True)
 
     with open(infile) as bedin:
         line_i = bedin.readline().rstrip()
