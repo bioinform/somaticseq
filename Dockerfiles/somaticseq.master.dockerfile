@@ -1,4 +1,4 @@
-FROM lethalfang/somaticseq:base-1.6
+FROM lethalfang/somaticseq:base-1.7
 
 RUN cd /opt && \
     git clone https://github.com/bioinform/somaticseq && \

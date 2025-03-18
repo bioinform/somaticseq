@@ -1,5 +1,5 @@
 # Ex: docker build --build-arg VERSION='3.10.0' -f somaticseq.release.dockerfile .
-FROM lethalfang/somaticseq:base-1.6
+FROM lethalfang/somaticseq:base-1.7
 
 ARG VERSION
 RUN cd /opt && \
