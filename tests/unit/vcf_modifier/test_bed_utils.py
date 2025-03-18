@@ -54,4 +54,5 @@ def test_bed_intersector(
             positions.append(int(item[1]))
             line = f.readline()
 
+    assert result == out_vcf
     assert positions == list(range(21, 31)) + list(range(71, 81))
