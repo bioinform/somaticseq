@@ -1,7 +1,8 @@
 import os
 import re
-import subprocess
-import uuid
+import tempfile
+
+from pybedtools import BedTool
 
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
@@ -23,7 +24,6 @@ def remove_vcf_illegal_lines(invcf, outvcf):
 
         while line_i:
             vcf_i = genome.VCFVariantRecord.from_vcf_line(line_i)
-
             if re.match(r"<\w+>", vcf_i.altbase) and (not vcf_i.get_info_value("END")):
                 hasIllegalLine = True
                 break
@@ -39,7 +39,6 @@ def remove_vcf_illegal_lines(invcf, outvcf):
 
             while line_i:
                 vcf_i = genome.VCFVariantRecord.from_vcf_line(line_i)
-
                 if not (
                     re.match(r"<\w+>", vcf_i.altbase)
                     and (not vcf_i.get_info_value("END"))
@@ -54,89 +53,66 @@ def remove_vcf_illegal_lines(invcf, outvcf):
         return hasIllegalLine
 
 
-def bed_include(infile, inclusion_region, outfile):
+def bed_include(infile: str, inclusion_region: str | None, outfile: str) -> str:
     assert infile != outfile
+    if not inclusion_region:
+        return infile
 
-    if inclusion_region:
-        cmd_line = "bedtools intersect -header -a {} -b {} | uniq > {}".format(
-            infile, inclusion_region, outfile
-        )
-        subprocess.check_call(cmd_line, shell=True)
+    # Load the BED files
+    a = BedTool(infile)
+    b = BedTool(inclusion_region)
 
-    else:
-        outfile = None
-
+    # Perform the intersection with header
+    intersected = a.intersect(b, header=True)
+    _, temp_file = tempfile.mkstemp(text=True)
+    out = intersected.saveas(temp_file)
+    genome.uniq(out.fn, outfile)
+    os.remove(out.fn)
     return outfile
 
 
-def bed_exclude(infile, exclusion_region, outfile):
+def bed_exclude(infile: str, exclusion_region: str | None, outfile: str) -> str:
     assert infile != outfile
+    if not exclusion_region:
+        return infile
 
-    if exclusion_region:
-        cmd_line = "bedtools intersect -header -a {} -b {} -v | uniq > {}".format(
-            infile, exclusion_region, outfile
-        )
-        subprocess.check_call(cmd_line, shell=True)
+    # Load the BED files
+    a = BedTool(infile)
+    b = BedTool(exclusion_region)
 
-    else:
-        outfile = None
-
+    # Perform the intersection with header. 'v' is exclude
+    excluded = a.intersect(b, v=True, header=True)
+    _, temp_file = tempfile.mkstemp(text=True)
+    out = excluded.saveas(temp_file)
+    genome.uniq(out.fn, outfile)
+    os.remove(out.fn)
     return outfile
 
 
-def bed_intersector(infile, outfile, inclusion_region=None, exclusion_region=None):
+def bed_intersector(
+    infile: str,
+    outfile: str,
+    inclusion_region: str | None = None,
+    exclusion_region: str | None = None,
+) -> str:
     assert infile != outfile
-    from shutil import copyfile
 
     # Get the input file name minus the extention, and also get the extension
-    infile_noext = re.sub(r"\.\w+$", "", infile)
-    file_ext = re.search(r"\.\w+$", infile).group()
+    infile_noext, file_ext = os.path.splitext(infile)
 
-    temp_files = []
-
-    if inclusion_region:
-        included_temp_file = infile_noext + uuid.uuid4().hex + file_ext
-
-        cmd_line = "bedtools intersect -header -a {} -b {} | uniq > {}".format(
-            infile, inclusion_region, included_temp_file
-        )
-        subprocess.check_call(cmd_line, shell=True)
-
-        infile = included_temp_file
-        temp_files.append(included_temp_file)
-
-    if exclusion_region:
-        cmd_line = "bedtools intersect -header -a {} -b {} -v | uniq > {}".format(
-            infile, exclusion_region, outfile
-        )
-        subprocess.check_call(cmd_line, shell=True)
-
-    if inclusion_region and not exclusion_region:
-        copyfile(included_temp_file, outfile)
-
-    elif not (inclusion_region or exclusion_region):
-        if infile.endswith(".gz"):
-            cmd_line = f"gunzip -c {infile} > {outfile}"
-            subprocess.check_call(cmd_line, shell=True)
-
-        else:
-            copyfile(infile, outfile)
-
-    for file_i in temp_files:
-        os.remove(file_i)
-
-    return outfile
+    _, intermediate_file = tempfile.mkstemp(text=True)
+    included = bed_include(infile, inclusion_region, intermediate_file)
+    included_then_exclude = bed_exclude(included, exclusion_region, outfile)
+    return included_then_exclude
 
 
 def bed_sort_and_merge(infile: str, outfile: str, fai: str) -> None:
-    cmd_line = (
-        f"bedtools sort -faidx {fai} -header -i {infile} | "
-        f"bedtools merge -i stdin > {outfile}"
-    )
-    subprocess.check_call(cmd_line, shell=True)
+    sorted_bed = BedTool(infile).sort(faidx=fai, header=True)
+    merged_bed = sorted_bed.merge()
+    merged_bed.saveas(outfile)
 
 
-def vcfsorter(ref: str, vcfin: str, vcfout: str):
+def vcfsorter(ref: str, vcfin: str, vcfout: str) -> None:
     """
     Uses bedtools sort and then make sure there is no duplicate line.
 
@@ -149,5 +125,8 @@ def vcfsorter(ref: str, vcfin: str, vcfout: str):
         Exit code for bedtools sort.
     """
     fai = ref + ".fai"
-    cmd_line = f"bedtools sort -faidx {fai} -header -i {vcfin} | uniq > {vcfout}"
-    subprocess.check_call(cmd_line, shell=True)
+    _, intermediate_file = tempfile.mkstemp(text=True)
+    sorted_bed = BedTool(vcfin).sort(faidx=fai, header=True)
+    intermediate_bed = sorted_bed.saveas(intermediate_file)
+    genome.uniq(intermediate_bed.fn, vcfout)
+    os.remove(intermediate_bed.fn)

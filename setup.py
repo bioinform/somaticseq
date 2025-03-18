@@ -56,13 +56,14 @@ setup(
     packages=find_packages(),
     package_data={"": ["*.R"]},
     python_requires=">=3.11.0",
-    setup_requires=["setuptools>=42"],
+    setup_requires=["setuptools"],
     install_requires=[  # pyproject.toml overrides them
         "pysam",
         "numpy",
         "scipy",
         "pandas",
         "xgboost>=1.4",
+        "pybedtools>=0.12.0",
         "pydantic>=2.0.0,<3.0",
     ],
     scripts=[
