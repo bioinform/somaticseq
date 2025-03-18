@@ -55,7 +55,7 @@ setup(
     url="https://github.com/bioinform/somaticseq",
     packages=find_packages(),
     package_data={"": ["*.R"]},
-    python_requires=">=3.11.0,<3.13",  # pybedtools incompatible with 3.13
+    python_requires=">=3.11.0",
     setup_requires=["setuptools"],
     install_requires=[  # pyproject.toml overrides them
         "pysam",
@@ -63,7 +63,7 @@ setup(
         "scipy",
         "pandas",
         "xgboost>=1.4",
-        "pybedtools>=0.9.0",
+        "pybedtools>=0.12.0",
         "pydantic>=2.0.0,<3.0",
     ],
     scripts=[
