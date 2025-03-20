@@ -6,7 +6,7 @@ from somaticseq.genomic_file_parsers.read_info_extractor import (
 )
 
 
-def test_get_alignment_via_cigar() -> None:
+def test_get_alignment() -> None:
     """
     Test the following aligned read:
     Coordinates:  100     200   210    220    230  235  240  245  250
