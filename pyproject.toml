@@ -32,7 +32,7 @@ dependencies = [
     "xgboost>=1.4",
     "pydantic>=2.0.0,<3.0",
 ]
-dynamic = ["version"]
+dynamic = ["version", "readme"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
