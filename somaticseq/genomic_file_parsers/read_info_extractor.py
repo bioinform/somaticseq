@@ -251,6 +251,8 @@ def get_alignment_via_aligned_pairs(
     Returns:
         SequencingCall
     """
+    # Initialize variable as None unless re-assigned later
+    ith_base = None
     # If the coordinate is beyond the read's first and last aligned coordinate
     assert read.reference_start is not None
     assert read.reference_end is not None
