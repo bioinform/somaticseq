@@ -10,9 +10,7 @@ import uuid
 import pysam
 
 COSMIC_STRING = "GENE,CDS,AA,CNT"
-DBSNP_STRING = (
-    "RSPOS,GENEINFO,dbSNPBuildID,SAO,SSR,VC,PM,MUT,KGPhase1,KGPhase3,OM,CDA,CAF,COMMON"
-)
+DBSNP_STRING = "RSPOS,GENEINFO,dbSNPBuildID,SAO,SSR,VC,PM,MUT,KGPhase1,KGPhase3,OM,CDA,CAF,COMMON"
 
 
 def snpsift_snp(snpsift_jar, input_vcf, dbsnp_vcf, output_vcf, info_string):
@@ -37,9 +35,7 @@ def snpsift_cosmic(snpsift_jar, input_vcf, cosmic_vcf, output_vcf, info_string):
 
 def snpeff_annotate(snpeff_jar, input_vcf, output_vcf, db):
     logger = logging.getLogger(snpeff_annotate.__name__)
-    eff_command = "java -Xmx8g -jar {} -noStats {} {} > {}".format(
-        snpeff_jar, db, input_vcf, output_vcf
-    )
+    eff_command = "java -Xmx8g -jar {} -noStats {} {} > {}".format(snpeff_jar, db, input_vcf, output_vcf)
     logger.info(eff_command)
     subprocess.check_call(eff_command, shell=True)
     return output_vcf
@@ -87,12 +83,8 @@ def main() -> None:
     )
     parser.add_argument("-infile", "--infile", help="input vcf file")
     parser.add_argument("-outfile", "--outfile", help="output vcf file")
-    parser.add_argument(
-        "-dbsnp", "--dbsnp", help="dbsnp vcf file to feed into GATK4 HaplotypeCaller"
-    )
-    parser.add_argument(
-        "-cosmic", "--cosmic", help="cosmic vcf file to feed into GATK4 HaplotypeCaller"
-    )
+    parser.add_argument("-dbsnp", "--dbsnp", help="dbsnp vcf file to feed into GATK4 HaplotypeCaller")
+    parser.add_argument("-cosmic", "--cosmic", help="cosmic vcf file to feed into GATK4 HaplotypeCaller")
     parser.add_argument("-snpsift", "--snpsift", help="SnpSift JAR")
     parser.add_argument("-snpeff", "--snpeff", help="snpEff JAR")
     parser.add_argument("-db", "--snpeff-db", help="snpEff db", default="GRCh38.86")

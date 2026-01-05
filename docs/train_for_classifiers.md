@@ -12,22 +12,21 @@ Synthetic WGS tumor bams created from normal bams using BAMSurgeon:
 Their corresponding truth VCF files are
 `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/DeepLearning_bams/truth_vcf/`.
 
--   `synthetic_tumor_FD2N.dedup.bam` means the file had synthetic SNVs and
-    indels spiked into FD_N_2 (i.e.,
-    `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/WGS/WGS_FD_N_2.bwa.dedup.bam`).
-    So, you can use this `synthetic_tumor_FD2N.dedup.bam` to pair with
-    `WGS_FD_N_1.bwa.dedup.bam` or `WGS_FD_N_3.bwa.dedup.bam` (but **not**
-    `WGS_FD_N_2.bwa.dedup.bam`) in a semi-synthetic tumor-normal pairs. The key
-    is that the synthetic tumor should not pair with the normal from which it
-    originated.
+- `synthetic_tumor_FD2N.dedup.bam` means the file had synthetic SNVs and indels
+  spiked into FD_N_2 (i.e.,
+  `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/WGS/WGS_FD_N_2.bwa.dedup.bam`).
+  So, you can use this `synthetic_tumor_FD2N.dedup.bam` to pair with
+  `WGS_FD_N_1.bwa.dedup.bam` or `WGS_FD_N_3.bwa.dedup.bam` (but **not**
+  `WGS_FD_N_2.bwa.dedup.bam`) in a semi-synthetic tumor-normal pairs. The key is
+  that the synthetic tumor should not pair with the normal from which it
+  originated.
 
--   `synthetic_tumor_NS_1-5N.dedup.bam` and `synthetic_tumor_NS_5-9N.dedup.bam`
-    had synthetic mutations spiked into merged `WGS_NS_N_[1-5].bwa.dedup.bam`
-    and `WGS_NS_N_[5-9].bwa.dedup.bam`. If you want to simulate higher-depth
-    tumor-normal bam files, they should be matched with merged
-    `WGS_NS_N_[6-9].bwa.dedup.bam` and `WGS_NS_N_[1-4].bwa.dedup.bam`. The key,
-    again, is that the tumor and matched normal should **not** share actual
-    reads.
+- `synthetic_tumor_NS_1-5N.dedup.bam` and `synthetic_tumor_NS_5-9N.dedup.bam`
+  had synthetic mutations spiked into merged `WGS_NS_N_[1-5].bwa.dedup.bam` and
+  `WGS_NS_N_[5-9].bwa.dedup.bam`. If you want to simulate higher-depth
+  tumor-normal bam files, they should be matched with merged
+  `WGS_NS_N_[6-9].bwa.dedup.bam` and `WGS_NS_N_[1-4].bwa.dedup.bam`. The key,
+  again, is that the tumor and matched normal should **not** share actual reads.
 
 ## Real tumor-normal bam files
 
@@ -39,27 +38,27 @@ as described by
 
 #### WGS from fresh DNA (used to build high-confidence call set)
 
--   `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/WGS/`
+- `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/WGS/`
 
 #### WES from fresh DNA
 
--   `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/WES/`
+- `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/WES/`
 
 #### WGS from FFPE DNA of varying fixation time
 
--   `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/FFG/`
+- `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/FFG/`
 
 #### WES from FFPE DNA of varying fixation time
 
--   `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/FFX/`
+- `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/FFX/`
 
 #### WGS with 1-ng to 250-ng DNA input quantity
 
--   `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/LBP/`
+- `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/LBP/`
 
 #### WGS of tumor-normal titration series (used to build high-confidence call set)
 
--   `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/SPP/`
+- `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/data/SPP/`
 
 ## How to create classifiers for future use
 
@@ -84,8 +83,8 @@ data in your training set.
    make sure to use the same set to call your real data) **with truth set**,
    e.g.,
 
--   Make training data from SEQC2 real samples (the replicate number has no
-    meaning. It's perfectly okay to pair `IL_T_1` and `IL_N_3`, for instance.):
+- Make training data from SEQC2 real samples (the replicate number has no
+  meaning. It's perfectly okay to pair `IL_T_1` and `IL_N_3`, for instance.):
 
 ```
     makeSomaticScripts.py \
@@ -100,10 +99,9 @@ data in your training set.
     --run-workflow --threads $(nproc) --run-mutect2 --run-vardict --run-strelka2 --run-somaticseq
 ```
 
--   Make training data from semi-synthetic tumor-normal pairs (since
-    `synthetic_tumor_IL1N.dedup.bam` was created from
-    `WGS_IL_N_1.bwa.dedup.bam`, so do **not** use `WGS_IL_N_1.bwa.dedup.bam` as
-    the matched normal here.):
+- Make training data from semi-synthetic tumor-normal pairs (since
+  `synthetic_tumor_IL1N.dedup.bam` was created from `WGS_IL_N_1.bwa.dedup.bam`,
+  so do **not** use `WGS_IL_N_1.bwa.dedup.bam` as the matched normal here.):
 
 ```
     makeSomaticScripts.py \

@@ -9,16 +9,10 @@ import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 # Variant Call Type, i.e., snp or indel
-parser.add_argument(
-    "-infile", "--input-vcf", type=str, help="Input VCF file", required=True
-)
-parser.add_argument(
-    "-outfile", "--output-vcf", type=str, help="Output VCF file", required=True
-)
+parser.add_argument("-infile", "--input-vcf", type=str, help="Input VCF file", required=True)
+parser.add_argument("-outfile", "--output-vcf", type=str, help="Output VCF file", required=True)
 
-parser.add_argument(
-    "-sample", "--sample", nargs="*", type=str, help="Samples", default="TUMOR"
-)
+parser.add_argument("-sample", "--sample", nargs="*", type=str, help="Samples", default="TUMOR")
 
 parser.add_argument("-refMQ", "--min-refMQ", type=float, help="refMQ", default=40)
 parser.add_argument("-altMQ", "--min-altMQ", type=float, help="altMQ", default=40)
@@ -26,12 +20,8 @@ parser.add_argument("-refBQ", "--min-refBQ", type=float, help="refBQ", default=2
 parser.add_argument("-altBQ", "--min-altBQ", type=float, help="altBQ", default=20)
 parser.add_argument("-refNM", "--max-refNM", type=float, help="refNM", default=3)
 parser.add_argument("-altNM", "--max-altNM", type=float, help="altNM", default=4)
-parser.add_argument(
-    "-fetSB", "--max-fetSB", type=float, help="fetSB", default=float("Inf")
-)
-parser.add_argument(
-    "-fetCD", "--max-fetCD", type=float, help="fetCD", default=float("Inf")
-)
+parser.add_argument("-fetSB", "--max-fetSB", type=float, help="fetSB", default=float("Inf"))
+parser.add_argument("-fetCD", "--max-fetCD", type=float, help="fetCD", default=float("Inf"))
 parser.add_argument("-zMQ", "--max-zMQ", type=float, help="zMQ", default=float("Inf"))
 parser.add_argument("-zBQ", "--max-zBQ", type=float, help="zBQ", default=float("Inf"))
 parser.add_argument("-MQ0", "--max-MQ0", type=int, help="MQ0", default=10)

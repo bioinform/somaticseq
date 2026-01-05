@@ -7,17 +7,11 @@ import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 
 def run():
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Variant Call Type, i.e., snp or indel
-    parser.add_argument(
-        "-infile", "--input-vcf", type=str, help="Input VCF file", required=True
-    )
-    parser.add_argument(
-        "-outfile", "--output-vcf", type=str, help="Output VCF file", required=True
-    )
+    parser.add_argument("-infile", "--input-vcf", type=str, help="Input VCF file", required=True)
+    parser.add_argument("-outfile", "--output-vcf", type=str, help="Output VCF file", required=True)
 
     # Parse the arguments:
     args = parser.parse_args()
@@ -63,9 +57,7 @@ def convert(infile, outfile):
                 else:
                     normal_gt = "0/0"
 
-                item_normal[idx_ad] = "{},{}".format(
-                    item_normal[idx_rd], item_normal[idx_ad]
-                )
+                item_normal[idx_ad] = "{},{}".format(item_normal[idx_rd], item_normal[idx_ad])
                 item_normal.pop(idx_rd)
                 item_normal = [normal_gt] + item_normal
 
@@ -84,9 +76,7 @@ def convert(infile, outfile):
                 else:
                     tumor_gt = "0/1"
 
-                item_tumor[idx_ad] = "{},{}".format(
-                    item_tumor[idx_rd], item_tumor[idx_ad]
-                )
+                item_tumor[idx_ad] = "{},{}".format(item_tumor[idx_rd], item_tumor[idx_ad])
                 item_tumor.pop(idx_rd)
                 item_tumor = [tumor_gt] + item_tumor
 

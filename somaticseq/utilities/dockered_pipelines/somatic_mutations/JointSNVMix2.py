@@ -66,15 +66,11 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
-        "mount_path"
-    ]
+    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]]["mount_path"]
     mounted_tumor_bam = file_dictionary[input_parameters["tumor_bam"]]["mount_path"]
     mounted_normal_bam = file_dictionary[input_parameters["normal_bam"]]["mount_path"]
     mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
-    mounted_reference_dict = file_dictionary[input_parameters["reference_dict"]][
-        "mount_path"
-    ]
+    mounted_reference_dict = file_dictionary[input_parameters["reference_dict"]]["mount_path"]
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
@@ -89,14 +85,8 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write("\n")
 
         out.write(f"{container_line} \\\n")
-        out.write(
-            "/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py train joint_snv_mix_two \\\n"
-        )
-        out.write(
-            "--convergence_threshold {} \\\n".format(
-                input_parameters["converge_threshold"]
-            )
-        )
+        out.write("/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py train joint_snv_mix_two \\\n")
+        out.write("--convergence_threshold {} \\\n".format(input_parameters["converge_threshold"]))
         out.write("--skip_size {} \\\n".format(input_parameters["skip_size"]))
 
         if input_parameters["jsm_train_arguments"]:
@@ -148,9 +138,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write("\n")
 
         out.write(f"{container_line} bash -c \\\n")
-        out.write(
-            '"/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py classify joint_snv_mix_two \\\n'
-        )
+        out.write('"/opt/JointSNVMix-0.7.5/build/scripts-2.7/jsm.py classify joint_snv_mix_two \\\n')
 
         if input_parameters["jsm_classify_arguments"]:
             out.write("{} \\\n".format(input_parameters["jsm_classify_arguments"]))
@@ -159,9 +147,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write(f"{mounted_normal_bam} \\\n")
         out.write(f"{mounted_tumor_bam} \\\n")
         out.write(f"{mounted_outdir}/jsm.parameter.cfg \\\n")
-        out.write(
-            "/dev/stdout | awk -F '\\t' 'NR!=1 && \\$4!=\\\"N\\\" && \\$10+\\$11>=0.95' | \\\n"
-        )
+        out.write("/dev/stdout | awk -F '\\t' 'NR!=1 && \\$4!=\\\"N\\\" && \\$10+\\$11>=0.95' | \\\n")
         out.write(
             'awk -F \'\\t\' \'{print \\$1 \\"\\t\\" \\$2 \\"\\t.\\t\\" \\$3 \\"\\t\\" \\$4 \\"\\t.\\t.\\tAAAB=\\" \\$10 \\";AABB=\\" \\$11 \\"\\tRD:AD\\t\\" \\$5 \\":\\" \\$6 \\"\\t\\" \\$7 \\":\\" \\$8}\' \\\n'
         )
@@ -177,9 +163,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
                 tech,
                 (input_parameters["output_directory"],),
             )
-            mounted_bed_outdir = outdir_i[input_parameters["output_directory"]][
-                "mount_path"
-            ]
+            mounted_bed_outdir = outdir_i[input_parameters["output_directory"]]["mount_path"]
 
             out.write("\n\ni=1\n")
             out.write("while [[ $i -le {} ]]\n".format(input_parameters["threads"]))

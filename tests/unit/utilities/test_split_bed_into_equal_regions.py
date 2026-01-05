@@ -72,9 +72,7 @@ def test_split(
 
     mocker.patch("builtins.open", side_effect=_mock_open)
     outdir = tmp_path_factory.mktemp("split_bed")
-    out_files = split(
-        infile="region.bed", outfiles=os.path.join(outdir, "x.bed"), num=3
-    )
+    out_files = split(infile="region.bed", outfiles=os.path.join(outdir, "x.bed"), num=3)
     assert out_files == [os.path.join(outdir, f"{i}.x.bed") for i in (1, 2, 3)]
 
     assert mock_writer_1.write.call_count == len(expected_outlines[0])

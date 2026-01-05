@@ -21,9 +21,7 @@ DEFAULT_PARAMS = {
 }
 
 
-def spread(
-    in_fastqs, out_fastqs, tech="docker", input_parameters={}, remove_infiles=False
-):
+def spread(in_fastqs, out_fastqs, tech="docker", input_parameters={}, remove_infiles=False):
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -39,12 +37,8 @@ def spread(
         extra_args=input_parameters["extra_docker_options"],
     )
 
-    infastq_string = " ".join(
-        [file_dictionary[file_i]["mount_path"] for file_i in in_fastqs]
-    )
-    outfastq_string = " ".join(
-        [file_dictionary[file_i]["mount_path"] for file_i in out_fastqs]
-    )
+    infastq_string = " ".join([file_dictionary[file_i]["mount_path"] for file_i in in_fastqs])
+    outfastq_string = " ".join([file_dictionary[file_i]["mount_path"] for file_i in out_fastqs])
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")

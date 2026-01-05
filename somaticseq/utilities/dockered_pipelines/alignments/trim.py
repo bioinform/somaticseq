@@ -108,11 +108,7 @@ def alienTrimmer(input_parameters, tech="docker"):
             tabix_fq1 = tabixDict[input_parameters["in_fastq1"]]["mount_path"]
 
             out.write(f"{tabix_line} bash -c \\\n")
-            out.write(
-                '"gunzip -c {} > {}/{}"\n\n'.format(
-                    tabix_fq1, tabix_outdir, out_fastq_1
-                )
-            )
+            out.write('"gunzip -c {} > {}/{}"\n\n'.format(tabix_fq1, tabix_outdir, out_fastq_1))
             mounted_fq1 = os.path.join(mounted_outdir, out_fastq_1)
 
             temporary_files.append(out_fastq_1)
@@ -120,11 +116,7 @@ def alienTrimmer(input_parameters, tech="docker"):
             if paired_end:
                 tabix_fq2 = tabixDict[input_parameters["in_fastq2"]]["mount_path"]
                 out.write(f"{tabix_line} bash -c \\\n")
-                out.write(
-                    '"gunzip -c {} > {}/{}"\n\n'.format(
-                        tabix_fq2, tabix_outdir, out_fastq_2
-                    )
-                )
+                out.write('"gunzip -c {} > {}/{}"\n\n'.format(tabix_fq2, tabix_outdir, out_fastq_2))
                 mounted_fq2 = os.path.join(mounted_outdir, out_fastq_2)
 
                 temporary_files.append(out_fastq_2)
@@ -133,9 +125,7 @@ def alienTrimmer(input_parameters, tech="docker"):
             mounted_fq1 = file_dictionary[input_parameters["in_fastq1"]]["mount_path"]
 
             if paired_end:
-                mounted_fq2 = file_dictionary[input_parameters["in_fastq2"]][
-                    "mount_path"
-                ]
+                mounted_fq2 = file_dictionary[input_parameters["in_fastq2"]]["mount_path"]
 
         out.write(f"{trim_line} \\\n")
         out.write("/opt/AlienTrimmer_0.4.0/src/AlienTrimmer \\\n")
@@ -146,11 +136,7 @@ def alienTrimmer(input_parameters, tech="docker"):
             singleton = uuid.uuid4().hex + ".fastq"
 
             out.write(f"-if {mounted_fq1} -ir {mounted_fq2} \\\n")
-            out.write(
-                "-of {}/{} -or {}/{} \\\n".format(
-                    mounted_outdir, trimmed_fq1, mounted_outdir, trimmed_fq2
-                )
-            )
+            out.write("-of {}/{} -or {}/{} \\\n".format(mounted_outdir, trimmed_fq1, mounted_outdir, trimmed_fq2))
             out.write(f"-os {mounted_outdir}/{singleton} \\\n")
 
             temporary_files.extend([trimmed_fq1, trimmed_fq2, singleton])
@@ -201,11 +187,7 @@ def alienTrimmer(input_parameters, tech="docker"):
 
         out.write("\n")
         for file_i in temporary_files:
-            out.write(
-                "rm {}\n".format(
-                    os.path.join(input_parameters["output_directory"], file_i)
-                )
-            )
+            out.write("rm {}\n".format(os.path.join(input_parameters["output_directory"], file_i)))
 
         # Remove untrimmed files:
         if input_parameters["remove_untrimmed"]:
@@ -271,16 +253,10 @@ def trimmomatic(input_parameters, tech="docker"):
         out.write('echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n')
 
         out.write(f"{trim_line} \\\n")
-        out.write(
-            "java -Xmx{}G -jar /opt/Trimmomatic/trimmomatic.jar \\\n".format(
-                input_parameters["MEM"]
-            )
-        )
+        out.write("java -Xmx{}G -jar /opt/Trimmomatic/trimmomatic.jar \\\n".format(input_parameters["MEM"]))
 
         if paired_end:
-            out.write(
-                "PE -threads {} -phred33 \\\n".format(input_parameters["threads"])
-            )
+            out.write("PE -threads {} -phred33 \\\n".format(input_parameters["threads"]))
             out.write(
                 "{FQ1} {FQ2} {DIR}/{PAIR1} {DIR}/{UNPAIR1} {DIR}/{PAIR2} {DIR}/{UNPAIR2} \\\n".format(  # noqa: E501
                     FQ1=mounted_fq1,
@@ -294,9 +270,7 @@ def trimmomatic(input_parameters, tech="docker"):
             )
 
         else:
-            out.write(
-                "SE -threads {} -phred33 \\\n".format(input_parameters["threads"])
-            )
+            out.write("SE -threads {} -phred33 \\\n".format(input_parameters["threads"]))
             out.write(
                 "{FQ1} {DIR}/{PAIR1} \\\n".format(
                     FQ1=mounted_fq1,
@@ -330,9 +304,7 @@ def trimmomatic(input_parameters, tech="docker"):
 
 
 def run():
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # INPUT FILES and Global Options
     parser.add_argument("-outdir", "--output-directory", type=str, default=os.getcwd())

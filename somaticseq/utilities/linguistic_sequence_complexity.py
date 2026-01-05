@@ -33,9 +33,7 @@ def max_vocabularies(seq_length):
         if 4**k < (seq_length - k + 1):
             counts = counts + 4**k
         else:
-            counts = (
-                counts + (seq_length - k + 1 + 1) * (seq_length - k + 1 - 1 + 1) / 2
-            )
+            counts = counts + (seq_length - k + 1 + 1) * (seq_length - k + 1 - 1 + 1) / 2
             break
 
         k += 1
@@ -77,10 +75,7 @@ def LC(sequence):
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description=(
-            "Calculate linguistic sequence complexity according to "
-            "DOI:10.1093/bioinformatics/18.5.679"
-        ),
+        description=("Calculate linguistic sequence complexity according to DOI:10.1093/bioinformatics/18.5.679"),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 

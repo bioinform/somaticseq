@@ -103,9 +103,7 @@ def tumor_normal(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
-        "mount_path"
-    ]
+    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]]["mount_path"]
     mounted_tumor_bam = file_dictionary[input_parameters["tumor_bam"]]["mount_path"]
     mounted_normal_bam = file_dictionary[input_parameters["normal_bam"]]["mount_path"]
     mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
@@ -234,9 +232,7 @@ def tumor_only(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
-        "mount_path"
-    ]
+    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]]["mount_path"]
     mounted_tumor_bam = file_dictionary[input_parameters["bam"]]["mount_path"]
     mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
     mounted_bed = bedDict[bed_file]["mount_path"]

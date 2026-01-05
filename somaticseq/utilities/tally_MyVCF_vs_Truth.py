@@ -13,12 +13,8 @@ import re
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument(
-    "-myvcf", "--my-vcf", type=str, help="My VCF", required=True, default=None
-)
-parser.add_argument(
-    "-truth", "--truth-vcf", type=str, help="Truth", required=True, default=None
-)
+parser.add_argument("-myvcf", "--my-vcf", type=str, help="My VCF", required=True, default=None)
+parser.add_argument("-truth", "--truth-vcf", type=str, help="Truth", required=True, default=None)
 parser.add_argument(
     "-outfile",
     "--output-file",
@@ -98,9 +94,7 @@ if dict_file:
 elif fai_file:
     chrom_sequence = genome.faiordict2contigorder(fai_file, "fai")
 else:
-    raise Exception(
-        "I need a fai or dict file, or else I do not know the contig order."
-    )
+    raise Exception("I need a fai or dict file, or else I do not know the contig order.")
 
 
 def whoisbehind(coord_0, coord_1):
@@ -273,12 +267,8 @@ with (
         truth_line = truthvcf.readline()
 
     double_palm_collector.append('##FILTER=<ID=PASS,Description="Confident calls">\n')
-    double_palm_collector.append(
-        '##FILTER=<ID=LowQual,Description="Less confident calls">\n'
-    )
-    double_palm_collector.append(
-        '##FILTER=<ID=PASS,Description="Least confident calls">\n'
-    )
+    double_palm_collector.append('##FILTER=<ID=LowQual,Description="Less confident calls">\n')
+    double_palm_collector.append('##FILTER=<ID=PASS,Description="Least confident calls">\n')
 
     double_palm_collector.sort()
 

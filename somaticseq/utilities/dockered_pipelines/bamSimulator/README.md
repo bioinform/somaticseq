@@ -1,27 +1,26 @@
 ### Dockerized _in silico_ somatic mutation spike in pipeline to generate training data set with ground truths
 
--   This pipeline is used to spike in _in silico_ somatic mutations into
-    existing BAM files in order to create a training set for somatic mutations.
--   After the _in silico_ data are generated, you can use the
-    [somatic mutation pipeline](..) on the training data to generate the
-    SomaticSeq classifiers.
--   Classifiers built on training data work if the training data is similar to
-    the data you want to predict. Ideally, the training data are sequenced on
-    the same platform, same sample prep, and similar depth of coverage as the
-    data of interest.
--   This method is based on
-    [BAMSurgeon](https://github.com/adamewing/bamsurgeon), slightly modified
-    into [our own fork](https://github.com/ltfang-bina/bamsurgeon) for some
-    speedups.
--   The proper citation for BAMSurgeon is
-    [Ewing AD, Houlahan KE, Hu Y, et al. Combining tumor genome simulation with crowdsourcing to benchmark somatic single-nucleotide-variant detection. Nat Methods. 2015;12(7):623-30.](http://doi.org/10.1038/nmeth.3407)
+- This pipeline is used to spike in _in silico_ somatic mutations into existing
+  BAM files in order to create a training set for somatic mutations.
+- After the _in silico_ data are generated, you can use the
+  [somatic mutation pipeline](..) on the training data to generate the
+  SomaticSeq classifiers.
+- Classifiers built on training data work if the training data is similar to the
+  data you want to predict. Ideally, the training data are sequenced on the same
+  platform, same sample prep, and similar depth of coverage as the data of
+  interest.
+- This method is based on [BAMSurgeon](https://github.com/adamewing/bamsurgeon),
+  slightly modified into
+  [our own fork](https://github.com/ltfang-bina/bamsurgeon) for some speedups.
+- The proper citation for BAMSurgeon is
+  [Ewing AD, Houlahan KE, Hu Y, et al. Combining tumor genome simulation with crowdsourcing to benchmark somatic single-nucleotide-variant detection. Nat Methods. 2015;12(7):623-30.](http://doi.org/10.1038/nmeth.3407)
 
 ### Requirement
 
--   Have internet connection, and able to pull and run docker images from Docker
-    Hub, as we have dockerized the entire BAMSurgeon workflow.
--   **Recommended**: Have cluster management system with valid `qsub` command,
-    such as Sun Grid Engine.
+- Have internet connection, and able to pull and run docker images from Docker
+  Hub, as we have dockerized the entire BAMSurgeon workflow.
+- **Recommended**: Have cluster management system with valid `qsub` command,
+  such as Sun Grid Engine.
 
 ## Three scenario to simulate somatic mutations depending on data available to you
 
@@ -58,12 +57,12 @@ $PATH/TO/somaticseq/utilities/dockered_pipelines/bamSimulator/BamSimulator_singl
 This is a workflow created using modified
 [BAMSurgeon](https://github.com/ltfang-bina/bamsurgeon).
 
--   `BamSimulator_singleThread.sh` creates semi-simulated tumor-normal pairs out
-    of your input tumor-normal pairs. The "ground truth" of the somatic
-    mutations will be `synthetic_snvs.vcf` and `synthetic_indels.leftAlign.vcf`
-    in the output directory.
--   For multi-thread job (WGS), use BamSimulator_multiThreads.sh instead. See
-    below for additional options and parameters.
+- `BamSimulator_singleThread.sh` creates semi-simulated tumor-normal pairs out
+  of your input tumor-normal pairs. The "ground truth" of the somatic mutations
+  will be `synthetic_snvs.vcf` and `synthetic_indels.leftAlign.vcf` in the
+  output directory.
+- For multi-thread job (WGS), use BamSimulator_multiThreads.sh instead. See
+  below for additional options and parameters.
 
 **A schematic of the BAMSurgeon simulation procedure**
 ![Somatic Mutation Simulation](replicate_sim.jpg)
@@ -138,47 +137,47 @@ Synthetic mutations will then be spiked into the designated tumor to create
 
 **The following parameters for the script:**
 
--   `--genome-reference` /ABSOLUTE/PATH/TO/human_reference.fa (Required)
--   `--selector` /ABSOLUTE/PATH/TO/capture_region.bed (BED file to limit where
-    mutation spike in will be attempted)
--   `--tumor-bam-in` Input BAM file (Required)
--   `--normal-bam-in` Input BAM file (Optional, but required if you want to
-    merge it with the tumor input)
--   `--tumor-bam-out` Output BAM file for the designated tumor after BAMSurgeon
-    mutation spike in
--   `--normal-bam-out` Output BAM file for the designated normal if
-    `--split-bam` is chosen
--   `--split-proportion` The faction of total reads desginated to the normal.
-    (Defaut = 0.5)
--   `--num-snvs` Number of SNVs to spike into the designated tumor
--   `--num-indels` Number of INDELs to spike into the designated tumor
--   `--num-svs` Number of SVs to spike into the designated tumor (Default = 0)
--   `--min-depth` Minimum depth where spike in can take place
--   `--max-depth` Maximum depth where spike in can take place
--   `--min-vaf` Minimum VAF to simulate
--   `--max-vaf` Maximum VAF to simulate
--   `--left-beta` Left beta of beta distribution for VAF
--   `--right-beta` Right beta of beta distribution for VAF
--   `--min-variant-reads` Minimum number of variant-supporting reads for a
-    successful spike in
--   `--output-dir` /ABSOLUTE/PATH/TO/Output_Directory
--   `--merge-bam` Flag to merge the tumor and normal bam file input
--   `--split-bam` Flag to split BAM file for tumor and normal
--   `--clean-bam` Flag to go through the BAM file and remove reads where more
-    than 2 identical read names are present, or reads where its read length and
-    CIGAR string do not match. This was necessary for some BAM files downloaded
-    from TCGA. However, a proper pair-end BAM file should not have the same read
-    name appearing more than twice. Use this only when necessary as it first
-    sorts BAM file by qname, goes through the cleaning procedure, then re-sort
-    by coordinates.
--   `--indel-realign` Conduct GATK Joint Indel Realignment on the two output BAM
-    files.
--   `--seed` Random seed. Pick any integer for reproducibility purposes.
--   `--threads` Split the BAM files evenly into N regions, then process each
-    (pair) of sub-BAM files in parallel.
--   `--action` The command preceding the run script created into
-    /ABSOLUTE/PATH/TO/BamSurgeoned_SAMPLES/logs. `qsub` is to submit the script
-    in SGE system. Default = `echo`
+- `--genome-reference` /ABSOLUTE/PATH/TO/human_reference.fa (Required)
+- `--selector` /ABSOLUTE/PATH/TO/capture_region.bed (BED file to limit where
+  mutation spike in will be attempted)
+- `--tumor-bam-in` Input BAM file (Required)
+- `--normal-bam-in` Input BAM file (Optional, but required if you want to merge
+  it with the tumor input)
+- `--tumor-bam-out` Output BAM file for the designated tumor after BAMSurgeon
+  mutation spike in
+- `--normal-bam-out` Output BAM file for the designated normal if `--split-bam`
+  is chosen
+- `--split-proportion` The faction of total reads desginated to the normal.
+  (Defaut = 0.5)
+- `--num-snvs` Number of SNVs to spike into the designated tumor
+- `--num-indels` Number of INDELs to spike into the designated tumor
+- `--num-svs` Number of SVs to spike into the designated tumor (Default = 0)
+- `--min-depth` Minimum depth where spike in can take place
+- `--max-depth` Maximum depth where spike in can take place
+- `--min-vaf` Minimum VAF to simulate
+- `--max-vaf` Maximum VAF to simulate
+- `--left-beta` Left beta of beta distribution for VAF
+- `--right-beta` Right beta of beta distribution for VAF
+- `--min-variant-reads` Minimum number of variant-supporting reads for a
+  successful spike in
+- `--output-dir` /ABSOLUTE/PATH/TO/Output_Directory
+- `--merge-bam` Flag to merge the tumor and normal bam file input
+- `--split-bam` Flag to split BAM file for tumor and normal
+- `--clean-bam` Flag to go through the BAM file and remove reads where more than
+  2 identical read names are present, or reads where its read length and CIGAR
+  string do not match. This was necessary for some BAM files downloaded from
+  TCGA. However, a proper pair-end BAM file should not have the same read name
+  appearing more than twice. Use this only when necessary as it first sorts BAM
+  file by qname, goes through the cleaning procedure, then re-sort by
+  coordinates.
+- `--indel-realign` Conduct GATK Joint Indel Realignment on the two output BAM
+  files.
+- `--seed` Random seed. Pick any integer for reproducibility purposes.
+- `--threads` Split the BAM files evenly into N regions, then process each
+  (pair) of sub-BAM files in parallel.
+- `--action` The command preceding the run script created into
+  /ABSOLUTE/PATH/TO/BamSurgeoned_SAMPLES/logs. `qsub` is to submit the script in
+  SGE system. Default = `echo`
 
 ### Recommendations for different scenario for --merge-bam / --split-bam / --indel-realign
 
@@ -198,10 +197,10 @@ Synthetic mutations will then be spiked into the designated tumor to create
    designated normal. To take this approach, use
    `--merge-bam --split-bam --indel-realign` options.
 
--   Don't use `--indel-realign` if you do not use indel realignment in your
-    alignment pipeline.
--   You can control and visualize the shape of target VAF distribution with
-    python command:
+- Don't use `--indel-realign` if you do not use indel realignment in your
+  alignment pipeline.
+- You can control and visualize the shape of target VAF distribution with python
+  command:
 
 ```
     import numpy as np
@@ -215,15 +214,15 @@ Synthetic mutations will then be spiked into the designated tumor to create
     _ = plt.plot(x, y)
 ```
 
--   In some BAM files, there are reads where read lengths and CIGAR strings
-    don't match. Spike in will fail in these cases, and you'll need to invoke
-    `--clean-bam` to get rid of these problematic reads.
+- In some BAM files, there are reads where read lengths and CIGAR strings don't
+  match. Spike in will fail in these cases, and you'll need to invoke
+  `--clean-bam` to get rid of these problematic reads.
 
 ## To create SomaticSeq classifiers
 
--   After the mutation simulation jobs are completed, you may create classifiers
-    with the training data with the following (example) command:
--   See [our somatic mutation pipeline](..) for more details.
+- After the mutation simulation jobs are completed, you may create classifiers
+  with the training data with the following (example) command:
+- See [our somatic mutation pipeline](..) for more details.
 
 ```
 makeSomaticScripts.py paired \

@@ -60,9 +60,7 @@ def bwa(input_parameters, tech="docker"):
 
     # Mounted paths for all the input files and output directory:
     mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
-    mounted_reference = file_dictionary[input_parameters["genome_reference"]][
-        "mount_path"
-    ]
+    mounted_reference = file_dictionary[input_parameters["genome_reference"]]["mount_path"]
     mounted_fq1 = file_dictionary[input_parameters["in_fastq1"]]["mount_path"]
     mounted_fq2 = file_dictionary[input_parameters["in_fastq2"]]["mount_path"]
 
@@ -72,11 +70,7 @@ def bwa(input_parameters, tech="docker"):
         out.write(f"#$ -o {logdir}\n")
         out.write(f"#$ -e {logdir}\n")
         out.write("#$ -S /bin/bash\n")
-        out.write(
-            "#$ -l h_vmem={}G\n".format(
-                input_parameters["MEM"] * input_parameters["threads"]
-            )
-        )
+        out.write("#$ -l h_vmem={}G\n".format(input_parameters["MEM"] * input_parameters["threads"]))
         out.write("set -e\n\n")
 
         out.write('echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n')
@@ -84,11 +78,7 @@ def bwa(input_parameters, tech="docker"):
         out.write(f"{bwa_line} bash -c \\\n")
         out.write('"bwa mem \\\n')
         out.write("-R '{}' \\\n".format(input_parameters["bam_header"]))
-        out.write(
-            "-M {} -t {} \\\n".format(
-                input_parameters["extra_bwa_arguments"], input_parameters["threads"]
-            )
-        )
+        out.write("-M {} -t {} \\\n".format(input_parameters["extra_bwa_arguments"], input_parameters["threads"]))
         out.write(f"{mounted_reference} \\\n")
         out.write(f"{mounted_fq1} \\\n")
 
@@ -123,9 +113,7 @@ def bwa(input_parameters, tech="docker"):
 
 
 def run():
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # INPUT FILES and Global Options
     parser.add_argument("-outdir", "--output-directory", type=str, default=os.getcwd())
     parser.add_argument("-ref", "--genome-reference", type=str, required=True)

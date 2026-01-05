@@ -17,21 +17,11 @@ from somaticseq.vcf_modifier.split_vcf import (
 
 
 def run() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    parser.add_argument(
-        "-infile", "--input-vcf", type=str, help="Input VCF file", required=True
-    )
-    parser.add_argument(
-        "-snv", "--snv-out", type=str, help="Output VCF file", required=True
-    )
-    parser.add_argument(
-        "-indel", "--indel-out", type=str, help="Output VCF file", required=True
-    )
-    parser.add_argument(
-        "-ref", "--genome-reference", type=str, help="genome reference", required=True
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-infile", "--input-vcf", type=str, help="Input VCF file", required=True)
+    parser.add_argument("-snv", "--snv-out", type=str, help="Output VCF file", required=True)
+    parser.add_argument("-indel", "--indel-out", type=str, help="Output VCF file", required=True)
+    parser.add_argument("-ref", "--genome-reference", type=str, help="genome reference", required=True)
     args = parser.parse_args()
     return args
 
@@ -104,9 +94,7 @@ def convert(infile, snv_out, indel_out, genome_reference):
                     ]
                     still_infos = [
                         f"{info_variable}={info_value}"
-                        for info_variable, info_value in zip(
-                            info_to_keep, still_measures
-                        )
+                        for info_variable, info_value in zip(info_to_keep, still_measures)
                         if info_value is not False
                     ]
                     split_infos.extend(still_infos)
@@ -137,15 +125,9 @@ def convert(infile, snv_out, indel_out, genome_reference):
                         indelout.write(new_line + "\n")
                     else:
                         complex_call = genome.VCFVariantRecord.from_vcf_line(new_line)
-                        snvs_and_indels = split_complex_variants_into_snvs_and_indels(
-                            complex_call
-                        )
+                        snvs_and_indels = split_complex_variants_into_snvs_and_indels(complex_call)
                         for snv_or_indel in snvs_and_indels:
-                            if (
-                                len(snv_or_indel.refbase)
-                                == len(snv_or_indel.altbase)
-                                == 1
-                            ):
+                            if len(snv_or_indel.refbase) == len(snv_or_indel.altbase) == 1:
                                 snvout.write(snv_or_indel.to_vcf_line() + "\n")
                             else:
                                 indelout.write(snv_or_indel.to_vcf_line() + "\n")

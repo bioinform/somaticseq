@@ -82,9 +82,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
     pl_outdir = plDict[input_parameters["output_directory"]]["mount_path"]
 
     if input_parameters["inclusion_region"]:
-        selector_text = "-l {}".format(
-            plDict[input_parameters["inclusion_region"]]["mount_path"]
-        )
+        selector_text = "-l {}".format(plDict[input_parameters["inclusion_region"]]["mount_path"])
     else:
         selector_text = ""
 
@@ -133,11 +131,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write(f'> {pl_outdir}/tumor.pileup"\n\n')
 
         out.write(f"{container_line} \\\n")
-        out.write(
-            "java -Xmx{} -jar /VarScan2.3.7.jar somatic \\\n".format(
-                input_parameters["MEM"]
-            )
-        )
+        out.write("java -Xmx{} -jar /VarScan2.3.7.jar somatic \\\n".format(input_parameters["MEM"]))
         out.write(f"{mounted_outdir}/normal.pileup \\\n")
         out.write(f"{mounted_outdir}/tumor.pileup \\\n")
         out.write(
@@ -150,26 +144,14 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         )
 
         out.write(f"{container_line} \\\n")
-        out.write(
-            "java -Xmx{} -jar /VarScan2.3.7.jar processSomatic \\\n".format(
-                input_parameters["MEM"]
-            )
-        )
+        out.write("java -Xmx{} -jar /VarScan2.3.7.jar processSomatic \\\n".format(input_parameters["MEM"]))
         out.write(f"{mounted_outdir}/{outname}.snp.vcf\n\n")
 
         out.write(f"{container_line} \\\n")
-        out.write(
-            "java -Xmx{} -jar /VarScan2.3.7.jar somaticFilter \\\n".format(
-                input_parameters["MEM"]
-            )
-        )
+        out.write("java -Xmx{} -jar /VarScan2.3.7.jar somaticFilter \\\n".format(input_parameters["MEM"]))
         out.write(f"{mounted_outdir}/{outname}.snp.Somatic.hc.vcf \\\n")
         out.write(f"-indel-file {mounted_outdir}/{outname}.indel.vcf \\\n")
-        out.write(
-            "-output-file {}/{}.snp.Somatic.hc.filter.vcf\n\n".format(
-                mounted_outdir, outname
-            )
-        )
+        out.write("-output-file {}/{}.snp.Somatic.hc.filter.vcf\n\n".format(mounted_outdir, outname))
 
         out.write("rm {}/normal.pileup\n".format(input_parameters["output_directory"]))
         out.write("rm {}/tumor.pileup\n".format(input_parameters["output_directory"]))
@@ -229,9 +211,7 @@ def tumor_only(input_parameters, tech="docker"):
     pl_outdir = plDict[input_parameters["output_directory"]]["mount_path"]
 
     if input_parameters["inclusion_region"]:
-        selector_text = "-l {}".format(
-            plDict[input_parameters["inclusion_region"]]["mount_path"]
-        )
+        selector_text = "-l {}".format(plDict[input_parameters["inclusion_region"]]["mount_path"])
     else:
         selector_text = ""
 
@@ -266,11 +246,7 @@ def tumor_only(input_parameters, tech="docker"):
         out.write(f'> {pl_outdir}/tumor.pileup"\n\n')
 
         out.write(f"{container_line} bash -c \\\n")
-        out.write(
-            '"java -Xmx{} -jar /VarScan2.3.7.jar mpileup2cns \\\n'.format(
-                input_parameters["MEM"]
-            )
-        )
+        out.write('"java -Xmx{} -jar /VarScan2.3.7.jar mpileup2cns \\\n'.format(input_parameters["MEM"]))
         out.write(f"{mounted_outdir}/tumor.pileup \\\n")
         out.write(
             "--variants {} --min-var-freq {} --output-vcf 1 \\\n".format(

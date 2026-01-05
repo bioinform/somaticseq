@@ -39,10 +39,7 @@ def remove_vcf_illegal_lines(invcf, outvcf):
 
             while line_i:
                 vcf_i = genome.VCFVariantRecord.from_vcf_line(line_i)
-                if not (
-                    re.match(r"<\w+>", vcf_i.altbase)
-                    and (not vcf_i.get_info_value("END"))
-                ):
+                if not (re.match(r"<\w+>", vcf_i.altbase) and (not vcf_i.get_info_value("END"))):
                     out.write(line_i + "\n")
 
                 line_i = vcf.readline().rstrip()

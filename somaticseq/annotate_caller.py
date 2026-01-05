@@ -44,12 +44,7 @@ def countSOMATICPASS(variant_id, generic_variants):
     if variant_id in generic_variants:
         variant_i = generic_variants[variant_id]
         variant_classification = (
-            1
-            if (
-                re.search(r"\bPASS\b", variant_i.filters)
-                and variant_i.get_info_value("SOMATIC")
-            )
-            else 0
+            1 if (re.search(r"\bPASS\b", variant_i.filters) and variant_i.get_info_value("SOMATIC")) else 0
         )
     else:
         variant_classification = 0
@@ -61,12 +56,7 @@ def MuTect(variant_id, mutect_variants):
     if variant_id in mutect_variants:
         mutect_variant_i = mutect_variants[variant_id]
         mutect_classification = (
-            1
-            if (
-                mutect_variant_i.get_info_value("SOMATIC")
-                or "PASS" in mutect_variant_i.filters
-            )
-            else 0
+            1 if (mutect_variant_i.get_info_value("SOMATIC") or "PASS" in mutect_variant_i.filters) else 0
         )
         # MuTect2 has some useful information:
         nlod = mutect2_nlod(mutect_variant_i)
@@ -136,14 +126,10 @@ def JSM(variant_id, jsm_variants):
 def SomaticSniper(variant_id, sniper_variants):
     if variant_id in sniper_variants:
         sniper_variant_i = sniper_variants[variant_id]
-        sniper_classification = (
-            1 if sniper_variant_i.get_sample_value("SS", idxT) == "2" else 0
-        )
+        sniper_classification = 1 if sniper_variant_i.get_sample_value("SS", idxT) == "2" else 0
         if sniper_classification == 1:
             score_somaticsniper = sniper_variant_i.get_sample_value("SSC", idxT)
-            score_somaticsniper = (
-                int(score_somaticsniper) if score_somaticsniper else nan
-            )
+            score_somaticsniper = int(score_somaticsniper) if score_somaticsniper else nan
         else:
             score_somaticsniper = nan
 
@@ -157,9 +143,7 @@ def SomaticSniper(variant_id, sniper_variants):
 def VarDict(variant_id, vardict_variants):
     if variant_id in vardict_variants:
         vardict_variant_i = vardict_variants[variant_id]
-        if (vardict_variant_i.filters == "PASS") and (
-            "Somatic" in vardict_variant_i.info
-        ):
+        if (vardict_variant_i.filters == "PASS") and ("Somatic" in vardict_variant_i.info):
             vardict_classification = 1
         elif "Somatic" in vardict_variant_i.info:
             vardict_filters = vardict_variant_i.filters.split(";")
@@ -172,10 +156,7 @@ def VarDict(variant_id, vardict_variants):
                 or ("NM4" in vardict_filters or "NM4.25" in vardict_filters)
                 or ("pSTD" in vardict_filters)
                 or ("SN1.5" in vardict_filters)
-                or (
-                    "P0.05" in vardict_filters
-                    and float(vardict_variant_i.get_info_value("SSF")) >= 0.15
-                )
+                or ("P0.05" in vardict_filters and float(vardict_variant_i.get_info_value("SSF")) >= 0.15)
                 or (
                     ("v3" in vardict_filters or "v4" in vardict_filters)
                     and int(vardict_variant_i.get_sample_value("VD", 0)) < 3
@@ -332,12 +313,7 @@ def TNscope(variant_id, tnscope_variants):
     if variant_id in tnscope_variants:
         tnscope_variant_i = tnscope_variants[variant_id]
         tnscope_classification = (
-            1
-            if (
-                tnscope_variant_i.get_info_value("SOMATIC")
-                or "PASS" in tnscope_variant_i.filters
-            )
-            else 0
+            1 if (tnscope_variant_i.get_info_value("SOMATIC") or "PASS" in tnscope_variant_i.filters) else 0
         )
     else:
         # Not called by TNscope

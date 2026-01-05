@@ -16,18 +16,12 @@ logging.basicConfig(level=logging.INFO, format=FORMAT)
 
 
 def run() -> tuple[argparse.Namespace, dict]:
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # INPUT FILES and Global Options
     parser.add_argument("-outdir", "--output-directory", type=str, default=os.getcwd())
-    parser.add_argument(
-        "-inbam", "--in-bam", type=str, help="input bam path if already aligned"
-    )
-    parser.add_argument(
-        "-outbam", "--out-bam", type=str, help="output bam file name", required=True
-    )
+    parser.add_argument("-inbam", "--in-bam", type=str, help="input bam path if already aligned")
+    parser.add_argument("-outbam", "--out-bam", type=str, help="output bam file name", required=True)
     parser.add_argument("-nt", "--threads", type=int, default=1)
     parser.add_argument("-ref", "--genome-reference", type=str)
     parser.add_argument(
@@ -40,9 +34,7 @@ def run() -> tuple[argparse.Namespace, dict]:
 
     # Trimming
     parser.add_argument("-trim", "--run-trimming", action="store_true")
-    parser.add_argument(
-        "-fq1", "--in-fastq1s", nargs="*", type=str, help="paths of forward reads"
-    )
+    parser.add_argument("-fq1", "--in-fastq1s", nargs="*", type=str, help="paths of forward reads")
     parser.add_argument(
         "-fq2",
         "--in-fastq2s",
@@ -50,12 +42,8 @@ def run() -> tuple[argparse.Namespace, dict]:
         type=str,
         help="paths of reverse reads in paired-end sequencing",
     )
-    parser.add_argument(
-        "-fout1", "--out-fastq1-name", type=str, help="file name of forward reads"
-    )
-    parser.add_argument(
-        "-fout2", "--out-fastq2-name", type=str, help="file name of reverse reads"
-    )
+    parser.add_argument("-fout1", "--out-fastq1-name", type=str, help="file name of forward reads")
+    parser.add_argument("-fout2", "--out-fastq2-name", type=str, help="file name of reverse reads")
     parser.add_argument(
         "--trim-software",
         type=str,
@@ -66,10 +54,7 @@ def run() -> tuple[argparse.Namespace, dict]:
     parser.add_argument(
         "--split-input-fastqs",
         action="store_true",
-        help=(
-            "split input fastq files before trimming to "
-            "maximize multi-threading efficiency in trimming."
-        ),
+        help=("split input fastq files before trimming to maximize multi-threading efficiency in trimming."),
     )
 
     # Alignment
@@ -91,16 +76,11 @@ def run() -> tuple[argparse.Namespace, dict]:
         choices=("picard", "sambamba"),
     )
     parser.add_argument("--extra-picard-arguments", type=str, default="")
-    parser.add_argument(
-        "--extra-markdup-arguments", type=str, help="place holder for now", default=""
-    )
+    parser.add_argument("--extra-markdup-arguments", type=str, help="place holder for now", default="")
     parser.add_argument(
         "--parallelize-markdup",
         action="store_true",
-        help=(
-            "parallelize by splitting input bam files and "
-            "work on each independently, and then merge."
-        ),
+        help=("parallelize by splitting input bam files and work on each independently, and then merge."),
     )
 
     # Run Right Here
@@ -108,10 +88,7 @@ def run() -> tuple[argparse.Namespace, dict]:
         "-run",
         "--run-workflow",
         action="store_true",
-        help=(
-            "Execute the bash scripts locally right here. "
-            "Only works on Linux machines with modern bash shells."
-        ),
+        help=("Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells."),
     )
 
     args = parser.parse_args()
@@ -128,9 +105,7 @@ def run() -> tuple[argparse.Namespace, dict]:
 def make_workflow(args, input_parameters):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
 
-    os.makedirs(
-        os.path.join(input_parameters["output_directory"], "logs"), exist_ok=True
-    )
+    os.makedirs(os.path.join(input_parameters["output_directory"], "logs"), exist_ok=True)
 
     workflow_tasks = {
         "split_fastqs": [],
@@ -163,9 +138,7 @@ def make_workflow(args, input_parameters):
 
             out_fastq_names = [uuid.uuid4().hex for i in range(args.threads)]
             out_fastq1s = [
-                os.path.join(
-                    spread_parameters["output_directory"], out_name_i + "_R1.fastq"
-                )
+                os.path.join(spread_parameters["output_directory"], out_name_i + "_R1.fastq")
                 for out_name_i in out_fastq_names
             ]
             spread_fq1_script = spreadFastq.spread(
@@ -185,9 +158,7 @@ def make_workflow(args, input_parameters):
                 spread_parameters["script"] = f"spreadFastq_2.{timestamp}.cmd"
 
                 out_fastq2s = [
-                    os.path.join(
-                        spread_parameters["output_directory"], out_name_i + "_R2.fastq"
-                    )
+                    os.path.join(spread_parameters["output_directory"], out_name_i + "_R2.fastq")
                     for out_name_i in out_fastq_names
                 ]
                 spread_fq2_script = spreadFastq.spread(
@@ -216,9 +187,7 @@ def make_workflow(args, input_parameters):
         for i, fastq_1 in enumerate(in_fastq1s):
             trim_parameters = copy(input_parameters)
 
-            trim_parameters["threads"] = max(
-                1, int(input_parameters["threads"] / len(in_fastq1s))
-            )
+            trim_parameters["threads"] = max(1, int(input_parameters["threads"] / len(in_fastq1s)))
 
             # If the input_fastqs to trimming are created during the workflow,
             # remove them after trimming
@@ -249,9 +218,7 @@ def make_workflow(args, input_parameters):
 
             elif args.trim_software == "alientrimmer":
                 trim_parameters["MEM"] = 36
-                trimming_script = trim.alienTrimmer(
-                    trim_parameters, args.container_tech
-                )
+                trimming_script = trim.alienTrimmer(trim_parameters, args.container_tech)
 
             workflow_tasks["trim_fastqs"].append(trimming_script)
 
@@ -279,13 +246,8 @@ def make_workflow(args, input_parameters):
             mergeFastqs,
         )
 
-        fastq_1s = [
-            os.path.join(input_parameters["output_directory"], fq_i)
-            for fq_i in out_fastq_1s
-        ]
-        merged_fq1 = os.path.join(
-            input_parameters["output_directory"], input_parameters["out_fastq1_name"]
-        )
+        fastq_1s = [os.path.join(input_parameters["output_directory"], fq_i) for fq_i in out_fastq_1s]
+        merged_fq1 = os.path.join(input_parameters["output_directory"], input_parameters["out_fastq1_name"])
 
         fq1_merge_parameters = copy(input_parameters)
 
@@ -303,10 +265,7 @@ def make_workflow(args, input_parameters):
             fq2_merge_parameters = copy(input_parameters)
 
             fq2_merge_parameters["script"] = f"mergeFastq_2.{timestamp}.cmd"
-            fastq_2s = [
-                os.path.join(input_parameters["output_directory"], fq_i)
-                for fq_i in out_fastq_2s
-            ]
+            fastq_2s = [os.path.join(input_parameters["output_directory"], fq_i) for fq_i in out_fastq_2s]
             merged_fq2 = os.path.join(
                 input_parameters["output_directory"],
                 input_parameters["out_fastq2_name"],
@@ -342,18 +301,12 @@ def make_workflow(args, input_parameters):
         markdup_parameters["MEM"] = 8
 
         if args.run_alignment:
-            markdup_parameters["in_bam"] = os.path.join(
-                bwa_parameters["output_directory"], bwa_parameters["out_bam"]
-            )
+            markdup_parameters["in_bam"] = os.path.join(bwa_parameters["output_directory"], bwa_parameters["out_bam"])
         if args.parallelize_markdup:
-            markdup_parameters["threads"] = max(
-                1, math.ceil(input_parameters["threads"] / 2)
-            )
+            markdup_parameters["threads"] = max(1, math.ceil(input_parameters["threads"] / 2))
             merging_parameters = copy(markdup_parameters)
 
-            fractional_markdup_scripts, merge_markdup_script = markdup.parallel(
-                merging_parameters, args.container_tech
-            )
+            fractional_markdup_scripts, merge_markdup_script = markdup.parallel(merging_parameters, args.container_tech)
             workflow_tasks["markdup_bams"] = fractional_markdup_scripts
             workflow_tasks["merging_bams"].append(merge_markdup_script)
 
@@ -361,9 +314,7 @@ def make_workflow(args, input_parameters):
             if markdup_parameters["markdup_software"] == "picard":
                 markdup_script = markdup.picard(markdup_parameters, args.container_tech)
             elif markdup_parameters["markdup_software"] == "sambamba":
-                markdup_script = markdup.sambamba(
-                    markdup_parameters, args.container_tech
-                )
+                markdup_script = markdup.sambamba(markdup_parameters, args.container_tech)
             workflow_tasks["markdup_bams"].append(markdup_script)
 
     ########## Execute the workflow ##########
@@ -381,10 +332,7 @@ def make_workflow(args, input_parameters):
             ),
             args.threads,
         )
-        logger.info(
-            "Workflow Done. Check your results. "
-            f"You may remove the {args.threads} sub_directories."
-        )
+        logger.info(f"Workflow Done. Check your results. You may remove the {args.threads} sub_directories.")
 
     return workflow_tasks
 

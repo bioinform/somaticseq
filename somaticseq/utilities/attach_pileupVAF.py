@@ -18,9 +18,7 @@ parser = argparse.ArgumentParser(
     description="Given either a tumor-only or tumor-normal VCF file (requires SAMPLE NAME specified), and pileup file, it will attach VAF calculated from pileup file to the VCF file. The pileup file can also be streamed in.",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 )
-parser.add_argument(
-    "-myvcf", "--my-vcf-file", type=str, help="My VCF", required=True, default=None
-)
+parser.add_argument("-myvcf", "--my-vcf-file", type=str, help="My VCF", required=True, default=None)
 
 parser.add_argument(
     "-normal",
@@ -46,9 +44,7 @@ parser.add_argument(
     required=False,
     default=None,
 )
-parser.add_argument(
-    "-Tpileup", "--tumor-pileup-file", type=str, help="Tumor VCF File", required=True
-)
+parser.add_argument("-Tpileup", "--tumor-pileup-file", type=str, help="Tumor VCF File", required=True)
 parser.add_argument(
     "-fai",
     "--reference-fasta-fai",
@@ -83,9 +79,7 @@ parser.add_argument(
 )
 
 # output file
-parser.add_argument(
-    "-outfile", "--output-file", type=str, help="Output File Name", required=True
-)
+parser.add_argument("-outfile", "--output-file", type=str, help="Output File Name", required=True)
 
 args = parser.parse_args()
 
@@ -165,9 +159,7 @@ if dict_file:
 elif fai_file:
     chrom_seq = genome.faiordict2contigorder(fai_file, "fai")
 else:
-    raise Exception(
-        "I need a fai or dict file, or else I do not know the contig order."
-    )
+    raise Exception("I need a fai or dict file, or else I do not know the contig order.")
 
 
 PATTERN_CHROM = r"|".join(chrom_seq)
@@ -209,9 +201,7 @@ while line_i:
     # Line up the order of reading the two files the same order as the sample columns in my_vcf:
     samples_collect = []
     for SM_idx, current_vcf in enumerate(external_pileups[0]):
-        latest_pileup_run = genome.catchup(
-            my_coordinate, external_pileups[1][SM_idx], current_vcf, chrom_seq
-        )
+        latest_pileup_run = genome.catchup(my_coordinate, external_pileups[1][SM_idx], current_vcf, chrom_seq)
         latest_sample = pileup.Pileup_line(latest_pileup_run[1])
 
         sample_append = []
@@ -269,9 +259,7 @@ while line_i:
             ### If user wants VAF ###
             if args.pileup_variant_allele_frequency:
                 try:
-                    pl_vaf = (alt_for + alt_rev) / (
-                        alt_for + alt_rev + ref_for + ref_rev
-                    )
+                    pl_vaf = (alt_for + alt_rev) / (alt_for + alt_rev + ref_for + ref_rev)
                 except ZeroDivisionError:
                     pl_vaf = 0
 
@@ -306,9 +294,7 @@ while line_i:
         # But the Nvcf is not supplied, modified the NORMAL column to reflect change in FORMAT column:
         if not Npileup:
             normal_items = list(vcf_i.get_sample_item(idx=idxN, out_type="l")[1])
-            extra_normal_items = [
-                "." if i != "plDP4" else ".,.,.,." for i in format_append
-            ]
+            extra_normal_items = ["." if i != "plDP4" else ".,.,.,." for i in format_append]
             normal_out = ":".join(extra_normal_items)
             samples_collect.append(normal_out)
 

@@ -50,9 +50,7 @@ with genome.open_textfile(vcf_in_fn) as vcfin, open(vcf_out_fn, "w") as vcfout:
         if line_in.startswith("##SomaticSeq="):
             line_out = line_in + "-SEQC2"
 
-        elif line_in.startswith("##INFO=<ID=NUM_TOOLS") or line_in.startswith(
-            f"##INFO=<ID={caller_string}"
-        ):
+        elif line_in.startswith("##INFO=<ID=NUM_TOOLS") or line_in.startswith(f"##INFO=<ID={caller_string}"):
             line_out = re.sub("##INFO=", "##FORMAT=", line_in)
 
         else:
@@ -82,10 +80,7 @@ with genome.open_textfile(vcf_in_fn) as vcfin, open(vcf_out_fn, "w") as vcfout:
         # New INFO
         new_info = []
         for info_item in vcf_line_in.get_info_items():
-            if not (
-                info_item.startswith("NUM_TOOLS=")
-                or info_item.startswith(caller_string)
-            ):
+            if not (info_item.startswith("NUM_TOOLS=") or info_item.startswith(caller_string)):
                 new_info.append(info_item)
 
         if new_info == []:
@@ -95,9 +90,7 @@ with genome.open_textfile(vcf_in_fn) as vcfin, open(vcf_out_fn, "w") as vcfout:
 
         # FORMAT:
         if somaticseq_trained:
-            new_format_field = vcf_line_in.field + ":{}:NUM_TOOLS:SCORE".format(
-                caller_string
-            )
+            new_format_field = vcf_line_in.field + ":{}:NUM_TOOLS:SCORE".format(caller_string)
         else:
             new_format_field = vcf_line_in.field + f":{caller_string}:NUM_TOOLS"
 
@@ -108,18 +101,12 @@ with genome.open_textfile(vcf_in_fn) as vcfin, open(vcf_out_fn, "w") as vcfout:
         tumor_sample_field = vcf_line_in.vcf_line.split("\t")[tumor_column]
 
         if somaticseq_trained:
-            new_tumor_field = tumor_sample_field + ":{}:{}:{}".format(
-                caller_classification, num_tools, score
-            )
+            new_tumor_field = tumor_sample_field + ":{}:{}:{}".format(caller_classification, num_tools, score)
         else:
-            new_tumor_field = tumor_sample_field + ":{}:{}".format(
-                caller_classification, num_tools
-            )
+            new_tumor_field = tumor_sample_field + ":{}:{}".format(caller_classification, num_tools)
 
         if normal_idx == 0:
-            combined_samples = (
-                vcf_line_in.vcf_line.split("\t")[normal_column] + "\t" + new_tumor_field
-            )
+            combined_samples = vcf_line_in.vcf_line.split("\t")[normal_column] + "\t" + new_tumor_field
         else:
             combined_samples = new_tumor_field
 

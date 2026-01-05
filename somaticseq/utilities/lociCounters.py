@@ -5,9 +5,7 @@ import re
 import sys
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument(
-    "-fai", "--fai-file", type=str, help=".fa.fai file", required=True, default=None
-)
+parser.add_argument("-fai", "--fai-file", type=str, help=".fa.fai file", required=True, default=None)
 parser.add_argument(
     "-beds",
     "--bed-files",
@@ -156,9 +154,7 @@ def countIntersectedRegions(original_boundry, original_counter, additional_regio
             if counter_i is not None:
                 newCounter.append(counter_i + 1)
 
-    consolidatedBoundries, consolidatedCounters = collapseIdenticalBoundries(
-        newBoundry, newCounter
-    )
+    consolidatedBoundries, consolidatedCounters = collapseIdenticalBoundries(newBoundry, newCounter)
 
     return consolidatedBoundries, consolidatedCounters
 

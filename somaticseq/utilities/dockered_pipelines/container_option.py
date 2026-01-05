@@ -50,7 +50,6 @@ def container_params(
     extra_args: str = "",
     singularity_image_loc: str = "docker://",
 ) -> tuple[str, dict[str, dict[str, str]]]:
-
     file_paths = [Path(i) for i in files]
     file_names = [i.name for i in file_paths]
     file_dirs = [i.parent for i in file_paths]
@@ -77,10 +76,7 @@ def container_params(
             container_dir = file_dictionary[file_i]["mount_dir"]
             MOUNT_STRING = MOUNT_STRING + f" -v {sys_dir}:{container_dir}"
 
-        container_string = (
-            f"docker run {MOUNT_STRING} -u $(id -u):$(id -g) "
-            f"--rm {extra_args} {container_image}"
-        )
+        container_string = f"docker run {MOUNT_STRING} -u $(id -u):$(id -g) --rm {extra_args} {container_image}"
 
     elif tech == "singularity":
         MOUNT_STRING = ""
@@ -90,8 +86,7 @@ def container_params(
             MOUNT_STRING = MOUNT_STRING + f" --bind {sys_dir}:{container_dir}"
 
         container_string = (
-            "singularity exec --cleanenv "
-            f"{MOUNT_STRING} {extra_args} {singularity_image_loc}{container_image}"
+            f"singularity exec --cleanenv {MOUNT_STRING} {extra_args} {singularity_image_loc}{container_image}"
         )
 
     else:

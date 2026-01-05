@@ -9,17 +9,11 @@ import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 
 def run():
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Variant Call Type, i.e., snp or indel
-    parser.add_argument(
-        "-infile", "--input-vcf", type=str, help="Input VCF file", required=True
-    )
-    parser.add_argument(
-        "-snv", "--output-snv", type=str, help="Output SNV VCF file", required=True
-    )
+    parser.add_argument("-infile", "--input-vcf", type=str, help="Input VCF file", required=True)
+    parser.add_argument("-snv", "--output-snv", type=str, help="Output SNV VCF file", required=True)
     parser.add_argument(
         "-indel",
         "--output-indel",
@@ -97,9 +91,7 @@ def convert(infile, snv_out, indel_out):
 
                     still_infos = [
                         f"{info_variable}={info_value}"
-                        for info_variable, info_value in zip(
-                            info_to_keep, still_measures
-                        )
+                        for info_variable, info_value in zip(info_to_keep, still_measures)
                         if info_value is not False
                     ]
 

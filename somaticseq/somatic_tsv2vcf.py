@@ -15,9 +15,7 @@ time_string = datetime.now().isoformat(sep="_", timespec="seconds")
 
 def run() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description=(
-            "This is a SomaticSeq subroutine SomaticSeq TSV file into VCF file."
-        ),
+        description=("This is a SomaticSeq subroutine SomaticSeq TSV file into VCF file."),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("-tsv", "--tsv-in", type=str, help="TSV in", required=True)
@@ -104,17 +102,12 @@ def run() -> argparse.Namespace:
         "-phred",
         "--phred-scale",
         action="store_true",
-        help=(
-            "Flag it to print out Phred scale QUAL "
-            "(proper VCF format but more annoying to filter)"
-        ),
+        help=("Flag it to print out Phred scale QUAL (proper VCF format but more annoying to filter)"),
         required=False,
     )
 
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument(
-        "-single", "--single-sample", action="store_true", help="Tumor-only mode"
-    )
+    mode.add_argument("-single", "--single-sample", action="store_true", help="Tumor-only mode")
     mode.add_argument(
         "-paired",
         "--paired-samples",
@@ -127,9 +120,7 @@ def run() -> argparse.Namespace:
     return args
 
 
-def dp4_to_gt(
-    ref_for, ref_rev, alt_for, alt_rev, hom_threshold=0.85, het_threshold=0.01
-):
+def dp4_to_gt(ref_for, ref_rev, alt_for, alt_rev, hom_threshold=0.85, het_threshold=0.01):
     try:
         ref_for = int(ref_for)
     except ValueError:
@@ -246,9 +237,7 @@ def tsv2vcf(
             elif "if_Platypus" == item:
                 toolcode2index["Y"] = n
             elif re.match(r"if_Caller_[0-9]+$", item):
-                single_char_caller_code = re.match(
-                    r"if_Caller_([0-9]+$)", item
-                ).groups()[0]
+                single_char_caller_code = re.match(r"if_Caller_([0-9]+$)", item).groups()[0]
                 toolcode2index[single_char_caller_code] = n
 
         ALT = tsv_header.index("ALT")
@@ -325,24 +314,18 @@ def tsv2vcf(
         vcf.write(
             '##FILTER=<ID=REJECT,Description="Rejected as a confident somatic mutation with ONCOSCORE below 2">\n'
         )
-        vcf.write(
-            '##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Somatic mutation in primary">\n'
-        )
+        vcf.write('##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="Somatic mutation in primary">\n')
         vcf.write(
             '##INFO=<ID={COMBO},Number={NUM},Type=Integer,Description="Calling decision of the {NUM} algorithms: {TOOL_STRING}">\n'.format(
                 COMBO=tool_combo_key, NUM=total_num_tools, TOOL_STRING=tool_string
             )
         )
-        vcf.write(
-            '##INFO=<ID=NUM_TOOLS,Number=1,Type=Float,Description="Number of tools called it Somatic">\n'
-        )
+        vcf.write('##INFO=<ID=NUM_TOOLS,Number=1,Type=Float,Description="Number of tools called it Somatic">\n')
         vcf.write(
             '##INFO=<ID=LC,Number=1,Type=Float,Description="Linguistic sequence complexity in Phred scale between 0 to 40. Higher value means higher complexity.">\n'
         )
         if single_mode:
-            vcf.write(
-                '##INFO=<ID=AF,Number=1,Type=Float,Description="Variant Allele Fraction">\n'
-            )
+            vcf.write('##INFO=<ID=AF,Number=1,Type=Float,Description="Variant Allele Fraction">\n')
         vcf.write('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
         vcf.write(
             '##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="ref forward, ref reverse, alt forward, alt reverse">\n'
@@ -350,48 +333,28 @@ def tsv2vcf(
         vcf.write(
             '##FORMAT=<ID=CD4,Number=4,Type=Integer,Description="ref concordant, ref discordant, alt concordant, alt discordant">\n'
         )
-        vcf.write(
-            '##FORMAT=<ID=refMQ,Number=1,Type=Float,Description="average mapping score for reference reads">\n'
-        )
-        vcf.write(
-            '##FORMAT=<ID=altMQ,Number=1,Type=Float,Description="average mapping score for alternate reads">\n'
-        )
+        vcf.write('##FORMAT=<ID=refMQ,Number=1,Type=Float,Description="average mapping score for reference reads">\n')
+        vcf.write('##FORMAT=<ID=altMQ,Number=1,Type=Float,Description="average mapping score for alternate reads">\n')
         vcf.write(
             '##FORMAT=<ID=refBQ,Number=1,Type=Float,Description="average base quality score for reference reads">\n'
         )
         vcf.write(
             '##FORMAT=<ID=altBQ,Number=1,Type=Float,Description="average base quality score for alternate reads">\n'
         )
-        vcf.write(
-            '##FORMAT=<ID=refNM,Number=1,Type=Float,Description="average edit distance for reference reads">\n'
-        )
-        vcf.write(
-            '##FORMAT=<ID=altNM,Number=1,Type=Float,Description="average edit distance for alternate reads">\n'
-        )
-        vcf.write(
-            '##FORMAT=<ID=fetSB,Number=1,Type=Float,Description="Strand bias FET">\n'
-        )
-        vcf.write(
-            '##FORMAT=<ID=fetCD,Number=1,Type=Float,Description="Concordance FET">\n'
-        )
+        vcf.write('##FORMAT=<ID=refNM,Number=1,Type=Float,Description="average edit distance for reference reads">\n')
+        vcf.write('##FORMAT=<ID=altNM,Number=1,Type=Float,Description="average edit distance for alternate reads">\n')
+        vcf.write('##FORMAT=<ID=fetSB,Number=1,Type=Float,Description="Strand bias FET">\n')
+        vcf.write('##FORMAT=<ID=fetCD,Number=1,Type=Float,Description="Concordance FET">\n')
         vcf.write(
             '##FORMAT=<ID=uMQ,Number=1,Type=Float,Description="p of MannWhitneyU test of mapping quality: p close to 0 means ALT MQs are significantly less than reference MQs, and p close to 1 means ALT MQs are significantly greater than reference MQs.">\n'
         )
         vcf.write(
             '##FORMAT=<ID=uBQ,Number=1,Type=Float,Description="p of MannWhitneyU test of base quality: p close to 0 means ALT BQs are significantly less than reference BQs, and p close to 1 means ALT BQs are significantly greater than reference BQs.">\n'
         )
-        vcf.write(
-            '##FORMAT=<ID=MQ0,Number=1,Type=Integer,Description="Number of reads with mapping quality of 0">\n'
-        )
-        vcf.write(
-            '##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">\n'
-        )
+        vcf.write('##FORMAT=<ID=MQ0,Number=1,Type=Integer,Description="Number of reads with mapping quality of 0">\n')
+        vcf.write('##FORMAT=<ID=VAF,Number=1,Type=Float,Description="Variant Allele Frequency">\n')
         if single_mode:
-            vcf.write(
-                "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\n".format(
-                    tumor_sample_name
-                )
-            )
+            vcf.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\n".format(tumor_sample_name))
         elif paired_mode:
             vcf.write(
                 "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{}\t{}\n".format(
@@ -440,11 +403,7 @@ def tsv2vcf(
                 try:
                     num_tools = num_tools + int(if_Tool)
                 except ValueError:
-                    raise Exception(
-                        "{}={} could not be added up as num_tools".format(
-                            tool_i, if_Tool
-                        )
-                    )
+                    raise Exception("{}={} could not be added up as num_tools".format(tool_i, if_Tool))
 
             tool_combo_values = ",".join(tool_combo_values)
             info_string = "{COMBO}={TOOL_COMBO_VALUES};NUM_TOOLS={NUM_TOOLS}".format(
@@ -455,81 +414,35 @@ def tsv2vcf(
 
             # Make backward compatible for tsv files without LC
             try:
-                seq_complexity = (
-                    "%.1f" % float(tsv_item[LC]) if tsv_item[LC] != "nan" else "."
-                )
+                seq_complexity = "%.1f" % float(tsv_item[LC]) if tsv_item[LC] != "nan" else "."
                 info_string = info_string + f";LC={seq_complexity}"
             except NameError:
                 pass
 
             # NORMAL
             if not single_mode:
-                n_ref_mq = (
-                    tsv_item[nBAM_REF_MQ] if tsv_item[nBAM_REF_MQ] != "nan" else "."
-                )
-                n_alt_mq = (
-                    tsv_item[nBAM_ALT_MQ] if tsv_item[nBAM_ALT_MQ] != "nan" else "."
-                )
-                n_ref_bq = (
-                    tsv_item[nBAM_REF_BQ] if tsv_item[nBAM_REF_BQ] != "nan" else "."
-                )
-                n_alt_bq = (
-                    tsv_item[nBAM_ALT_BQ] if tsv_item[nBAM_ALT_BQ] != "nan" else "."
-                )
-                n_ref_nm = (
-                    tsv_item[nBAM_REF_NM] if tsv_item[nBAM_REF_NM] != "nan" else "."
-                )
-                n_alt_nm = (
-                    tsv_item[nBAM_ALT_NM] if tsv_item[nBAM_ALT_NM] != "nan" else "."
-                )
+                n_ref_mq = tsv_item[nBAM_REF_MQ] if tsv_item[nBAM_REF_MQ] != "nan" else "."
+                n_alt_mq = tsv_item[nBAM_ALT_MQ] if tsv_item[nBAM_ALT_MQ] != "nan" else "."
+                n_ref_bq = tsv_item[nBAM_REF_BQ] if tsv_item[nBAM_REF_BQ] != "nan" else "."
+                n_alt_bq = tsv_item[nBAM_ALT_BQ] if tsv_item[nBAM_ALT_BQ] != "nan" else "."
+                n_ref_nm = tsv_item[nBAM_REF_NM] if tsv_item[nBAM_REF_NM] != "nan" else "."
+                n_alt_nm = tsv_item[nBAM_ALT_NM] if tsv_item[nBAM_ALT_NM] != "nan" else "."
                 n_MQ0 = tsv_item[nBAM_MQ0] if tsv_item[nBAM_MQ0] != "nan" else "."
 
-                n_sb = (
-                    tsv_item[nBAM_StrandBias_FET]
-                    if tsv_item[nBAM_StrandBias_FET] != "nan"
-                    else "."
-                )
-                n_cd = (
-                    tsv_item[nBAM_Concordance_FET]
-                    if tsv_item[nBAM_Concordance_FET] != "nan"
-                    else "."
-                )
-                n_bqb = (
-                    tsv_item[nBAM_p_MannWhitneyU_BQ]
-                    if tsv_item[nBAM_p_MannWhitneyU_BQ] != "nan"
-                    else "."
-                )
-                n_mqb = (
-                    tsv_item[nBAM_p_MannWhitneyU_MQ]
-                    if tsv_item[nBAM_p_MannWhitneyU_MQ] != "nan"
-                    else "."
-                )
+                n_sb = tsv_item[nBAM_StrandBias_FET] if tsv_item[nBAM_StrandBias_FET] != "nan" else "."
+                n_cd = tsv_item[nBAM_Concordance_FET] if tsv_item[nBAM_Concordance_FET] != "nan" else "."
+                n_bqb = tsv_item[nBAM_p_MannWhitneyU_BQ] if tsv_item[nBAM_p_MannWhitneyU_BQ] != "nan" else "."
+                n_mqb = tsv_item[nBAM_p_MannWhitneyU_MQ] if tsv_item[nBAM_p_MannWhitneyU_MQ] != "nan" else "."
 
                 n_ref_for = tsv_item[N_REF_FOR] if tsv_item[N_REF_FOR] != "nan" else "0"
                 n_ref_rev = tsv_item[N_REF_REV] if tsv_item[N_REF_REV] != "nan" else "0"
                 n_alt_for = tsv_item[N_ALT_FOR] if tsv_item[N_ALT_FOR] != "nan" else "0"
                 n_alt_rev = tsv_item[N_ALT_REV] if tsv_item[N_ALT_REV] != "nan" else "0"
 
-                n_ref_con = (
-                    tsv_item[nBAM_REF_Concordant]
-                    if tsv_item[nBAM_REF_Concordant] != "nan"
-                    else "0"
-                )
-                n_ref_dis = (
-                    tsv_item[nBAM_REF_Discordant]
-                    if tsv_item[nBAM_REF_Discordant] != "nan"
-                    else "0"
-                )
-                n_alt_con = (
-                    tsv_item[nBAM_ALT_Concordant]
-                    if tsv_item[nBAM_ALT_Concordant] != "nan"
-                    else "0"
-                )
-                n_alt_dis = (
-                    tsv_item[nBAM_ALT_Concordant]
-                    if tsv_item[nBAM_ALT_Concordant] != "nan"
-                    else "0"
-                )
+                n_ref_con = tsv_item[nBAM_REF_Concordant] if tsv_item[nBAM_REF_Concordant] != "nan" else "0"
+                n_ref_dis = tsv_item[nBAM_REF_Discordant] if tsv_item[nBAM_REF_Discordant] != "nan" else "0"
+                n_alt_con = tsv_item[nBAM_ALT_Concordant] if tsv_item[nBAM_ALT_Concordant] != "nan" else "0"
+                n_alt_dis = tsv_item[nBAM_ALT_Concordant] if tsv_item[nBAM_ALT_Concordant] != "nan" else "0"
 
                 # DP4toGT:
                 gt = dp4_to_gt(
@@ -547,10 +460,7 @@ def tsv2vcf(
 
                 try:
                     vaf = (int(n_alt_for) + int(n_alt_rev)) / (
-                        int(n_alt_for)
-                        + int(n_alt_rev)
-                        + int(n_ref_for)
-                        + int(n_ref_rev)
+                        int(n_alt_for) + int(n_alt_rev) + int(n_ref_for) + int(n_ref_rev)
                     )
                 except ZeroDivisionError:
                     vaf = 0
@@ -583,57 +493,23 @@ def tsv2vcf(
             t_alt_nm = tsv_item[tBAM_ALT_NM] if tsv_item[tBAM_ALT_NM] != "nan" else "."
             t_MQ0 = tsv_item[tBAM_MQ0] if tsv_item[tBAM_MQ0] != "nan" else "."
 
-            t_sb = (
-                tsv_item[tBAM_StrandBias_FET]
-                if tsv_item[tBAM_StrandBias_FET] != "nan"
-                else "."
-            )
-            t_cd = (
-                tsv_item[tBAM_Concordance_FET]
-                if tsv_item[tBAM_Concordance_FET] != "nan"
-                else "."
-            )
-            t_bqb = (
-                tsv_item[tBAM_p_MannWhitneyU_BQ]
-                if tsv_item[tBAM_p_MannWhitneyU_BQ] != "nan"
-                else "."
-            )
-            t_mqb = (
-                tsv_item[tBAM_p_MannWhitneyU_MQ]
-                if tsv_item[tBAM_p_MannWhitneyU_MQ] != "nan"
-                else "."
-            )
+            t_sb = tsv_item[tBAM_StrandBias_FET] if tsv_item[tBAM_StrandBias_FET] != "nan" else "."
+            t_cd = tsv_item[tBAM_Concordance_FET] if tsv_item[tBAM_Concordance_FET] != "nan" else "."
+            t_bqb = tsv_item[tBAM_p_MannWhitneyU_BQ] if tsv_item[tBAM_p_MannWhitneyU_BQ] != "nan" else "."
+            t_mqb = tsv_item[tBAM_p_MannWhitneyU_MQ] if tsv_item[tBAM_p_MannWhitneyU_MQ] != "nan" else "."
 
             t_ref_for = tsv_item[T_REF_FOR] if tsv_item[T_REF_FOR] != "nan" else "0"
             t_ref_rev = tsv_item[T_REF_REV] if tsv_item[T_REF_REV] != "nan" else "0"
             t_alt_for = tsv_item[T_ALT_FOR] if tsv_item[T_ALT_FOR] != "nan" else "0"
             t_alt_rev = tsv_item[T_ALT_REV] if tsv_item[T_ALT_REV] != "nan" else "0"
 
-            t_ref_con = (
-                tsv_item[tBAM_REF_Concordant]
-                if tsv_item[tBAM_REF_Concordant] != "nan"
-                else "0"
-            )
-            t_ref_dis = (
-                tsv_item[tBAM_REF_Discordant]
-                if tsv_item[tBAM_REF_Discordant] != "nan"
-                else "0"
-            )
-            t_alt_con = (
-                tsv_item[tBAM_ALT_Concordant]
-                if tsv_item[tBAM_ALT_Concordant] != "nan"
-                else "0"
-            )
-            t_alt_dis = (
-                tsv_item[tBAM_ALT_Discordant]
-                if tsv_item[tBAM_ALT_Discordant] != "nan"
-                else "0"
-            )
+            t_ref_con = tsv_item[tBAM_REF_Concordant] if tsv_item[tBAM_REF_Concordant] != "nan" else "0"
+            t_ref_dis = tsv_item[tBAM_REF_Discordant] if tsv_item[tBAM_REF_Discordant] != "nan" else "0"
+            t_alt_con = tsv_item[tBAM_ALT_Concordant] if tsv_item[tBAM_ALT_Concordant] != "nan" else "0"
+            t_alt_dis = tsv_item[tBAM_ALT_Discordant] if tsv_item[tBAM_ALT_Discordant] != "nan" else "0"
 
             # DP4toGT:
-            gt = dp4_to_gt(
-                t_ref_for, t_ref_rev, t_alt_for, t_alt_rev, hom_threshold, het_threshold
-            )
+            gt = dp4_to_gt(t_ref_for, t_ref_rev, t_alt_for, t_alt_rev, hom_threshold, het_threshold)
 
             # 4-number strings:
             dp4_string = ",".join((t_ref_for, t_ref_rev, t_alt_for, t_alt_rev))
@@ -676,9 +552,7 @@ def tsv2vcf(
                 scaled_score = 0
 
             # PASS
-            if score >= pass_score or (
-                score is nan and num_tools > 0.5 * total_num_tools
-            ):
+            if score >= pass_score or (score is nan and num_tools > 0.5 * total_num_tools):
                 vcf_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
                     tsv_item[CHROM],
                     tsv_item[POS],
@@ -694,20 +568,12 @@ def tsv2vcf(
                 if single_mode:
                     vcf_line = vcf_line + "\t" + tumor_sample_string
                 elif paired_mode:
-                    vcf_line = (
-                        vcf_line
-                        + "\t"
-                        + normal_sample_string
-                        + "\t"
-                        + tumor_sample_string
-                    )
+                    vcf_line = vcf_line + "\t" + normal_sample_string + "\t" + tumor_sample_string
 
                 vcf.write(vcf_line + "\n")
 
             # Low Qual
-            elif score >= lowqual_score or (
-                score is nan and num_tools >= 1 and num_tools >= 0.33 * total_num_tools
-            ):
+            elif score >= lowqual_score or (score is nan and num_tools >= 1 and num_tools >= 0.33 * total_num_tools):
                 vcf_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
                     tsv_item[CHROM],
                     tsv_item[POS],
@@ -723,13 +589,7 @@ def tsv2vcf(
                 if single_mode:
                     vcf_line = vcf_line + "\t" + tumor_sample_string
                 elif paired_mode:
-                    vcf_line = (
-                        vcf_line
-                        + "\t"
-                        + normal_sample_string
-                        + "\t"
-                        + tumor_sample_string
-                    )
+                    vcf_line = vcf_line + "\t" + normal_sample_string + "\t" + tumor_sample_string
 
                 vcf.write(vcf_line + "\n")
 
@@ -750,13 +610,7 @@ def tsv2vcf(
                 if single_mode:
                     vcf_line = vcf_line + "\t" + tumor_sample_string
                 elif paired_mode:
-                    vcf_line = (
-                        vcf_line
-                        + "\t"
-                        + normal_sample_string
-                        + "\t"
-                        + tumor_sample_string
-                    )
+                    vcf_line = vcf_line + "\t" + normal_sample_string + "\t" + tumor_sample_string
 
                 vcf.write(vcf_line + "\n")
 

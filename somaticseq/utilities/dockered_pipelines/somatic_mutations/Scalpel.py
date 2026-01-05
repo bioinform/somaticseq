@@ -62,18 +62,12 @@ def tumor_normal(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
-        "mount_path"
-    ]
+    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]]["mount_path"]
     mounted_tumor_bam = file_dictionary[input_parameters["tumor_bam"]]["mount_path"]
     mounted_normal_bam = file_dictionary[input_parameters["normal_bam"]]["mount_path"]
     mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
-    mounted_reference_dict = file_dictionary[input_parameters["reference_dict"]][
-        "mount_path"
-    ]
-    mounted_inclusion = file_dictionary[input_parameters["inclusion_region"]][
-        "mount_path"
-    ]
+    mounted_reference_dict = file_dictionary[input_parameters["reference_dict"]]["mount_path"]
+    mounted_inclusion = file_dictionary[input_parameters["inclusion_region"]]["mount_path"]
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
@@ -110,9 +104,7 @@ def tumor_normal(input_parameters, tech="docker"):
 
         out.write(f"{container_line} bash -c \\\n")
         out.write(
-            '"cat {}/scalpel/scalpel.vcf | /opt/vcfsorter.pl {} - \\\n'.format(
-                mounted_outdir, mounted_reference_dict
-            )
+            '"cat {}/scalpel/scalpel.vcf | /opt/vcfsorter.pl {} - \\\n'.format(mounted_outdir, mounted_reference_dict)
         )
         out.write('> {}/{}"\n'.format(mounted_outdir, input_parameters["outfile"]))
 
@@ -157,17 +149,11 @@ def tumor_only(input_parameters, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
-        "mount_path"
-    ]
+    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]]["mount_path"]
     mounted_tumor_bam = file_dictionary[input_parameters["bam"]]["mount_path"]
     mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
-    mounted_reference_dict = file_dictionary[input_parameters["reference_dict"]][
-        "mount_path"
-    ]
-    mounted_inclusion = file_dictionary[input_parameters["inclusion_region"]][
-        "mount_path"
-    ]
+    mounted_reference_dict = file_dictionary[input_parameters["reference_dict"]]["mount_path"]
+    mounted_inclusion = file_dictionary[input_parameters["inclusion_region"]]["mount_path"]
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
@@ -200,9 +186,7 @@ def tumor_only(input_parameters, tech="docker"):
 
         out.write(f"{container_line} bash -c \\\n")
         out.write(
-            '"cat {}/scalpel/scalpel.vcf | /opt/vcfsorter.pl {} - \\\n'.format(
-                mounted_outdir, mounted_reference_dict
-            )
+            '"cat {}/scalpel/scalpel.vcf | /opt/vcfsorter.pl {} - \\\n'.format(mounted_outdir, mounted_reference_dict)
         )
         out.write('> {}/{}"\n'.format(mounted_outdir, input_parameters["outfile"]))
 

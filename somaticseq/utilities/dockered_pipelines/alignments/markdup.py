@@ -46,12 +46,8 @@ def split_regions(input_parameters):
 
     tempdir = os.path.join(TMPDIR, uuid.uuid4().hex)
     os.makedirs(tempdir, exist_ok=True)
-    bed = split_bed.fai2bed(
-        fai, os.path.join(input_parameters["output_directory"], "genome.bed")
-    )
-    writtenBeds = split_bed.split(
-        bed, os.path.join(tempdir, "th.bed"), input_parameters["threads"]
-    )
+    bed = split_bed.fai2bed(fai, os.path.join(input_parameters["output_directory"], "genome.bed"))
+    writtenBeds = split_bed.split(bed, os.path.join(tempdir, "th.bed"), input_parameters["threads"])
 
     return writtenBeds
 
@@ -103,16 +99,10 @@ def picard(input_parameters, tech="docker"):
             'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n'
         )  # Do not change this: fractional uses this to end the copying.
 
-        out.write(
-            "mkdir -p {}/{}\n\n".format(input_parameters["output_directory"], tempdir)
-        )
+        out.write("mkdir -p {}/{}\n\n".format(input_parameters["output_directory"], tempdir))
 
         out.write(f"{markdup_line} \\\n")
-        out.write(
-            "java -Xmx{}G -jar /opt/picard.jar MarkDuplicatesWithMateCigar \\\n".format(
-                input_parameters["MEM"]
-            )
-        )
+        out.write("java -Xmx{}G -jar /opt/picard.jar MarkDuplicatesWithMateCigar \\\n".format(input_parameters["MEM"]))
         out.write(f"I={mounted_inbam} \\\n")
         out.write(
             "M={}/{} \\\n".format(
@@ -120,8 +110,7 @@ def picard(input_parameters, tech="docker"):
                 re.sub(
                     r"\.(bam|cram)",
                     "",
-                    file_dictionary[input_parameters["in_bam"]]["filename"]
-                    + ".markdup",
+                    file_dictionary[input_parameters["in_bam"]]["filename"] + ".markdup",
                 ),
             )
         )
@@ -192,9 +181,7 @@ def sambamba(input_parameters, tech="docker"):
             'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n'
         )  # Do not change this: fractional uses this to end the copying.
 
-        out.write(
-            "mkdir -p {}/{}\n\n".format(input_parameters["output_directory"], tempdir)
-        )
+        out.write("mkdir -p {}/{}\n\n".format(input_parameters["output_directory"], tempdir))
 
         out.write(f"{markdup_line} \\\n")
         out.write(
@@ -319,16 +306,12 @@ def parallel(input_parameters, tech="docker"):
         new_bed_i = os.path.join(subdir_i, bed_name)
         move(bed_i, new_bed_i)
 
-        fractional_outfile, fractional_bam = fractional(
-            new_bed_i, input_parameters, tech
-        )
+        fractional_outfile, fractional_bam = fractional(new_bed_i, input_parameters, tech)
 
         fractional_outfiles.append(fractional_outfile)
         fractional_bams.append(fractional_bam)
 
-    out_markduped_bam = os.path.join(
-        input_parameters["output_directory"], input_parameters["out_bam"]
-    )
+    out_markduped_bam = os.path.join(input_parameters["output_directory"], input_parameters["out_bam"])
 
     merging_parameters = copy(input_parameters)
     merging_parameters["script"] = f"mergeBam.{timestamp}.cmd"
@@ -354,18 +337,14 @@ def parallel(input_parameters, tech="docker"):
 
 
 def run():
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # INPUT FILES and Global Options
     parser.add_argument("-outdir", "--output-directory", type=str, default=os.getcwd())
     parser.add_argument("-inbam", "--in-bam", type=str, required=True)
     parser.add_argument("-outbam", "--out-bam", type=str, required=True)
     parser.add_argument("-nt", "--threads", type=int, default=1)
-    parser.add_argument(
-        "-ref", "--genome-reference", type=str, help="required if threads>1"
-    )
+    parser.add_argument("-ref", "--genome-reference", type=str, help="required if threads>1")
     parser.add_argument("-extras", "--extra-picard-arguments", type=str, default="")
     parser.add_argument(
         "-tech",

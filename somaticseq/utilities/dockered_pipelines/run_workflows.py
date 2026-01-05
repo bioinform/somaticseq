@@ -38,11 +38,7 @@ def run_script(bash_script: str, shell: str = "bash") -> int:
     end_time = datetime.now()
     run_time = end_time - start_time
     time_line = seconds_to_readable(run_time.total_seconds())
-    logger.info(
-        "FINISHED RUNNING {} in {} with an exit code of {}.".format(
-            bash_script, time_line, return_code
-        )
-    )
+    logger.info("FINISHED RUNNING {} in {} with an exit code of {}.".format(bash_script, time_line, return_code))
     return return_code
 
 
@@ -74,9 +70,7 @@ def cumsum(num_in_each_list: list[int]) -> list[int]:
     return summed_list[1:]
 
 
-def partition_list_to_lists(
-    super_list: list[Any], num_in_each_list: list[int]
-) -> list[list[Any]]:
+def partition_list_to_lists(super_list: list[Any], num_in_each_list: list[int]) -> list[list[Any]]:
     """
     Given a list, will partition it into multiple lists according to
     num_in_each_list, e.g.,
@@ -91,9 +85,7 @@ def partition_list_to_lists(
         list of list: e.g., [ [1, 2, 3], [4, 5, 6, 7, 8, 9], [10] ]
     """
     if sum(num_in_each_list) != len(super_list):
-        raise ValueError(
-            "The sum(num_in_each_list) is expected to equal len(super_list)."
-        )
+        raise ValueError("The sum(num_in_each_list) is expected to equal len(super_list).")
     num_start = cumsum(num_in_each_list)
     num_start.insert(0, 0)
     num_start = num_start[:-1]
@@ -138,10 +130,7 @@ def run() -> argparse.Namespace:
         "-sh",
         "--shell",
         default="bash",
-        help=(
-            "The command to execute the script. "
-            "Default is bash, but can also be sh, python, Rscript, etc."
-        ),
+        help=("The command to execute the script. Default is bash, but can also be sh, python, Rscript, etc."),
         type=str,
     )
     args = parser.parse_args()
@@ -156,9 +145,7 @@ def main() -> None:
     args = run()
 
     if args.partition_numbering:
-        list_of_workflows = partition_list_to_lists(
-            args.list_of_scripts, args.partition_numbering
-        )
+        list_of_workflows = partition_list_to_lists(args.list_of_scripts, args.partition_numbering)
         run_workflows(list_of_workflows, args.threads, args.shell)
 
     else:

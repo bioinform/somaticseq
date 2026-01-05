@@ -22,9 +22,7 @@ logger.addHandler(console_handler)
 
 def fai2bed(
     file_name: str,
-) -> tuple[
-    dict[str, list[int]], dict[str, list[int]], dict[str, list[list[str]]], list[str]
-]:
+) -> tuple[dict[str, list[int]], dict[str, list[int]], dict[str, list[list[str]]], list[str]]:
     """
     This function initiates the regions and region counters based on the contigs
     in a .fa.fai file. This script will start with the whole contig regions
@@ -115,9 +113,7 @@ def collapseIdenticalBoundries(boundries, counters, labels):
     return outBoundries, outCounters, outLabels
 
 
-def countIntersectedRegions(
-    original_boundry, original_counter, additional_regions, original_label, new_label
-):
+def countIntersectedRegions(original_boundry, original_counter, additional_regions, original_label, new_label):
     secondary_boundry = []
 
     for region_i in additional_regions:
@@ -188,7 +184,6 @@ def countIntersectedRegions(
 
 
 def run(fai_file, bed_files, bed_labels, bed_out):
-
     tempdir = tempfile.mkdtemp()
     # Start routine:
     contigBoundries, contigCounters, contigLabels, orderedContigs = fai2bed(fai_file)
@@ -216,11 +211,7 @@ def run(fai_file, bed_files, bed_labels, bed_out):
         for contig_i in orderedContigs:
             if contigCounters[contig_i] != [0]:
                 for i, count_i in enumerate(contigCounters[contig_i]):
-                    label_string = (
-                        ",".join(contigLabels[contig_i][i])
-                        if contigLabels[contig_i][i]
-                        else "."
-                    )
+                    label_string = ",".join(contigLabels[contig_i][i]) if contigLabels[contig_i][i] else "."
                     out_string = "{}\t{}\t{}\t{}\t{}".format(
                         contig_i,
                         contigBoundries[contig_i][i],
@@ -243,24 +234,17 @@ def main() -> None:
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument(
-        "-fai", "--fai-file", type=str, help=".fa.fai file", required=True, default=None
-    )
+    parser.add_argument("-fai", "--fai-file", type=str, help=".fa.fai file", required=True, default=None)
     parser.add_argument(
         "-beds",
         "--bed-files",
         type=str,
-        help=(
-            "Input bed files. "
-            "Each MUST be non-overlapping regions sorted to the input fai file."
-        ),
+        help=("Input bed files. Each MUST be non-overlapping regions sorted to the input fai file."),
         nargs="+",
         required=True,
         default=None,
     )
-    parser.add_argument(
-        "-out", "--bed-out", type=str, help="BED file out", required=True, default=None
-    )
+    parser.add_argument("-out", "--bed-out", type=str, help="BED file out", required=True, default=None)
     parser.add_argument(
         "-labels",
         "--bed-labels",

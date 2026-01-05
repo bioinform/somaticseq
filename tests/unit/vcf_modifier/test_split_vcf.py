@@ -24,9 +24,7 @@ def complex_vcf(tmp_path_factory: TempPathFactory) -> str:
     return temp_file_name
 
 
-def test_split_into_snv_and_indel(
-    complex_vcf: str, tiny_fasta: str, tmp_path_factory: TempPathFactory
-) -> None:
+def test_split_into_snv_and_indel(complex_vcf: str, tiny_fasta: str, tmp_path_factory: TempPathFactory) -> None:
     outdir = tmp_path_factory.mktemp("test")
     out_snv = str(outdir / "snv.vcf")
     out_indel = str(outdir / "indel.vcf")

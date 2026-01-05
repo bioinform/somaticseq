@@ -116,13 +116,9 @@ def spreader(infileList, outfiles, chunk=4, bgzip=False, threads=1):
 
 
 def run() -> tuple[argparse.Namespace, str]:
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # Variant Call Type, i.e., snp or indel
-    parser.add_argument(
-        "-infiles", "--input-files", type=str, nargs="*", help="Input files"
-    )
+    parser.add_argument("-infiles", "--input-files", type=str, nargs="*", help="Input files")
     parser.add_argument("-outfile", "--output-file", type=str, help="Output file")
     parser.add_argument(
         "-outfiles",
@@ -146,10 +142,7 @@ def run() -> tuple[argparse.Namespace, str]:
         "-nt",
         "--threads",
         type=int,
-        help=(
-            "Only invoked in -spread -bgzip "
-            "when bgzip compress of output files can be parallelized."
-        ),
+        help=("Only invoked in -spread -bgzip when bgzip compress of output files can be parallelized."),
     )
     parser.add_argument(
         "-spread",
@@ -168,17 +161,11 @@ def run() -> tuple[argparse.Namespace, str]:
     args = parser.parse_args()
     if args.spread:
         filetype = "spread"
-    elif args.input_files[0].lower().endswith(".vcf") or args.input_files[
-        0
-    ].lower().endswith(".vcf.gz"):
+    elif args.input_files[0].lower().endswith(".vcf") or args.input_files[0].lower().endswith(".vcf.gz"):
         filetype = "vcf"
-    elif args.input_files[0].lower().endswith(".tsv") or args.input_files[
-        0
-    ].lower().endswith(".tsv.gz"):
+    elif args.input_files[0].lower().endswith(".tsv") or args.input_files[0].lower().endswith(".tsv.gz"):
         filetype = "tsv"
-    elif args.input_files[0].lower().endswith(".bed") or args.input_files[
-        0
-    ].lower().endswith(".bed.gz"):
+    elif args.input_files[0].lower().endswith(".bed") or args.input_files[0].lower().endswith(".bed.gz"):
         filetype = "bed"
     else:
         filetype = "unknown"

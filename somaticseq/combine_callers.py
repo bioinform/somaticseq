@@ -52,9 +52,7 @@ def combineSingle(
     if mutect:
         import somaticseq.vcf_modifier.modify_MuTect as mod_mutect
 
-        mutect_in = bed_intersector(
-            mutect, os.sep.join((outdir, "intersect.mutect1.vcf")), inclusion, exclusion
-        )
+        mutect_in = bed_intersector(mutect, os.sep.join((outdir, "intersect.mutect1.vcf")), inclusion, exclusion)
         intermediate_files.add(mutect_in)
         snv_mutect_out = os.sep.join((outdir, "snv.mutect1.vcf"))
         mod_mutect.convert(mutect_in, snv_mutect_out, bam)
@@ -150,15 +148,11 @@ def combineSingle(
         intermediate_vcfs["VarDict"]["indel"] = sorted_indel_vardict_out
 
     if lofreq:
-        lofreq_in = bed_intersector(
-            lofreq, os.sep.join((outdir, "intersect.lofreq.vcf")), inclusion, exclusion
-        )
+        lofreq_in = bed_intersector(lofreq, os.sep.join((outdir, "intersect.lofreq.vcf")), inclusion, exclusion)
         intermediate_files.add(lofreq_in)
         snv_lofreq_out = os.sep.join((outdir, "snv.lofreq.vcf"))
         indel_lofreq_out = os.sep.join((outdir, "indel.lofreq.vcf"))
-        split_vcf.split_into_snv_and_indel(
-            lofreq_in, snv_lofreq_out, indel_lofreq_out, ref
-        )
+        split_vcf.split_into_snv_and_indel(lofreq_in, snv_lofreq_out, indel_lofreq_out, ref)
 
         for file_i in snv_lofreq_out, indel_lofreq_out:
             intermediate_files.add(file_i)
@@ -387,9 +381,7 @@ def combine_multiple_paired_caller_vcfs(
     if jsm:
         import somaticseq.vcf_modifier.modify_JointSNVMix2 as mod_jsm
 
-        jsm_in = bed_intersector(
-            jsm, os.sep.join((outdir, "intersect.jsm.vcf")), inclusion, exclusion
-        )
+        jsm_in = bed_intersector(jsm, os.sep.join((outdir, "intersect.jsm.vcf")), inclusion, exclusion)
         intermediate_files.add(jsm_in)
         jsm_out = os.sep.join((outdir, "snv.jsm.vcf"))
         mod_jsm.convert(jsm_in, jsm_out)
@@ -399,9 +391,7 @@ def combine_multiple_paired_caller_vcfs(
     if sniper:
         import somaticseq.vcf_modifier.modify_SomaticSniper as mod_sniper
 
-        sniper_in = bed_intersector(
-            sniper, os.sep.join((outdir, "intersect.sniper.vcf")), inclusion, exclusion
-        )
+        sniper_in = bed_intersector(sniper, os.sep.join((outdir, "intersect.sniper.vcf")), inclusion, exclusion)
         intermediate_files.add(sniper_in)
         sniper_out = os.sep.join((outdir, "snv.somaticsniper.vcf"))
         mod_sniper.convert(sniper_in, sniper_out)
@@ -448,9 +438,7 @@ def combine_multiple_paired_caller_vcfs(
         intermediate_vcfs["VarDict"]["indel"] = sorted_indel_vardict_out
 
     if muse:
-        muse_in = bed_intersector(
-            muse, os.sep.join((outdir, "intersect.muse.vcf")), inclusion, exclusion
-        )
+        muse_in = bed_intersector(muse, os.sep.join((outdir, "intersect.muse.vcf")), inclusion, exclusion)
         intermediate_files.add(muse_in)
         muse_out = os.sep.join((outdir, "snv.muse.vcf"))
         copy_TextFile.copy(muse_in, muse_out)
@@ -559,9 +547,7 @@ def combine_multiple_paired_caller_vcfs(
         intermediate_files.add(platypus_in)
         snv_platypus_out = os.sep.join((outdir, "snv.platypus.vcf"))
         indel_platypus_out = os.sep.join((outdir, "indel.platypus.vcf"))
-        split_vcf.split_into_snv_and_indel(
-            platypus_in, snv_platypus_out, indel_platypus_out, ref
-        )
+        split_vcf.split_into_snv_and_indel(platypus_in, snv_platypus_out, indel_platypus_out, ref)
         for file_i in snv_platypus_out, indel_platypus_out:
             intermediate_files.add(file_i)
 

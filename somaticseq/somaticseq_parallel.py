@@ -30,9 +30,7 @@ from somaticseq.defaults import (
 )
 
 
-def split_regions(
-    nthreads: int, outfiles: str, bed: str | None = None, fai: str | None = None
-) -> list[str]:
+def split_regions(nthreads: int, outfiles: str, bed: str | None = None, fai: str | None = None) -> list[str]:
     """
     Split into equal-sized regions in bed files.
 
@@ -49,9 +47,7 @@ def split_regions(
         A list of bed files where the regions are equal-sized.
     """
     if not (fai or bed):
-        raise FileNotFoundError(
-            "Must have either bed or fai file from which regions can be split."
-        )
+        raise FileNotFoundError("Must have either bed or fai file from which regions can be split.")
     if not bed:
         assert fai
         bed = split_bed.fai2bed(fai, outfiles)
@@ -322,16 +318,12 @@ def run_single_mode_by_region(
     return outdir_i
 
 
-def merge_tsvs_in_subdirs(
-    list_of_dirs: list[str], filename: str, outdir: str = os.curdir
-) -> None:
+def merge_tsvs_in_subdirs(list_of_dirs: list[str], filename: str, outdir: str = os.curdir) -> None:
     file_list = [os.path.join(dir_i, filename) for dir_i in list_of_dirs]
     concat.tsv(file_list, os.path.join(outdir, filename))
 
 
-def merge_vcfs_in_subdirs(
-    list_of_dirs: list[str], filename: str, outdir: str = os.curdir
-) -> None:
+def merge_vcfs_in_subdirs(list_of_dirs: list[str], filename: str, outdir: str = os.curdir) -> None:
     file_list = [os.path.join(dir_i, filename) for dir_i in list_of_dirs]
     concat.vcf(file_list, os.path.join(outdir, filename))
 
@@ -448,49 +440,25 @@ def main() -> None:
     run_somaticseq.logger.info("Sub-directories created: {}".format(", ".join(subdirs)))
 
     # Merge sub-results
-    merge_tsvs_in_subdirs(
-        subdirs, f"{ENSEMBLE_PREFIX}{SNV_TSV_SUFFIX}", args.output_directory
-    )
-    merge_tsvs_in_subdirs(
-        subdirs, f"{ENSEMBLE_PREFIX}{INDEL_TSV_SUFFIX}", args.output_directory
-    )
+    merge_tsvs_in_subdirs(subdirs, f"{ENSEMBLE_PREFIX}{SNV_TSV_SUFFIX}", args.output_directory)
+    merge_tsvs_in_subdirs(subdirs, f"{ENSEMBLE_PREFIX}{INDEL_TSV_SUFFIX}", args.output_directory)
     if args.classifier_snv:
-        merge_tsvs_in_subdirs(
-            subdirs, f"{CLASSIFIED_PREFIX}{SNV_TSV_SUFFIX}", args.output_directory
-        )
-        merge_vcfs_in_subdirs(
-            subdirs, f"{CLASSIFIED_PREFIX}{SNV_VCF_SUFFIX}", args.output_directory
-        )
+        merge_tsvs_in_subdirs(subdirs, f"{CLASSIFIED_PREFIX}{SNV_TSV_SUFFIX}", args.output_directory)
+        merge_vcfs_in_subdirs(subdirs, f"{CLASSIFIED_PREFIX}{SNV_VCF_SUFFIX}", args.output_directory)
     else:
-        merge_vcfs_in_subdirs(
-            subdirs, f"{CONSENSUS_PREFIX}{SNV_VCF_SUFFIX}", args.output_directory
-        )
+        merge_vcfs_in_subdirs(subdirs, f"{CONSENSUS_PREFIX}{SNV_VCF_SUFFIX}", args.output_directory)
 
     if args.classifier_indel:
-        merge_tsvs_in_subdirs(
-            subdirs, f"{CLASSIFIED_PREFIX}{INDEL_TSV_SUFFIX}", args.output_directory
-        )
-        merge_vcfs_in_subdirs(
-            subdirs, f"{CLASSIFIED_PREFIX}{INDEL_VCF_SUFFIX}", args.output_directory
-        )
+        merge_tsvs_in_subdirs(subdirs, f"{CLASSIFIED_PREFIX}{INDEL_TSV_SUFFIX}", args.output_directory)
+        merge_vcfs_in_subdirs(subdirs, f"{CLASSIFIED_PREFIX}{INDEL_VCF_SUFFIX}", args.output_directory)
     else:
-        merge_vcfs_in_subdirs(
-            subdirs, f"{CONSENSUS_PREFIX}{INDEL_VCF_SUFFIX}", args.output_directory
-        )
+        merge_vcfs_in_subdirs(subdirs, f"{CONSENSUS_PREFIX}{INDEL_VCF_SUFFIX}", args.output_directory)
 
     # If there is training, it should be done after merging the results
     if args.somaticseq_train:
-        snv_training_file = os.path.join(
-            args.output_directory, f"{ENSEMBLE_PREFIX}{SNV_TSV_SUFFIX}"
-        )
-        indel_training_file = os.path.join(
-            args.output_directory, f"{ENSEMBLE_PREFIX}{INDEL_TSV_SUFFIX}"
-        )
-        num_iterations = (
-            args.iterations
-            if args.iterations
-            else run_somaticseq.DEFAULT_XGB_BOOST_ROUNDS
-        )
+        snv_training_file = os.path.join(args.output_directory, f"{ENSEMBLE_PREFIX}{SNV_TSV_SUFFIX}")
+        indel_training_file = os.path.join(args.output_directory, f"{ENSEMBLE_PREFIX}{INDEL_TSV_SUFFIX}")
+        num_iterations = args.iterations if args.iterations else run_somaticseq.DEFAULT_XGB_BOOST_ROUNDS
         run_somaticseq.model_trainer(
             snv_training_file,
             args.algorithm,

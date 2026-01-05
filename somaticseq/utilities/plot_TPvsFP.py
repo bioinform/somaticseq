@@ -40,15 +40,9 @@ parser.add_argument(
     required=False,
     default=False,
 )
-parser.add_argument(
-    "-prefix", "--figure-prefix", type=str, help="fig", required=False, default="fig"
-)
-parser.add_argument(
-    "-width", "--pic-width", type=float, help="pic width", required=False, default=16
-)
-parser.add_argument(
-    "-height", "--pic-height", type=float, help="pic height", required=False, default=9
-)
+parser.add_argument("-prefix", "--figure-prefix", type=str, help="fig", required=False, default="fig")
+parser.add_argument("-width", "--pic-width", type=float, help="pic width", required=False, default=16)
+parser.add_argument("-height", "--pic-height", type=float, help="pic height", required=False, default=9)
 parser.add_argument(
     "-text",
     "--extra-title-text",
@@ -120,9 +114,7 @@ def plot_2hist(false_values, true_values, hist_bins=None, labels=None, hist_titl
 
 def figure_display(fn_string, pre_string=prefix, fig_number=1):
     if save_figs:
-        pyplot.savefig(
-            "{}.{}.{}.{}".format(pre_string, str(fig_number), fn_string, "pdf")
-        )
+        pyplot.savefig("{}.{}.{}.{}".format(pre_string, str(fig_number), fn_string, "pdf"))
     else:
         pyplot.show()
 

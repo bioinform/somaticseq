@@ -19,9 +19,7 @@ def get_homopolymer_lengths(
     # Homopolymer eval (Make sure to modify for INDEL):
     # The min and max is to prevent the +/- 20 bases from exceeding the ends of
     # the reference sequence
-    lseq = ref_fa.fetch(
-        my_coordinate[0], max(0, my_coordinate[1] - 20), my_coordinate[1]
-    )
+    lseq = ref_fa.fetch(my_coordinate[0], max(0, my_coordinate[1] - 20), my_coordinate[1])
     rseq = ref_fa.fetch(
         my_coordinate[0],
         my_coordinate[1] + 1,
@@ -73,9 +71,7 @@ def get_homopolymer_lengths(
     return homopolymer_length, site_homopolymer_length
 
 
-def somatic_odds_ratio(
-    n_ref: int, n_alt: int, t_ref: int, t_alt: int, max_value: float = 100
-) -> float:
+def somatic_odds_ratio(n_ref: int, n_alt: int, t_ref: int, t_alt: int, max_value: float = 100) -> float:
     # Odds Ratio just like VarDict's output
     sor_numerator = n_alt * t_ref
     sor_denominator = n_ref * t_alt
@@ -100,9 +96,7 @@ def max_vocabularies(seq_length: int) -> int:
         if 4**k < (seq_length - k + 1):
             counts = counts + 4**k
         else:
-            counts = int(
-                counts + (seq_length - k + 1 + 1) * (seq_length - k + 1 - 1 + 1) / 2
-            )
+            counts = int(counts + (seq_length - k + 1 + 1) * (seq_length - k + 1 - 1 + 1) / 2)
             break
         k += 1
 
@@ -143,21 +137,14 @@ def max_sub_vocabularies(seq_length: int, max_subseq_length: int) -> int:
         if 4**k < (seq_length - k + 1):
             counts = counts + 4**k
         else:
-            counts = int(
-                counts
-                + (2 * seq_length - k - max_subseq_length + 2)
-                * (max_subseq_length - k + 1)
-                / 2
-            )
+            counts = int(counts + (2 * seq_length - k - max_subseq_length + 2) * (max_subseq_length - k + 1) / 2)
             break
         k += 1
 
     return counts
 
 
-def ling_seq_complexity_with_max_vocab_length(
-    sequence: str, max_substring_length: int = 20
-) -> float:
+def ling_seq_complexity_with_max_vocab_length(sequence: str, max_substring_length: int = 20) -> float:
     # Calculate linguistic sequence complexity according to
     # https://doi.org/10.1093/bioinformatics/18.5.679
     # Cut off substring at a fixed length

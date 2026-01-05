@@ -41,9 +41,7 @@ with (
             if front_clipped and back_clipped:
                 front_num = int(front_clipped.groups()[0])
                 back_num = int(back_clipped.groups()[0])
-                read_i.cigarstring = re.sub(
-                    r"^[0-9]+S|[0-9]+S$", "", read_i.cigarstring
-                )
+                read_i.cigarstring = re.sub(r"^[0-9]+S|[0-9]+S$", "", read_i.cigarstring)
                 qual_i = read_i.query_qualities[front_num::][:-back_num]
                 read_i.query_sequence = read_i.query_sequence[front_num::][:-back_num]
                 read_i.query_qualities = qual_i

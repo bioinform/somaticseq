@@ -48,12 +48,8 @@ def run() -> tuple[argparse.Namespace, dict]:
         help="SomaticSeq directory output name",
         default="SomaticSeq",
     )
-    parser_paired.add_argument(
-        "-tbam", "--tumor-bam", type=str, help="tumor bam file", required=True
-    )
-    parser_paired.add_argument(
-        "-nbam", "--normal-bam", type=str, help="normal bam file", required=True
-    )
+    parser_paired.add_argument("-tbam", "--tumor-bam", type=str, help="tumor bam file", required=True)
+    parser_paired.add_argument("-nbam", "--normal-bam", type=str, help="normal bam file", required=True)
     parser_paired.add_argument(
         "-tname",
         "--tumor-sample-name",
@@ -93,9 +89,7 @@ def run() -> tuple[argparse.Namespace, dict]:
         type=str,
         help="dbSNP vcf file, also requires .idx, .gz, and .gz.tbi files",
     )
-    parser_paired.add_argument(
-        "-cosmic", "--cosmic-vcf", type=str, help="cosmic vcf file"
-    )
+    parser_paired.add_argument("-cosmic", "--cosmic-vcf", type=str, help="cosmic vcf file")
     parser_paired.add_argument(
         "-minVAF",
         "--minimum-VAF",
@@ -133,36 +127,16 @@ def run() -> tuple[argparse.Namespace, dict]:
         default="",
     )
 
-    parser_paired.add_argument(
-        "-mutect2", "--run-mutect2", action="store_true", help="Run MuTect2"
-    )
-    parser_paired.add_argument(
-        "-varscan2", "--run-varscan2", action="store_true", help="Run VarScan2"
-    )
-    parser_paired.add_argument(
-        "-jsm", "--run-jointsnvmix2", action="store_true", help="Run JointSNVMix2"
-    )
-    parser_paired.add_argument(
-        "-sniper", "--run-somaticsniper", action="store_true", help="Run SomaticSniper"
-    )
-    parser_paired.add_argument(
-        "-vardict", "--run-vardict", action="store_true", help="Run VarDict"
-    )
-    parser_paired.add_argument(
-        "-muse", "--run-muse", action="store_true", help="Run MuSE"
-    )
-    parser_paired.add_argument(
-        "-lofreq", "--run-lofreq", action="store_true", help="Run LoFreq"
-    )
-    parser_paired.add_argument(
-        "-scalpel", "--run-scalpel", action="store_true", help="Run Scalpel"
-    )
-    parser_paired.add_argument(
-        "-strelka2", "--run-strelka2", action="store_true", help="Run Strelka2"
-    )
-    parser_paired.add_argument(
-        "-somaticseq", "--run-somaticseq", action="store_true", help="Run SomaticSeq"
-    )
+    parser_paired.add_argument("-mutect2", "--run-mutect2", action="store_true", help="Run MuTect2")
+    parser_paired.add_argument("-varscan2", "--run-varscan2", action="store_true", help="Run VarScan2")
+    parser_paired.add_argument("-jsm", "--run-jointsnvmix2", action="store_true", help="Run JointSNVMix2")
+    parser_paired.add_argument("-sniper", "--run-somaticsniper", action="store_true", help="Run SomaticSniper")
+    parser_paired.add_argument("-vardict", "--run-vardict", action="store_true", help="Run VarDict")
+    parser_paired.add_argument("-muse", "--run-muse", action="store_true", help="Run MuSE")
+    parser_paired.add_argument("-lofreq", "--run-lofreq", action="store_true", help="Run LoFreq")
+    parser_paired.add_argument("-scalpel", "--run-scalpel", action="store_true", help="Run Scalpel")
+    parser_paired.add_argument("-strelka2", "--run-strelka2", action="store_true", help="Run Strelka2")
+    parser_paired.add_argument("-somaticseq", "--run-somaticseq", action="store_true", help="Run SomaticSeq")
     parser_paired.add_argument(
         "-train",
         "--train-somaticseq",
@@ -170,30 +144,22 @@ def run() -> tuple[argparse.Namespace, dict]:
         action="store_true",
         help="SomaticSeq training mode for classifiers",
     )
-    parser_paired.add_argument(
-        "-snvClassifier", "--snv-classifier", type=str, help="action for each .cmd"
-    )
+    parser_paired.add_argument("-snvClassifier", "--snv-classifier", type=str, help="action for each .cmd")
     parser_paired.add_argument(
         "-indelClassifier",
         "--indel-classifier",
         type=str,
         help="action for each somaticseq.cmd",
     )
-    parser_paired.add_argument(
-        "-trueSnv", "--truth-snv", type=str, help="VCF of true hits"
-    )
-    parser_paired.add_argument(
-        "-trueIndel", "--truth-indel", type=str, help="VCF of true hits"
-    )
+    parser_paired.add_argument("-trueSnv", "--truth-snv", type=str, help="VCF of true hits")
+    parser_paired.add_argument("-trueIndel", "--truth-indel", type=str, help="VCF of true hits")
     parser_paired.add_argument(
         "-exome",
         "--exome-setting",
         action="store_true",
         help="Invokes exome setting in Strelka2 and MuSE",
     )
-    parser_paired.add_argument(
-        "--mutect2-arguments", type=str, help="extra parameters for Mutect2", default=""
-    )
+    parser_paired.add_argument("--mutect2-arguments", type=str, help="extra parameters for Mutect2", default="")
     parser_paired.add_argument(
         "--mutect2-filter-arguments",
         type=str,
@@ -230,15 +196,9 @@ def run() -> tuple[argparse.Namespace, dict]:
         help="extra parameters for SomaticSniper",
         default="",
     )
-    parser_paired.add_argument(
-        "--vardict-arguments", type=str, help="extra parameters for VarDict", default=""
-    )
-    parser_paired.add_argument(
-        "--muse-arguments", type=str, help="extra parameters", default=""
-    )
-    parser_paired.add_argument(
-        "--lofreq-arguments", type=str, help="extra parameters for LoFreq", default=""
-    )
+    parser_paired.add_argument("--vardict-arguments", type=str, help="extra parameters for VarDict", default="")
+    parser_paired.add_argument("--muse-arguments", type=str, help="extra parameters", default="")
+    parser_paired.add_argument("--lofreq-arguments", type=str, help="extra parameters for LoFreq", default="")
     parser_paired.add_argument(
         "--scalpel-discovery-arguments",
         type=str,
@@ -292,18 +252,12 @@ def run() -> tuple[argparse.Namespace, dict]:
         "-run",
         "--run-workflow",
         action="store_true",
-        help=(
-            "Execute the bash scripts right here. "
-            "Only works on Linux machines with modern bash shells."
-        ),
+        help=("Execute the bash scripts right here. Only works on Linux machines with modern bash shells."),
     )
     parser_paired.add_argument(
         "--by-caller",
         action="store_true",
-        help=(
-            "Execution is ordered primarily by tools, "
-            "i.e., time-consuming tools will start first"
-        ),
+        help=("Execution is ordered primarily by tools, i.e., time-consuming tools will start first"),
     )
     parser_paired.set_defaults(which="paired")
 
@@ -323,12 +277,8 @@ def run() -> tuple[argparse.Namespace, dict]:
         help="SomaticSeq directory output name",
         default="SomaticSeq",
     )
-    parser_single.add_argument(
-        "-bam", "--bam", type=str, help="tumor bam file", required=True
-    )
-    parser_single.add_argument(
-        "-name", "--sample-name", type=str, help="tumor sample name", default="TUMOR"
-    )
+    parser_single.add_argument("-bam", "--bam", type=str, help="tumor bam file", required=True)
+    parser_single.add_argument("-name", "--sample-name", type=str, help="tumor sample name", default="TUMOR")
     parser_single.add_argument(
         "-ref",
         "--genome-reference",
@@ -336,21 +286,15 @@ def run() -> tuple[argparse.Namespace, dict]:
         help="reference fasta file",
         required=True,
     )
-    parser_single.add_argument(
-        "-include", "--inclusion-region", type=str, help="inclusion bed file"
-    )
-    parser_single.add_argument(
-        "-exclude", "--exclusion-region", type=str, help="exclusion bed file"
-    )
+    parser_single.add_argument("-include", "--inclusion-region", type=str, help="inclusion bed file")
+    parser_single.add_argument("-exclude", "--exclusion-region", type=str, help="exclusion bed file")
     parser_single.add_argument(
         "-dbsnp",
         "--dbsnp-vcf",
         type=str,
         help="dbSNP vcf file, also requires .idx, .gz, and .gz.tbi files",
     )
-    parser_single.add_argument(
-        "-cosmic", "--cosmic-vcf", type=str, help="cosmic vcf file"
-    )
+    parser_single.add_argument("-cosmic", "--cosmic-vcf", type=str, help="cosmic vcf file")
     parser_single.add_argument(
         "-minVAF",
         "--minimum-VAF",
@@ -387,27 +331,13 @@ def run() -> tuple[argparse.Namespace, dict]:
         help="extra arguments to pass onto docker run",
         default="",
     )
-    parser_single.add_argument(
-        "-mutect2", "--run-mutect2", action="store_true", help="Run MuTect2"
-    )
-    parser_single.add_argument(
-        "-varscan2", "--run-varscan2", action="store_true", help="Run VarScan2"
-    )
-    parser_single.add_argument(
-        "-vardict", "--run-vardict", action="store_true", help="Run VarDict"
-    )
-    parser_single.add_argument(
-        "-lofreq", "--run-lofreq", action="store_true", help="Run LoFreq"
-    )
-    parser_single.add_argument(
-        "-scalpel", "--run-scalpel", action="store_true", help="Run Scalpel"
-    )
-    parser_single.add_argument(
-        "-strelka2", "--run-strelka2", action="store_true", help="Run Strelka2"
-    )
-    parser_single.add_argument(
-        "-somaticseq", "--run-somaticseq", action="store_true", help="Run SomaticSeq"
-    )
+    parser_single.add_argument("-mutect2", "--run-mutect2", action="store_true", help="Run MuTect2")
+    parser_single.add_argument("-varscan2", "--run-varscan2", action="store_true", help="Run VarScan2")
+    parser_single.add_argument("-vardict", "--run-vardict", action="store_true", help="Run VarDict")
+    parser_single.add_argument("-lofreq", "--run-lofreq", action="store_true", help="Run LoFreq")
+    parser_single.add_argument("-scalpel", "--run-scalpel", action="store_true", help="Run Scalpel")
+    parser_single.add_argument("-strelka2", "--run-strelka2", action="store_true", help="Run Strelka2")
+    parser_single.add_argument("-somaticseq", "--run-somaticseq", action="store_true", help="Run SomaticSeq")
     parser_single.add_argument(
         "-train",
         "--train-somaticseq",
@@ -415,24 +345,16 @@ def run() -> tuple[argparse.Namespace, dict]:
         action="store_true",
         help="SomaticSeq training mode for classifiers",
     )
-    parser_single.add_argument(
-        "-snvClassifier", "--snv-classifier", type=str, help="action for each .cmd"
-    )
+    parser_single.add_argument("-snvClassifier", "--snv-classifier", type=str, help="action for each .cmd")
     parser_single.add_argument(
         "-indelClassifier",
         "--indel-classifier",
         type=str,
         help="action for each somaticseq.cmd",
     )
-    parser_single.add_argument(
-        "-trueSnv", "--truth-snv", type=str, help="VCF of true hits"
-    )
-    parser_single.add_argument(
-        "-trueIndel", "--truth-indel", type=str, help="VCF of true hits"
-    )
-    parser_single.add_argument(
-        "--mutect2-arguments", type=str, help="extra parameters for Mutect2", default=""
-    )
+    parser_single.add_argument("-trueSnv", "--truth-snv", type=str, help="VCF of true hits")
+    parser_single.add_argument("-trueIndel", "--truth-indel", type=str, help="VCF of true hits")
+    parser_single.add_argument("--mutect2-arguments", type=str, help="extra parameters for Mutect2", default="")
     parser_single.add_argument(
         "--mutect2-filter-arguments",
         type=str,
@@ -451,12 +373,8 @@ def run() -> tuple[argparse.Namespace, dict]:
         help="extra parameters for mpileup used for VarScan2",
         default="",
     )
-    parser_single.add_argument(
-        "--vardict-arguments", type=str, help="extra parameters for VarDict", default=""
-    )
-    parser_single.add_argument(
-        "--lofreq-arguments", type=str, help="extra parameters for LoFreq", default=""
-    )
+    parser_single.add_argument("--vardict-arguments", type=str, help="extra parameters for VarDict", default="")
+    parser_single.add_argument("--lofreq-arguments", type=str, help="extra parameters for LoFreq", default="")
     parser_single.add_argument(
         "--scalpel-discovery-arguments",
         type=str,
@@ -511,35 +429,24 @@ def run() -> tuple[argparse.Namespace, dict]:
         "-run",
         "--run-workflow",
         action="store_true",
-        help=(
-            "Execute the bash scripts locally right here. "
-            "Only works on Linux machines with modern bash shells."
-        ),
+        help=("Execute the bash scripts locally right here. Only works on Linux machines with modern bash shells."),
     )
     parser_single.add_argument(
         "--by-caller",
         action="store_true",
-        help=(
-            "Execution is ordered primarily by tools, "
-            "i.e., time-consuming tools will start first"
-        ),
+        help=("Execution is ordered primarily by tools, i.e., time-consuming tools will start first"),
     )
     parser_single.set_defaults(which="single")
 
     # Parse the arguments:
     args = parser.parse_args()
     wf_arg_dict = vars(args)
-    wf_arg_dict["reference_dict"] = (
-        re.sub(r"\.[a-zA-Z]+$", "", wf_arg_dict["genome_reference"]) + ".dict"
-    )
+    wf_arg_dict["reference_dict"] = re.sub(r"\.[a-zA-Z]+$", "", wf_arg_dict["genome_reference"]) + ".dict"
     return args, wf_arg_dict
 
 
 def make_workflow(args, wf_arg_dict):
-    logger.info(
-        "Create SomaticSeq Workflow Scripts: "
-        + ", ".join([f"{i}={vars(args)[i]}" for i in vars(args)])
-    )
+    logger.info("Create SomaticSeq Workflow Scripts: " + ", ".join([f"{i}={vars(args)[i]}" for i in vars(args)]))
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S%f")
     workflow_tasks = {"caller_jobs": [], "somaticseq_jobs": [], "merging_jobs": []}
     os.makedirs(wf_arg_dict["output_directory"], exist_ok=True)
@@ -560,9 +467,7 @@ def make_workflow(args, wf_arg_dict):
             wf_arg_dict["output_directory"] + os.sep + "bed",
             wf_arg_dict["threads"],
         )
-        os.makedirs(
-            os.path.join(wf_arg_dict["output_directory"], "logs"), exist_ok=True
-        )
+        os.makedirs(os.path.join(wf_arg_dict["output_directory"], "logs"), exist_ok=True)
         # Unparallelizables
         if wf_arg_dict["run_jointsnvmix2"]:
             from somaticseq.utilities.dockered_pipelines.somatic_mutations import (
@@ -571,9 +476,7 @@ def make_workflow(args, wf_arg_dict):
 
             input_arguments = copy(wf_arg_dict)
             input_arguments["script"] = f"jsm2.{timestamp}.cmd"
-            jointsnvmix2_job = JointSNVMix2.tumor_normal(
-                input_arguments, args.container_tech
-            )
+            jointsnvmix2_job = JointSNVMix2.tumor_normal(input_arguments, args.container_tech)
             workflow_tasks["caller_jobs"].append(jointsnvmix2_job)
 
         if wf_arg_dict["run_somaticsniper"]:
@@ -583,9 +486,7 @@ def make_workflow(args, wf_arg_dict):
 
             input_arguments = copy(wf_arg_dict)
             input_arguments["script"] = f"somaticsniper.{timestamp}.cmd"
-            somaticsniper_job = SomaticSniper.tumor_normal(
-                input_arguments, args.container_tech
-            )
+            somaticsniper_job = SomaticSniper.tumor_normal(input_arguments, args.container_tech)
             workflow_tasks["caller_jobs"].append(somaticsniper_job)
 
         # Parallelizables
@@ -603,9 +504,7 @@ def make_workflow(args, wf_arg_dict):
                 per_thread_params = copy(wf_arg_dict)
 
                 # Add OUTDIR/thread_i for each thread
-                per_thread_params["output_directory"] = (
-                    wf_arg_dict["output_directory"] + os.sep + str(thread_i)
-                )
+                per_thread_params["output_directory"] = wf_arg_dict["output_directory"] + os.sep + str(thread_i)
                 per_thread_params["inclusion_region"] = "{}/{}.bed".format(
                     per_thread_params["output_directory"], str(thread_i)
                 )
@@ -616,17 +515,13 @@ def make_workflow(args, wf_arg_dict):
                 # Move 1.bed, 2.bed, ..., n.bed to each thread's subdirectory
                 move(
                     os.path.join(wf_arg_dict["output_directory"], f"{thread_i}.bed"),
-                    os.path.join(
-                        per_thread_params["output_directory"], f"{thread_i}.bed"
-                    ),
+                    os.path.join(per_thread_params["output_directory"], f"{thread_i}.bed"),
                 )
                 # Results combiner
                 if to_create_merging_script:
                     input_arguments = copy(wf_arg_dict)
                     input_arguments["script"] = f"mergeResults.{timestamp}.cmd"
-                    merging_job = tumor_normal.merge_results(
-                        input_arguments, args.container_tech
-                    )
+                    merging_job = tumor_normal.merge_results(input_arguments, args.container_tech)
                     workflow_tasks["merging_jobs"].append(merging_job)
                     to_create_merging_script = False
             else:
@@ -674,9 +569,7 @@ def make_workflow(args, wf_arg_dict):
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"varscan2.{timestamp}.cmd"
-                varscan2_job = VarScan2.tumor_normal(
-                    input_arguments, args.container_tech
-                )
+                varscan2_job = VarScan2.tumor_normal(input_arguments, args.container_tech)
                 varscan_jobs.append(varscan2_job)
                 jobs_by_threads.append(varscan2_job)
 
@@ -729,18 +622,14 @@ def make_workflow(args, wf_arg_dict):
 
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"strelka.{timestamp}.cmd"
-                strelka2_job = Strelka2.tumor_normal(
-                    input_arguments, args.container_tech
-                )
+                strelka2_job = Strelka2.tumor_normal(input_arguments, args.container_tech)
                 strelka_jobs.append(strelka2_job)
                 jobs_by_threads.append(strelka2_job)
 
             if wf_arg_dict["run_somaticseq"]:
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"somaticSeq.{timestamp}.cmd"
-                somaticseq_job = tumor_normal.run_somaticseq_workflow(
-                    input_arguments, args.container_tech
-                )
+                somaticseq_job = tumor_normal.run_somaticseq_workflow(input_arguments, args.container_tech)
                 workflow_tasks["somaticseq_jobs"].append(somaticseq_job)
 
         if args.by_caller:
@@ -755,9 +644,7 @@ def make_workflow(args, wf_arg_dict):
                 + strelka_jobs
             )
         else:
-            workflow_tasks["caller_jobs"] = (
-                workflow_tasks["caller_jobs"] + jobs_by_threads
-            )
+            workflow_tasks["caller_jobs"] = workflow_tasks["caller_jobs"] + jobs_by_threads
 
     # TUMOR-ONLY RUNS
     elif wf_arg_dict["which"] == "single":
@@ -791,9 +678,7 @@ def make_workflow(args, wf_arg_dict):
                 per_thread_params = copy(wf_arg_dict)
 
                 # Add OUTDIR/thread_i for each thread
-                per_thread_params["output_directory"] = (
-                    wf_arg_dict["output_directory"] + os.sep + str(thread_i)
-                )
+                per_thread_params["output_directory"] = wf_arg_dict["output_directory"] + os.sep + str(thread_i)
                 per_thread_params["inclusion_region"] = "{}/{}.bed".format(
                     per_thread_params["output_directory"], str(thread_i)
                 )
@@ -804,17 +689,13 @@ def make_workflow(args, wf_arg_dict):
                 # Move 1.bed, 2.bed, ..., n.bed to each thread's subdirectory
                 move(
                     os.path.join(wf_arg_dict["output_directory"], f"{thread_i}.bed"),
-                    os.path.join(
-                        per_thread_params["output_directory"], f"{thread_i}.bed"
-                    ),
+                    os.path.join(per_thread_params["output_directory"], f"{thread_i}.bed"),
                 )
                 # Results combiner
                 if to_create_merging_script:
                     input_arguments = copy(wf_arg_dict)
                     input_arguments["script"] = f"mergeResults.{timestamp}.cmd"
-                    merging_job = tumor_only.merge_results(
-                        input_arguments, args.container_tech
-                    )
+                    merging_job = tumor_only.merge_results(input_arguments, args.container_tech)
                     workflow_tasks["merging_jobs"].append(merging_job)
                     to_create_merging_script = False
 
@@ -902,9 +783,7 @@ def make_workflow(args, wf_arg_dict):
             if wf_arg_dict["run_somaticseq"]:
                 input_arguments = copy(per_thread_params)
                 input_arguments["script"] = f"somaticSeq.{timestamp}.cmd"
-                somaticseq_job = tumor_only.run_somaticseq_workflow(
-                    input_arguments, args.container_tech
-                )
+                somaticseq_job = tumor_only.run_somaticseq_workflow(input_arguments, args.container_tech)
                 workflow_tasks["somaticseq_jobs"].append(somaticseq_job)
 
         if args.by_caller:
@@ -918,15 +797,11 @@ def make_workflow(args, wf_arg_dict):
                 + strelka_jobs
             )
         else:
-            workflow_tasks["caller_jobs"] = (
-                workflow_tasks["caller_jobs"] + jobs_by_threads
-            )
+            workflow_tasks["caller_jobs"] = workflow_tasks["caller_jobs"] + jobs_by_threads
 
     # Log the scripts created
     for script_type in workflow_tasks:
-        line_i = "{} {} scripts created: ".format(
-            len(workflow_tasks[script_type]), script_type
-        )
+        line_i = "{} {} scripts created: ".format(len(workflow_tasks[script_type]), script_type)
         logger.info(line_i)
 
         i = 1
@@ -947,10 +822,7 @@ def make_workflow(args, wf_arg_dict):
             ),
             args.threads,
         )
-        logger.info(
-            "SomaticSeq Workflow Done. Check your results. "
-            f"You may remove the {args.threads} sub_directories."
-        )
+        logger.info(f"SomaticSeq Workflow Done. Check your results. You may remove the {args.threads} sub_directories.")
     return workflow_tasks
 
 

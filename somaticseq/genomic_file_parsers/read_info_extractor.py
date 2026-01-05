@@ -72,10 +72,7 @@ def print_read1_or_2(read: pysam.AlignedSegment) -> str:
     return "R0"
 
 
-def get_alignment_via_cigar(
-    read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
-) -> SequencingCall:
-
+def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_size: int = 3) -> SequencingCall:
     # First and last aligned coordinates
     assert read.reference_start is not None
     assert read.reference_end is not None
@@ -163,9 +160,7 @@ def get_alignment_via_cigar(
                 vtype = AlignmentType.deletion
                 indel_length = -n_bases_j
             else:
-                raise ValueError(
-                    f"{read.query_name} with {read.cigarstring} failed at {coordinate}."
-                )
+                raise ValueError(f"{read.query_name} with {read.cigarstring} failed at {coordinate}.")
             nearest_indel_on_left = min(
                 [
                     coordinate - latest_insertion_coordinate,
@@ -236,9 +231,7 @@ def get_alignment_via_cigar(
     )
 
 
-def get_alignment_via_aligned_pairs(
-    read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
-) -> SequencingCall:
+def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int, win_size: int = 3) -> SequencingCall:
     """
     Given a coordinate, return the alignment on the read
 
@@ -322,10 +315,7 @@ def get_alignment_via_aligned_pairs(
     # If the next reference position has no read position to it, it is a
     # deletion in this read at this coordinate. Indel length is negative for
     # deletion.
-    elif (
-        aligned_pairs[ith_aligned_pair + 1][0] is None
-        and aligned_pairs[ith_aligned_pair + 1][1] == coordinate + 1
-    ):
+    elif aligned_pairs[ith_aligned_pair + 1][0] is None and aligned_pairs[ith_aligned_pair + 1][1] == coordinate + 1:
         vtype = AlignmentType.deletion  # Deletion
         for align_j in aligned_pairs[ith_aligned_pair + 1 : :]:
             if align_j[0] is None:
@@ -338,10 +328,7 @@ def get_alignment_via_aligned_pairs(
     # the inserted sequence is "too long" to align on a single read. In this
     # case, the inserted length derived here is a lower limit of the real
     # inserted length.
-    elif (
-        aligned_pairs[ith_aligned_pair + 1][0] == ith_base + 1
-        and aligned_pairs[ith_aligned_pair + 1][1] is None
-    ):
+    elif aligned_pairs[ith_aligned_pair + 1][0] == ith_base + 1 and aligned_pairs[ith_aligned_pair + 1][1] is None:
         vtype = AlignmentType.insertion  # Insertion or soft-clipping
         for align_j in aligned_pairs[ith_aligned_pair + 1 : :]:
             if align_j[1] is None:
@@ -471,7 +458,6 @@ def rescale(
     rescale_to: Literal["fraction", "phred"] | None = None,
     max_phred: float = 1001,
 ) -> float | int:
-
     if original == "fraction" and rescale_to == "phred":
         y = genome.p2phred(x, max_phred=max_phred)
         return round(y, 2)

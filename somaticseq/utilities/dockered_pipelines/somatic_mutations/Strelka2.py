@@ -61,18 +61,14 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
-        "mount_path"
-    ]
+    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]]["mount_path"]
     mounted_tumor_bam = file_dictionary[input_parameters["tumor_bam"]]["mount_path"]
     mounted_normal_bam = file_dictionary[input_parameters["normal_bam"]]["mount_path"]
     mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
 
     if input_parameters["inclusion_region"]:
         file_dictionary[input_parameters["inclusion_region"]]["mount_path"]
-        bed_gz = (
-            file_dictionary[input_parameters["inclusion_region"]]["filename"] + ".gz"
-        )
+        bed_gz = file_dictionary[input_parameters["inclusion_region"]]["filename"] + ".gz"
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
@@ -86,9 +82,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write('echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n')
 
         # Make .bed.gz out of .bed files using tabix:
-        tabix_line, tabixDict = container_params(
-            input_parameters["tabix_image"], tech, all_paths
-        )
+        tabix_line, tabixDict = container_params(input_parameters["tabix_image"], tech, all_paths)
         tabix_selector = tabixDict[input_parameters["inclusion_region"]]["mount_path"]
         tabix_outdir = tabixDict[input_parameters["output_directory"]]["mount_path"]
 
@@ -111,11 +105,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write(f"--tumorBam={mounted_tumor_bam} \\\n")
         out.write(f"--normalBam={mounted_normal_bam} \\\n")
         out.write(f"--referenceFasta={mounted_genome_reference} \\\n")
-        out.write(
-            "--callMemMb={} \\\n".format(
-                eval(input_parameters["MEM"].rstrip("G")) * 1024
-            )
-        )
+        out.write("--callMemMb={} \\\n".format(eval(input_parameters["MEM"].rstrip("G")) * 1024))
         out.write(f"--callRegions={mounted_outdir}/{bed_gz} \\\n")
 
         if input_parameters["exome"]:
@@ -124,9 +114,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if input_parameters["strelka_config_arguments"]:
             out.write("{} \\\n".format(input_parameters["strelka_config_arguments"]))
 
-        out.write(
-            "--runDir={}/{}\n\n".format(mounted_outdir, input_parameters["outdir_name"])
-        )
+        out.write("--runDir={}/{}\n\n".format(mounted_outdir, input_parameters["outdir_name"]))
 
         out.write(f"{container_line} \\\n")
         out.write(
@@ -176,17 +164,13 @@ def tumor_only(input_parameters=DEFAULT_PARAMS, tech="docker"):
     )
 
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
-        "mount_path"
-    ]
+    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]]["mount_path"]
     mounted_tumor_bam = file_dictionary[input_parameters["bam"]]["mount_path"]
     mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
 
     if input_parameters["inclusion_region"]:
         file_dictionary[input_parameters["inclusion_region"]]["mount_path"]
-        bed_gz = (
-            file_dictionary[input_parameters["inclusion_region"]]["filename"] + ".gz"
-        )
+        bed_gz = file_dictionary[input_parameters["inclusion_region"]]["filename"] + ".gz"
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
@@ -200,9 +184,7 @@ def tumor_only(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write('echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n')
 
         # Make .bed.gz out of .bed files using tabix:
-        tabix_line, tabixDict = container_params(
-            input_parameters["tabix_image"], tech, all_paths
-        )
+        tabix_line, tabixDict = container_params(input_parameters["tabix_image"], tech, all_paths)
         tabix_selector = tabixDict[input_parameters["inclusion_region"]]["mount_path"]
         tabix_outdir = tabixDict[input_parameters["output_directory"]]["mount_path"]
 
@@ -224,11 +206,7 @@ def tumor_only(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write("/opt/strelka/bin/configureStrelkaGermlineWorkflow.py \\\n")
         out.write(f"--bam={mounted_tumor_bam} \\\n")
         out.write(f"--referenceFasta={mounted_genome_reference} \\\n")
-        out.write(
-            "--callMemMb={} \\\n".format(
-                eval(input_parameters["MEM"].rstrip("G")) * 1024
-            )
-        )
+        out.write("--callMemMb={} \\\n".format(eval(input_parameters["MEM"].rstrip("G")) * 1024))
         out.write(f"--callRegions={mounted_outdir}/{bed_gz} \\\n")
 
         if input_parameters["exome"]:
@@ -237,9 +215,7 @@ def tumor_only(input_parameters=DEFAULT_PARAMS, tech="docker"):
         if input_parameters["strelka_config_arguments"]:
             out.write("{} \\\n".format(input_parameters["strelka_config_arguments"]))
 
-        out.write(
-            "--runDir={}/{}\n\n".format(mounted_outdir, input_parameters["outdir_name"])
-        )
+        out.write("--runDir={}/{}\n\n".format(mounted_outdir, input_parameters["outdir_name"]))
 
         out.write(f"{container_line} \\\n")
         out.write(

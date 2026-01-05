@@ -43,10 +43,7 @@ with open("README.md") as fn:
 
 setup(
     name="somaticseq",
-    description=(
-        "SomaticSeq: "
-        "An ensemble approach to accurately detect somatic mutations using SomaticSeq"
-    ),
+    description=("SomaticSeq: An ensemble approach to accurately detect somatic mutations using SomaticSeq"),
     version=__version__,  # type: ignore[name-defined] # noqa
     long_description=description_for_3rd_party,
     long_description_content_type="text/markdown",

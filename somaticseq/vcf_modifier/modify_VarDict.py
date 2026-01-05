@@ -15,15 +15,9 @@ from somaticseq.vcf_modifier.split_vcf import (
 
 
 def run() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    parser.add_argument(
-        "-infile", "--input-vcf", type=str, help="Input VCF file", required=True
-    )
-    parser.add_argument(
-        "-snv", "--output-snv", type=str, help="Output SNV VCF file", required=True
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-infile", "--input-vcf", type=str, help="Input VCF file", required=True)
+    parser.add_argument("-snv", "--output-snv", type=str, help="Output SNV VCF file", required=True)
     parser.add_argument(
         "-indel",
         "--output-indel",
@@ -31,9 +25,7 @@ def run() -> argparse.Namespace:
         help="Output INDEL VCF file",
         required=True,
     )
-    parser.add_argument(
-        "-ref", "--genome-reference", type=str, help="genome reference", required=True
-    )
+    parser.add_argument("-ref", "--genome-reference", type=str, help="genome reference", required=True)
     args = parser.parse_args()
     return args
 
@@ -112,30 +104,14 @@ def convert(infile, snv_out, indel_out, genome_reference):
             line_i = vcf.readline().rstrip()
 
         addition_header = []
-        addition_header.append(
-            '##INFO=<ID=Germline,Number=0,Type=Flag,Description="VarDict Germline">'
-        )
-        addition_header.append(
-            '##INFO=<ID=StrongSomatic,Number=0,Type=Flag,Description="VarDict Strong Somatic">'
-        )
-        addition_header.append(
-            '##INFO=<ID=LikelySomatic,Number=0,Type=Flag,Description="VarDict Likely Somatic">'
-        )
-        addition_header.append(
-            '##INFO=<ID=LikelyLOH,Number=0,Type=Flag,Description="VarDict Likely LOH">'
-        )
-        addition_header.append(
-            '##INFO=<ID=StrongLOH,Number=0,Type=Flag,Description="VarDict Strong LOH">'
-        )
-        addition_header.append(
-            '##INFO=<ID=AFDiff,Number=0,Type=Flag,Description="VarDict AF Diff">'
-        )
-        addition_header.append(
-            '##INFO=<ID=Deletion,Number=0,Type=Flag,Description="VarDict Deletion">'
-        )
-        addition_header.append(
-            '##INFO=<ID=SampleSpecific,Number=0,Type=Flag,Description="VarDict SampleSpecific">'
-        )
+        addition_header.append('##INFO=<ID=Germline,Number=0,Type=Flag,Description="VarDict Germline">')
+        addition_header.append('##INFO=<ID=StrongSomatic,Number=0,Type=Flag,Description="VarDict Strong Somatic">')
+        addition_header.append('##INFO=<ID=LikelySomatic,Number=0,Type=Flag,Description="VarDict Likely Somatic">')
+        addition_header.append('##INFO=<ID=LikelyLOH,Number=0,Type=Flag,Description="VarDict Likely LOH">')
+        addition_header.append('##INFO=<ID=StrongLOH,Number=0,Type=Flag,Description="VarDict Strong LOH">')
+        addition_header.append('##INFO=<ID=AFDiff,Number=0,Type=Flag,Description="VarDict AF Diff">')
+        addition_header.append('##INFO=<ID=Deletion,Number=0,Type=Flag,Description="VarDict Deletion">')
+        addition_header.append('##INFO=<ID=SampleSpecific,Number=0,Type=Flag,Description="VarDict SampleSpecific">')
         addition_header.append(
             '##FORMAT=<ID=DP4,Number=4,Type=Integer,Description="# high-quality ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">'
         )
@@ -234,9 +210,7 @@ def convert(infile, snv_out, indel_out, genome_reference):
 
             else:  # "TYPE=Complex"
                 complex_call = genome.VCFVariantRecord.from_vcf_line(line_i)
-                snvs_and_indels = split_complex_variants_into_snvs_and_indels(
-                    complex_call
-                )
+                snvs_and_indels = split_complex_variants_into_snvs_and_indels(complex_call)
                 for snv_or_indel in snvs_and_indels:
                     if len(snv_or_indel.refbase) == len(snv_or_indel.altbase) == 1:
                         snpout.write(snv_or_indel.to_vcf_line() + "\n")

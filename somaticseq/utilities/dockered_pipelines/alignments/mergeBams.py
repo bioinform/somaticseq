@@ -48,9 +48,7 @@ def picard(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=Fal
 
     infile_string = ""
     for file_i in inbams:
-        infile_string = infile_string + "I={} ".format(
-            file_dictionary[file_i]["mount_path"]
-        )
+        infile_string = infile_string + "I={} ".format(file_dictionary[file_i]["mount_path"])
 
     picard_index_file = re.sub(r"m$", "i", outbam)
 
@@ -117,9 +115,7 @@ def sambamba(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=F
     )
 
     mounted_outbam = file_dictionary[outbam]["mount_path"]
-    infile_string = " ".join(
-        [file_dictionary[file_i]["mount_path"] for file_i in inbams]
-    )
+    infile_string = " ".join([file_dictionary[file_i]["mount_path"] for file_i in inbams])
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
@@ -135,11 +131,7 @@ def sambamba(inbams, outbam, tech="docker", input_parameters={}, remove_inbams=F
         )  # Do not change this: picard_fractional uses this to end the copying.
 
         out.write(f"{merge_line} \\\n")
-        out.write(
-            "sambamba merge -t {} {} {}\n\n".format(
-                input_parameters["threads"], mounted_outbam, infile_string
-            )
-        )
+        out.write("sambamba merge -t {} {} {}\n\n".format(input_parameters["threads"], mounted_outbam, infile_string))
 
         if remove_inbams:
             out.write("rm {}\n\n".format(" ".join(inbams)))

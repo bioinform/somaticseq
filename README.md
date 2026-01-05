@@ -6,10 +6,10 @@ with a suite of [genomic utilities](somaticseq/utilities/README.md). The
 detailed documentation is located in
 [docs/Manual.pdf](docs/Manual.pdf "User Manual").
 
--   It was published in
-    [Fang, L.T., Afshar, P.T., Chhibber, A. _et al_. An ensemble approach to accurately detect somatic mutations using SomaticSeq. _Genome Biol_ **16**, 197 (2015)](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, et al. Genome Biol (2015)").
--   Feel free to report issues and/or ask questions at the
-    [Issues](../../issues "Issues") page.
+- It was published in
+  [Fang, L.T., Afshar, P.T., Chhibber, A. _et al_. An ensemble approach to accurately detect somatic mutations using SomaticSeq. _Genome Biol_ **16**, 197 (2015)](http://dx.doi.org/10.1186/s13059-015-0758-2 "Fang LT, et al. Genome Biol (2015)").
+- Feel free to report issues and/or ask questions at the
+  [Issues](../../issues "Issues") page.
 
 ## Training data for benchmarking and/or model building
 
@@ -28,20 +28,19 @@ This work was published in
 [Free Read-Only Link](https://bit.ly/2021nbt "Fang LT, et al. Nat Biotechnol (2021)").
 The following are some of the use cases for these resources:
 
--   Use high-confidence call set as the "ground truth" to investigate how
-    different sample preparations, sequencing library kits, and bioinformatic
-    algorithms affect the accuracy of the somatic mutation pipelines, and
-    develop best practices, e.g.,
-    [Xiao W. _et al_. Nat Biotechnol 2021](https://doi.org/10.1038/s41587-021-00994-5).
--   Use high-confidence call set as the "ground truth" to build accurate and
-    robust machine learning models for somatic mutation detections, e.g.,
-    [NeuSomatic by Sahraeian S.M.E. _et al_. Genome Biol 2022](https://doi.org/10.1186/s13059-021-02592-9),
-    [DeepSomatic by Park J. _et al_. 2024](https://doi.org/10.1101/2024.08.16.608331).
--   Use the bam files and high-confidence call set to benchmark a workflow,
-    e.g.,
-    [Benchmarking NVIDIA Clara Parabricks Somatic Variant Calling Pipeline on AWS](https://aws.amazon.com/blogs/hpc/benchmarking-nvidia-clara-parabricks-somatic-variant-calling-pipeline-on-aws/),
-    [NVIDIA Docs Hub](https://docs.nvidia.com/clara/parabricks/how-tos/somaticcalling.html),
-    [nf-core/sarek](https://doi.org/10.1093/nargab/lqae031), etc.
+- Use high-confidence call set as the "ground truth" to investigate how
+  different sample preparations, sequencing library kits, and bioinformatic
+  algorithms affect the accuracy of the somatic mutation pipelines, and develop
+  best practices, e.g.,
+  [Xiao W. _et al_. Nat Biotechnol 2021](https://doi.org/10.1038/s41587-021-00994-5).
+- Use high-confidence call set as the "ground truth" to build accurate and
+  robust machine learning models for somatic mutation detections, e.g.,
+  [NeuSomatic by Sahraeian S.M.E. _et al_. Genome Biol 2022](https://doi.org/10.1186/s13059-021-02592-9),
+  [DeepSomatic by Park J. _et al_. 2024](https://doi.org/10.1101/2024.08.16.608331).
+- Use the bam files and high-confidence call set to benchmark a workflow, e.g.,
+  [Benchmarking NVIDIA Clara Parabricks Somatic Variant Calling Pipeline on AWS](https://aws.amazon.com/blogs/hpc/benchmarking-nvidia-clara-parabricks-somatic-variant-calling-pipeline-on-aws/),
+  [NVIDIA Docs Hub](https://docs.nvidia.com/clara/parabricks/how-tos/somaticcalling.html),
+  [nf-core/sarek](https://doi.org/10.1093/nargab/lqae031), etc.
 
 #### Click for [more details of the SEQC2's somatic mutation project](docs/seqc2.md).
 
@@ -81,17 +80,16 @@ The following are some of the use cases for these resources:
 This [dockerfile](Dockerfiles/somaticseq.base-1.6.dockerfile) reveals the
 dependencies
 
--   Python 3, plus pysam, numpy, scipy, pandas, and xgboost libraries.
--   [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when
-    parallel processing is invoked, and/or when any bed files are used as input
-    files.
--   Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
--   Optional: R and [ada](https://cran.r-project.org/package=ada) are required
-    for AdaBoost, whereas XGBoost (default) is implemented in python.
--   To install SomaticSeq, clone this repo, `cd somaticseq`, and then run
-    `pip install .` (To install extra packages for development:
-    `pip install '.[dev]'`). A number of commands prefixed with `somaticseq_`
-    will be placed into the PATH.
+- Python 3, plus pysam, numpy, scipy, pandas, and xgboost libraries.
+- [BEDTools](https://bedtools.readthedocs.io/en/latest/): required when parallel
+  processing is invoked, and/or when any bed files are used as input files.
+- Optional: dbSNP VCF file (if you want to use dbSNP membership as a feature).
+- Optional: R and [ada](https://cran.r-project.org/package=ada) are required for
+  AdaBoost, whereas XGBoost (default) is implemented in python.
+- To install SomaticSeq, clone this repo, `cd somaticseq`, and then run
+  `pip install .` (To install extra packages for development:
+  `pip install '.[dev]'`). A number of commands prefixed with `somaticseq_` will
+  be placed into the PATH.
 
 ## To install using pip
 
@@ -134,32 +132,30 @@ if installed properly.
 
 ## Run SomaticSeq with an example command
 
--   At minimum, given the results of the individual mutation caller(s),
-    SomaticSeq will extract sequencing features for the combined call set.
-    Required inputs for command `somaticseq` are:
-
-    -   `--output-directory` and `--genome-reference`, then
-    -   Either `paired` or `single` to invoke paired or single sample mode,
-        -   if `paired`: `--tumor-bam-file`, and `--normal-bam-file` are both
-            required.
-        -   if `single`: `--bam-file` is required.
+- At minimum, given the results of the individual mutation caller(s), SomaticSeq
+  will extract sequencing features for the combined call set. Required inputs
+  for command `somaticseq` are:
+    - `--output-directory` and `--genome-reference`, then
+    - Either `paired` or `single` to invoke paired or single sample mode,
+        - if `paired`: `--tumor-bam-file`, and `--normal-bam-file` are both
+          required.
+        - if `single`: `--bam-file` is required.
 
     Everything else is optional (though without a single VCF file from at least
     one caller, SomaticSeq does nothing).
 
--   The following four files will be created into the output directory:
+- The following four files will be created into the output directory:
+    - `Consensus.sSNV.vcf`, `Consensus.sINDEL.vcf`, `Ensemble.sSNV.tsv`, and
+      `Ensemble.sINDEL.tsv`.
 
-    -   `Consensus.sSNV.vcf`, `Consensus.sINDEL.vcf`, `Ensemble.sSNV.tsv`, and
-        `Ensemble.sINDEL.tsv`.
-
--   If you're searching for pipelines to run those individual somatic mutation
-    callers, feel free to take advantage of our
-    [**Dockerized Somatic Mutation Workflow**](somaticseq/utilities/dockered_pipelines)
-    as a start.
-    -   Important note: multi-argument options (e.g., `--extra-hyperparameters`
-        or `--features-excluded`) cannot be placed immediately before `paired`
-        or `single`, because those options would try to "grab" `paired` or
-        `single` as an additional argument.
+- If you're searching for pipelines to run those individual somatic mutation
+  callers, feel free to take advantage of our
+  [**Dockerized Somatic Mutation Workflow**](somaticseq/utilities/dockered_pipelines)
+  as a start.
+    - Important note: multi-argument options (e.g., `--extra-hyperparameters` or
+      `--features-excluded`) cannot be placed immediately before `paired` or
+      `single`, because those options would try to "grab" `paired` or `single`
+      as an additional argument.
 
 ```
 # Merge caller results and extract SomaticSeq features
@@ -188,56 +184,55 @@ paired \
   --arbitrary-indels  additional_indel_calls_1.vcf.gz additional_indel_calls_2.vcf.gz ...
 ```
 
--   For all of those input VCF files, both `.vcf` and `.vcf.gz` are acceptable.
-    SomaticSeq also accepts `.cram`, but some callers may only take `.bam`.
+- For all of those input VCF files, both `.vcf` and `.vcf.gz` are acceptable.
+  SomaticSeq also accepts `.cram`, but some callers may only take `.bam`.
 
--   `--arbitrary-snvs` and `--arbitrary-indels` are added since v3.7.0. It
-    allows users to input **any** arbitrary VCF file(s) from caller(s) that we
-    did not explicitly incorporate. SNVs and indels have to be separated.
+- `--arbitrary-snvs` and `--arbitrary-indels` are added since v3.7.0. It allows
+  users to input **any** arbitrary VCF file(s) from caller(s) that we did not
+  explicitly incorporate. SNVs and indels have to be separated.
+    - If your caller puts SNVs and indels in the same output VCF file, you may
+      split it using a SomaticSeq utility script, e.g.,
+      `somaticseq_split_vcf -infile small_variants.vcf -snv snvs.vcf -indel indels.vcf`.
+      As usual, input can be either `.vcf` or `.vcf.gz`, but output will be
+      `.vcf`.
+    - For those VCF file(s), any calls **not** labeled REJECT or LowQual will be
+      considered a bona fide somatic mutation call. REJECT calls will be
+      skipped. LowQual calls will be considered, but will not have a value of
+      `1` in `if_Caller` machine learning feature.
 
-    -   If your caller puts SNVs and indels in the same output VCF file, you may
-        split it using a SomaticSeq utility script, e.g.,
-        `somaticseq_split_vcf -infile small_variants.vcf -snv snvs.vcf -indel indels.vcf`.
-        As usual, input can be either `.vcf` or `.vcf.gz`, but output will be
-        `.vcf`.
-    -   For those VCF file(s), any calls **not** labeled REJECT or LowQual will
-        be considered a bona fide somatic mutation call. REJECT calls will be
-        skipped. LowQual calls will be considered, but will not have a value of
-        `1` in `if_Caller` machine learning feature.
+- `--inclusion-region` or `--exclusion-region` will require `bedtools` in your
+  path.
 
--   `--inclusion-region` or `--exclusion-region` will require `bedtools` in your
-    path.
+- `--algorithm` defaults to `xgboost` as v3.6.0, but can also be `ada` (AdaBoost
+  in R). XGBoost supports multi-threading and can be orders of magnitude faster
+  than AdaBoost, and seems to be about the same in terms of accuracy, so we
+  changed the default from `ada` to `xgboost` as v3.6.0 and that's what we
+  recommend now.
 
--   `--algorithm` defaults to `xgboost` as v3.6.0, but can also be `ada`
-    (AdaBoost in R). XGBoost supports multi-threading and can be orders of
-    magnitude faster than AdaBoost, and seems to be about the same in terms of
-    accuracy, so we changed the default from `ada` to `xgboost` as v3.6.0 and
-    that's what we recommend now.
-
--   To split the job into multiple threads, place `--threads X` before the
-    `paired` option to indicate X threads. It simply creates multiple BED file
-    (each consisting of 1/X of total base pairs) for SomaticSeq to run on each
-    of those sub-BED files in parallel. It then merges the results. This
-    requires `bedtools` in your path.
+- To split the job into multiple threads, place `--threads X` before the
+  `paired` option to indicate X threads. It simply creates multiple BED file
+  (each consisting of 1/X of total base pairs) for SomaticSeq to run on each of
+  those sub-BED files in parallel. It then merges the results. This requires
+  `bedtools` in your path.
 
 Additional parameters to be specified **before** `paired` option to invoke
 training mode. In addition to the four files specified above, two classifiers
 (SNV and indel) will be created..
 
--   `--somaticseq-train`: FLAG to invoke training mode with no argument, which
-    also requires ground truth VCF files.
-    -   `--extra-hyperparameters`: add hyperparameters for xgboost, e.g.,
-        `--extra-hyperparameters scale_pos_weight:0.1 grow_policy:lossguide max_leaves:12`.
--   `--truth-snv`: if you have a ground truth VCF file for SNV
--   `--truth-indel`: if you have a ground truth VCF file for INDEL
+- `--somaticseq-train`: FLAG to invoke training mode with no argument, which
+  also requires ground truth VCF files.
+    - `--extra-hyperparameters`: add hyperparameters for xgboost, e.g.,
+      `--extra-hyperparameters scale_pos_weight:0.1 grow_policy:lossguide max_leaves:12`.
+- `--truth-snv`: if you have a ground truth VCF file for SNV
+- `--truth-indel`: if you have a ground truth VCF file for INDEL
 
 Additional input files to be specified **before** `paired` option invoke
 prediction mode (to use classifiers to score variants). Four additional files
 will be created, i.e., `SSeq.Classified.sSNV.vcf`, `SSeq.Classified.sSNV.tsv`,
 `SSeq.Classified.sINDEL.vcf`, and `SSeq.Classified.sINDEL.tsv`.
 
--   `--classifier-snv`: classifier previously built for SNV
--   `--classifier-indel`: classifier previously built for INDEL
+- `--classifier-snv`: classifier previously built for SNV
+- `--classifier-indel`: classifier previously built for INDEL
 
 Without those paramters above to invoking training or prediction mode,
 SomaticSeq will default to majority-vote consensus mode.
@@ -275,26 +270,26 @@ supported, but is not optimized. Let me know if you find bugs.
 
 ### To create training data to create SomaticSeq classifiers
 
--   I recommend [SEQC2 Somatic Mutation Working Group](docs/seqc2.md)'s
-    [reference sequencing data](https://identifiers.org/ncbi/insdc.sra:SRP162370)
-    and
-    [high-confidence somatic mutation call sets](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release/latest/).
+- I recommend [SEQC2 Somatic Mutation Working Group](docs/seqc2.md)'s
+  [reference sequencing data](https://identifiers.org/ncbi/insdc.sra:SRP162370)
+  and
+  [high-confidence somatic mutation call sets](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/seqc/Somatic_Mutation_WG/release/latest/).
 
--   Before well characterized real data was available, we have dockerized
-    pipelines for _in silico_ mutation spike in at
-    [**somaticseq/utilities/dockered_pipelines/bamSimulator**](somaticseq/utilities/dockered_pipelines/bamSimulator).
-    These pipelines are based on
-    [BAMSurgeon](https://github.com/adamewing/bamsurgeon). We have used it to
-    create training set to build SomaticSeq classifiers, though it has not been
-    updated for a while.
+- Before well characterized real data was available, we have dockerized
+  pipelines for _in silico_ mutation spike in at
+  [**somaticseq/utilities/dockered_pipelines/bamSimulator**](somaticseq/utilities/dockered_pipelines/bamSimulator).
+  These pipelines are based on
+  [BAMSurgeon](https://github.com/adamewing/bamsurgeon). We have used it to
+  create training set to build SomaticSeq classifiers, though it has not been
+  updated for a while.
 
--   Combine both BAMSurgeon _in silico_ spike in and the real SEQC2 training
-    data **may** give you better model than using either, which was shown in
-    [Sahraeian S.M.E. _et al_. 2022](https://doi.org/10.1186/s13059-021-02592-9).
-    The reason may be that the real data's high-confidence call sets do not have
-    the most challenging genomic regions, whereas _in silico_ data do not have
-    the most realistic data characteristics. Combining both allows them to cover
-    each other's shortcomings.
+- Combine both BAMSurgeon _in silico_ spike in and the real SEQC2 training data
+  **may** give you better model than using either, which was shown in
+  [Sahraeian S.M.E. _et al_. 2022](https://doi.org/10.1186/s13059-021-02592-9).
+  The reason may be that the real data's high-confidence call sets do not have
+  the most challenging genomic regions, whereas _in silico_ data do not have the
+  most realistic data characteristics. Combining both allows them to cover each
+  other's shortcomings.
 
 ### Dockerized alignment pipeline based on GATK's best practices
 
@@ -307,13 +302,11 @@ The module is `somaticseq_make_alignment_scripts`.
 We have some generally useful scripts in [utilities](somaticseq/utilities). Some
 of the more useful tools, e.g.,
 
--   `somaticseq_loci_counter` finds overlapping regions among multiple bed
-    files.
--   `somaticseq_run_workflows` is a rudimentary workflow manager that executes
-    multiple scripts at once.
--   `somaticseq_split_bed_into_equal_regions` splits one bed file into a number
-    of output bed files, where each output bed file will have the same total
-    length.
--   `somaticseq_linguistic_sequence_complexity` calculates sequence complexity
-    given a nucleotide sequence (e.g., GCCAGAC) based on
-    [Troyanskaya OG _et al_. Bioinformatics 2002](https://doi.org/10.1093/bioinformatics/18.5.679).
+- `somaticseq_loci_counter` finds overlapping regions among multiple bed files.
+- `somaticseq_run_workflows` is a rudimentary workflow manager that executes
+  multiple scripts at once.
+- `somaticseq_split_bed_into_equal_regions` splits one bed file into a number of
+  output bed files, where each output bed file will have the same total length.
+- `somaticseq_linguistic_sequence_complexity` calculates sequence complexity
+  given a nucleotide sequence (e.g., GCCAGAC) based on
+  [Troyanskaya OG _et al_. Bioinformatics 2002](https://doi.org/10.1093/bioinformatics/18.5.679).

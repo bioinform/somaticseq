@@ -41,11 +41,7 @@ def bam2fq(bam_file, fastq1, fastq2):
         reads = bam.fetch()
         for read_i in reads:
             if not read_i.is_secondary:
-                seq_i = (
-                    reverse_complement(read_i.query_sequence)
-                    if read_i.is_reverse
-                    else read_i.query_sequence
-                )
+                seq_i = reverse_complement(read_i.query_sequence) if read_i.is_reverse else read_i.query_sequence
                 qual_i = read_i.qual[::-1] if read_i.is_reverse else read_i.qual
                 if read_i.is_read1:
                     if read_i.query_name in reads2:

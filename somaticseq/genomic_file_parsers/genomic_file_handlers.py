@@ -10,9 +10,7 @@ from pysam import AlignmentFile
 
 # The regular expression pattern for "chrXX 1234567" in both VarScan2 Output and
 # VCF files:
-CONTIG_POSITION_PATTERN = re.compile(
-    r"^(?:chr)?(?:[1-9]|1[0-9]|2[0-2]|[XY]|MT?)\t[0-9]+\b"
-)
+CONTIG_POSITION_PATTERN = re.compile(r"^(?:chr)?(?:[1-9]|1[0-9]|2[0-2]|[XY]|MT?)\t[0-9]+\b")
 # More lenient pattern:
 PATTERN_CHR_POSITION = re.compile(r"[^\t]+\t[0-9]+\b")
 PATTERN_CHROM = re.compile(r"(?:chr)?([1-9]|1[0-9]|2[0-2]|[XY]|MT?)\W")
@@ -173,9 +171,7 @@ def skip_vcf_header(opened_file: TextIO) -> str:
     return line_i
 
 
-def faiordict2contigorder(
-    file_name: str, file_format: Literal["fai", "dict"]
-) -> dict[str, int]:
+def faiordict2contigorder(file_name: str, file_format: Literal["fai", "dict"]) -> dict[str, int]:
     """Takes either a .fai or .dict file, and return a contig order dictionary,
     i.e., chrom_seq['chr1'] == 0"""
 
@@ -192,9 +188,7 @@ def faiordict2contigorder(
                     contig_match = re.match(r"@SQ\tSN:([^\t]+)\tLN:", line_i)
 
             if contig_match:
-                contig_i = contig_match.groups()[0].split(" ")[
-                    0
-                ]  # some .fai files have space after the contig.
+                contig_i = contig_match.groups()[0].split(" ")[0]  # some .fai files have space after the contig.
                 contig_sequence.append(contig_i)
 
     chrom_seq = {}
@@ -351,9 +345,7 @@ def whoisbehind(
             return 10
 
 
-def vcf_header_modifier(
-    infile_handle: TextIO, addons: list[str] = [], getlost: str = " "
-):
+def vcf_header_modifier(infile_handle: TextIO, addons: list[str] = [], getlost: str = " "):
     """addons = A list of INFO, FORMAT, ID, or Filter lines you want to add.
     getlost = a regex expression for the ID of INFO/FORMAT/FILTER that you want
     to get rid of.
@@ -574,9 +566,7 @@ def find_vcf_at_coordinate(
 
 
     """
-    latest_vcf_run = catchup_multilines(
-        my_coordinate, latest_vcf_line, vcf_file_handle, chrom_seq
-    )
+    latest_vcf_run = catchup_multilines(my_coordinate, latest_vcf_line, vcf_file_handle, chrom_seq)
     latest_vcf_here = latest_vcf_run[1]
 
     vcf_variants = {}
@@ -588,9 +578,7 @@ def find_vcf_at_coordinate(
             assert vcf_i.altbase
             altbases = re.split(r"[,/]", vcf_i.altbase)
             for alt_i in altbases:
-                vcf_variants[
-                    ((vcf_i.chromosome, vcf_i.position), vcf_i.refbase, alt_i)
-                ] = vcf_i
+                vcf_variants[((vcf_i.chromosome, vcf_i.position), vcf_i.refbase, alt_i)] = vcf_i
             assert my_coordinate[1] == vcf_i.position
 
     latest_vcf_line = latest_vcf_run[-1]

@@ -81,9 +81,7 @@ with open_textfile(args.infile) as infile, open(args.outfile, "w") as outfile:
     line_in = infile.readline().rstrip()
     item_in = line_in.split("\t")
     out_indices = [item_in.index(i) for i in args.subtract_callers]
-    remaining_indices = [
-        item_in.index(i) for i in all_possible_callers if i not in args.subtract_callers
-    ]
+    remaining_indices = [item_in.index(i) for i in all_possible_callers if i not in args.subtract_callers]
     extra_nan_items = items_to_make_nan(args.subtract_callers)
     extra_nan_indices = [item_in.index(i) for i in extra_nan_items]
     outfile.write(line_in + "\n")

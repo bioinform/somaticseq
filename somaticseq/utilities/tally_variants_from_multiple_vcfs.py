@@ -89,15 +89,9 @@ def vaf_from_bam(
     ref_calls = 0
     other_calls = 0
     for read_i in reads:
-        if (
-            (not read_i.is_unmapped)
-            and read_info_extractor.dedup_test(read_i)
-            and read_i.mapping_quality >= min_mq
-        ):
+        if (not read_i.is_unmapped) and read_info_extractor.dedup_test(read_i) and read_i.mapping_quality >= min_mq:
             dp += 1
-            sequencing_call = read_info_extractor.get_alignment_in_read(
-                read_i, my_coordinate[1] - 1
-            )
+            sequencing_call = read_info_extractor.get_alignment_in_read(read_i, my_coordinate[1] - 1)
             # Reference calls:
             if (
                 sequencing_call.call_type == read_info_extractor.AlignmentType.match
@@ -110,21 +104,15 @@ def vaf_from_bam(
             elif (
                 (
                     indel_length == 0
-                    and sequencing_call.call_type
-                    == read_info_extractor.AlignmentType.match
+                    and sequencing_call.call_type == read_info_extractor.AlignmentType.match
                     and sequencing_call.base_call == first_alt
                 )
                 or (
                     indel_length < 0
-                    and sequencing_call.call_type
-                    == read_info_extractor.AlignmentType.deletion
+                    and sequencing_call.call_type == read_info_extractor.AlignmentType.deletion
                     and indel_length == sequencing_call.indel_length
                 )
-                or (
-                    indel_length > 0
-                    and sequencing_call.call_type
-                    == read_info_extractor.AlignmentType.insertion
-                )
+                or (indel_length > 0 and sequencing_call.call_type == read_info_extractor.AlignmentType.insertion)
             ):
                 var_calls += 1
             # Inconsistent read or 2nd alternate calls:
@@ -139,9 +127,7 @@ def vcfs2variants(vcf_files, bam_files, sample_names):
 
     variantDict = {}
     i = 0
-    for vcf_file_i, bam_file_i, sample_name_i in zip(
-        vcf_files, bam_files, sample_names
-    ):
+    for vcf_file_i, bam_file_i, sample_name_i in zip(vcf_files, bam_files, sample_names):
         with (
             genome.open_textfile(vcf_file_i) as vcf,
             pysam.AlignmentFile(bam_file_i) as bam,
@@ -167,9 +153,7 @@ def vcfs2variants(vcf_files, bam_files, sample_names):
                     refbase,
                     altbase,
                 )
-                vdp, rdp, odp, totaldp = vaf_from_bam(
-                    bam, (contig_i, pos_i), refbase, altbase, 1
-                )
+                vdp, rdp, odp, totaldp = vaf_from_bam(bam, (contig_i, pos_i), refbase, altbase, 1)
                 try:
                     vaf_i = vdp / totaldp
                 except ZeroDivisionError:
@@ -234,19 +218,13 @@ def fills_missing_vafs(variantDict, bam_files, sample_names):
 def make_variant_dict(inputListofLists):
     vcf_files, bam_files, sample_names = inputListofLists
     varDictWithMissings = vcfs2variants(vcf_files, bam_files, sample_names)
-    completeVariantDict = fills_missing_vafs(
-        varDictWithMissings, bam_files, sample_names
-    )
+    completeVariantDict = fills_missing_vafs(varDictWithMissings, bam_files, sample_names)
     return completeVariantDict
 
 
-def make_variant_dict_parallel(
-    vcf_files, bam_files, sample_names, bed_region, nthreads
-):
+def make_variant_dict_parallel(vcf_files, bam_files, sample_names, bed_region, nthreads):
     dirname = tempfile.gettempdir()  # os.curdir
-    partial_regions = split_regions.split(
-        bed_region, os.path.join(dirname, uuid.uuid4().hex + ".bed"), nthreads
-    )
+    partial_regions = split_regions.split(bed_region, os.path.join(dirname, uuid.uuid4().hex + ".bed"), nthreads)
 
     pool = multiprocessing.Pool(nthreads)
 
@@ -369,9 +347,7 @@ def run():
             "PASS",
         ],
     )
-    parser.add_argument(
-        "-bed", "--bed-inclusion", type=str, help="Bed file to include."
-    )
+    parser.add_argument("-bed", "--bed-inclusion", type=str, help="Bed file to include.")
     parser.add_argument("-nt", "--num-threads", type=int, help="threads", default=1)
     parser.add_argument(
         "-min",
@@ -413,12 +389,8 @@ def main() -> None:
         if args.num_threads > 1:
             warn("This module is unable parallelize this task without bed file input.")
 
-        variant_dict = make_variant_dict(
-            (args.vcf_files, args.bam_files, args.sample_names)
-        )
-        print_variantDict(
-            variant_dict, args.sample_names, args.filter_labels, args.minimum_samples
-        )
+        variant_dict = make_variant_dict((args.vcf_files, args.bam_files, args.sample_names))
+        print_variantDict(variant_dict, args.sample_names, args.filter_labels, args.minimum_samples)
 
 
 if __name__ == "__main__":

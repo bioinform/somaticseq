@@ -104,11 +104,7 @@ class BamFeatures(BaseModel):
             assert read.cigartuples is not None  # type checking
             dp += 1
             sequencing_call = get_alignment_in_read(read, my_coordinate[1] - 1)
-            if (
-                read.query_qualities
-                and read.mapping_quality < min_mq
-                and mean(read.query_qualities) < min_bq
-            ):
+            if read.query_qualities and read.mapping_quality < min_mq and mean(read.query_qualities) < min_bq:
                 poor_read_count += 1
 
             if read.mapping_quality == 0:
@@ -119,10 +115,7 @@ class BamFeatures(BaseModel):
             else:
                 bq = nan
             # Reference calls:
-            if (
-                sequencing_call.call_type == AlignmentType.match
-                and sequencing_call.base_call == ref_base[0]
-            ):
+            if sequencing_call.call_type == AlignmentType.match and sequencing_call.base_call == ref_base[0]:
                 qname_collector[read.query_name].append(0)
                 ref_read_mq.append(read.mapping_quality)
                 ref_read_bq.append(bq)
@@ -132,36 +125,19 @@ class BamFeatures(BaseModel):
                     pass
 
                 # Concordance
-                if (
-                    read.is_proper_pair
-                    and read.mapping_quality >= min_mq
-                    and bq >= min_bq
-                ):
+                if read.is_proper_pair and read.mapping_quality >= min_mq and bq >= min_bq:
                     ref_concordant_reads += 1
-                elif (
-                    (not read.is_proper_pair)
-                    and read.mapping_quality >= min_mq
-                    and bq >= min_bq
-                ):
+                elif (not read.is_proper_pair) and read.mapping_quality >= min_mq and bq >= min_bq:
                     ref_discordant_reads += 1
 
                 # Orientation
-                if (
-                    (not read.is_reverse)
-                    and read.mapping_quality >= min_mq
-                    and bq >= min_bq
-                ):
+                if (not read.is_reverse) and read.mapping_quality >= min_mq and bq >= min_bq:
                     ref_for += 1
-                elif (
-                    read.is_reverse and read.mapping_quality >= min_mq and bq >= min_bq
-                ):
+                elif read.is_reverse and read.mapping_quality >= min_mq and bq >= min_bq:
                     ref_rev += 1
 
                 # Soft-clipped reads?
-                if (
-                    read.cigartuples[0][0] == CIGAR_SOFT_CLIP
-                    or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP
-                ):
+                if read.cigartuples[0][0] == CIGAR_SOFT_CLIP or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP:
                     ref_SC_reads += 1
                 else:
                     ref_notSC_reads += 1
@@ -190,10 +166,7 @@ class BamFeatures(BaseModel):
                     and sequencing_call.call_type == AlignmentType.deletion
                     and indel_length == sequencing_call.indel_length
                 )
-                or (
-                    indel_length > 0
-                    and sequencing_call.call_type == AlignmentType.insertion
-                )
+                or (indel_length > 0 and sequencing_call.call_type == AlignmentType.insertion)
             ):
                 qname_collector[read.query_name].append(1)
                 alt_read_mq.append(read.mapping_quality)
@@ -203,34 +176,17 @@ class BamFeatures(BaseModel):
                 except KeyError:
                     pass
                 # Concordance
-                if (
-                    read.is_proper_pair
-                    and read.mapping_quality >= min_mq
-                    and bq >= min_bq
-                ):
+                if read.is_proper_pair and read.mapping_quality >= min_mq and bq >= min_bq:
                     alt_concordant_reads += 1
-                elif (
-                    (not read.is_proper_pair)
-                    and read.mapping_quality >= min_mq
-                    and bq >= min_bq
-                ):
+                elif (not read.is_proper_pair) and read.mapping_quality >= min_mq and bq >= min_bq:
                     alt_discordant_reads += 1
                 # Orientation
-                if (
-                    (not read.is_reverse)
-                    and read.mapping_quality >= min_mq
-                    and bq >= min_bq
-                ):
+                if (not read.is_reverse) and read.mapping_quality >= min_mq and bq >= min_bq:
                     alt_for += 1
-                elif (
-                    read.is_reverse and read.mapping_quality >= min_mq and bq >= min_bq
-                ):
+                elif read.is_reverse and read.mapping_quality >= min_mq and bq >= min_bq:
                     alt_rev += 1
                 # Soft-clipped reads?
-                if (
-                    read.cigartuples[0][0] == CIGAR_SOFT_CLIP
-                    or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP
-                ):
+                if read.cigartuples[0][0] == CIGAR_SOFT_CLIP or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP:
                     alt_SC_reads += 1
                 else:
                     alt_notSC_reads += 1
@@ -255,9 +211,7 @@ class BamFeatures(BaseModel):
         ref_mq = mean(ref_read_mq)
         alt_mq = mean(alt_read_mq)
         try:
-            p_mannwhitneyu_mq = stats.mannwhitneyu(
-                alt_read_mq, ref_read_mq, use_continuity=True, alternative="less"
-            )[1]
+            p_mannwhitneyu_mq = stats.mannwhitneyu(alt_read_mq, ref_read_mq, use_continuity=True, alternative="less")[1]
         except ValueError:
             if len(alt_read_mq) > 0 and len(ref_read_mq) > 0:
                 p_mannwhitneyu_mq = 0.5
@@ -267,9 +221,7 @@ class BamFeatures(BaseModel):
         ref_bq = mean(ref_read_bq)
         alt_bq = mean(alt_read_bq)
         try:
-            p_mannwhitneyu_bq = stats.mannwhitneyu(
-                alt_read_bq, ref_read_bq, use_continuity=True, alternative="less"
-            )[1]
+            p_mannwhitneyu_bq = stats.mannwhitneyu(alt_read_bq, ref_read_bq, use_continuity=True, alternative="less")[1]
         except ValueError:
             if len(alt_read_bq) > 0 and len(ref_read_bq) > 0:
                 p_mannwhitneyu_bq = 0.5
@@ -286,9 +238,7 @@ class BamFeatures(BaseModel):
             )
         )[1]
         strandbias_fet = stats.fisher_exact(((ref_for, alt_for), (ref_rev, alt_rev)))[1]
-        clipping_fet = stats.fisher_exact(
-            ((ref_notSC_reads, alt_notSC_reads), (ref_SC_reads, alt_SC_reads))
-        )[1]
+        clipping_fet = stats.fisher_exact(((ref_notSC_reads, alt_notSC_reads), (ref_SC_reads, alt_SC_reads)))[1]
 
         try:
             p_mannwhitneyu_endpos = stats.mannwhitneyu(

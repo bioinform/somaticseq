@@ -17,9 +17,7 @@ def open_textfile(file_name):
 
 
 def run():
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "-vcfs",
         "--input-vcfs",
@@ -29,9 +27,7 @@ def run():
         required=True,
         default=None,
     )
-    parser.add_argument(
-        "-out", "--output-vcf", type=str, help="Output VCF file", required=True
-    )
+    parser.add_argument("-out", "--output-vcf", type=str, help="Output VCF file", required=True)
 
     args = parser.parse_args()
 

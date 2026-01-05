@@ -16,9 +16,7 @@ from somaticseq.genomic_file_parsers.read_info_extractor import (
 )
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument(
-    "-infile", "--input-vcf-file", type=str, help="Input VCF file", required=True
-)
+parser.add_argument("-infile", "--input-vcf-file", type=str, help="Input VCF file", required=True)
 parser.add_argument("-bam", "--bam-file", type=str, help="BAM file", required=True)
 parser.add_argument(
     "-ref",
@@ -28,9 +26,7 @@ parser.add_argument(
     required=True,
     default=None,
 )
-parser.add_argument(
-    "-outfile", "--output-vcf-file", type=str, help="Output VCF file", required=True
-)
+parser.add_argument("-outfile", "--output-vcf-file", type=str, help="Output VCF file", required=True)
 parser.add_argument(
     "-threshold",
     "--phasing-threshold",
@@ -62,9 +58,7 @@ with (
 
     # This is to read through and copy the #CHROM line
     assert my_line.startswith("#CHROM")
-    outfile.write(
-        '##INFO=<ID=COORDINATES,Number=.,Type=Integer,Description="Coordinates of the bases">\n'
-    )
+    outfile.write('##INFO=<ID=COORDINATES,Number=.,Type=Integer,Description="Coordinates of the bases">\n')
     outfile.write(
         '##INFO=<ID=PDP,Number=.,Type=Integer,Description="Phased DP, one for reference, and each of the variant calls.">\n'
     )
@@ -85,16 +79,12 @@ with (
         elif len(my_vcf.refbase) == len(my_vcf.altbase):
             pass
 
-        while (my_coordinates[-1][0] == my_vcf.chromosome) and (
-            my_vcf.position - my_coordinates[-1][1] <= threshold
-        ):
+        while (my_coordinates[-1][0] == my_vcf.chromosome) and (my_vcf.position - my_coordinates[-1][1] <= threshold):
             my_line = infile.readline().rstrip()
             my_vcf = genome.VCFVariantRecord.from_vcf_line(my_line)
 
             # If the next vcf line is the same coordinate
-            if (my_coordinates[-1][0] == my_vcf.chromosome) and (
-                my_vcf.position - my_coordinates[-1][1] == 0
-            ):
+            if (my_coordinates[-1][0] == my_vcf.chromosome) and (my_vcf.position - my_coordinates[-1][1] == 0):
                 base_options[-1].extend(my_vcf.altbase.split(","))
                 vcf_lines.append(my_line)
             # If the next vcf line is still within the threshold:
@@ -102,12 +92,8 @@ with (
                 my_vcf.position - my_coordinates[-1][1] <= threshold
             ):
                 # For the "missing" reference bases:
-                missing_bases = ref_fa.fetch(
-                    my_vcf.chromosome, my_coordinates[-1][1], my_vcf.position - 1
-                )
-                for i, missing_coordinate_i in enumerate(
-                    range(my_coordinates[-1][1] + 1, my_vcf.position)
-                ):
+                missing_bases = ref_fa.fetch(my_vcf.chromosome, my_coordinates[-1][1], my_vcf.position - 1)
+                for i, missing_coordinate_i in enumerate(range(my_coordinates[-1][1] + 1, my_vcf.position)):
                     my_coordinates.append((my_vcf.chromosome, missing_coordinate_i))
                     base_options.append([missing_bases[i]])
                 # The next vcf coordinate
@@ -120,9 +106,7 @@ with (
         # Trigger the procedure:
         # If the number is too large, 2^n possibilities and will run out of memory (hence less than 6)
         if 6 > len(my_coordinates) > 1:
-            ref_string = ref_fa.fetch(
-                my_coordinates[0][0], my_coordinates[0][1] - 1, my_coordinates[-1][1]
-            )
+            ref_string = ref_fa.fetch(my_coordinates[0][0], my_coordinates[0][1] - 1, my_coordinates[-1][1])
             mnp_list = list(itertools.product(*base_options))
 
             # This also serves to "unique-fy" duplicate strings from mnp_list
@@ -131,16 +115,12 @@ with (
                 mnp_tally["".join(string_i)] = 0
 
             # Grab the reads from the first coordinate to the last coordinate
-            reads = bam.fetch(
-                my_coordinates[0][0], my_coordinates[0][1] - 1, my_coordinates[-1][1]
-            )
+            reads = bam.fetch(my_coordinates[0][0], my_coordinates[0][1] - 1, my_coordinates[-1][1])
             for read_i in reads:
                 if not (read_i.is_unmapped or read_i.is_duplicate):
                     mnp_call = ""
                     for coordinate_i in my_coordinates:
-                        sequencing_call = get_alignment_in_read(
-                            read_i, coordinate_i[1] - 1
-                        )
+                        sequencing_call = get_alignment_in_read(read_i, coordinate_i[1] - 1)
                         # The position is matched:
                         if (
                             sequencing_call.call_type == AlignmentType.match

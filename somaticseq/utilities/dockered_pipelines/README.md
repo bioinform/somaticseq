@@ -5,10 +5,10 @@ mutation detections.
 
 ## Requirement
 
--   Have internet connection and docker daemon. Be able to pull and run docker
-    images from Docker Hub.
--   The documentation for those scripts can also be found in Section 4 of the
-    [User's Manual](../../docs/Manual.pdf "Documentation").
+- Have internet connection and docker daemon. Be able to pull and run docker
+  images from Docker Hub.
+- The documentation for those scripts can also be found in Section 4 of the
+  [User's Manual](../../docs/Manual.pdf "Documentation").
 
 ## Somatic mutation detection workflow (somaticseq_make_somatic_scripts will run makeSomaticScripts.py)
 
@@ -32,17 +32,16 @@ The following command will
 
 3. Finally, the results will be merged.
 
--   The option `--run-workflow` tells the program to execute those scripts.
-    Without `--run-workflow`, those scripts will be created but not executed
-    (e.g. leaving you the option to submit them to multiple nodes via SGE). You
-    may also modify and re-run any of these scripts if things did not end
-    successfully.
+- The option `--run-workflow` tells the program to execute those scripts.
+  Without `--run-workflow`, those scripts will be created but not executed (e.g.
+  leaving you the option to submit them to multiple nodes via SGE). You may also
+  modify and re-run any of these scripts if things did not end successfully.
 
--   The option `--by-caller` tells the program to execute the slowest callers
-    first, in this order (if they are invoked): Scalpel, Vardict, MuTect2,
-    VarScan, LoFreq, MuSE, and then Strelka. Otherwise, it will execute by
-    regions. Beware though, it will also run the most memory-hungry callers at
-    the same time.
+- The option `--by-caller` tells the program to execute the slowest callers
+  first, in this order (if they are invoked): Scalpel, Vardict, MuTect2,
+  VarScan, LoFreq, MuSE, and then Strelka. Otherwise, it will execute by
+  regions. Beware though, it will also run the most memory-hungry callers at the
+  same time.
 
 ```
 somaticseq_make_somatic_scripts paired \
@@ -60,15 +59,15 @@ somaticseq_make_somatic_scripts paired \
 You can also submit the above command into a SGE system, which will run the
 whole workflow to a single node with the number of threads you have specified.
 
--   To run SomaticSeq in prediction mode, you need to specify classifiers, e.g.,
+- To run SomaticSeq in prediction mode, you need to specify classifiers, e.g.,
 
 ```
 --snv-classifier /PATH/TO/snv.xgboost.classifier --indel-classifier /PATH/TO/indel.xgboost.classifier
 ```
 
--   To run SomaticSeq in training mode (include
-    `--inclusion-region /PATH/TO/high_confidence.bed` if the truth files are
-    only confident in certain genomic regions), and then
+- To run SomaticSeq in training mode (include
+  `--inclusion-region /PATH/TO/high_confidence.bed` if the truth files are only
+  confident in certain genomic regions), and then
 
 ```
 --train-somaticseq --truth-snv /PATH/TO/all_truth_snvs.vcf --truth-indel /PATH/TO/all_true_indels.vcf
@@ -126,53 +125,52 @@ risk.
 
 ### What do the somatic workflow commands do
 
--   For each flag such as `--run-mutect2`, `--run-varscan2`, ....,
-    `--run-strelka2`, a run script ending with .cmd will be created in
-    `/ABSOLUTE/PATH/TO/output_results/logs`.
--   If you do `--run-somaticseq`, the somaticseq script will be created in
-    `/ABSOLUTE/PATH/TO/output_results/SomaticSeq/logs`.
--   For multiThread jobs, if you specified `--threads 36`, then 36 BED files
-    will be created. Each BED file represents 1/36 of the total number base
-    pairs in the human genome (obtained from the .fa.fai file, unless you
-    include a bed file as `--inclusion-region`). They are named 1.bed, 2.bed,
-    ..., 36.bed, and will be created into `/ABSOLUTE/PATH/TO/RESULTS/1`,
-    `/ABSOLUTE/PATH/TO/RESULTS/2`, ..., and `/ABSOLUTE/PATH/TO/RESULTS/36`. You
-    may, of course, specify any number.
--   For each mutation callers you specify (with the exception of SomaticSniper
-    and JointSNVMix2), a script will be created into
-    `/ABSOLUTE/PATH/TO/RESULTS/1/logs`, `/ABSOLUTE/PATH/TO/RESULTS/2/logs`,
-    etc., with partial BAM input.
--   Because SomaticSniper does not support partial BAM input (one would have to
-    manually split the BAMs in order to parallelize SomaticSniper this way), the
-    above mentioned procedure is not applied to SomaticSniper. Instead, a
-    single-threaded script will be created (and potentially qsub'ed) into
-    `/ABSOLUTE/PATH/TO/RESULTS/logs`.
-    -   However, because SomaticSniper runs fast, single-thread is usually
-        doable even for WGS.
-    -   After SomaticSniper finishes, the result VCF files will be split into
-        each of the `/ABSOLUTE/PATH/TO/RESULTS/1`,
-        `/ABSOLUTE/PATH/TO/RESULTS/2`, etc., to facilitate region-wise
-        SomaticSeq merging.
--   JointSNVMix2 also does not support partial BAM input, either. Unlike
-    SomaticSniper, it's slow and takes massive amount of memory. It has not been
-    updated for many years. It's not a good idea to run JointSNVMix2 on a WGS
-    data.
--   If you invoke `--run-workflow`, then those scripts will be executed directly
-    by python's multiprocessing module.
+- For each flag such as `--run-mutect2`, `--run-varscan2`, ....,
+  `--run-strelka2`, a run script ending with .cmd will be created in
+  `/ABSOLUTE/PATH/TO/output_results/logs`.
+- If you do `--run-somaticseq`, the somaticseq script will be created in
+  `/ABSOLUTE/PATH/TO/output_results/SomaticSeq/logs`.
+- For multiThread jobs, if you specified `--threads 36`, then 36 BED files will
+  be created. Each BED file represents 1/36 of the total number base pairs in
+  the human genome (obtained from the .fa.fai file, unless you include a bed
+  file as `--inclusion-region`). They are named 1.bed, 2.bed, ..., 36.bed, and
+  will be created into `/ABSOLUTE/PATH/TO/RESULTS/1`,
+  `/ABSOLUTE/PATH/TO/RESULTS/2`, ..., and `/ABSOLUTE/PATH/TO/RESULTS/36`. You
+  may, of course, specify any number.
+- For each mutation callers you specify (with the exception of SomaticSniper and
+  JointSNVMix2), a script will be created into
+  `/ABSOLUTE/PATH/TO/RESULTS/1/logs`, `/ABSOLUTE/PATH/TO/RESULTS/2/logs`, etc.,
+  with partial BAM input.
+- Because SomaticSniper does not support partial BAM input (one would have to
+  manually split the BAMs in order to parallelize SomaticSniper this way), the
+  above mentioned procedure is not applied to SomaticSniper. Instead, a
+  single-threaded script will be created (and potentially qsub'ed) into
+  `/ABSOLUTE/PATH/TO/RESULTS/logs`.
+    - However, because SomaticSniper runs fast, single-thread is usually doable
+      even for WGS.
+    - After SomaticSniper finishes, the result VCF files will be split into each
+      of the `/ABSOLUTE/PATH/TO/RESULTS/1`, `/ABSOLUTE/PATH/TO/RESULTS/2`, etc.,
+      to facilitate region-wise SomaticSeq merging.
+- JointSNVMix2 also does not support partial BAM input, either. Unlike
+  SomaticSniper, it's slow and takes massive amount of memory. It has not been
+  updated for many years. It's not a good idea to run JointSNVMix2 on a WGS
+  data.
+- If you invoke `--run-workflow`, then those scripts will be executed directly
+  by python's multiprocessing module.
 
 ### NOTES
 
--   After specifying the reference fasta (must have extensions of .fa or
-    .fasta), there must also be the corresponding .dict and .fa.fai (or
-    .fasta.fai) files in the same directory.
--   When specifying `/ABSOLUTE/PATH/TO/dbSNP.vcf`, there also needs to be
-    `dbSNP.vcf.idx`, `dbSNP.vcf.gz`, and `dbSNP.vcf.gz.tbi` present at the same
-    directory because MuSE and LoFreq are expecting them. If you do not plan to
-    run MuSE or LoFreq, then you don't need the bgzip'ed .vcf.gz dbSNP files.
--   We did not make docker image for all the SomaticSeq-compatible callers, so
-    those docker workflows are not included in this module (e.g., TNscope,
-    Platypus)
--   We also have no distribution rights for VarScan2, so our script points to a
-    3rd-party version. Only run it if you are licensed to do so.
--   If jobs run out of memory, try up the memory in the scripts and re-run
-    manually.
+- After specifying the reference fasta (must have extensions of .fa or .fasta),
+  there must also be the corresponding .dict and .fa.fai (or .fasta.fai) files
+  in the same directory.
+- When specifying `/ABSOLUTE/PATH/TO/dbSNP.vcf`, there also needs to be
+  `dbSNP.vcf.idx`, `dbSNP.vcf.gz`, and `dbSNP.vcf.gz.tbi` present at the same
+  directory because MuSE and LoFreq are expecting them. If you do not plan to
+  run MuSE or LoFreq, then you don't need the bgzip'ed .vcf.gz dbSNP files.
+- We did not make docker image for all the SomaticSeq-compatible callers, so
+  those docker workflows are not included in this module (e.g., TNscope,
+  Platypus)
+- We also have no distribution rights for VarScan2, so our script points to a
+  3rd-party version. Only run it if you are licensed to do so.
+- If jobs run out of memory, try up the memory in the scripts and re-run
+  manually.

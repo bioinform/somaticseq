@@ -125,12 +125,8 @@ def split(infile: str, outfiles: str, num: int) -> list[str]:
 
             # Write these regions out, , reset "current_region," then add 1 to
             # ith_split afterward to keep track:
-            outfiles_written.append(
-                os.path.join(out_directory, f"{ith_split}.{out_basename}")
-            )
-            with open(
-                os.path.join(out_directory, f"{ith_split}.{out_basename}"), "w"
-            ) as ith_out:
+            outfiles_written.append(os.path.join(out_directory, f"{ith_split}.{out_basename}"))
+            with open(os.path.join(out_directory, f"{ith_split}.{out_basename}"), "w") as ith_out:
                 for line_i in current_region:
                     ith_out.write(line_i)
 
@@ -157,9 +153,7 @@ def split(infile: str, outfiles: str, num: int) -> list[str]:
                 # Each sub-region, if large enough, will have its own file output:
                 while (end_i - breakpoint_i) > base_pairs_per_bed:
                     end_j = breakpoint_i + base_pairs_per_bed
-                    outfiles_written.append(
-                        os.path.join(out_directory, f"{ith_split}.{out_basename}")
-                    )
+                    outfiles_written.append(os.path.join(out_directory, f"{ith_split}.{out_basename}"))
                     with open(
                         os.path.join(out_directory, f"{ith_split}.{out_basename}"),
                         "w",

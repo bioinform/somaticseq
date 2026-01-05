@@ -107,16 +107,8 @@ def reference_output(
     test_datadir: Path,
 ) -> dict[str, str]:
     return {
-        "paired_consensus_snv_vcf": str(
-            test_datadir / "paired_example" / "Consensus.sSNV.vcf.gz"
-        ),
-        "paired_consensus_indel_vcf": str(
-            test_datadir / "paired_example" / "Consensus.sINDEL.vcf.gz"
-        ),
-        "single_consensus_snv_vcf": str(
-            test_datadir / "tumor_only_example" / "Consensus.sSNV.vcf.gz"
-        ),
-        "single_consensus_indel_vcf": str(
-            test_datadir / "tumor_only_example" / "Consensus.sINDEL.vcf.gz"
-        ),
+        "paired_consensus_snv_vcf": str(test_datadir / "paired_example" / "Consensus.sSNV.vcf.gz"),
+        "paired_consensus_indel_vcf": str(test_datadir / "paired_example" / "Consensus.sINDEL.vcf.gz"),
+        "single_consensus_snv_vcf": str(test_datadir / "tumor_only_example" / "Consensus.sSNV.vcf.gz"),
+        "single_consensus_indel_vcf": str(test_datadir / "tumor_only_example" / "Consensus.sINDEL.vcf.gz"),
     }

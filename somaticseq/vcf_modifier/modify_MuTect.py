@@ -13,9 +13,7 @@ import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 
 def run():
     # argparse Stuff
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # Variant Call Type, i.e., snp or indel
     parser.add_argument(
         "-infile",
@@ -24,9 +22,7 @@ def run():
         help="Input VCF file",
         required=True,
     )
-    parser.add_argument(
-        "-outfile", "--output-vcf", type=str, help="Output VCF file", default=sys.stdout
-    )
+    parser.add_argument("-outfile", "--output-vcf", type=str, help="Output VCF file", default=sys.stdout)
     parser.add_argument(
         "-tbam",
         "--tumor-bam",

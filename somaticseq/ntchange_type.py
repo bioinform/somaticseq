@@ -66,7 +66,5 @@ def ntchange(variant_frame):
             TA2GC.append(0)
             TA2CG.append(0)
 
-    new_data = variant_frame.assign(
-        GC2CG=GC2CG, GC2TA=GC2CG, GC2AT=GC2CG, TA2AT=GC2CG, TA2GC=GC2CG, TA2CG=GC2CG
-    )
+    new_data = variant_frame.assign(GC2CG=GC2CG, GC2TA=GC2CG, GC2AT=GC2CG, TA2AT=GC2CG, TA2GC=GC2CG, TA2CG=GC2CG)
     return new_data

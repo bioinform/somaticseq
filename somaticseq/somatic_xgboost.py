@@ -41,9 +41,7 @@ DEFAULT_XGB_BOOST_ROUNDS = 500
 DEFAULT_NUM_TREES_PREDICT = 100
 
 
-def param_list_to_dict(
-    param_list: list[str], existing_param_dict: dict[str, Any] = DEFAULT_PARAM
-) -> dict[str, Any]:
+def param_list_to_dict(param_list: list[str], existing_param_dict: dict[str, Any] = DEFAULT_PARAM) -> dict[str, Any]:
     """
     Args:
         param_list: this is what will be passed from the CLI, e.g.,
@@ -76,9 +74,7 @@ def save_feature_importance_to_file(xgb_model, filename):
     feature_cover = xgb_model.get_score(importance_type="cover")
     feature_total_gain = xgb_model.get_score(importance_type="total_gain")
     feature_total_cover = xgb_model.get_score(importance_type="total_cover")
-    line_i = "{}\t{}\t{}\t{}\t{}\t{}\n".format(
-        "FEATURE", "GAIN", "WEIGHT", "COVER", "TOTAL_GAIN", "TOTAL_COVER"
-    )
+    line_i = "{}\t{}\t{}\t{}\t{}\t{}\n".format("FEATURE", "GAIN", "WEIGHT", "COVER", "TOTAL_GAIN", "TOTAL_COVER")
     with open(filename, "w") as fout:
         fout.write(line_i)
         for feature_i in sorted(feature_gain):
@@ -124,12 +120,7 @@ def builder(
     if model is None:
         model = input_tsvs[0] + f".xgb.v{__version__}.classifier"
 
-    input_data = pd.concat(
-        [
-            pd.read_csv(input_tsv_i, sep="\t", low_memory=False)
-            for input_tsv_i in input_tsvs
-        ]
-    )
+    input_data = pd.concat([pd.read_csv(input_tsv_i, sep="\t", low_memory=False) for input_tsv_i in input_tsvs])
     train_data = ntchange.ntchange(input_data)
     for non_feature_i in non_feature:
         if non_feature_i in train_data:
@@ -183,9 +174,7 @@ def predictor(
     chunksize = 10000
     write_or_append, write_header_or_not = "w", True
 
-    for input_data in pd.read_csv(
-        input_tsv, sep="\t", chunksize=chunksize, low_memory=False
-    ):
+    for input_data in pd.read_csv(input_tsv, sep="\t", chunksize=chunksize, low_memory=False):
         test_data = ntchange.ntchange(input_data)
         for non_feature_i in non_feature:
             if non_feature_i in test_data:
@@ -226,21 +215,11 @@ def main() -> None:
         help="labeled tsv file(s)",
         required=True,
     )
-    parser_train.add_argument(
-        "-out", "--model-out", type=str, help="output model file name"
-    )
-    parser_train.add_argument(
-        "-threads", "--num-threads", type=int, help="num threads."
-    )
-    parser_train.add_argument(
-        "-depth", "--max-depth", type=int, help="tree max depth. default=8"
-    )
-    parser_train.add_argument(
-        "-seed", "--seed", type=int, help="random seed. default=0"
-    )
-    parser_train.add_argument(
-        "-method", "--tree-method", type=str, help="tree method. default=hist"
-    )
+    parser_train.add_argument("-out", "--model-out", type=str, help="output model file name")
+    parser_train.add_argument("-threads", "--num-threads", type=int, help="num threads.")
+    parser_train.add_argument("-depth", "--max-depth", type=int, help="tree max depth. default=8")
+    parser_train.add_argument("-seed", "--seed", type=int, help="random seed. default=0")
+    parser_train.add_argument("-method", "--tree-method", type=str, help="tree method. default=hist")
     parser_train.add_argument(
         "-iter",
         "--num-boost-rounds",
@@ -262,24 +241,16 @@ def main() -> None:
         "--features-excluded",
         nargs="*",
         type=str,
-        help=(
-            "features to exclude for xgboost training. Must be same for train/predict."
-        ),
+        help=("features to exclude for xgboost training. Must be same for train/predict."),
         default=[],
     )
     parser_train.set_defaults(which="train")
 
     # PREDICTION mode
     parser_predict = sample_parsers.add_parser("predict")
-    parser_predict.add_argument(
-        "-model", "--model", type=str, help="xgboost model", required=True
-    )
-    parser_predict.add_argument(
-        "-tsv", "--tsv-in", type=str, help="tsv file in", required=True
-    )
-    parser_predict.add_argument(
-        "-out", "--predicted-tsv", type=str, help="tsv file out", required=True
-    )
+    parser_predict.add_argument("-model", "--model", type=str, help="xgboost model", required=True)
+    parser_predict.add_argument("-tsv", "--tsv-in", type=str, help="tsv file in", required=True)
+    parser_predict.add_argument("-out", "--predicted-tsv", type=str, help="tsv file out", required=True)
     parser_predict.add_argument(
         "-ntrees",
         "--num-trees",
@@ -291,9 +262,7 @@ def main() -> None:
         "--features-excluded",
         nargs="*",
         type=str,
-        help=(
-            "features to exclude for xgboost training. Must be same for train/predict."
-        ),
+        help=("features to exclude for xgboost training. Must be same for train/predict."),
         default=[],
     )
     parser_predict.set_defaults(which="predict")

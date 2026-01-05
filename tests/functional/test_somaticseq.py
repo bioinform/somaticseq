@@ -96,12 +96,8 @@ def test_paired_somaticseq_cli(
     signal = subprocess.call(training_command, shell=True)
     consensus_snv_vcf = os.path.join(training_dir, "Consensus.sSNV.vcf")
     consensus_indel_vcf = os.path.join(training_dir, "Consensus.sINDEL.vcf")
-    snv_classifier = os.path.join(
-        training_dir, f"Ensemble.sSNV.tsv.xgb.v{__version__}.classifier"
-    )
-    indel_classifier = os.path.join(
-        training_dir, f"Ensemble.sINDEL.tsv.xgb.v{__version__}.classifier"
-    )
+    snv_classifier = os.path.join(training_dir, f"Ensemble.sSNV.tsv.xgb.v{__version__}.classifier")
+    indel_classifier = os.path.join(training_dir, f"Ensemble.sINDEL.tsv.xgb.v{__version__}.classifier")
     assert signal == 0
     assert os.path.exists(consensus_snv_vcf)
     assert os.path.exists(consensus_indel_vcf)
@@ -109,12 +105,8 @@ def test_paired_somaticseq_cli(
     assert os.path.exists(os.path.join(training_dir, "Ensemble.sINDEL.tsv"))
     assert os.path.exists(snv_classifier)
     assert os.path.exists(indel_classifier)
-    assert vcf_files_match(
-        reference_output["paired_consensus_snv_vcf"], consensus_snv_vcf
-    )
-    assert vcf_files_match(
-        reference_output["paired_consensus_indel_vcf"], consensus_indel_vcf
-    )
+    assert vcf_files_match(reference_output["paired_consensus_snv_vcf"], consensus_snv_vcf)
+    assert vcf_files_match(reference_output["paired_consensus_indel_vcf"], consensus_indel_vcf)
 
     classifying_dir = str(tmp_path_factory.mktemp("classifying_dir"))
     classifying_command = (
@@ -178,12 +170,8 @@ def test_tumor_only_somaticseq_cli(
     signal = subprocess.call(training_command, shell=True)
     consensus_snv_vcf = os.path.join(training_dir, "Consensus.sSNV.vcf")
     consensus_indel_vcf = os.path.join(training_dir, "Consensus.sINDEL.vcf")
-    snv_classifier = os.path.join(
-        training_dir, f"Ensemble.sSNV.tsv.xgb.v{__version__}.classifier"
-    )
-    indel_classifier = os.path.join(
-        training_dir, f"Ensemble.sINDEL.tsv.xgb.v{__version__}.classifier"
-    )
+    snv_classifier = os.path.join(training_dir, f"Ensemble.sSNV.tsv.xgb.v{__version__}.classifier")
+    indel_classifier = os.path.join(training_dir, f"Ensemble.sINDEL.tsv.xgb.v{__version__}.classifier")
     assert signal == 0
     assert os.path.exists(consensus_snv_vcf)
     assert os.path.exists(consensus_indel_vcf)
@@ -191,12 +179,8 @@ def test_tumor_only_somaticseq_cli(
     assert os.path.exists(os.path.join(training_dir, "Ensemble.sINDEL.tsv"))
     assert os.path.exists(snv_classifier)
     assert os.path.exists(indel_classifier)
-    assert vcf_files_match(
-        reference_output["single_consensus_snv_vcf"], consensus_snv_vcf
-    )
-    assert vcf_files_match(
-        reference_output["single_consensus_indel_vcf"], consensus_indel_vcf
-    )
+    assert vcf_files_match(reference_output["single_consensus_snv_vcf"], consensus_snv_vcf)
+    assert vcf_files_match(reference_output["single_consensus_indel_vcf"], consensus_indel_vcf)
 
     classifying_dir = str(tmp_path_factory.mktemp("classifying_dir"))
     classifying_command = (

@@ -62,15 +62,11 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         extra_args=input_parameters["extra_docker_options"],
     )
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
-        "mount_path"
-    ]
+    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]]["mount_path"]
     mounted_tumor_bam = file_dictionary[input_parameters["tumor_bam"]]["mount_path"]
     mounted_normal_bam = file_dictionary[input_parameters["normal_bam"]]["mount_path"]
     mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
-    mounted_inclusion = file_dictionary[input_parameters["inclusion_region"]][
-        "mount_path"
-    ]
+    mounted_inclusion = file_dictionary[input_parameters["inclusion_region"]]["mount_path"]
     mounted_dbsnp_gz = file_dictionary[input_parameters["dbsnp_gz"]]["mount_path"]
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
@@ -87,9 +83,7 @@ def tumor_normal(input_parameters=DEFAULT_PARAMS, tech="docker"):
         out.write("--call-indels \\\n")
         out.write(f"-l {mounted_inclusion} \\\n")
         out.write(f"-f {mounted_genome_reference} \\\n")
-        out.write(
-            "-o {}/{} \\\n".format(mounted_outdir, input_parameters["out_prefix"])
-        )
+        out.write("-o {}/{} \\\n".format(mounted_outdir, input_parameters["out_prefix"]))
         if input_parameters["lofreq_arguments"]:
             out.write("{} \\\n".format(input_parameters["lofreq_arguments"]))
 
@@ -133,14 +127,10 @@ def tumor_only(input_parameters, tech="docker"):
         extra_args=input_parameters["extra_docker_options"],
     )
     # Mounted paths for all the input files and output directory:
-    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]][
-        "mount_path"
-    ]
+    mounted_genome_reference = file_dictionary[input_parameters["genome_reference"]]["mount_path"]
     mounted_tumor_bam = file_dictionary[input_parameters["bam"]]["mount_path"]
     mounted_outdir = file_dictionary[input_parameters["output_directory"]]["mount_path"]
-    mounted_inclusion = file_dictionary[input_parameters["inclusion_region"]][
-        "mount_path"
-    ]
+    mounted_inclusion = file_dictionary[input_parameters["inclusion_region"]]["mount_path"]
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
         out.write(f"#$ -o {logdir}\n")

@@ -26,18 +26,10 @@ def run() -> argparse.Namespace:
         description="Split a VCF file into SNVs and INDELs.",
     )
     # Variant Call Type, i.e., snp or indel
-    parser.add_argument(
-        "-infile", "--input-vcf", type=str, help="Input VCF file", required=True
-    )
-    parser.add_argument(
-        "-indel", "--indel-out", type=str, help="Output VCF file", required=True
-    )
-    parser.add_argument(
-        "-snv", "--snv-out", type=str, help="Output VCF file", required=True
-    )
-    parser.add_argument(
-        "-genome", "--genome-reference", type=str, help="For sorting", required=True
-    )
+    parser.add_argument("-infile", "--input-vcf", type=str, help="Input VCF file", required=True)
+    parser.add_argument("-indel", "--indel-out", type=str, help="Output VCF file", required=True)
+    parser.add_argument("-snv", "--snv-out", type=str, help="Output VCF file", required=True)
+    parser.add_argument("-genome", "--genome-reference", type=str, help="For sorting", required=True)
     # Parse the arguments:
     args = parser.parse_args()
     return args
@@ -64,9 +56,7 @@ def split_complex_variants_into_snvs_and_indels(
     return snv_and_indel_records
 
 
-def split_into_snv_and_indel(
-    infile: str, out_snv_vcf: str, out_indel_vcf: str, genome_reference: str
-) -> None:
+def split_into_snv_and_indel(infile: str, out_snv_vcf: str, out_indel_vcf: str, genome_reference: str) -> None:
     tempdir = tempfile.mkdtemp()
     tmp_snv_vcf = os.path.join(tempdir, uuid.uuid4().hex) + ".vcf"
     tmp_indel_vcf = os.path.join(tempdir, uuid.uuid4().hex) + ".vcf"
@@ -126,17 +116,11 @@ def split_into_snv_and_indel(
                     else:
                         vcf_j = copy(vcf_i)
                         vcf_j.altbase = altbase_i
-                        snvs_and_indels = split_complex_variants_into_snvs_and_indels(
-                            vcf_j
-                        )
+                        snvs_and_indels = split_complex_variants_into_snvs_and_indels(vcf_j)
                         for snv_or_indel in snvs_and_indels:
                             assert snv_or_indel.refbase
                             assert snv_or_indel.altbase
-                            if (
-                                len(snv_or_indel.refbase)
-                                == len(snv_or_indel.altbase)
-                                == 1
-                            ):
+                            if len(snv_or_indel.refbase) == len(snv_or_indel.altbase) == 1:
                                 snv_out.write(snv_or_indel.to_vcf_line() + "\n")
                             else:
                                 indel_out.write(snv_or_indel.to_vcf_line() + "\n")

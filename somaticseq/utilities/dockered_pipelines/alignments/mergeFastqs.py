@@ -23,9 +23,7 @@ DEFAULT_PARAMS = {
 }
 
 
-def gz(
-    infiles, outfq, tech="docker", input_parameters=DEFAULT_PARAMS, remove_infiles=False
-):
+def gz(infiles, outfq, tech="docker", input_parameters=DEFAULT_PARAMS, remove_infiles=False):
     for param_i in DEFAULT_PARAMS:
         if param_i not in input_parameters:
             input_parameters[param_i] = DEFAULT_PARAMS[param_i]
@@ -42,9 +40,7 @@ def gz(
         extra_args=input_parameters["extra_docker_options"],
     )
     mounted_outfile = file_dictionary[outfq]["mount_path"]
-    infile_string = " ".join(
-        [file_dictionary[file_i]["mount_path"] for file_i in infiles]
-    )
+    infile_string = " ".join([file_dictionary[file_i]["mount_path"] for file_i in infiles])
 
     with open(outfile, "w") as out:
         out.write("#!/bin/bash\n\n")
@@ -57,11 +53,7 @@ def gz(
             'echo -e "Start at `date +"%Y/%m/%d %H:%M:%S"`" 1>&2\n\n'
         )  # Do not change this: picard_fractional uses this to end the copying.
         out.write(f"{tabix_line} bash -c \\\n")
-        out.write(
-            '"zcat {} | bgzip -@{} > {}"\n'.format(
-                infile_string, input_parameters["threads"], mounted_outfile
-            )
-        )
+        out.write('"zcat {} | bgzip -@{} > {}"\n'.format(infile_string, input_parameters["threads"], mounted_outfile))
         if remove_infiles:
             out.write("rm {}\n\n".format(" ".join(infiles)))
 

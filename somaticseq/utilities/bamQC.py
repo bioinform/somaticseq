@@ -38,9 +38,9 @@ max_length = args.max_length
 with pysam.AlignmentFile(bam_file) as bam:
     reads = bam.fetch()
 
-    clipped_and_discordant = clipped_only = discordant_only = concordant_reads = mq0 = (
-        unmapped
-    ) = duplicated_reads = total_reads = 0
+    clipped_and_discordant = clipped_only = discordant_only = concordant_reads = mq0 = unmapped = duplicated_reads = (
+        total_reads
+    ) = 0
     frag_lengths = {}
     duplicates_per_length = {}
     MQs = {}
@@ -116,19 +116,11 @@ with pysam.AlignmentFile(bam_file) as bam:
     for frag_i in frag_lengths:
         if 0 < frag_i < max_length:
             square_of_x_minus_mean = (frag_i - mean_length) ** 2
-            sum_of_square_of_x_minus_mean += (
-                square_of_x_minus_mean * frag_lengths[frag_i]
-            )
+            sum_of_square_of_x_minus_mean += square_of_x_minus_mean * frag_lengths[frag_i]
 
-    frag_length_std_dev = (sum_of_square_of_x_minus_mean / total_reads_processed) ** (
-        1 / 2
-    )
+    frag_length_std_dev = (sum_of_square_of_x_minus_mean / total_reads_processed) ** (1 / 2)
 
-    print(
-        "Duplicated reads and rates: {}, {}".format(
-            duplicated_reads, duplicated_reads / total_reads
-        )
-    )
+    print("Duplicated reads and rates: {}, {}".format(duplicated_reads, duplicated_reads / total_reads))
     print(f"soft-clipped and discordant reads: {clipped_and_discordant}")
     print(f"soft-clipped and concordant reads: {clipped_only}")
     print(f"discordant and not-clipped reads: {discordant_only}")

@@ -74,9 +74,7 @@ def model_trainer(
         for feature_i in features_to_exclude:
             non_features.append(feature_i)
 
-        logger.info(
-            "PARAMETER: " + ", ".join([f"{i}={xgb_param[i]}" for i in xgb_param])
-        )
+        logger.info("PARAMETER: " + ", ".join([f"{i}={xgb_param[i]}" for i in xgb_param]))
         xgb_model = somatic_xgboost.builder(
             [
                 input_file,
@@ -113,9 +111,7 @@ def model_predictor(
         for feature_i in features_to_exclude:
             non_features.append(feature_i)
 
-        somatic_xgboost.predictor(
-            classifier, input_file, output_file, non_features, iterations
-        )
+        somatic_xgboost.predictor(classifier, input_file, output_file, non_features, iterations)
         return output_file
 
 
@@ -226,34 +222,32 @@ def run_paired_mode(
         indel_callers.append(f"IndelCaller_{ith_arb}")
 
     # Function to combine individual VCFs into a simple VCF list of variants:
-    out_snv, out_indel, intermediate_vcfs, tmp_files = (
-        combineCallers.combine_multiple_paired_caller_vcfs(
-            outdir=outdir,
-            ref=ref,
-            tbam=tbam,
-            nbam=nbam,
-            inclusion=inclusion,
-            exclusion=exclusion,
-            mutect=mutect,
-            indelocator=indelocator,
-            mutect2=mutect2,
-            varscan_snv=varscan_snv,
-            varscan_indel=varscan_indel,
-            jsm=jsm,
-            sniper=sniper,
-            vardict=vardict,
-            muse=muse,
-            lofreq_snv=lofreq_snv,
-            lofreq_indel=lofreq_indel,
-            scalpel=scalpel,
-            strelka_snv=strelka_snv,
-            strelka_indel=strelka_indel,
-            tnscope=tnscope,
-            platypus=platypus,
-            arb_snvs=arb_snvs,
-            arb_indels=arb_indels,
-            keep_intermediates=True,
-        )
+    out_snv, out_indel, intermediate_vcfs, tmp_files = combineCallers.combine_multiple_paired_caller_vcfs(
+        outdir=outdir,
+        ref=ref,
+        tbam=tbam,
+        nbam=nbam,
+        inclusion=inclusion,
+        exclusion=exclusion,
+        mutect=mutect,
+        indelocator=indelocator,
+        mutect2=mutect2,
+        varscan_snv=varscan_snv,
+        varscan_indel=varscan_indel,
+        jsm=jsm,
+        sniper=sniper,
+        vardict=vardict,
+        muse=muse,
+        lofreq_snv=lofreq_snv,
+        lofreq_indel=lofreq_indel,
+        scalpel=scalpel,
+        strelka_snv=strelka_snv,
+        strelka_indel=strelka_indel,
+        tnscope=tnscope,
+        platypus=platypus,
+        arb_snvs=arb_snvs,
+        arb_indels=arb_indels,
+        keep_intermediates=True,
     )
     files_to_delete.add(out_snv)
     files_to_delete.add(out_indel)
@@ -263,11 +257,7 @@ def run_paired_mode(
     ensemble_snv = os.sep.join((outdir, ensemble_outfile_prefix + SNV_TSV_SUFFIX))
     ensemble_indel = os.sep.join((outdir, ensemble_outfile_prefix + INDEL_TSV_SUFFIX))
     # SNV
-    mutect_infile = (
-        intermediate_vcfs["MuTect2"]["snv"]
-        if intermediate_vcfs["MuTect2"]["snv"]
-        else mutect
-    )
+    mutect_infile = intermediate_vcfs["MuTect2"]["snv"] if intermediate_vcfs["MuTect2"]["snv"] else mutect
     somatic_vcf2tsv.vcf2tsv(
         is_vcf=out_snv,
         nbam_fn=nbam,
@@ -298,12 +288,8 @@ def run_paired_mode(
 
     # Classify SNV calls
     if classifier_snv:
-        classified_snv_tsv = os.sep.join(
-            (outdir, classified_outfile_prefix + SNV_TSV_SUFFIX)
-        )
-        classified_snv_vcf = os.sep.join(
-            (outdir, classified_outfile_prefix + SNV_VCF_SUFFIX)
-        )
+        classified_snv_tsv = os.sep.join((outdir, classified_outfile_prefix + SNV_TSV_SUFFIX))
+        classified_snv_vcf = os.sep.join((outdir, classified_outfile_prefix + SNV_VCF_SUFFIX))
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
         model_predictor(
             ensemble_snv,
@@ -347,9 +333,7 @@ def run_paired_mode(
                 hyperparameters=hyperparameters,
             )
 
-        consensus_snv_vcf = os.sep.join(
-            (outdir, consensus_outfile_prefix + SNV_VCF_SUFFIX)
-        )
+        consensus_snv_vcf = os.sep.join((outdir, consensus_outfile_prefix + SNV_VCF_SUFFIX))
         tsv2vcf.tsv2vcf(
             ensemble_snv,
             consensus_snv_vcf,
@@ -363,11 +347,7 @@ def run_paired_mode(
             print_reject=True,
         )
     # INDEL
-    mutect_infile = (
-        intermediate_vcfs["MuTect2"]["indel"]
-        if intermediate_vcfs["MuTect2"]["indel"]
-        else indelocator
-    )
+    mutect_infile = intermediate_vcfs["MuTect2"]["indel"] if intermediate_vcfs["MuTect2"]["indel"] else indelocator
     somatic_vcf2tsv.vcf2tsv(
         is_vcf=out_indel,
         nbam_fn=nbam,
@@ -394,12 +374,8 @@ def run_paired_mode(
     )
     # Classify INDEL calls
     if classifier_indel:
-        consensus_indel_tsv = os.sep.join(
-            (outdir, classified_outfile_prefix + INDEL_TSV_SUFFIX)
-        )
-        consensus_indel_vcf = os.sep.join(
-            (outdir, classified_outfile_prefix + INDEL_VCF_SUFFIX)
-        )
+        consensus_indel_tsv = os.sep.join((outdir, classified_outfile_prefix + INDEL_TSV_SUFFIX))
+        consensus_indel_vcf = os.sep.join((outdir, classified_outfile_prefix + INDEL_VCF_SUFFIX))
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
         model_predictor(
             ensemble_indel,
@@ -442,9 +418,7 @@ def run_paired_mode(
                 features_to_exclude=features_excluded,
                 hyperparameters=hyperparameters,
             )
-        consensus_indel_vcf = os.sep.join(
-            (outdir, consensus_outfile_prefix + INDEL_VCF_SUFFIX)
-        )
+        consensus_indel_vcf = os.sep.join((outdir, consensus_outfile_prefix + INDEL_VCF_SUFFIX))
         tsv2vcf.tsv2vcf(
             ensemble_indel,
             consensus_indel_vcf,
@@ -572,11 +546,7 @@ def run_single_mode(
     ensemble_indel = os.sep.join((outdir, ensemble_outfile_prefix + INDEL_TSV_SUFFIX))
 
     # SNV
-    mutect_infile = (
-        intermediate_vcfs["MuTect2"]["snv"]
-        if intermediate_vcfs["MuTect2"]["snv"]
-        else mutect
-    )
+    mutect_infile = intermediate_vcfs["MuTect2"]["snv"] if intermediate_vcfs["MuTect2"]["snv"] else mutect
     single_sample_vcf2tsv.vcf2tsv(
         is_vcf=out_snv,
         bam_fn=bam,
@@ -600,12 +570,8 @@ def run_single_mode(
     )
     # Classify SNV calls
     if classifier_snv:
-        classified_snv_tsv = os.sep.join(
-            (outdir, classified_outfile_prefix + SNV_TSV_SUFFIX)
-        )
-        classified_snv_vcf = os.sep.join(
-            (outdir, classified_outfile_prefix + SNV_VCF_SUFFIX)
-        )
+        classified_snv_tsv = os.sep.join((outdir, classified_outfile_prefix + SNV_TSV_SUFFIX))
+        classified_snv_vcf = os.sep.join((outdir, classified_outfile_prefix + SNV_VCF_SUFFIX))
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
         model_predictor(
             ensemble_snv,
@@ -647,9 +613,7 @@ def run_single_mode(
                 features_to_exclude=features_excluded,
                 hyperparameters=hyperparameters,
             )
-        consensus_snv_vcf = os.sep.join(
-            (outdir, consensus_outfile_prefix + SNV_VCF_SUFFIX)
-        )
+        consensus_snv_vcf = os.sep.join((outdir, consensus_outfile_prefix + SNV_VCF_SUFFIX))
         tsv2vcf.tsv2vcf(
             ensemble_snv,
             consensus_snv_vcf,
@@ -685,12 +649,8 @@ def run_single_mode(
     )
     # Classify INDEL calls
     if classifier_indel:
-        consensus_indel_tsv = os.sep.join(
-            (outdir, classified_outfile_prefix + INDEL_TSV_SUFFIX)
-        )
-        consensus_indel_vcf = os.sep.join(
-            (outdir, classified_outfile_prefix + INDEL_VCF_SUFFIX)
-        )
+        consensus_indel_tsv = os.sep.join((outdir, classified_outfile_prefix + INDEL_TSV_SUFFIX))
+        consensus_indel_vcf = os.sep.join((outdir, classified_outfile_prefix + INDEL_VCF_SUFFIX))
         iterations = iterations if iterations else DEFAULT_NUM_TREES_PREDICT
         model_predictor(
             ensemble_indel,
@@ -732,9 +692,7 @@ def run_single_mode(
                 features_to_exclude=features_excluded,
                 hyperparameters=hyperparameters,
             )
-        consensus_indel_vcf = os.sep.join(
-            (outdir, consensus_outfile_prefix + INDEL_VCF_SUFFIX)
-        )
+        consensus_indel_vcf = os.sep.join((outdir, consensus_outfile_prefix + INDEL_VCF_SUFFIX))
         tsv2vcf.tsv2vcf(
             ensemble_indel,
             consensus_indel_vcf,
@@ -764,12 +722,8 @@ def run() -> argparse.Namespace:
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument(
-        "-v", "--version", action="version", version=f"SomaticSeq v{__version__}"
-    )
-    parser.add_argument(
-        "-outdir", "--output-directory", type=str, help="output directory", default="."
-    )
+    parser.add_argument("-v", "--version", action="version", version=f"SomaticSeq v{__version__}")
+    parser.add_argument("-outdir", "--output-directory", type=str, help="output directory", default=".")
     parser.add_argument(
         "-ref",
         "--genome-reference",
@@ -781,9 +735,7 @@ def run() -> argparse.Namespace:
     parser.add_argument("--truth-indel", type=str, help="VCF of true hits")
     parser.add_argument("--classifier-snv", type=str, help="snv classifier")
     parser.add_argument("--classifier-indel", type=str, help="indel classifier")
-    parser.add_argument(
-        "--pass-threshold", type=float, help="SCORE for PASS", default=PASS_SCORE
-    )
+    parser.add_argument("--pass-threshold", type=float, help="SCORE for PASS", default=PASS_SCORE)
     parser.add_argument(
         "--lowqual-threshold",
         type=float,
@@ -840,15 +792,9 @@ def run() -> argparse.Namespace:
         help="dbSNP VCF",
     )
     parser.add_argument("-cosmic", "--cosmic-vcf", type=str, help="COSMIC VCF")
-    parser.add_argument(
-        "-include", "--inclusion-region", type=str, help="inclusion bed"
-    )
-    parser.add_argument(
-        "-exclude", "--exclusion-region", type=str, help="exclusion bed"
-    )
-    parser.add_argument(
-        "-nt", "--threads", type=int, help="number of threads", default=1
-    )
+    parser.add_argument("-include", "--inclusion-region", type=str, help="inclusion bed")
+    parser.add_argument("-exclude", "--exclusion-region", type=str, help="exclusion bed")
+    parser.add_argument("-nt", "--threads", type=int, help="number of threads", default=1)
     parser.add_argument(
         "-train",
         "--somaticseq-train",
@@ -856,9 +802,7 @@ def run() -> argparse.Namespace:
         help="Invoke training mode with ground truths",
         default=False,
     )
-    parser.add_argument(
-        "-seed", "--seed", type=int, help="seed for xgboost training", default=0
-    )
+    parser.add_argument("-seed", "--seed", type=int, help="seed for xgboost training", default=0)
     parser.add_argument(
         "-tdepth",
         "--tree-depth",
@@ -905,15 +849,9 @@ def run() -> argparse.Namespace:
 
     # Paired Sample mode
     parser_paired = sample_parsers.add_parser("paired")
-    parser_paired.add_argument(
-        "-tbam", "--tumor-bam-file", type=str, help="Tumor BAM File", required=True
-    )
-    parser_paired.add_argument(
-        "-nbam", "--normal-bam-file", type=str, help="Normal BAM File", required=True
-    )
-    parser_paired.add_argument(
-        "-tumorSM", "--tumor-sample", type=str, help="Tumor Name", default=TUMOR_NAME
-    )
+    parser_paired.add_argument("-tbam", "--tumor-bam-file", type=str, help="Tumor BAM File", required=True)
+    parser_paired.add_argument("-nbam", "--normal-bam-file", type=str, help="Normal BAM File", required=True)
+    parser_paired.add_argument("-tumorSM", "--tumor-sample", type=str, help="Tumor Name", default=TUMOR_NAME)
     parser_paired.add_argument(
         "-normalSM",
         "--normal-sample",
@@ -1037,12 +975,8 @@ def run() -> argparse.Namespace:
 
     # Single Sample mode
     parser_single = sample_parsers.add_parser("single")
-    parser_single.add_argument(
-        "-bam", "--bam-file", type=str, help="BAM File", required=True
-    )
-    parser_single.add_argument(
-        "-SM", "--sample-name", type=str, help="Sample Name", default=TUMOR_NAME
-    )
+    parser_single.add_argument("-bam", "--bam-file", type=str, help="BAM File", required=True)
+    parser_single.add_argument("-SM", "--sample-name", type=str, help="Sample Name", default=TUMOR_NAME)
     parser_single.add_argument(
         "-mutect",
         "--mutect-vcf",
@@ -1103,10 +1037,7 @@ def run() -> argparse.Namespace:
     )
     parser_single.set_defaults(which="single")
     args = parser.parse_args()
-    logger.info(
-        "SomaticSeq Input Arguments: "
-        + ", ".join([f"{i}={vars(args)[i]}" for i in vars(args)])
-    )
+    logger.info("SomaticSeq Input Arguments: " + ", ".join([f"{i}={vars(args)[i]}" for i in vars(args)]))
     return args
 
 
