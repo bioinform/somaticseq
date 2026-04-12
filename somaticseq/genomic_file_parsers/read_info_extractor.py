@@ -73,18 +73,14 @@ def print_read1_or_2(read: pysam.AlignedSegment) -> str:
     return "R0"
 
 
-def _next_cigar_with_pairs(
-    cigartuples: list[tuple[int, int]], start_idx: int
-) -> int | None:
+def _next_cigar_with_pairs(cigartuples: list[tuple[int, int]], start_idx: int) -> int | None:
     for i in range(start_idx, len(cigartuples)):
         if cigartuples[i][0] not in CIGARS_NO_SEQ:
             return i
     return None
 
 
-def _sum_contiguous_cigar_lengths(
-    cigartuples: list[tuple[int, int]], start_idx: int, valid_ops: set[int]
-) -> int:
+def _sum_contiguous_cigar_lengths(cigartuples: list[tuple[int, int]], start_idx: int, valid_ops: set[int]) -> int:
     total = 0
     for cigar_op, n_bases in cigartuples[start_idx:]:
         if cigar_op in CIGARS_NO_SEQ:
@@ -193,14 +189,10 @@ def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_siz
                 indel_length = 0
             elif next_cigar_op in CIGARS_INSERTED_SEQ:
                 call_type = AlignmentType.insertion
-                indel_length = _sum_contiguous_cigar_lengths(
-                    read.cigartuples, next_cigar_idx, CIGARS_INSERTED_SEQ
-                )
+                indel_length = _sum_contiguous_cigar_lengths(read.cigartuples, next_cigar_idx, CIGARS_INSERTED_SEQ)
             elif next_cigar_op in CIGARS_DELETED_SEQ:
                 call_type = AlignmentType.deletion
-                indel_length = -_sum_contiguous_cigar_lengths(
-                    read.cigartuples, next_cigar_idx, CIGARS_DELETED_SEQ
-                )
+                indel_length = -_sum_contiguous_cigar_lengths(read.cigartuples, next_cigar_idx, CIGARS_DELETED_SEQ)
             else:
                 raise ValueError(f"{read.query_name} with {read.cigarstring} failed at {coordinate}.")
 
