@@ -205,7 +205,7 @@ def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_siz
                 raise ValueError(f"{read.query_name} with {read.cigarstring} failed at {coordinate}.")
 
         nearest_indel_on_left = inf
-        if latest_indel_pair_index is not None and latest_indel_pair_index >= 1:
+        if latest_indel_pair_index is not None:
             nearest_indel_on_left = ith_aligned_pair - latest_indel_pair_index
             if nearest_indel_on_left > win_size:
                 nearest_indel_on_left = inf
@@ -268,6 +268,13 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
             indel_length=None,
             nearest_indel=None,
         )
+
+    # get_aligned_pairs() represents CIGAR padding as (query_pos, None), which
+    # is indistinguishable from insertions/soft-clips in this view. Delegate to
+    # the CIGAR implementation so padded alignments are interpreted correctly.
+    assert read.cigartuples
+    if any(cigar_op == CIGAR_PADDING for cigar_op, _ in read.cigartuples):
+        return get_alignment_via_cigar(read, coordinate, win_size)
 
     aligned_pairs = read.get_aligned_pairs()
     for i, aligned_pair in enumerate(aligned_pairs):
@@ -364,7 +371,7 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
             right_indel_flanks = step_right_i + 1
             break
 
-    for step_left_i in range(min(win_size, left_side_start)):
+    for step_left_i in range(min(win_size, left_side_start + 1)):
         j = left_side_start - step_left_i
         if aligned_pairs[j][1] is None or aligned_pairs[j][0] is None:
             left_indel_flanks = step_left_i + 1
