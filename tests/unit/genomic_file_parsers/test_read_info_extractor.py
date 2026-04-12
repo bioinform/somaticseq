@@ -3,7 +3,37 @@ import pysam
 from somaticseq.genomic_file_parsers.read_info_extractor import (
     AlignmentType,
     get_alignment_in_read,
+    get_alignment_via_aligned_pairs,
+    get_alignment_via_cigar,
 )
+
+
+def _make_read(cigar: str, start: int = 1000) -> pysam.AlignedSegment:
+    ops = []
+    digits = []
+    for character in cigar:
+        if character.isdigit():
+            digits.append(character)
+        else:
+            ops.append((int("".join(digits)), character))
+            digits = []
+
+    qlen = sum(length for length, op in ops if op in {"M", "I", "S", "=", "X"})
+    read_dict = {
+        "name": "query_name",
+        "flag": "97",
+        "ref_name": "chr1",
+        "ref_pos": str(start + 1),
+        "map_quality": "60",
+        "cigar": cigar,
+        "next_ref_name": "=",
+        "next_ref_pos": str(start + 1),
+        "length": "0",
+        "seq": "A" * qlen,
+        "qual": "J" * qlen,
+    }
+    header = pysam.AlignmentHeader.from_dict({"SQ": [{"LN": 1_000_000, "SN": "chr1"}]})
+    return pysam.AlignedSegment.from_dict(read_dict, header)
 
 
 def test_get_alignment() -> None:
@@ -69,3 +99,21 @@ def test_get_alignment() -> None:
             assert seq_call.nearest_indel == float("inf")
         elif 100 > coordinate >= 245:
             assert seq_call.call_type is None
+
+
+def test_get_alignment_via_cigar_matches_aligned_pairs_regressions() -> None:
+    regression_cases = (
+        ("3M1I3M", (1002,)),
+        ("1S6M3I9M", (1000, 1001)),
+        ("7M9D9N1D6M6N7M", (1006,)),
+        ("4M8I5D9M12I7M", (1003,)),
+    )
+
+    for cigar, coordinates in regression_cases:
+        read = _make_read(cigar)
+        for coordinate in coordinates:
+            assert get_alignment_via_cigar(read, coordinate) == get_alignment_via_aligned_pairs(read, coordinate)
+
+
+def test_get_alignment_in_read_uses_cigar_path() -> None:
+    assert get_alignment_in_read is get_alignment_via_cigar
