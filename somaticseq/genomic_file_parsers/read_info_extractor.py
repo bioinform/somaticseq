@@ -29,6 +29,7 @@ CIGAR_NUMERIC_TO_CHAR = {
 CIGARS_MATCHED_SEQ = {CIGAR_ALN_MATCH, CIGAR_SEQ_MATCH, CIGAR_SEQ_MISMATCH}
 CIGARS_INSERTED_SEQ = {CIGAR_INSERTION, CIGAR_SOFT_CLIP}
 CIGARS_DELETED_SEQ = {CIGAR_DELETION, CIGAR_SKIP}
+CIGARS_NEARBY_INDEL = {CIGAR_INSERTION} | CIGARS_DELETED_SEQ
 CIGARS_NO_SEQ = {CIGAR_HARD_CLIP, CIGAR_PADDING}
 
 nan = float("nan")
@@ -52,6 +53,7 @@ class SequencingCall:
     base_call: str | None
     indel_length: int | float | None  # float for NaN
     nearest_indel: int | float | None  # float for NaN
+    query_name: str | None = None  # For debugging purposes
 
     def __str__(self) -> str:
         return (
@@ -60,7 +62,8 @@ class SequencingCall:
             f"position_on_read={self.position_on_read}, "
             f"base_call={self.base_call}, "
             f"indel_length={self.indel_length}, "
-            f"nearest_indel={self.nearest_indel})"
+            f"nearest_indel={self.nearest_indel}, "
+            f"query_name={self.query_name})"
         )
 
 
@@ -70,6 +73,50 @@ def print_read1_or_2(read: pysam.AlignedSegment) -> str:
     elif read.is_read2:
         return "R2"
     return "R0"
+
+
+def _next_cigar_with_pairs(cigartuples: list[tuple[int, int]], start_idx: int) -> int | None:
+    """Return the next CIGAR index that contributes aligned-pair entries."""
+    for i in range(start_idx, len(cigartuples)):
+        if cigartuples[i][0] not in CIGARS_NO_SEQ:
+            return i
+    return None
+
+
+def _sum_contiguous_cigar_lengths(cigartuples: list[tuple[int, int]], start_idx: int, valid_ops: set[int]) -> int:
+    """Sum a contiguous block of CIGAR operations, skipping hard clips/padding."""
+    total = 0
+    for cigar_op, n_bases in cigartuples[start_idx:]:
+        if cigar_op in CIGARS_NO_SEQ:
+            continue
+        if cigar_op in valid_ops:
+            total += n_bases
+            continue
+        break
+    return total
+
+
+def _first_future_indel_pair_index(
+    cigartuples: list[tuple[int, int]],
+    start_idx: int,
+    pair_index: int,
+    threshold: int,
+    valid_ops: set[int],
+) -> int | None:
+    """
+    Find the first aligned-pair index after ``threshold`` that belongs to a
+    future indel block in ``valid_ops``.
+    """
+    future_pair_index = pair_index
+    for cigar_op, n_bases in cigartuples[start_idx:]:
+        if cigar_op in CIGARS_NO_SEQ:
+            continue
+        range_start = future_pair_index
+        range_end = future_pair_index + n_bases - 1
+        if cigar_op in valid_ops and range_end > threshold:
+            return max(range_start, threshold + 1)
+        future_pair_index += n_bases
+    return None
 
 
 def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_size: int = 3) -> SequencingCall:
@@ -84,150 +131,143 @@ def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_siz
             base_call=None,
             indel_length=None,
             nearest_indel=None,
+            query_name=read.query_name,
         )
 
     assert read.cigartuples
     assert read.cigarstring
     assert read.query_sequence
-    # -1 to put the current coordinate *before* any operation, so the *end* of a
-    # CIGAR matches a coordinate, instead of the *beginning* of the next CIGAR
-    current_coordinate = start - 1
-    position_on_read = -1
-    latest_insertion_coordinate = -inf
-    latest_deletion_read_position = -inf
-    nearest_indel_on_right = inf
-    # Indel calls can be obtained from cigar alone. Let's try that first.
-    for ith_cigar, cigartuple in enumerate(read.cigartuples):
-        cigar_op, n_bases = cigartuple
+    # Keep parallel state in reference, read, and aligned-pair coordinates so we
+    # can reproduce get_aligned_pairs()-style semantics without materializing
+    # the full per-base aligned-pair list.
+    current_coordinate = start
+    position_on_read = 0
+    aligned_pair_index = 0
+    latest_indel_pair_index = None
+
+    for ith_cigar, (cigar_op, n_bases) in enumerate(read.cigartuples):
         if cigar_op in CIGARS_NO_SEQ:
             continue
+
         if cigar_op in CIGARS_INSERTED_SEQ:
-            latest_insertion_coordinate = current_coordinate
+            # Insertions/soft-clips consume read bases and aligned-pair slots but
+            # do not advance the reference. Only true insertions should affect
+            # the nearby-indel feature; soft-clips are handled separately.
+            aligned_pair_index += n_bases
             position_on_read += n_bases
-        elif cigar_op in CIGARS_DELETED_SEQ:
-            latest_deletion_read_position = position_on_read
+            if cigar_op in CIGARS_NEARBY_INDEL:
+                latest_indel_pair_index = aligned_pair_index - 1
+            continue
+
+        if cigar_op in CIGARS_DELETED_SEQ:
+            if current_coordinate <= coordinate < current_coordinate + n_bases:
+                return SequencingCall(
+                    call_type=AlignmentType.unknown,
+                    position_on_read=None,
+                    base_call=None,
+                    indel_length=None,
+                    nearest_indel=None,
+                    query_name=read.query_name,
+                )
+            # Deletions/skips consume reference positions and aligned-pair slots
+            # but leave the read position unchanged.
+            aligned_pair_index += n_bases
             current_coordinate += n_bases
-        elif cigar_op in CIGARS_MATCHED_SEQ:
-            current_coordinate += n_bases
-            position_on_read += n_bases
-        else:
+            latest_indel_pair_index = aligned_pair_index - 1
+            continue
+
+        if cigar_op not in CIGARS_MATCHED_SEQ:
             raise NotImplementedError(f"{read.query_name} has CIGAR_OP {cigar_op}.")
 
-        # Get out of the loop once CIGAR walker has reached the target
-        # coordinate.
-        if current_coordinate == coordinate:
-            if cigar_op not in CIGARS_MATCHED_SEQ:
-                return SequencingCall(
-                    call_type=AlignmentType.unknown,
-                    position_on_read=None,
-                    base_call=None,
-                    indel_length=None,
-                    nearest_indel=None,
-                )
-            # If the end of CIGAR MATCH puts the coordinate right on target, and
-            # the next CIGAR is indel, then it's an indel call. In VCF files,
-            # indel are recorded to the last position prior to inserted or
-            # deleted bases.
-            ith_base = read.query_sequence[position_on_read]
-            # If the coordinate has reached the end of the read
-            if len(read.cigartuples) == ith_cigar + 1:
-                return SequencingCall(
-                    call_type=AlignmentType.match,
-                    position_on_read=position_on_read,
-                    base_call=ith_base,
-                    indel_length=nan,
-                    nearest_indel=None,
-                )
-            # If there is at least one more cigar after the current cigar
-            cigartuple_j = read.cigartuples[ith_cigar + 1]
-            cigar_op_j, n_bases_j = cigartuple_j
-            # This is like at the end of a read
-            if cigar_op_j in CIGARS_NO_SEQ:
-                return SequencingCall(
-                    call_type=AlignmentType.match,
-                    position_on_read=position_on_read,
-                    base_call=ith_base,
-                    indel_length=nan,
-                    nearest_indel=None,
-                )
-            if cigar_op_j in CIGARS_MATCHED_SEQ:
-                vtype = AlignmentType.match
-                indel_length = 0
-            elif cigar_op_j in CIGARS_INSERTED_SEQ:
-                vtype = AlignmentType.insertion
-                indel_length = n_bases_j
-            elif cigar_op_j in CIGARS_DELETED_SEQ:
-                vtype = AlignmentType.deletion
-                indel_length = -n_bases_j
-            else:
-                raise ValueError(f"{read.query_name} with {read.cigarstring} failed at {coordinate}.")
-            nearest_indel_on_left = min(
-                [
-                    coordinate - latest_insertion_coordinate,
-                    position_on_read - latest_deletion_read_position,
-                ],
-                default=inf,
-            )
-            if len(read.cigartuples) > ith_cigar + 2:
-                cigartuple_k = read.cigartuples[ith_cigar + 2]
-                cigar_op_k, n_bases_k = cigartuple_k
-                if cigar_op_k in CIGARS_MATCHED_SEQ:
-                    nearest_indel_on_right = n_bases_k
-            nearest_indel = min(nearest_indel_on_left, nearest_indel_on_right)
-            if nearest_indel > win_size:
-                nearest_indel = inf
-            return SequencingCall(
-                call_type=vtype,
-                position_on_read=position_on_read,
-                base_call=ith_base,
-                indel_length=indel_length,
-                nearest_indel=nearest_indel,
-            )
-        # If the target coordinate is in the middle of this CIGAR tuple, then we
-        # can only return something meaningful if this CIGAR is MATCH.
-        elif current_coordinate > coordinate:
-            if cigar_op not in CIGARS_MATCHED_SEQ:
-                return SequencingCall(
-                    call_type=AlignmentType.unknown,
-                    position_on_read=None,
-                    base_call=None,
-                    indel_length=None,
-                    nearest_indel=None,
-                )
-            overshoot = current_coordinate - coordinate
-            corrected_position = position_on_read - overshoot
-            corrected_coordinate = current_coordinate - overshoot
-            ith_base = read.query_sequence[corrected_position]
-            nearest_indel_on_left = min(
-                [
-                    corrected_coordinate - latest_insertion_coordinate,
-                    corrected_position - latest_deletion_read_position,
-                ],
-                default=inf,
-            )
-            # Distance to the next indel CIGAR from the current position is the
-            # nearest indel to the right, if the next CIGAR exists.
-            if len(read.cigartuples) > ith_cigar + 1:
-                cigartuple_j = read.cigartuples[ith_cigar + 1]
-                cigar_op_j = cigartuple_j[0]
-                if cigar_op_j not in CIGARS_MATCHED_SEQ:
-                    nearest_indel_on_right = overshoot
-            nearest_indel = min(nearest_indel_on_left, nearest_indel_on_right)
-            if nearest_indel > win_size:
-                nearest_indel = inf
+        if coordinate >= current_coordinate + n_bases:
+            aligned_pair_index += n_bases
+            current_coordinate += n_bases
+            position_on_read += n_bases
+            continue
+
+        # The queried coordinate falls within this matched block. We anchor all
+        # indel interpretation to the aligned base at this coordinate, mirroring
+        # how the aligned-pairs implementation treats the current site plus the
+        # next CIGAR event.
+        offset = coordinate - current_coordinate
+        ith_base = position_on_read + offset
+        ith_aligned_pair = aligned_pair_index + offset
+        base_call = read.query_sequence[ith_base]
+        next_cigar_idx = _next_cigar_with_pairs(read.cigartuples, ith_cigar + 1)
+
+        if offset < n_bases - 1:
+            # An indel can only be attached to the final matched base before the
+            # next CIGAR event. Any earlier base in the block is an ordinary
+            # match at this coordinate.
+            call_type = AlignmentType.match
+            indel_length = 0
+        elif next_cigar_idx is None:
             return SequencingCall(
                 call_type=AlignmentType.match,
-                position_on_read=corrected_position,
-                base_call=ith_base,
-                indel_length=0,
-                nearest_indel=nearest_indel,
+                position_on_read=ith_base,
+                base_call=base_call,
+                indel_length=nan,
+                nearest_indel=None,
+                query_name=read.query_name,
             )
+        else:
+            # At the final matched base, the next non-padding CIGAR operation
+            # determines whether this coordinate is reported as a plain match or
+            # as the anchor for an insertion/deletion.
+            next_cigar_op = read.cigartuples[next_cigar_idx][0]
+            if next_cigar_op in CIGARS_MATCHED_SEQ:
+                call_type = AlignmentType.match
+                indel_length = 0
+            elif next_cigar_op in CIGARS_INSERTED_SEQ:
+                call_type = AlignmentType.insertion
+                indel_length = _sum_contiguous_cigar_lengths(read.cigartuples, next_cigar_idx, CIGARS_INSERTED_SEQ)
+            elif next_cigar_op in CIGARS_DELETED_SEQ:
+                call_type = AlignmentType.deletion
+                indel_length = -_sum_contiguous_cigar_lengths(read.cigartuples, next_cigar_idx, CIGARS_DELETED_SEQ)
+            else:
+                raise ValueError(f"{read.query_name} with {read.cigarstring} failed at {coordinate}.")
+
+        nearest_indel_on_left = inf
+        if latest_indel_pair_index is not None:
+            # Distance on the left is measured in aligned-pair space so insertions,
+            # deletions, and skips line up with the original aligned-pairs logic.
+            nearest_indel_on_left = ith_aligned_pair - latest_indel_pair_index
+            if nearest_indel_on_left > win_size:
+                nearest_indel_on_left = inf
+
+        # When the current coordinate itself anchors an indel, skip over the
+        # aligned-pair slots occupied by that indel before looking for the next
+        # nearby indel on the right.
+        right_search_start = ith_aligned_pair + abs(indel_length) + 1
+        next_indel_pair_index = _first_future_indel_pair_index(
+            read.cigartuples,
+            ith_cigar + 1,
+            aligned_pair_index + n_bases,
+            right_search_start,
+            CIGARS_NEARBY_INDEL,
+        )
+        nearest_indel_on_right = inf
+        if next_indel_pair_index is not None:
+            nearest_indel_on_right = next_indel_pair_index - right_search_start
+            if nearest_indel_on_right > win_size:
+                nearest_indel_on_right = inf
+
+        nearest_indel = min(nearest_indel_on_left, nearest_indel_on_right)
+        return SequencingCall(
+            call_type=call_type,
+            position_on_read=ith_base,
+            base_call=base_call,
+            indel_length=indel_length,
+            nearest_indel=nearest_indel,
+            query_name=read.query_name,
+        )
     return SequencingCall(
         call_type=None,
         position_on_read=None,
         base_call=None,
         indel_length=None,
         nearest_indel=None,
+        query_name=read.query_name,
     )
 
 
@@ -258,7 +298,15 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
             base_call=None,
             indel_length=None,
             nearest_indel=None,
+            query_name=read.query_name,
         )
+
+    # get_aligned_pairs() represents CIGAR padding as (query_pos, None), which
+    # is indistinguishable from insertions/soft-clips in this view. Delegate to
+    # the CIGAR implementation so padded alignments are interpreted correctly.
+    assert read.cigartuples
+    if any(cigar_op == CIGAR_PADDING for cigar_op, _ in read.cigartuples):
+        return get_alignment_via_cigar(read, coordinate, win_size)
 
     aligned_pairs = read.get_aligned_pairs()
     for i, aligned_pair in enumerate(aligned_pairs):
@@ -278,6 +326,7 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
             base_call=None,
             indel_length=None,
             nearest_indel=None,
+            query_name=read.query_name,
         )
 
     # If the target position is aligned:
@@ -297,6 +346,7 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
             base_call=base_at_coordinate,
             indel_length=nan,
             nearest_indel=None,
+            query_name=read.query_name,
         )
 
     # If ith_aligned_pair is not the final alignment, we can check subsequent
@@ -355,13 +405,16 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
             right_indel_flanks = step_right_i + 1
             break
 
-    for step_left_i in range(min(win_size, left_side_start)):
+    for step_left_i in range(min(win_size, left_side_start + 1)):
         j = left_side_start - step_left_i
         if aligned_pairs[j][1] is None or aligned_pairs[j][0] is None:
             left_indel_flanks = step_left_i + 1
             break
 
-    nearest_indel_within_window = min(left_indel_flanks, right_indel_flanks)
+    # aligned_pairs cannot distinguish insertions from soft-clips because both
+    # appear as (query_pos, None). Source nearby-indel distance from the CIGAR
+    # parser so terminal soft-clips are not counted as nearby indels.
+    nearest_indel_within_window = get_alignment_via_cigar(read, coordinate, win_size).nearest_indel
 
     return SequencingCall(
         call_type=vtype,
@@ -369,11 +422,13 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
         base_call=base_at_coordinate,
         indel_length=indel_length,
         nearest_indel=nearest_indel_within_window,
+        query_name=read.query_name,
     )
 
 
-# get_alignment_via_cigar still has testing left
-get_alignment_in_read = get_alignment_via_aligned_pairs
+# Keep the default entry point on the faster implementation now that it is
+# regression-tested against the aligned-pairs behavior.
+get_alignment_in_read = get_alignment_via_cigar
 
 
 # Dedup test for BAM file
