@@ -53,6 +53,7 @@ class SequencingCall:
     base_call: str | None
     indel_length: int | float | None  # float for NaN
     nearest_indel: int | float | None  # float for NaN
+    query_name: str | None = None  # For debugging purposes
 
     def __str__(self) -> str:
         return (
@@ -61,7 +62,8 @@ class SequencingCall:
             f"position_on_read={self.position_on_read}, "
             f"base_call={self.base_call}, "
             f"indel_length={self.indel_length}, "
-            f"nearest_indel={self.nearest_indel})"
+            f"nearest_indel={self.nearest_indel}, "
+            f"query_name={self.query_name})"
         )
 
 
@@ -122,6 +124,7 @@ def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_siz
             base_call=None,
             indel_length=None,
             nearest_indel=None,
+            query_name=read.query_name,
         )
 
     assert read.cigartuples
@@ -150,6 +153,7 @@ def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_siz
                     base_call=None,
                     indel_length=None,
                     nearest_indel=None,
+                    query_name=read.query_name,
                 )
             aligned_pair_index += n_bases
             current_coordinate += n_bases
@@ -181,6 +185,7 @@ def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_siz
                 base_call=base_call,
                 indel_length=nan,
                 nearest_indel=None,
+                query_name=read.query_name,
             )
         else:
             next_cigar_op = read.cigartuples[next_cigar_idx][0]
@@ -222,6 +227,7 @@ def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_siz
             base_call=base_call,
             indel_length=indel_length,
             nearest_indel=nearest_indel,
+            query_name=read.query_name,
         )
     return SequencingCall(
         call_type=None,
@@ -229,6 +235,7 @@ def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_siz
         base_call=None,
         indel_length=None,
         nearest_indel=None,
+        query_name=read.query_name,
     )
 
 
@@ -259,6 +266,7 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
             base_call=None,
             indel_length=None,
             nearest_indel=None,
+            query_name=read.query_name,
         )
 
     # get_aligned_pairs() represents CIGAR padding as (query_pos, None), which
@@ -286,6 +294,7 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
             base_call=None,
             indel_length=None,
             nearest_indel=None,
+            query_name=read.query_name,
         )
 
     # If the target position is aligned:
@@ -305,6 +314,7 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
             base_call=base_at_coordinate,
             indel_length=nan,
             nearest_indel=None,
+            query_name=read.query_name,
         )
 
     # If ith_aligned_pair is not the final alignment, we can check subsequent
@@ -377,6 +387,7 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
         base_call=base_at_coordinate,
         indel_length=indel_length,
         nearest_indel=nearest_indel_within_window,
+        query_name=read.query_name,
     )
 
 
