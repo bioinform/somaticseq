@@ -122,13 +122,20 @@ def test_get_alignment_in_read_uses_cigar_path() -> None:
     assert get_alignment_in_read is get_alignment_via_cigar
 
 
-def test_single_leading_unaligned_base_counts_as_left_flanking_indel() -> None:
-    for cigar in ("1S6M", "1I6M"):
-        read = _make_read(cigar)
-        for fn in (get_alignment_via_cigar, get_alignment_via_aligned_pairs):
-            assert fn(read, 1000).nearest_indel == 1
-            assert fn(read, 1001).nearest_indel == 2
-            assert fn(read, 1002).nearest_indel == 3
+def test_single_leading_insertion_counts_as_left_flanking_indel() -> None:
+    read = _make_read("1I6M")
+    for fn in (get_alignment_via_cigar, get_alignment_via_aligned_pairs):
+        assert fn(read, 1000).nearest_indel == 1
+        assert fn(read, 1001).nearest_indel == 2
+        assert fn(read, 1002).nearest_indel == 3
+
+
+def test_single_leading_soft_clip_is_not_counted_as_nearby_indel() -> None:
+    read = _make_read("1S6M")
+    for fn in (get_alignment_via_cigar, get_alignment_via_aligned_pairs):
+        assert fn(read, 1000).nearest_indel == float("inf")
+        assert fn(read, 1001).nearest_indel == float("inf")
+        assert fn(read, 1002).nearest_indel == float("inf")
 
 
 def test_padding_cigar_is_not_treated_as_insertion() -> None:

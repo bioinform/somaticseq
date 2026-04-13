@@ -29,7 +29,7 @@ CIGAR_NUMERIC_TO_CHAR = {
 CIGARS_MATCHED_SEQ = {CIGAR_ALN_MATCH, CIGAR_SEQ_MATCH, CIGAR_SEQ_MISMATCH}
 CIGARS_INSERTED_SEQ = {CIGAR_INSERTION, CIGAR_SOFT_CLIP}
 CIGARS_DELETED_SEQ = {CIGAR_DELETION, CIGAR_SKIP}
-CIGARS_INDEL_LIKE = CIGARS_INSERTED_SEQ | CIGARS_DELETED_SEQ
+CIGARS_NEARBY_INDEL = {CIGAR_INSERTION} | CIGARS_DELETED_SEQ
 CIGARS_NO_SEQ = {CIGAR_HARD_CLIP, CIGAR_PADDING}
 
 nan = float("nan")
@@ -99,6 +99,7 @@ def _first_future_indel_pair_index(
     start_idx: int,
     pair_index: int,
     threshold: int,
+    valid_ops: set[int],
 ) -> int | None:
     future_pair_index = pair_index
     for cigar_op, n_bases in cigartuples[start_idx:]:
@@ -106,7 +107,7 @@ def _first_future_indel_pair_index(
             continue
         range_start = future_pair_index
         range_end = future_pair_index + n_bases - 1
-        if cigar_op in CIGARS_INDEL_LIKE and range_end > threshold:
+        if cigar_op in valid_ops and range_end > threshold:
             return max(range_start, threshold + 1)
         future_pair_index += n_bases
     return None
@@ -142,7 +143,8 @@ def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_siz
         if cigar_op in CIGARS_INSERTED_SEQ:
             aligned_pair_index += n_bases
             position_on_read += n_bases
-            latest_indel_pair_index = aligned_pair_index - 1
+            if cigar_op in CIGARS_NEARBY_INDEL:
+                latest_indel_pair_index = aligned_pair_index - 1
             continue
 
         if cigar_op in CIGARS_DELETED_SEQ:
@@ -213,6 +215,7 @@ def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_siz
             ith_cigar + 1,
             aligned_pair_index + n_bases,
             right_search_start,
+            CIGARS_NEARBY_INDEL,
         )
         nearest_indel_on_right = inf
         if next_indel_pair_index is not None:
@@ -379,7 +382,10 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
             left_indel_flanks = step_left_i + 1
             break
 
-    nearest_indel_within_window = min(left_indel_flanks, right_indel_flanks)
+    # aligned_pairs cannot distinguish insertions from soft-clips because both
+    # appear as (query_pos, None). Source nearby-indel distance from the CIGAR
+    # parser so terminal soft-clips are not counted as nearby indels.
+    nearest_indel_within_window = get_alignment_via_cigar(read, coordinate, win_size).nearest_indel
 
     return SequencingCall(
         call_type=vtype,
