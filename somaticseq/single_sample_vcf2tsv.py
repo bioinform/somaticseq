@@ -15,7 +15,11 @@ import pysam
 import somaticseq.annotate_caller as annotate_caller
 import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 import somaticseq.sequencing_features as seq_features
-from somaticseq.bam_features import BamFeatures
+from somaticseq.bam_features import (
+    MAX_BATCHED_BAM_FETCH_SPAN,
+    bam_feature_key,
+    collect_bam_features_batch,
+)
 from somaticseq.genomic_file_parsers.read_info_extractor import (
     genomic_coordinates,
     rescale,
@@ -394,6 +398,118 @@ def vcf2tsv(
             header_part_1 = header_part_1 + "\t" + f"if_Caller_{arbi_caller_num}"
         header_last_part = label_header.replace("{", "").replace("}", "")
         outhandle.write("\t".join((header_part_1, header_last_part)) + "\n")
+        pending_records: list[dict[str, object]] = []
+        pending_cluster_contig: str | None = None
+        pending_cluster_start: int | None = None
+
+        def flush_pending_records() -> None:
+            nonlocal pending_records, pending_cluster_contig, pending_cluster_start
+            if not pending_records:
+                return
+
+            batch_candidates = [
+                (record["my_coordinate"], record["ref_base"], record["first_alt"])
+                for record in pending_records
+            ]
+            tbam_features = collect_bam_features_batch(
+                bam,
+                batch_candidates,
+                min_mq=min_mq,
+                min_bq=min_bq,
+            )
+
+            for record in pending_records:
+                coordinate = record["my_coordinate"]
+                assert isinstance(coordinate, tuple)
+                ref_base = str(record["ref_base"])
+                first_alt = str(record["first_alt"])
+                feature_key = bam_feature_key(coordinate, ref_base, first_alt)
+                tbam_feature = tbam_features[feature_key]
+
+                out_line_part_1 = out_header.format(
+                    CHROM=coordinate[0],
+                    POS=coordinate[1],
+                    ID=record["identifiers"],
+                    REF=ref_base,
+                    ALT=first_alt,
+                    if_MuTect=record["mutect_classification"],
+                    if_Strelka=record["strelka_classification"],
+                    if_VarScan2=record["varscan_classification"],
+                    if_VarDict=record["vardict_classification"],
+                    if_LoFreq=record["lofreq_classification"],
+                    if_Scalpel=record["scalpel_classification"],
+                    VarScan2_Score=rescale(record["score_varscan2"], "phred", p_scale, 1001),
+                    if_dbsnp=record["if_dbsnp"],
+                    COMMON=record["if_common"],
+                    if_COSMIC=record["if_cosmic"],
+                    COSMIC_CNT=record["num_cases"],
+                    Consistent_Mates=tbam_feature.consistent_mates,
+                    Inconsistent_Mates=tbam_feature.inconsistent_mates,
+                    Seq_Complexity_Span=record["LC_spanning_phred"],
+                    Seq_Complexity_Adj=record["LC_adjacent_phred"],
+                    M2_TLOD=record["tlod"],
+                    M2_ECNT=record["ecnt"],
+                    MSI=record["msi"],
+                    MSILEN=record["msilen"],
+                    SHIFT3=record["shift3"],
+                    MaxHomopolymer_Length=record["homopolymer_length"],
+                    SiteHomopolymer_Length=record["site_homopolymer_length"],
+                    T_DP=tbam_feature.dp,
+                    tBAM_REF_MQ="%g" % tbam_feature.ref_mq,
+                    tBAM_ALT_MQ="%g" % tbam_feature.alt_mq,
+                    tBAM_p_MannWhitneyU_MQ="%g" % tbam_feature.p_mannwhitneyu_mq,
+                    tBAM_REF_BQ="%g" % tbam_feature.ref_bq,
+                    tBAM_ALT_BQ="%g" % tbam_feature.alt_bq,
+                    tBAM_p_MannWhitneyU_BQ="%g" % tbam_feature.p_mannwhitneyu_bq,
+                    tBAM_REF_NM="%g" % tbam_feature.ref_edit_distance,
+                    tBAM_ALT_NM="%g" % tbam_feature.alt_edit_distance,
+                    tBAM_NM_Diff="%g" % tbam_feature.edit_distance_difference,
+                    tBAM_REF_Concordant=tbam_feature.ref_concordant_reads,
+                    tBAM_REF_Discordant=tbam_feature.ref_discordant_reads,
+                    tBAM_ALT_Concordant=tbam_feature.alt_concordant_reads,
+                    tBAM_ALT_Discordant=tbam_feature.alt_discordant_reads,
+                    tBAM_Concordance_FET=rescale(tbam_feature.concordance_fet, "fraction", p_scale, 1001),
+                    T_REF_FOR=tbam_feature.ref_call_forward,
+                    T_REF_REV=tbam_feature.ref_call_reverse,
+                    T_ALT_FOR=tbam_feature.alt_call_forward,
+                    T_ALT_REV=tbam_feature.alt_call_reverse,
+                    tBAM_StrandBias_FET=rescale(tbam_feature.strandbias_fet, "fraction", p_scale, 1001),
+                    tBAM_p_MannWhitneyU_EndPos="%g" % tbam_feature.p_mannwhitneyu_endpos,
+                    tBAM_REF_Clipped_Reads=tbam_feature.ref_soft_clipped_reads,
+                    tBAM_ALT_Clipped_Reads=tbam_feature.alt_soft_clipped_reads,
+                    tBAM_Clipping_FET=rescale(tbam_feature.clipping_fet, "fraction", p_scale, 1001),
+                    tBAM_MQ0=tbam_feature.mq0_reads,
+                    tBAM_Other_Reads=tbam_feature.noise_read_count,
+                    tBAM_Poor_Reads=tbam_feature.poor_read_count,
+                    tBAM_REF_InDel_3bp=tbam_feature.ref_indel_3bp,
+                    tBAM_REF_InDel_2bp=tbam_feature.ref_indel_2bp,
+                    tBAM_REF_InDel_1bp=tbam_feature.ref_indel_1bp,
+                    tBAM_ALT_InDel_3bp=tbam_feature.alt_indel_3bp,
+                    tBAM_ALT_InDel_2bp=tbam_feature.alt_indel_2bp,
+                    tBAM_ALT_InDel_1bp=tbam_feature.alt_indel_1bp,
+                    InDel_Length=record["indel_length"],
+                )
+                if record["additional_caller_columns"]:
+                    out_line = "\t".join(
+                        (
+                            out_line_part_1,
+                            str(record["additional_caller_columns"]),
+                            label_header.format(TrueVariant_or_False=record["judgement"]),
+                        )
+                    )
+                else:
+                    out_line = "\t".join(
+                        (
+                            out_line_part_1,
+                            label_header.format(TrueVariant_or_False=record["judgement"]),
+                        )
+                    )
+                outhandle.write(out_line + "\n")
+
+            pending_records = []
+            pending_cluster_contig = None
+            pending_cluster_start = None
+
         while my_line:
             # If VCF, get all the variants with the same coordinate into a list:
             if is_vcf:
@@ -651,16 +767,6 @@ def vcf2tsv(
                             for ID_i in cosmicID:
                                 my_identifiers.add(ID_i)
 
-                        # INFO EXTRACTION FROM BAM FILES
-                        # Tumor tBAM file:
-                        tbam_feature = BamFeatures.from_alignment_file(
-                            bam_fh=bam,
-                            my_coordinate=my_coordinate,
-                            ref_base=ref_base,
-                            first_alt=first_alt,
-                            min_mq=min_mq,
-                            min_bq=min_bq,
-                        )
                         # Homopolymer eval:
                         (
                             homopolymer_length,
@@ -699,104 +805,58 @@ def vcf2tsv(
                         LC_spanning_phred = genome.p2phred(1 - LC_spanning, 40)
                         LC_adjacent_phred = genome.p2phred(1 - LC_adjacent, 40)
 
-                        # Fill the ID field of the TSV/VCF
-                        my_identifiers = ";".join(my_identifiers) if my_identifiers else "."
-                        out_line_part_1 = out_header.format(
-                            CHROM=my_coordinate[0],
-                            POS=my_coordinate[1],
-                            ID=my_identifiers,
-                            REF=ref_base,
-                            ALT=first_alt,
-                            if_MuTect=mutect_classification,
-                            if_Strelka=strelka_classification,
-                            if_VarScan2=varscan_classification,
-                            if_VarDict=vardict_classification,
-                            if_LoFreq=lofreq_classification,
-                            if_Scalpel=scalpel_classification,
-                            VarScan2_Score=rescale(score_varscan2, "phred", p_scale, 1001),
-                            if_dbsnp=if_dbsnp,
-                            COMMON=if_common,
-                            if_COSMIC=if_cosmic,
-                            COSMIC_CNT=num_cases,
-                            Consistent_Mates=tbam_feature.consistent_mates,
-                            Inconsistent_Mates=tbam_feature.inconsistent_mates,
-                            Seq_Complexity_Span=LC_spanning_phred,
-                            Seq_Complexity_Adj=LC_adjacent_phred,
-                            M2_TLOD=tlod,
-                            M2_ECNT=ecnt,
-                            MSI=msi,
-                            MSILEN=msilen,
-                            SHIFT3=shift3,
-                            MaxHomopolymer_Length=homopolymer_length,
-                            SiteHomopolymer_Length=site_homopolymer_length,
-                            T_DP=tbam_feature.dp,
-                            tBAM_REF_MQ="%g" % tbam_feature.ref_mq,
-                            tBAM_ALT_MQ="%g" % tbam_feature.alt_mq,
-                            tBAM_p_MannWhitneyU_MQ="%g" % tbam_feature.p_mannwhitneyu_mq,
-                            tBAM_REF_BQ="%g" % tbam_feature.ref_bq,
-                            tBAM_ALT_BQ="%g" % tbam_feature.alt_bq,
-                            tBAM_p_MannWhitneyU_BQ="%g" % tbam_feature.p_mannwhitneyu_bq,
-                            tBAM_REF_NM="%g" % tbam_feature.ref_edit_distance,
-                            tBAM_ALT_NM="%g" % tbam_feature.alt_edit_distance,
-                            tBAM_NM_Diff="%g" % tbam_feature.edit_distance_difference,
-                            tBAM_REF_Concordant=tbam_feature.ref_concordant_reads,
-                            tBAM_REF_Discordant=tbam_feature.ref_discordant_reads,
-                            tBAM_ALT_Concordant=tbam_feature.alt_concordant_reads,
-                            tBAM_ALT_Discordant=tbam_feature.alt_discordant_reads,
-                            tBAM_Concordance_FET=rescale(
-                                tbam_feature.concordance_fet,
-                                "fraction",
-                                p_scale,
-                                1001,
-                            ),
-                            T_REF_FOR=tbam_feature.ref_call_forward,
-                            T_REF_REV=tbam_feature.ref_call_reverse,
-                            T_ALT_FOR=tbam_feature.alt_call_forward,
-                            T_ALT_REV=tbam_feature.alt_call_reverse,
-                            tBAM_StrandBias_FET=rescale(
-                                tbam_feature.strandbias_fet,
-                                "fraction",
-                                p_scale,
-                                1001,
-                            ),
-                            tBAM_p_MannWhitneyU_EndPos="%g" % tbam_feature.p_mannwhitneyu_endpos,
-                            tBAM_REF_Clipped_Reads=tbam_feature.ref_soft_clipped_reads,
-                            tBAM_ALT_Clipped_Reads=tbam_feature.alt_soft_clipped_reads,
-                            tBAM_Clipping_FET=rescale(tbam_feature.clipping_fet, "fraction", p_scale, 1001),
-                            tBAM_MQ0=tbam_feature.mq0_reads,
-                            tBAM_Other_Reads=tbam_feature.noise_read_count,
-                            tBAM_Poor_Reads=tbam_feature.poor_read_count,
-                            tBAM_REF_InDel_3bp=tbam_feature.ref_indel_3bp,
-                            tBAM_REF_InDel_2bp=tbam_feature.ref_indel_2bp,
-                            tBAM_REF_InDel_1bp=tbam_feature.ref_indel_1bp,
-                            tBAM_ALT_InDel_3bp=tbam_feature.alt_indel_3bp,
-                            tBAM_ALT_InDel_2bp=tbam_feature.alt_indel_2bp,
-                            tBAM_ALT_InDel_1bp=tbam_feature.alt_indel_1bp,
-                            InDel_Length=indel_length,
-                        )
+                        if pending_records and (
+                            pending_cluster_contig != my_coordinate[0]
+                            or pending_cluster_start is None
+                            or my_coordinate[1] - pending_cluster_start > MAX_BATCHED_BAM_FETCH_SPAN
+                        ):
+                            flush_pending_records()
+
+                        if not pending_records:
+                            pending_cluster_contig = my_coordinate[0]
+                            pending_cluster_start = my_coordinate[1]
+
                         additional_caller_columns = []
                         for arbi_key_i in additional_arbi_caller_numbers:
                             additional_caller_columns.append(str(arbitrary_classifications[arbi_key_i]))
-                        additional_caller_columns = "\t".join(additional_caller_columns)
 
-                        label_column = label_header.format(TrueVariant_or_False=judgement)
-                        if len(additional_arbi_caller_numbers) > 0:
-                            out_line = "\t".join(
-                                (
-                                    out_line_part_1,
-                                    additional_caller_columns,
-                                    label_column,
-                                )
-                            )
-                        else:
-                            out_line = "\t".join((out_line_part_1, label_column))
-
-                        # Print it out to stdout:
-                        outhandle.write(out_line + "\n")
+                        pending_records.append(
+                            {
+                                "my_coordinate": my_coordinate,
+                                "ref_base": ref_base,
+                                "first_alt": first_alt,
+                                "indel_length": indel_length,
+                                "identifiers": ";".join(my_identifiers) if my_identifiers else ".",
+                                "mutect_classification": mutect_classification,
+                                "tlod": tlod,
+                                "ecnt": ecnt,
+                                "strelka_classification": strelka_classification,
+                                "varscan_classification": varscan_classification,
+                                "score_varscan2": score_varscan2,
+                                "vardict_classification": vardict_classification,
+                                "msi": msi,
+                                "msilen": msilen,
+                                "shift3": shift3,
+                                "lofreq_classification": lofreq_classification,
+                                "scalpel_classification": scalpel_classification,
+                                "if_dbsnp": if_dbsnp,
+                                "if_common": if_common,
+                                "if_cosmic": if_cosmic,
+                                "num_cases": num_cases,
+                                "LC_spanning_phred": LC_spanning_phred,
+                                "LC_adjacent_phred": LC_adjacent_phred,
+                                "homopolymer_length": homopolymer_length,
+                                "site_homopolymer_length": site_homopolymer_length,
+                                "judgement": judgement,
+                                "additional_caller_columns": "\t".join(additional_caller_columns),
+                            }
+                        )
 
             # Read into the next line:
             if not is_vcf:
                 my_line = my_sites.readline().rstrip()
+
+        flush_pending_records()
 
         # Close all open files if they were opened
         opened_files = [
