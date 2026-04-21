@@ -324,8 +324,8 @@ def _collect_bam_features_cluster(
 
     first_active_idx = 0
     for read in bam_fh.fetch(contig, cluster_start - 1, cluster_end):
-        assert read.reference_start is not None  # pysam typeshed
-        assert read.reference_end is not None  # pysam typeshed
+        if read.is_unmapped or read.reference_start is None or read.reference_end is None:
+            continue
         while first_active_idx < len(positions) and positions[first_active_idx] <= read.reference_start:
             first_active_idx += 1
 

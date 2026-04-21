@@ -25,6 +25,17 @@ class RecordingAlignmentFile:
         return self.alignment_file.fetch(contig, start, stop)
 
 
+class PrefixedReadAlignmentFile:
+    def __init__(self, prefix_reads: list[object], alignment_file: pysam.AlignmentFile) -> None:
+        self.prefix_reads = prefix_reads
+        self.alignment_file = alignment_file
+
+    def fetch(self, contig: str, start: int, stop: int):
+        for read in self.prefix_reads:
+            yield read
+        yield from self.alignment_file.fetch(contig, start, stop)
+
+
 def test_collect_bam_features_batch_matches_per_variant_oracle_and_reduces_fetches(
     tiny_tumor_bam: str,
 ) -> None:
@@ -51,6 +62,29 @@ def test_collect_bam_features_batch_matches_per_variant_oracle_and_reduces_fetch
                 batch_features[(candidate[0], candidate[1], candidate[2])],
                 expected,
             )
+
+
+def test_collect_bam_features_batch_skips_reads_without_reference_end(
+    tiny_tumor_bam: str,
+) -> None:
+    class FakeRead:
+        is_unmapped = False
+        reference_start = 8440
+        reference_end = None
+
+    with pysam.AlignmentFile(tiny_tumor_bam) as bam:
+        prefixed_bam = PrefixedReadAlignmentFile([FakeRead()], bam)
+        candidate = (("1", 8450), "T", "G")
+
+        batch_feature = collect_bam_features_batch(prefixed_bam, [candidate])[candidate]
+        expected = BamFeatures.from_alignment_file(
+            bam,
+            candidate[0],
+            candidate[1],
+            candidate[2],
+        )
+
+        assert_bam_features_equal(batch_feature, expected)
 
 
 def test_collect_bam_features_batch_handles_same_coordinate_alt_alleles_and_cluster_boundaries(
