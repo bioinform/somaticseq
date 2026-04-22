@@ -9,6 +9,7 @@ import os
 import re
 import sys
 from copy import copy
+from typing import TypedDict
 
 import pysam
 
@@ -17,6 +18,9 @@ import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 import somaticseq.sequencing_features as seq_features
 from somaticseq.bam_features import (
     MAX_BATCHED_BAM_FETCH_SPAN,
+    BamFeatureCandidate,
+    BamFeatureKey,
+    BamFeatureLookupCoordinate,
     bam_feature_key,
     collect_bam_features_batch,
 )
@@ -98,6 +102,36 @@ out_header = "{CHROM}\t\
 
 extra_caller_header = ""
 label_header = "{TrueVariant_or_False}"
+
+
+class SinglePendingRecord(TypedDict):
+    my_coordinate: BamFeatureLookupCoordinate
+    ref_base: str
+    first_alt: str
+    indel_length: int
+    identifiers: str
+    mutect_classification: int | float
+    tlod: int | float
+    ecnt: int | float
+    strelka_classification: int | float
+    varscan_classification: int | float
+    score_varscan2: int | float
+    vardict_classification: int | float
+    msi: int | float
+    msilen: int | float
+    shift3: int | float
+    lofreq_classification: int | float
+    scalpel_classification: int | float
+    if_dbsnp: int | float
+    if_common: int | float
+    if_cosmic: int | float
+    num_cases: int | float
+    LC_spanning_phred: int | float
+    LC_adjacent_phred: int | float
+    homopolymer_length: int | float
+    site_homopolymer_length: int | float
+    judgement: int | float
+    additional_caller_columns: str
 
 
 def run() -> argparse.Namespace:
@@ -398,18 +432,20 @@ def vcf2tsv(
             header_part_1 = header_part_1 + "\t" + f"if_Caller_{arbi_caller_num}"
         header_last_part = label_header.replace("{", "").replace("}", "")
         outhandle.write("\t".join((header_part_1, header_last_part)) + "\n")
-        pending_records: list[dict[str, object]] = []
+        # Buffer nearby output records so one BAM fetch can serve multiple
+        # candidate variants before we format/write the final TSV rows.
+        pending_records: list[SinglePendingRecord] = []
         pending_cluster_contig: str | None = None
         pending_cluster_start: int | None = None
 
         def flush_pending_records() -> None:
+            """Fill in BAM-derived fields for the current batch and write rows."""
             nonlocal pending_records, pending_cluster_contig, pending_cluster_start
             if not pending_records:
                 return
 
-            batch_candidates = [
-                (record["my_coordinate"], record["ref_base"], record["first_alt"])
-                for record in pending_records
+            batch_candidates: list[BamFeatureCandidate] = [
+                (record["my_coordinate"], record["ref_base"], record["first_alt"]) for record in pending_records
             ]
             tbam_features = collect_bam_features_batch(
                 bam,
@@ -420,10 +456,9 @@ def vcf2tsv(
 
             for record in pending_records:
                 coordinate = record["my_coordinate"]
-                assert isinstance(coordinate, tuple)
-                ref_base = str(record["ref_base"])
-                first_alt = str(record["first_alt"])
-                feature_key = bam_feature_key(coordinate, ref_base, first_alt)
+                ref_base = record["ref_base"]
+                first_alt = record["first_alt"]
+                feature_key: BamFeatureKey = bam_feature_key(coordinate, ref_base, first_alt)
                 tbam_feature = tbam_features[feature_key]
 
                 out_line_part_1 = out_header.format(
@@ -805,6 +840,9 @@ def vcf2tsv(
                         LC_spanning_phred = genome.p2phred(1 - LC_spanning, 40)
                         LC_adjacent_phred = genome.p2phred(1 - LC_adjacent, 40)
 
+                        # The batch boundary is based on distance from the first
+                        # coordinate in the cluster, not the immediately previous
+                        # variant. This keeps each fetch window predictably small.
                         if pending_records and (
                             pending_cluster_contig != my_coordinate[0]
                             or pending_cluster_start is None
@@ -820,13 +858,15 @@ def vcf2tsv(
                         for arbi_key_i in additional_arbi_caller_numbers:
                             additional_caller_columns.append(str(arbitrary_classifications[arbi_key_i]))
 
+                        # Non-BAM annotations are already known here, so we cache
+                        # them and let the batched BAM pass supply the rest.
                         pending_records.append(
                             {
                                 "my_coordinate": my_coordinate,
                                 "ref_base": ref_base,
                                 "first_alt": first_alt,
                                 "indel_length": indel_length,
-                                "identifiers": ";".join(my_identifiers) if my_identifiers else ".",
+                                "identifiers": (";".join(my_identifiers) if my_identifiers else "."),
                                 "mutect_classification": mutect_classification,
                                 "tlod": tlod,
                                 "ecnt": ecnt,

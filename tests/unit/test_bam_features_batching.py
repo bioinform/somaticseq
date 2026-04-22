@@ -1,9 +1,9 @@
 import math
+from typing import Any, cast
 
 import pysam
 
-from somaticseq.bam_features import collect_bam_features_batch
-from somaticseq.bam_features import BamFeatures
+from somaticseq.bam_features import BamFeatures, collect_bam_features_batch
 
 
 def assert_bam_features_equal(actual: BamFeatures, expected: BamFeatures) -> None:
@@ -48,7 +48,7 @@ def test_collect_bam_features_batch_matches_per_variant_oracle_and_reduces_fetch
             (("1", 5000), "A", "T"),
         ]
 
-        batch_features = collect_bam_features_batch(recording_bam, candidates)
+        batch_features = collect_bam_features_batch(cast(Any, recording_bam), candidates)
 
         assert len(recording_bam.fetch_calls) == 3
         for candidate in candidates:
@@ -76,7 +76,7 @@ def test_collect_bam_features_batch_skips_reads_without_reference_end(
         prefixed_bam = PrefixedReadAlignmentFile([FakeRead()], bam)
         candidate = (("1", 8450), "T", "G")
 
-        batch_feature = collect_bam_features_batch(prefixed_bam, [candidate])[candidate]
+        batch_feature = collect_bam_features_batch(cast(Any, prefixed_bam), [candidate])[candidate]
         expected = BamFeatures.from_alignment_file(
             bam,
             candidate[0],
@@ -99,7 +99,7 @@ def test_collect_bam_features_batch_handles_same_coordinate_alt_alleles_and_clus
         ]
 
         batch_features = collect_bam_features_batch(
-            recording_bam,
+            cast(Any, recording_bam),
             candidates,
             max_cluster_span=40,
         )

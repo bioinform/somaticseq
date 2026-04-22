@@ -7,6 +7,7 @@ import os
 import re
 import sys
 from copy import copy
+from typing import TypedDict
 
 import pysam
 from scipy import stats
@@ -16,6 +17,9 @@ import somaticseq.genomic_file_parsers.genomic_file_handlers as genome
 import somaticseq.sequencing_features as seq_features
 from somaticseq.bam_features import (
     MAX_BATCHED_BAM_FETCH_SPAN,
+    BamFeatureCandidate,
+    BamFeatureKey,
+    BamFeatureLookupCoordinate,
     bam_feature_key,
     collect_bam_features_batch,
 )
@@ -144,6 +148,48 @@ out_header = "{CHROM}\t\
 
 extra_caller_header = ""
 label_header = "{TrueVariant_or_False}"
+
+
+class PairedPendingRecord(TypedDict):
+    my_coordinate: BamFeatureLookupCoordinate
+    ref_base: str
+    first_alt: str
+    indel_length: int
+    identifiers: str
+    mutect_classification: int | float
+    nlod: int | float
+    tlod: int | float
+    tandem: int | float
+    ecnt: int | float
+    varscan_classification: int | float
+    jointsnvmix2_classification: int | float
+    score_jointsnvmix2: int | float
+    sniper_classification: int | float
+    score_somaticsniper: int | float
+    vardict_classification: int | float
+    msi: int | float
+    msilen: int | float
+    shift3: int | float
+    score_vardict: int | float
+    muse_classification: int | float
+    lofreq_classification: int | float
+    scalpel_classification: int | float
+    strelka_classification: int | float
+    somatic_evs: int | float
+    qss: int | float
+    tqss: int | float
+    tnscope_classification: int | float
+    platypus_classification: int | float
+    if_dbsnp: int | float
+    if_common: int | float
+    if_cosmic: int | float
+    num_cases: int | float
+    LC_spanning_phred: int | float
+    LC_adjacent_phred: int | float
+    homopolymer_length: int | float
+    site_homopolymer_length: int | float
+    judgement: int | float
+    additional_caller_columns: str
 
 
 def run() -> argparse.Namespace:
@@ -453,18 +499,22 @@ def vcf2tsv(
         header_last_part = label_header.replace("{", "").replace("}", "")
 
         outhandle.write("\t".join((header_part_1, header_last_part)) + "\n")
-        pending_records: list[dict[str, object]] = []
+        # We still evaluate caller/dbSNP/COSMIC/sequence features in input order,
+        # but we delay BAM feature extraction until we have a small cluster of
+        # nearby variants. That lets us replace many tiny `bam.fetch(...)` calls
+        # with one shared fetch per cluster.
+        pending_records: list[PairedPendingRecord] = []
         pending_cluster_contig: str | None = None
         pending_cluster_start: int | None = None
 
         def flush_pending_records() -> None:
+            """Resolve BAM-derived fields for the buffered records and write them."""
             nonlocal pending_records, pending_cluster_contig, pending_cluster_start
             if not pending_records:
                 return
 
-            batch_candidates = [
-                (record["my_coordinate"], record["ref_base"], record["first_alt"])
-                for record in pending_records
+            batch_candidates: list[BamFeatureCandidate] = [
+                (record["my_coordinate"], record["ref_base"], record["first_alt"]) for record in pending_records
             ]
             nbam_features = collect_bam_features_batch(
                 nbam,
@@ -481,10 +531,9 @@ def vcf2tsv(
 
             for record in pending_records:
                 coordinate = record["my_coordinate"]
-                assert isinstance(coordinate, tuple)
-                ref_base = str(record["ref_base"])
-                first_alt = str(record["first_alt"])
-                feature_key = bam_feature_key(coordinate, ref_base, first_alt)
+                ref_base = record["ref_base"]
+                first_alt = record["first_alt"]
+                feature_key: BamFeatureKey = bam_feature_key(coordinate, ref_base, first_alt)
                 nbam_feature = nbam_features[feature_key]
                 tbam_feature = tbam_features[feature_key]
                 n_ref = nbam_feature.ref_call_forward + nbam_feature.ref_call_reverse
@@ -1013,6 +1062,8 @@ def vcf2tsv(
                         LC_spanning_phred = genome.p2phred(1 - LC_spanning, 40)
                         LC_adjacent_phred = genome.p2phred(1 - LC_adjacent, 40)
 
+                        # Start a new BAM batch when the next variant is too far
+                        # away from the first variant in the current cluster.
                         if pending_records and (
                             pending_cluster_contig != my_coordinate[0]
                             or pending_cluster_start is None
@@ -1028,13 +1079,15 @@ def vcf2tsv(
                         for arbi_key_i in additional_arbi_caller_numbers:
                             additional_caller_columns.append(str(arbitrary_classifications[arbi_key_i]))
 
+                        # Store everything except BAM-derived features now. Those
+                        # get filled in later by `flush_pending_records()`.
                         pending_records.append(
                             {
                                 "my_coordinate": my_coordinate,
                                 "ref_base": ref_base,
                                 "first_alt": first_alt,
                                 "indel_length": indel_length,
-                                "identifiers": ";".join(my_identifiers) if my_identifiers else ".",
+                                "identifiers": (";".join(my_identifiers) if my_identifiers else "."),
                                 "mutect_classification": mutect_classification,
                                 "nlod": nlod,
                                 "tlod": tlod,

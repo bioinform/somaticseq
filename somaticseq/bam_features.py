@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import warnings
 from bisect import bisect_right
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Self
+from typing import Self, Sequence, TypeAlias
 
 import pysam
 from pydantic import BaseModel
@@ -20,19 +22,46 @@ from somaticseq.genomic_file_parsers.read_info_extractor import (
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 nan = float("nan")
+# Keep each batch small enough that we do not scan too much irrelevant BAM data
+# when candidate sites are far apart.
 MAX_BATCHED_BAM_FETCH_SPAN = 1000
+BamFeatureCoordinate: TypeAlias = tuple[str, int] | tuple[str, int, int]
+BamFeatureLookupCoordinate: TypeAlias = tuple[str, int]
+BamFeatureKey: TypeAlias = tuple[BamFeatureLookupCoordinate, str, str]
+BamFeatureCandidate: TypeAlias = tuple[BamFeatureCoordinate, str, str]
+BamFeatureLookupCandidate: TypeAlias = tuple[BamFeatureLookupCoordinate, str, str]
 
 
 def bam_feature_key(
-    my_coordinate: tuple[str, int] | tuple[str, int, int],
+    my_coordinate: BamFeatureCoordinate,
     ref_base: str,
     first_alt: str,
-) -> tuple[tuple[str, int], str, str]:
+) -> BamFeatureKey:
+    """Return the dictionary key used for batched BAM feature lookups.
+
+    The old code passed `(coordinate, ref, alt)` directly into
+    `BamFeatures.from_alignment_file(...)` one variant at a time. The batched
+    implementation collects many variants first, so it needs a stable key to
+    match each finalized `BamFeatures` object back to the original variant.
+    """
     return ((my_coordinate[0], my_coordinate[1]), ref_base, first_alt)
 
 
 @dataclass
 class _BamFeatureAccumulator:
+    """Mutable per-variant state while scanning reads from one BAM window.
+
+    `BamFeatures` is the final, immutable summary used by the rest of SomaticSeq.
+    During batch processing we instead need a scratch object that can be updated
+    read-by-read and later converted into a `BamFeatures` instance.
+
+    Conceptually:
+    1. Build one accumulator per candidate variant.
+    2. Visit each fetched read once.
+    3. Update every accumulator whose coordinate is overlapped by that read.
+    4. Finalize all accumulators into ordinary `BamFeatures` objects.
+    """
+
     ref_base: str
     first_alt: str
     min_mq: int
@@ -42,12 +71,12 @@ class _BamFeatureAccumulator:
     alt_read_mq: list[int] = field(default_factory=list)
     ref_read_bq: list[float] = field(default_factory=list)
     alt_read_bq: list[float] = field(default_factory=list)
-    ref_edit_distance: list[int] = field(default_factory=list)
-    alt_edit_distance: list[int] = field(default_factory=list)
+    ref_edit_distance: list[int | float] = field(default_factory=list)
+    alt_edit_distance: list[int | float] = field(default_factory=list)
     ref_pos_from_end: list[int] = field(default_factory=list)
     alt_pos_from_end: list[int] = field(default_factory=list)
-    ref_flanking_indel: list[int] = field(default_factory=list)
-    alt_flanking_indel: list[int] = field(default_factory=list)
+    ref_flanking_indel: list[int | float | None] = field(default_factory=list)
+    alt_flanking_indel: list[int | float | None] = field(default_factory=list)
     ref_concordant_reads: int = 0
     alt_concordant_reads: int = 0
     ref_discordant_reads: int = 0
@@ -70,17 +99,18 @@ class _BamFeatureAccumulator:
         self.indel_length = len(self.first_alt) - len(self.ref_base)
 
     def add_read(self, read: pysam.AlignedSegment, coordinate0: int) -> None:
+        """Update this variant's counters from one read.
+
+        `coordinate0` is 0-based because `get_alignment_in_read(...)` expects a
+        0-based reference coordinate.
+        """
         if read.is_unmapped or not dedup_test(read):
             return
         assert read.query_name is not None  # type checking
         assert read.cigartuples is not None  # type checking
         self.dp += 1
         sequencing_call = get_alignment_in_read(read, coordinate0)
-        if (
-            read.query_qualities
-            and read.mapping_quality < self.min_mq
-            and mean(read.query_qualities) < self.min_bq
-        ):
+        if read.query_qualities and read.mapping_quality < self.min_mq and mean(read.query_qualities) < self.min_bq:
             self.poor_read_count += 1
 
         if read.mapping_quality == 0:
@@ -91,15 +121,14 @@ class _BamFeatureAccumulator:
         else:
             bq = nan
 
-        if (
-            sequencing_call.call_type == AlignmentType.match
-            and sequencing_call.base_call == self.ref_base[0]
-        ):
+        if sequencing_call.call_type == AlignmentType.match and sequencing_call.base_call == self.ref_base[0]:
             self.qname_collector[read.query_name].append(0)
             self.ref_read_mq.append(read.mapping_quality)
             self.ref_read_bq.append(bq)
             try:
-                self.ref_edit_distance.append(read.get_tag("NM"))
+                nm_tag = read.get_tag("NM")
+                if isinstance(nm_tag, (int, float)):
+                    self.ref_edit_distance.append(nm_tag)
             except KeyError:
                 pass
 
@@ -113,10 +142,7 @@ class _BamFeatureAccumulator:
             elif read.is_reverse and read.mapping_quality >= self.min_mq and bq >= self.min_bq:
                 self.ref_rev += 1
 
-            if (
-                read.cigartuples[0][0] == CIGAR_SOFT_CLIP
-                or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP
-            ):
+            if read.cigartuples[0][0] == CIGAR_SOFT_CLIP or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP:
                 self.ref_SC_reads += 1
             else:
                 self.ref_notSC_reads += 1
@@ -148,7 +174,9 @@ class _BamFeatureAccumulator:
             self.alt_read_mq.append(read.mapping_quality)
             self.alt_read_bq.append(bq)
             try:
-                self.alt_edit_distance.append(read.get_tag("NM"))
+                nm_tag = read.get_tag("NM")
+                if isinstance(nm_tag, (int, float)):
+                    self.alt_edit_distance.append(nm_tag)
             except KeyError:
                 pass
 
@@ -162,10 +190,7 @@ class _BamFeatureAccumulator:
             elif read.is_reverse and read.mapping_quality >= self.min_mq and bq >= self.min_bq:
                 self.alt_rev += 1
 
-            if (
-                read.cigartuples[0][0] == CIGAR_SOFT_CLIP
-                or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP
-            ):
+            if read.cigartuples[0][0] == CIGAR_SOFT_CLIP or read.cigartuples[-1][0] == CIGAR_SOFT_CLIP:
                 self.alt_SC_reads += 1
             else:
                 self.alt_notSC_reads += 1
@@ -184,7 +209,8 @@ class _BamFeatureAccumulator:
             self.qname_collector[read.query_name].append(2)
             self.noise_read_count += 1
 
-    def finalize(self) -> "BamFeatures":
+    def finalize(self) -> BamFeatures:
+        """Convert accumulated raw counters into the public `BamFeatures` model."""
         ref_mq = mean(self.ref_read_mq)
         alt_mq = mean(self.alt_read_mq)
         try:
@@ -301,16 +327,24 @@ class _BamFeatureAccumulator:
 
 def _collect_bam_features_cluster(
     bam_fh: pysam.AlignmentFile,
-    candidates: list[tuple[tuple[str, int], str, str]],
+    candidates: Sequence[BamFeatureLookupCandidate],
     min_mq: int,
     min_bq: int,
-) -> dict[tuple[tuple[str, int], str, str], "BamFeatures"]:
+) -> dict[BamFeatureKey, "BamFeatures"]:
+    """Compute BAM features for one contig-local cluster of nearby variants.
+
+    All candidates in `candidates` are already guaranteed to be on the same
+    chromosome and close enough to share one `fetch(...)` call.
+
+    The key optimization is that the BAM iterator is advanced once for the whole
+    cluster, instead of once per variant.
+    """
     contig = candidates[0][0][0]
     positions = sorted({candidate[0][1] for candidate in candidates})
     cluster_start = positions[0]
     cluster_end = positions[-1]
-    candidates_by_position: dict[int, list[tuple[tuple[str, int], str, str]]] = defaultdict(list)
-    accumulators: dict[tuple[tuple[str, int], str, str], _BamFeatureAccumulator] = {}
+    candidates_by_position: dict[int, list[BamFeatureKey]] = defaultdict(list)
+    accumulators: dict[BamFeatureKey, _BamFeatureAccumulator] = {}
 
     for candidate in candidates:
         key = bam_feature_key(candidate[0], candidate[1], candidate[2])
@@ -326,9 +360,14 @@ def _collect_bam_features_cluster(
     for read in bam_fh.fetch(contig, cluster_start - 1, cluster_end):
         if read.is_unmapped or read.reference_start is None or read.reference_end is None:
             continue
+        # Positions at or before `reference_start` can no longer be overlapped by
+        # later reads in a coordinate-sorted BAM, so they can be retired from the
+        # active search range.
         while first_active_idx < len(positions) and positions[first_active_idx] <= read.reference_start:
             first_active_idx += 1
 
+        # `reference_end` is one past the last aligned base, and `bisect_right`
+        # gives the first candidate position strictly to the right of the read.
         last_overlap_idx = bisect_right(positions, read.reference_end, lo=first_active_idx)
         for position in positions[first_active_idx:last_overlap_idx]:
             for key in candidates_by_position[position]:
@@ -339,32 +378,46 @@ def _collect_bam_features_cluster(
 
 def collect_bam_features_batch(
     bam_fh: pysam.AlignmentFile,
-    candidates: list[tuple[tuple[str, int] | tuple[str, int, int], str, str]],
+    candidates: Sequence[BamFeatureCandidate],
     min_mq: int = 1,
     min_bq: int = 10,
     max_cluster_span: int = MAX_BATCHED_BAM_FETCH_SPAN,
-) -> dict[tuple[tuple[str, int], str, str], "BamFeatures"]:
+) -> dict[BamFeatureKey, "BamFeatures"]:
+    """Collect `BamFeatures` for many variants with fewer BAM fetches.
+
+    The input is a list of candidate variants. The output is a dictionary keyed
+    by `(coordinate, ref, alt)`, where each value is the same `BamFeatures`
+    object that the old one-variant-at-a-time implementation would have
+    produced.
+
+    The batching strategy is intentionally simple:
+    - normalize/sort the candidate list
+    - split candidates into small nearby clusters on the same contig
+    - run one `_collect_bam_features_cluster(...)` call per cluster
+
+    This keeps behavior close to the original code while avoiding the worst
+    overhead from calling `bam.fetch(...)` for every single variant.
+    """
     normalized_candidates = sorted(
-        [
-            ((candidate[0][0], candidate[0][1]), candidate[1], candidate[2])
-            for candidate in candidates
-        ],
-        key=lambda candidate: (candidate[0][0], candidate[0][1], candidate[1], candidate[2]),
+        [((candidate[0][0], candidate[0][1]), candidate[1], candidate[2]) for candidate in candidates],
+        key=lambda candidate: (
+            candidate[0][0],
+            candidate[0][1],
+            candidate[1],
+            candidate[2],
+        ),
     )
 
     if not normalized_candidates:
         return {}
 
-    features_by_key: dict[tuple[tuple[str, int], str, str], BamFeatures] = {}
-    cluster: list[tuple[tuple[str, int], str, str]] = []
+    features_by_key: dict[BamFeatureKey, BamFeatures] = {}
+    cluster: list[BamFeatureLookupCandidate] = []
     cluster_start = normalized_candidates[0][0][1]
     cluster_contig = normalized_candidates[0][0][0]
 
     for candidate in normalized_candidates:
-        if cluster and (
-            candidate[0][0] != cluster_contig
-            or candidate[0][1] - cluster_start > max_cluster_span
-        ):
+        if cluster and (candidate[0][0] != cluster_contig or candidate[0][1] - cluster_start > max_cluster_span):
             features_by_key.update(
                 _collect_bam_features_cluster(
                     bam_fh,
@@ -396,6 +449,8 @@ def collect_bam_features_batch(
 
 
 class BamFeatures(BaseModel):
+    """Final per-variant summary of read features extracted from one BAM."""
+
     dp: int = 0
     ref_call_forward: int = 0
     ref_call_reverse: int = 0
@@ -437,12 +492,18 @@ class BamFeatures(BaseModel):
     def from_alignment_file(
         cls,
         bam_fh: pysam.AlignmentFile,
-        my_coordinate: tuple[str, int, int],
+        my_coordinate: BamFeatureCoordinate,
         ref_base: str,
         first_alt: str,
         min_mq: int = 1,
         min_bq: int = 10,
     ) -> Self:
+        """Compatibility wrapper for the original one-variant-at-a-time API.
+
+        This still exists because other code expects it, but the heavy lifting is
+        now done by `_BamFeatureAccumulator`. The batched path reuses the same
+        accumulation/finalization logic so both implementations stay equivalent.
+        """
         accumulator = _BamFeatureAccumulator(
             ref_base=ref_base,
             first_alt=first_alt,
