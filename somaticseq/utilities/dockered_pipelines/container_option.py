@@ -15,14 +15,14 @@ class DockerImages:
     jsm2: str = "lethalfang/jointsnvmix2:0.7.5"
     lofreq: str = "lethalfang/lofreq:2.1.3.1-1"
     muse: str = "marghoob/muse:1.0rc_c"
-    mutect2: str = "broadinstitute/gatk:4.0.5.2"
+    mutect2: str = "broadinstitute/gatk:4.6.2.0"
     picard: str = "lethalfang/picard:2.22.7"
     sambamba: str = "lethalfang/sambamba:0.7.1"
     samtools: str = "lethalfang/samtools:1.19.2"
     scalpel: str = "lethalfang/scalpel:0.5.4"
     somaticseq: str = f"lethalfang/somaticseq:{VERSION}"
     somaticsniper: str = "lethalfang/somaticsniper:1.0.5.0-2"
-    strelka2: str = "lethalfang/strelka:2.9.5"
+    strelka2: str = "lethalfang/strelka:2.9.10"
     tabix: str = "lethalfang/tabix:1.10"
     trimmomatic: str = "lethalfang/trimmomatic:0.39"
     vardict: str = "lethalfang/vardictjava:1.7.0"
@@ -85,9 +85,7 @@ def container_params(
             container_dir = file_dictionary[file_i]["mount_dir"]
             MOUNT_STRING = MOUNT_STRING + f" --bind {sys_dir}:{container_dir}"
 
-        container_string = (
-            f"singularity exec --cleanenv {MOUNT_STRING} {extra_args} {singularity_image_loc}{container_image}"
-        )
+        container_string = f"singularity exec --cleanenv {MOUNT_STRING} {extra_args} {singularity_image_loc}{container_image}"
 
     else:
         raise NotImplementedError("Only supports docker and singularity.")
