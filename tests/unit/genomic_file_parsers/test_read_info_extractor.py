@@ -130,12 +130,12 @@ def test_single_leading_insertion_counts_as_left_flanking_indel() -> None:
         assert fn(read, 1002).nearest_indel == 3
 
 
-def test_single_leading_soft_clip_is_not_counted_as_nearby_indel() -> None:
+def test_single_leading_soft_clip_counts_as_left_flanking_indel() -> None:
     read = _make_read("1S6M")
     for fn in (get_alignment_via_cigar, get_alignment_via_aligned_pairs):
-        assert fn(read, 1000).nearest_indel == float("inf")
-        assert fn(read, 1001).nearest_indel == float("inf")
-        assert fn(read, 1002).nearest_indel == float("inf")
+        assert fn(read, 1000).nearest_indel == 1
+        assert fn(read, 1001).nearest_indel == 2
+        assert fn(read, 1002).nearest_indel == 3
 
 
 def test_padding_cigar_is_not_treated_as_insertion() -> None:

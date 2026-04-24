@@ -29,7 +29,7 @@ CIGAR_NUMERIC_TO_CHAR = {
 CIGARS_MATCHED_SEQ = {CIGAR_ALN_MATCH, CIGAR_SEQ_MATCH, CIGAR_SEQ_MISMATCH}
 CIGARS_INSERTED_SEQ = {CIGAR_INSERTION, CIGAR_SOFT_CLIP}
 CIGARS_DELETED_SEQ = {CIGAR_DELETION, CIGAR_SKIP}
-CIGARS_NEARBY_INDEL = {CIGAR_INSERTION} | CIGARS_DELETED_SEQ
+CIGARS_NEARBY_INDEL = CIGARS_INSERTED_SEQ | CIGARS_DELETED_SEQ
 CIGARS_NO_SEQ = {CIGAR_HARD_CLIP, CIGAR_PADDING}
 
 nan = float("nan")
@@ -154,12 +154,10 @@ def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_siz
 
         if cigar_op in CIGARS_INSERTED_SEQ:
             # Insertions/soft-clips consume read bases and aligned-pair slots but
-            # do not advance the reference. Only true insertions should affect
-            # the nearby-indel feature; soft-clips are handled separately.
+            # do not advance the reference.
             aligned_pair_index += n_bases
             position_on_read += n_bases
-            if cigar_op in CIGARS_NEARBY_INDEL:
-                latest_indel_pair_index = aligned_pair_index - 1
+            latest_indel_pair_index = aligned_pair_index - 1
             continue
 
         if cigar_op in CIGARS_DELETED_SEQ:
@@ -421,17 +419,12 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
             left_indel_flanks = step_left_i + 1
             break
 
-    # aligned_pairs cannot distinguish insertions from soft-clips because both
-    # appear as (query_pos, None). Source nearby-indel distance from the CIGAR
-    # parser so terminal soft-clips are not counted as nearby indels.
-    nearest_indel_within_window = get_alignment_via_cigar(read, coordinate, win_size).nearest_indel
-
     return SequencingCall(
         call_type=vtype,
         position_on_read=ith_base,
         base_call=base_at_coordinate,
         indel_length=indel_length,
-        nearest_indel=nearest_indel_within_window,
+        nearest_indel=min(right_indel_flanks, left_indel_flanks),
         read_in_pair=print_read1_or_2(read),
         query_name=read.query_name,
     )
