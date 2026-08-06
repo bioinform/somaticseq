@@ -276,7 +276,13 @@ def get_alignment_via_cigar(read: pysam.AlignedSegment, coordinate: int, win_siz
     )
 
 
-def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int, win_size: int = 3) -> SequencingCall:
+def _get_alignment_via_aligned_pairs(
+    read: pysam.AlignedSegment,
+    coordinate: int,
+    win_size: int,
+    *,
+    with_seq: bool,
+) -> SequencingCall:
     """
     Given a coordinate, return the alignment on the read
 
@@ -285,6 +291,7 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
         coordinate: genomic coordinate
         win_size: window size within which we will record the nearest indel,
             beyond which we will record "inf"
+        with_seq: request the MD-derived reference base for each aligned pair
 
     Returns:
         SequencingCall
@@ -314,7 +321,7 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
     if any(cigar_op == CIGAR_PADDING for cigar_op, _ in read.cigartuples):
         return get_alignment_via_cigar(read, coordinate, win_size)
 
-    aligned_pairs = read.get_aligned_pairs()
+    aligned_pairs = read.get_aligned_pairs(with_seq=with_seq)
     for i, aligned_pair in enumerate(aligned_pairs):
         # The aligned_pair where the aligned coordinate matches the input param
         if aligned_pair[1] == coordinate:
@@ -428,6 +435,33 @@ def get_alignment_via_aligned_pairs(read: pysam.AlignedSegment, coordinate: int,
         read_in_pair=print_read1_or_2(read),
         query_name=read.query_name,
     )
+
+
+def get_alignment_via_aligned_pairs(
+    read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
+) -> SequencingCall:
+    """Return the alignment at ``coordinate`` using CIGAR-derived pairs."""
+    return _get_alignment_via_aligned_pairs(read, coordinate, win_size, with_seq=False)
+
+
+def get_alignment_via_md_tag(
+    read: pysam.AlignedSegment, coordinate: int, win_size: int = 3
+) -> SequencingCall:
+    """
+    Return the alignment at ``coordinate`` using the read's MD tag.
+
+    MD does not describe insertions, clipping, padding, or reference skips, so
+    pysam combines it with the CIGAR and query sequence when ``with_seq=True``.
+    The resulting aligned pairs have the same coordinate and indel semantics as
+    :func:`get_alignment_via_aligned_pairs`, with an additional MD-derived
+    reference-base field.
+
+    Raises:
+        ValueError: If the read does not have an MD tag.
+    """
+    if not read.has_tag("MD"):
+        raise ValueError(f"{read.query_name} does not have an MD tag.")
+    return _get_alignment_via_aligned_pairs(read, coordinate, win_size, with_seq=True)
 
 
 # Keep the default entry point on the faster implementation now that it is

@@ -1,6 +1,7 @@
 import math
 
 import pysam
+import pytest
 
 from somaticseq.genomic_file_parsers.read_info_extractor import (
     AlignmentType,
@@ -8,10 +9,16 @@ from somaticseq.genomic_file_parsers.read_info_extractor import (
     get_alignment_in_read,
     get_alignment_via_aligned_pairs,
     get_alignment_via_cigar,
+    get_alignment_via_md_tag,
 )
 
 
-def _make_read(cigar: str, start: int = 1000) -> pysam.AlignedSegment:
+def _make_read(
+    cigar: str,
+    start: int = 1000,
+    md_tag: str | None = None,
+    query_sequence: str | None = None,
+) -> pysam.AlignedSegment:
     ops = []
     digits = []
     for character in cigar:
@@ -22,6 +29,10 @@ def _make_read(cigar: str, start: int = 1000) -> pysam.AlignedSegment:
             digits = []
 
     qlen = sum(length for length, op in ops if op in {"M", "I", "S", "=", "X"})
+    if query_sequence is None:
+        query_sequence = "A" * qlen
+    assert len(query_sequence) == qlen
+
     read_dict = {
         "name": "query_name",
         "flag": "97",
@@ -32,11 +43,14 @@ def _make_read(cigar: str, start: int = 1000) -> pysam.AlignedSegment:
         "next_ref_name": "=",
         "next_ref_pos": str(start + 1),
         "length": "0",
-        "seq": "A" * qlen,
+        "seq": query_sequence,
         "qual": "J" * qlen,
     }
     header = pysam.AlignmentHeader.from_dict({"SQ": [{"LN": 1_000_000, "SN": "chr1"}]})
-    return pysam.AlignedSegment.from_dict(read_dict, header)
+    read = pysam.AlignedSegment.from_dict(read_dict, header)
+    if md_tag is not None:
+        read.set_tag("MD", md_tag)
+    return read
 
 
 def test_get_alignment() -> None:
@@ -115,7 +129,45 @@ def test_get_alignment_via_cigar_matches_aligned_pairs_regressions() -> None:
     for cigar, coordinates in regression_cases:
         read = _make_read(cigar)
         for coordinate in coordinates:
-            assert get_alignment_via_cigar(read, coordinate) == get_alignment_via_aligned_pairs(read, coordinate)
+            assert get_alignment_via_cigar(
+                read, coordinate
+            ) == get_alignment_via_aligned_pairs(read, coordinate)
+
+
+def test_get_alignment_via_md_tag_matches_other_implementations() -> None:
+    cases = (
+        # Plain matches with a mismatch represented by a lower-case reference
+        # base in get_aligned_pairs(with_seq=True).
+        ("8M", "2G5", "AACAAAAA"),
+        # Clipping, insertions, and an MD-encoded deletion.
+        ("2S4M2I3M2D4M1S", "2G4^CG4", "A" * 16),
+        # Reference skips are represented by CIGAR, not MD.
+        ("3M2N4M1I2M", "9", "A" * 10),
+        # Explicit sequence-match and sequence-mismatch CIGAR operations.
+        ("2=1X3M", "2G3", "AACAAA"),
+        # Hard clips do not consume query sequence; the deletion does.
+        ("2H3M1D2M2H", "3^C2", "A" * 5),
+        # Pysam cannot distinguish padding from inserted sequence in aligned
+        # pairs, so all pair-based implementations use the CIGAR fallback.
+        ("3M1P3M", "6", "A" * 6),
+    )
+
+    for cigar, md_tag, query_sequence in cases:
+        read = _make_read(cigar, md_tag=md_tag, query_sequence=query_sequence)
+        assert read.reference_start is not None
+        assert read.reference_end is not None
+        coordinates = range(read.reference_start - 2, read.reference_end + 2)
+        for coordinate in coordinates:
+            via_cigar = get_alignment_via_cigar(read, coordinate)
+            via_pairs = get_alignment_via_aligned_pairs(read, coordinate)
+            via_md = get_alignment_via_md_tag(read, coordinate)
+            assert via_md == via_pairs == via_cigar
+
+
+def test_get_alignment_via_md_tag_requires_md_tag() -> None:
+    read = _make_read("6M")
+    with pytest.raises(ValueError, match="does not have an MD tag"):
+        get_alignment_via_md_tag(read, 1000)
 
 
 def test_get_alignment_in_read_uses_cigar_path() -> None:
