@@ -56,7 +56,7 @@ def run_workflows(
     pool = Pool(processes=threads)
     run_script_i = partial(run_script, shell=shell)
     for list_of_tasks in list_of_list_of_tasks:
-        bash_async = pool.map_async(run_script_i, list_of_tasks)
+        bash_async = pool.map_async(run_script_i, list_of_tasks, chunksize=1)
         bash_async.get()
     pool.close()
     return True
